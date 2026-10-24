@@ -16,6 +16,8 @@ export async function call(action, payload = {}) {
     throw new Error('連不到伺服器，請檢查網路或 GAS 網址');
   }
   const j = await res.json().catch(() => ({ ok: false, error: '伺服器回應格式錯誤' }));
+  // 伺服器回「未知動作」= 試算表的 Apps Script 還是舊版程式，沒有這個功能
+  if (!j.ok && /^未知動作/.test(j.error || '')) throw new Error(`伺服器的程式是舊版（沒有「${action}」功能）。請把 gas/Code.gs 整份貼到 Apps Script，然後按「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本選『新版本』→ 部署」。不要用「新增部署作業」，那會產生新網址。`);
   if (!j.ok) throw new Error(j.error || '發生錯誤');
   return j.data;
 }
@@ -161,5 +163,7 @@ function mergeChal(a, b) {
   for (const k in b.stars || {}) o.stars[k] = Math.max(Number(o.stars[k]) || 0, Math.min(3, Number(b.stars[k]) || 0));
   for (const k in b.best || {}) o.best[k] = o.best[k] ? Math.min(o.best[k], b.best[k]) : b.best[k];
   o.total = Object.values(o.stars).reduce((s, v) => s + v, 0);
+  o.owned = [...new Set([...(a.owned || []), ...(b.owned || [])])];
+  o.spent = Math.min(o.total, Math.max(Number(a.spent) || 0, Number(b.spent) || 0));
   return o;
 }

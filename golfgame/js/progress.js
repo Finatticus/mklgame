@@ -9,30 +9,71 @@ import { COURSES } from './courses.js';
 // 球桿：head 桿頭顏色、glow 自發光顏色（沒有就不發光）、shaft 桿身顏色；球：color、glow、trail 彈道顏色
 export const SKINS = [
   { id: 'std', slot: 'driver', name: '標準 Driver', std: true },
-  { id: 'goldD', slot: 'driver', name: '黃金 Driver', head: 0xd8a830, metal: 1, shaft: 0xe8c860, ach: 'drive330' },
-  { id: 'frostD', slot: 'driver', name: '冰霜 Driver', head: 0x9fdcff, glow: 0x3aa8ff, shaft: 0xd8f2ff, ach: 'aurora_par' },
-  { id: 'galaxyD', slot: 'driver', name: '星河 Driver', head: 0x3a1a6a, glow: 0x9a5aff, shaft: 0xb89aff, ach: 'ch20_3' },
+  { id: 'goldD', slot: 'driver', name: '黃金 Driver', head: 0xd8a830, metal: 1, shaft: 0xe8c860, ach: 'drive330', fx: 'gold' },
+  { id: 'frostD', slot: 'driver', name: '冰霜 Driver', head: 0x9fdcff, glow: 0x3aa8ff, shaft: 0xd8f2ff, ach: 'aurora_par', fx: 'frost' },
+  { id: 'galaxyD', slot: 'driver', name: '星河 Driver', head: 0x3a1a6a, glow: 0x9a5aff, shaft: 0xb89aff, ach: 'ch20_3', fx: 'galaxy' },
   { id: 'std', slot: 'iron', name: '標準鐵桿', std: true },
-  { id: 'lavaI', slot: 'iron', name: '熔岩鐵桿', head: 0x2a1410, glow: 0xff5a10, shaft: 0x4a2a20, ach: 'ember_par' },
-  { id: 'obsidianI', slot: 'iron', name: '黑曜石鐵桿', head: 0x161420, glow: 0x6a4aff, metal: 1, shaft: 0x2a2838, ach: 'ch10_3' },
+  { id: 'lavaI', slot: 'iron', name: '熔岩鐵桿', head: 0x2a1410, glow: 0xff5a10, shaft: 0x4a2a20, ach: 'ember_par', fx: 'ember' },
+  { id: 'obsidianI', slot: 'iron', name: '黑曜石鐵桿', head: 0x161420, glow: 0x6a4aff, metal: 1, shaft: 0x2a2838, ach: 'ch10_3', fx: 'void' },
   { id: 'std', slot: 'putter', name: '標準推桿', std: true },
-  { id: 'moonP', slot: 'putter', name: '月光推桿', head: 0xe8eeff, glow: 0x8ab8ff, shaft: 0xf0f4ff, ach: 'putt20x3' },
-  { id: 'lavaP', slot: 'putter', name: '熔岩推桿', head: 0x301410, glow: 0xff7a20, shaft: 0x502a1a, ach: 'vent_green3' },
-  { id: 'sakuraP', slot: 'putter', name: '櫻花推桿', head: 0xffc8dc, glow: 0xff7aa8, shaft: 0xfff0f4, ach: 'sakura_no3' },
+  { id: 'moonP', slot: 'putter', name: '月光推桿', head: 0xe8eeff, glow: 0x8ab8ff, shaft: 0xf0f4ff, ach: 'putt20x3', fx: 'moon' },
+  { id: 'lavaP', slot: 'putter', name: '熔岩推桿', head: 0x301410, glow: 0xff7a20, shaft: 0x502a1a, ach: 'vent_green3', fx: 'ember' },
+  { id: 'sakuraP', slot: 'putter', name: '櫻花推桿', head: 0xffc8dc, glow: 0xff7aa8, shaft: 0xfff0f4, ach: 'sakura_no3', fx: 'petal' },
   { id: 'std', slot: 'ball', name: '標準白球', std: true },
-  { id: 'gold', slot: 'ball', name: '黃金球', color: 0xffd860, glow: 0x8a6010, trail: 0xffd860, ach: 'hio' },
-  { id: 'firefly', slot: 'ball', name: '螢火球', color: 0xeaffa0, glow: 0xa8ff4a, trail: 0xc8ff6a, ach: 'ring30' },
-  { id: 'lava', slot: 'ball', name: '熔岩球', color: 0x3a1a10, glow: 0xff5a10, trail: 0xff7a2a, ach: 'vent25' },
-  { id: 'frost', slot: 'ball', name: '冰晶球', color: 0xd8f4ff, glow: 0x4ab8ff, trail: 0x8ad8ff, ach: 'wall30' },
-  { id: 'spore', slot: 'ball', name: '孢子球', color: 0xffb8e8, glow: 0xff4ac8, trail: 0xff8ae0, ach: 'double_bounce' },
-  { id: 'portal', slot: 'ball', name: '星門球', color: 0xd8b8ff, glow: 0x8a3aff, trail: 0xb87aff, ach: 'portal_birdie' },
-  { id: 'star', slot: 'ball', name: '星辰球', color: 0xfff4c8, glow: 0xffc84a, trail: 0xfff0a0, ach: 'ch_stars45' },
-  { id: 'rainbow', slot: 'ball', name: '七彩球', color: 0xffffff, glow: 0xff6ae0, trail: 'rainbow', ach: 'stamps_world' },
+  { id: 'gold', slot: 'ball', name: '黃金球', color: 0xffd860, glow: 0x8a6010, trail: 0xffd860, ach: 'hio', fx: 'gold' },
+  { id: 'firefly', slot: 'ball', name: '螢火球', color: 0xeaffa0, glow: 0xa8ff4a, trail: 0xc8ff6a, ach: 'ring30', fx: 'firefly' },
+  { id: 'lava', slot: 'ball', name: '熔岩球', color: 0x3a1a10, glow: 0xff5a10, trail: 0xff7a2a, ach: 'vent25', fx: 'ember' },
+  { id: 'frost', slot: 'ball', name: '冰晶球', color: 0xd8f4ff, glow: 0x4ab8ff, trail: 0x8ad8ff, ach: 'wall30', fx: 'frost' },
+  { id: 'spore', slot: 'ball', name: '孢子球', color: 0xffb8e8, glow: 0xff4ac8, trail: 0xff8ae0, ach: 'double_bounce', fx: 'spore' },
+  { id: 'portal', slot: 'ball', name: '星門球', color: 0xd8b8ff, glow: 0x8a3aff, trail: 0xb87aff, ach: 'portal_birdie', fx: 'portal' },
+  { id: 'star', slot: 'ball', name: '星辰球', color: 0xfff4c8, glow: 0xffc84a, trail: 0xfff0a0, ach: 'ch_stars45', fx: 'star' },
+  { id: 'rainbow', slot: 'ball', name: '七彩球', color: 0xffffff, glow: 0xff6ae0, trail: 'rainbow', ach: 'stamps_world', fx: 'rainbow' },
+  // ---- 星星商店：用挑戰模式拿到的星星購買（price = 星星數）----
+  { id: 'carbonD', slot: 'driver', name: '碳纖 Driver', head: 0x1a1c20, metal: 1, shaft: 0x2a2c30, price: 8, desc: '霧黑的碳纖維桿頭，低調又專業。' },
+  { id: 'crimsonD', slot: 'driver', name: '赤焰 Driver', head: 0xb01a1a, metal: 1, shaft: 0xd8d8d8, price: 12, desc: '烤漆赤紅色桿頭，站上發球台最顯眼。' },
+  { id: 'neonD', slot: 'driver', name: '霓虹 Driver', head: 0x2a0a3a, glow: 0xff3ac8, shaft: 0xff8ae0, price: 20, desc: '霓虹夜城風格，桿頭會發出粉紅色的光。', fx: 'neon' },
+  { id: 'dragonD', slot: 'driver', name: '金龍 Driver', head: 0xe0b040, metal: 1, glow: 0xff4a1a, shaft: 0xb01a1a, price: 30, desc: '金色桿頭配上赤紅桿身，揮桿時隱隱透出火光。', fx: 'ember' },
+  { id: 'inkI', slot: 'iron', name: '墨黑鐵桿', head: 0x14161a, metal: 1, shaft: 0x2a2c30, price: 6, desc: '黑色霧面的鍛造鐵桿。' },
+  { id: 'rosegoldI', slot: 'iron', name: '玫瑰金鐵桿', head: 0xe0a090, metal: 1, shaft: 0xf0d0c8, price: 12, desc: '溫柔的玫瑰金色澤。' },
+  { id: 'cobaltI', slot: 'iron', name: '鈷藍鐵桿', head: 0x2a5ad8, metal: 1, shaft: 0xa8c0ff, price: 16, desc: '深海般的鈷藍色，陽光下閃閃發亮。' },
+  { id: 'auroraI', slot: 'iron', name: '極光鐵桿', head: 0x103a2a, glow: 0x3aff9a, shaft: 0xb88aff, price: 26, desc: '桿頭流動著綠色的極光。', fx: 'aurora' },
+  { id: 'woodP', slot: 'putter', name: '木紋推桿', head: 0x8a5a30, shaft: 0xd8c8a0, price: 5, desc: '經典的木頭桿頭，手感溫潤。' },
+  { id: 'bronzeP', slot: 'putter', name: '古銅推桿', head: 0xa8743a, metal: 1, shaft: 0xc8a070, price: 8, desc: '有年代感的古銅色推桿。' },
+  { id: 'candyP', slot: 'putter', name: '糖果推桿', head: 0xff8ac8, shaft: 0xfff0f8, price: 14, desc: '糖果王國的紀念品，粉紅色的甜甜推桿。' },
+  { id: 'crystalP', slot: 'putter', name: '水晶推桿', head: 0xb8f0ff, glow: 0x4ad8ff, shaft: 0xe8f8ff, price: 18, desc: '水晶洞窟裡採來的發光水晶。' },
+  { id: 'orange', slot: 'ball', name: '橘色球', color: 0xff9a2a, trail: 0xffb04a, price: 3, desc: '在草地上一眼就找得到。' },
+  { id: 'pink', slot: 'ball', name: '粉紅球', color: 0xff9ad0, trail: 0xffb8e0, price: 3, desc: '可愛的粉紅色。' },
+  { id: 'mint', slot: 'ball', name: '薄荷球', color: 0x9af0d0, trail: 0xa8ffe0, price: 6, desc: '清涼的薄荷綠。' },
+  { id: 'obsidian', slot: 'ball', name: '黑曜球', color: 0x1a1a22, trail: 0x6a6a8a, price: 6, desc: '烏黑發亮的黑曜石。' },
+  { id: 'moon', slot: 'ball', name: '月球', color: 0xd8d8e0, glow: 0x6a6a8a, trail: 0xe0e8ff, price: 12, desc: '月面基地帶回來的灰色月岩球。' },
+  { id: 'sun', slot: 'ball', name: '太陽球', color: 0xffd060, glow: 0xff7a10, trail: 0xffc040, price: 20, desc: '像小太陽一樣發光，彈道是金色的。', fx: 'sun' },
+  { id: 'neonB', slot: 'ball', name: '霓虹球', color: 0x6af0ff, glow: 0x00c8ff, trail: 0xff4ac8, price: 24, desc: '青色發光的球，拖著粉紅色的彈道。', fx: 'neon' },
+  { id: 'galaxy', slot: 'ball', name: '銀河球', color: 0x3a1a6a, glow: 0x9a4aff, trail: 'galaxy', price: 30, desc: '球裡封著一整片星河，彈道在紫、藍、粉之間流動，飛行時灑下星塵。', fx: 'galaxy' },
 ];
+// 成就外觀的介紹
+const ACH_SKIN_DESC = { goldD: '純金打造的一號木，只有打出天外飛球的人才拿得到。', frostD: '極光冰境的冰晶鍛造，桿頭透著冷冽的藍光。', galaxyD: '挑戰模式的最高榮譽，桿頭是一整片星河。',
+  lavaI: '熔岩之心的火山岩打造，裂縫裡流著岩漿。', obsidianI: '黑曜石磨成的鐵桿，透出紫色的光。', moonP: '在月光下打磨的推桿。', lavaP: '被噴發口洗禮過的推桿，桿頭還在發燙。',
+  sakuraP: '櫻川庭苑的櫻花木製成。', gold: '一桿進洞的紀念。', firefly: '螢火蟲聚成的光球。', lava: '還在冒著熱氣的熔岩球。', frost: '冰鏡牆的碎片凝成的冰晶球。', spore: '蘑菇幻境的孢子球。',
+  portal: '吸進星門的漩渦。', star: '星光凝成的球。', rainbow: '環遊世界的證明，彈道會變換七彩顏色，飛行時灑出彩色火花。' };
+export const skinDesc = s => s.desc || ACH_SKIN_DESC[s.id] || '';
+export const skinKey = s => s.slot + ':' + s.id;
+export const FX_NAME = { gold: '金色亮粉', frost: '冰晶閃光', galaxy: '星塵', ember: '火星', void: '紫色暗光', moon: '月光微塵', petal: '櫻花花瓣', firefly: '螢火', spore: '彩色孢子',
+  portal: '星門漩光', star: '星光', rainbow: '七彩火花', neon: '霓虹光點', aurora: '極光粒子', sun: '日焰' };
 export const SLOT_NAME = { driver: 'Driver / 木桿', iron: '鐵桿 / 挖起桿', putter: '推桿', ball: '高爾夫球' };
 export const LOOK_KEY = { driver: 'drvSkin', iron: 'ironSkin', putter: 'putSkin', ball: 'ballSkin' };
 export const skinById = (slot, id) => SKINS.find(s => s.slot === slot && s.id === (id || 'std')) || SKINS.find(s => s.slot === slot && s.std);
-export const skinUnlocked = s => s.std || !!(prog().ach[s.ach]);
+export const skinUnlocked = s => s.std || (s.ach ? !!prog().ach[s.ach] : (chal().owned || []).includes(skinKey(s)));
+// 可以花的星星 = 挑戰總星數 - 已經買外觀花掉的（排行看的是總星數，不會因為消費而減少）
+export const starBalance = () => Math.max(0, chal().total - (chal().spent || 0));
+export function buySkin(s) {
+  if (!s.price || skinUnlocked(s) || starBalance() < s.price) return false;
+  const c = chal();
+  c.spent = (c.spent || 0) + s.price;
+  c.owned = [...(c.owned || []), skinKey(s)];
+  dirtyChal = true;
+  save(true);
+  return true;
+}
 // 某個玩家外觀裡裝備的皮膚（球桿依類型分組）
 export function equippedSkins(look = {}) {
   return { driver: skinById('driver', look.drvSkin), iron: skinById('iron', look.ironSkin), putter: skinById('putter', look.putSkin), ball: skinById('ball', look.ballSkin) };
@@ -114,7 +155,7 @@ export function prog() {
 export function chal() {
   const p = session.profile || (session.profile = {});
   const c = p.chal = p.chal || {};
-  c.stars = c.stars || {}; c.best = c.best || {};
+  c.stars = c.stars || {}; c.best = c.best || {}; c.owned = c.owned || []; c.spent = c.spent || 0;
   c.total = Object.values(c.stars).reduce((s, v) => s + v, 0);
   return c;
 }

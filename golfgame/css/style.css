@@ -803,3 +803,39 @@ body:not([data-practice]) .practice-only { display: none; }
 .chal-goals .cg i { font-style: normal; width: 16px; height: 16px; border-radius: 50%; border: 1px solid #8a8470; font-size: 10px; text-align: center; line-height: 14px; flex: none; }
 .chal-goals .cg.ok { color: #f0d898; }
 .chal-goals .cg.ok i { background: #e2a92a; border-color: #e2a92a; color: #1d1a10; }
+
+/* 外觀詳細視窗（手機也好按：大字、大按鈕、按鈕直排） */
+.gear-bal { margin: 4px 0 6px; font-size: 14px; }
+.gear-bal b { font-size: 20px; color: #c8901a; }
+.gear-bal span { display: block; font-size: 12px; color: var(--muted); }
+.sk-box { max-width: 420px; text-align: center; }
+.sk-show { display: flex; justify-content: center; margin: 4px 0 10px; }
+.gs.big { width: 96px; height: 96px; }
+.gs.club.big { border-radius: 18px; }
+.gs.club.big::after { top: -18px; width: 7px; height: 44px; }
+.gs.club.putter.big { height: 56px; margin: 20px 0; }
+.sk-slot { color: var(--brass); font-size: 13px; letter-spacing: .08em; }
+.sk-box h3 { margin: 2px 0 8px; font-size: 24px; }
+.sk-desc { font-size: 15px; line-height: 1.6; margin: 0 0 10px; color: var(--ink); }
+.sk-state { display: inline-block; font-size: 14px; padding: 4px 14px; border-radius: 14px; background: #ece6d8; color: var(--muted); margin-bottom: 10px; }
+.sk-state.ok { background: #e4f0d8; color: #3a6a2a; }
+.sk-how { text-align: left; background: #f6f2e8; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.55; }
+.sk-how small { font-size: 12px; color: var(--brass); letter-spacing: .08em; }
+.sk-how span { color: var(--muted); font-size: 14px; }
+.ach-bar.big { height: 20px; border-radius: 10px; }
+.ach-bar.big span { line-height: 20px; font-size: 12px; }
+.sk-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.sk-btns .btn { width: 100%; min-height: 48px; font-size: 16px; }
+.sk-btns .btn:disabled { opacity: .55; }
+
+/* 外觀的取得方式標籤：成就 = 紫、星星 = 金、特效 = 青 */
+.gear-legend { display: flex; flex-direction: column; gap: 3px; margin: 2px 0 8px; font-size: 12px; color: var(--muted); }
+.gear-legend span { display: flex; align-items: center; gap: 6px; }
+.gtags { display: flex !important; flex-direction: row !important; flex-wrap: wrap; gap: 4px; margin: 2px 0; }
+.gtag { font-style: normal; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 8px; white-space: nowrap; background: #ece6d8; color: var(--muted); }
+.gtag.ach { background: #ece4fb; color: #5a3aa8; border: 1px solid #c8b8f0; }
+.gtag.star { background: #fbf0d4; color: #a87414; border: 1px solid #ecd090; }
+.gtag.fx { background: #dcf4f2; color: #1f7a74; border: 1px solid #a8dcd8; }
+.gtag.big { font-size: 13px; padding: 3px 10px; border-radius: 10px; }
+.sk-tags { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.sk-fx { font-size: 13.5px; line-height: 1.55; color: #1f7a74; background: #eef9f8; border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; text-align: left; }

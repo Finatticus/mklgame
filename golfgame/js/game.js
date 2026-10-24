@@ -384,6 +384,7 @@ export class Game {
     this.input.enabled = mine;
     this.hud.enableControls(mine);
     this.input.putt = !!this.club.putter;
+    this.updateSkinFx();
     this.hud.swingHint(mine ? '往下拉上桿（決定力道），快速往上滑出桿；左右滑調方向' : `等待 ${p.user} 擊球…`);
     this.updateMulliganBtn();
   }
@@ -411,6 +412,17 @@ export class Game {
   }
 
   distPin(p) { return this.hole.distToPin(p.ball[0], p.ball[2]); }
+
+  // 目前這位玩家的外觀特效：球 + 手上這支桿（依球桿類型）
+  updateSkinFx() {
+    const p = this.players && this.players[this.cur];
+    if (!p || !this.club) return;
+    const sk = equippedSkins(p.look), ic = this.club.icon;
+    const slot = this.club.putter ? 'putter' : ic === 'driver' || ic === 'wood' ? 'driver' : 'iron';
+    const g = p.golfer;
+    this.world.setBallSkin(sk.ball);
+    this.world.setSkinFx(sk.ball.fx, sk[slot].fx, () => g.clubHead && g.object.visible !== false ? g.clubHead() : null);
+  }
 
   // 挑戰關卡限用的球桿
   allowed(id) { return !this.level || !this.level.clubs || this.level.clubs.includes(id); }
@@ -602,6 +614,7 @@ export class Game {
     this.world.greenGrid.visible = !!this.club.putter;
     this.updateGimmeRing();
     this.input.putt = !!this.club.putter;
+    this.updateSkinFx();
     this.afterAimChange();
   }
 
@@ -768,6 +781,30 @@ export class Game {
       const sp0 = 23 + env.rng() * 5, ang = (60 + env.rng() * 10) * Math.PI / 180;
       return { t: b[0], pos: [b[1], b[2] + 0.1, b[3]], vel: [Math.sin(yaw) * Math.cos(ang) * sp0, Math.sin(ang) * sp0, -Math.cos(yaw) * Math.cos(ang) * sp0], spin: 1200 };
     }
+    // 地面上的機關（彈跳床、加速帶、大砲）：球貼著地面經過範圍內才觸發
+    if (sp.kind === 'tramp' || sp.kind === 'boost' || sp.kind === 'cannon') {
+      if (b[2] - this.hole.height(b[1], b[3]) > 0.35 || Math.hypot(b[1] - sp.u, b[3] + sp.v) > sp.r) return null;
+      const hor = Math.hypot(v[0], v[2]), pos = [b[1], b[2] + 0.1, b[3]];
+      if (sp.kind === 'tramp') {
+        // 彈跳床：往上彈，前進速度保留 9 成（滾進去的球也會被彈起來）
+        return { t: b[0], pos, vel: [v[0] * 0.9, Math.max(12, Math.abs(v[1]) * 0.8 + 8), v[2] * 0.9], spin: 600 };
+      }
+      if (sp.kind === 'boost') {
+        // 加速帶：往箭頭方向推出去，水平速度 +18 m/s（最多 46），微微離地
+        const sp1 = Math.min(46, hor + 18), dx = sp.dir[0], dz = -sp.dir[1];
+        return { t: b[0], pos, vel: [dx * sp1, 3.5, dz * sp1], spin: 300 };
+      }
+      // 大砲：朝果嶺中心 45° 發射；用同一套物理試算（二分法）找出落點剛好在果嶺前緣的速度
+      const tx = sp.target[0] - b[1], tz = -sp.target[1] - b[3], D = Math.hypot(tx, tz) || 1, yaw = Math.atan2(tx, -tz);
+      let lo = 8, hi = 150;
+      for (let k = 0; k < 9; k++) {
+        const mid = (lo + hi) / 2;
+        const c = simulate({ speed: mid, launchDeg: 45, yaw, spin: 2600, axisDeg: 0, pos, carryOnly: true }, { rho: env.rho, wind: env.wind, rng: () => 0.5 }, this.hole).carry;
+        if (c < D - 8) lo = mid; else hi = mid;
+      }
+      const sp2 = (lo + hi) / 2;
+      return { t: b[0], pos, vel: [tx / D * sp2 * 0.7071, sp2 * 0.7071, tz / D * sp2 * 0.7071], spin: 2600 };
+    }
     if (sp.kind === 'shroom') {
       // 菇傘頂面：從上往下穿過菇傘的高度、而且在菇傘範圍內 → 往上彈
       if (!(a[2] >= sp.top && b[2] < sp.top)) return null;
@@ -798,6 +835,7 @@ export class Game {
     this.cur = msg.p;
     this.shotCtx = { lie: p.lie, dist: this.distPin(p), strokes: p.strokes };
     this.world.setBallSkin(equippedSkins(p.look).ball);
+    this.updateSkinFx();
     this.hud.enableControls(false);
     this.input.enabled = false;
     const club = clubById(msg.input.club);
@@ -857,8 +895,8 @@ export class Game {
         }
         else if (e.type === 'special') {
           // 機關觸發：光點爆開 + 一句提示
-          const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！' }[e.kind];
-          const hue = { ring: 0.2, portal: 0.75, vent: 0.05, shroom: 0.88, wall: 0.55 }[e.kind];
+          const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！', tramp: '彈跳床！', boost: '加速帶！', cannon: '大砲發射！' }[e.kind];
+          const hue = { ring: 0.2, portal: 0.75, vent: 0.05, shroom: 0.88, wall: 0.55, tramp: 0.92, boost: 0.5, cannon: 0.08 }[e.kind];
           this.world.cupBurst(e.pos[0], e.pos[1], e.pos[2], hue, 2.2);
           this.world.specialPulse(e.kind);
           sfx.playCup();
@@ -907,7 +945,8 @@ export class Game {
       p.strokes++;
       p.ball = this.dropPoint(r.frames, prevBall);
       const th = this.course.theme;
-      toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'void' && r.result === 'chasm' ? '墜入虛空　罰 1 桿' : th === 'cliffs' && r.result === 'chasm' ? '掉進海灣　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
+      const fall = { void: '墜入虛空', city: '從屋頂掉下去了', sky: '墜入雲海', cliffs: '掉進海灣' }[th];
+      toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'candy' && r.result === 'water' ? '掉進巧克力河　罰 1 桿' : fall && r.result === 'chasm' ? fall + '　罰 1 桿' : th === 'cliffs' && r.result === 'chasm' ? '掉進海灣　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
     } else if (r.result === 'ob') {
       p.strokes++;
       p.ball = prevBall;
@@ -1045,7 +1084,7 @@ export class Game {
     const distAfter = r.result === 'holed' ? 0 : toYd(this.hole.distToPin(r.end[0], r.end[2]));
     if (this.level) {
       const a = this.att;
-      a.shots.push({ club: club.id, onGreen, endSurf, distAfter, total: toYd(r.total), fx, orbs });
+      a.shots.push({ club: club.id, putter: !!club.putter, holed: r.result === 'holed', onGreen, endSurf, distBefore: toYd(ctx.dist || 0), distAfter, total: toYd(r.total), flight: r.flightTime || 0, apex: r.apex || 0, fx, orbs });
       if (r.result !== 'rest' && r.result !== 'holed') a.hazards++;
       if (endSurf === SURF.SAND) a.sand = true;
       if (club.putter) a.putts++;
@@ -1202,6 +1241,7 @@ export class Game {
 
   quit(opts = {}) {
     this.running = false;
+    this.world.setSkinFx(null, null, null);
     this.ready = false;
     this.input.enabled = false;
     this.flight = null;

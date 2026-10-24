@@ -12,8 +12,9 @@ import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
 import { escapeHtml, fmtToPar } from './util.js';
 import { setSound, unlockAudio } from './audio.js';
-import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, prog, chal, progressOf, medalHtml, skinUnlocked, skinById, equippedSkins, achById, checkCounters } from './progress.js';
-import { LEVELS, levelById, STYLE_NAME, THEME_NAME } from './challenge.js';
+import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, prog, chal, progressOf, medalHtml, skinUnlocked, skinById, equippedSkins, achById, checkCounters, skinDesc, starBalance, buySkin, FX_NAME } from './progress.js';
+import { LEVELS, levelById, THEME_NAME } from './challenge.js';
+import { clubById } from './clubs.js';
 
 const $ = id => document.getElementById(id);
 const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-chal', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-admin', 'scr-game'];
@@ -549,6 +550,10 @@ async function startGame(cfg, players, netObj = null, isHost = true, resume = nu
 function initGameMenu() {
   $('btn-menu').onclick = () => {
     $('gm-card').innerHTML = game ? scorecardHtml(game) : '';
+    // 挑戰模式：可以直接重新挑戰這一關；離開按鈕改成「放棄挑戰」
+    const lv = game && game.level;
+    $('gm-retry').classList.toggle('hidden', !lv);
+    $('gm-quit').textContent = lv ? '放棄挑戰' : '離開回合';
     // 真實球場：這一洞的打法建議（依球場官網介紹整理）
     const sp = game && game.hole && game.hole.spec;
     $('gm-tip').classList.toggle('hidden', !(sp && sp.tip));
@@ -560,6 +565,13 @@ function initGameMenu() {
     $('dlg-menu').classList.add('open');
   };
   $('gm-close').onclick = () => $('dlg-menu').classList.remove('open');
+  $('gm-retry').onclick = () => {
+    const lv = game.level;
+    if (!lv || !confirm('從第 1 桿重新挑戰這一關？')) return;
+    $('dlg-menu').classList.remove('open');
+    game.quit();
+    startChallenge(lv);
+  };
   $('gm-quit').onclick = () => {
     const other = game.net && game.players.find(p => !p.local && !p.away);
     const text = other
@@ -627,19 +639,73 @@ function gearHtml() {
   const swatch = sk => {
     if (sk.slot === 'ball') {
       const c = sk.std ? '#ffffff' : '#' + sk.color.toString(16).padStart(6, '0'), gl = sk.glow ? '#' + sk.glow.toString(16).padStart(6, '0') : 'transparent';
-      return `<i class="gs ball" style="background:radial-gradient(circle at 35% 30%, #fff 0, ${c} 45%, ${gl} 100%);${sk.glow ? `box-shadow:0 0 10px ${gl}` : ''}${sk.trail === 'rainbow' ? ';background:conic-gradient(#ff6a6a,#ffd66a,#6aff9a,#6ad8ff,#b06aff,#ff6a6a)' : ''}"></i>`;
+      const bg = sk.trail === 'rainbow' ? 'conic-gradient(#ff6a6a,#ffd66a,#6aff9a,#6ad8ff,#b06aff,#ff6a6a)'
+        : sk.trail === 'galaxy' ? 'radial-gradient(circle at 28% 32%, #fff 0 1.5px, transparent 2.5px), radial-gradient(circle at 66% 58%, #fff 0 1px, transparent 2px), radial-gradient(circle at 46% 74%, #d8f0ff 0 1px, transparent 2px), radial-gradient(circle at 72% 28%, #ffd8f8 0 1px, transparent 2px), radial-gradient(circle at 40% 40%, #9a5aff 0, #3a1478 55%, #12062a 100%)'
+          : `radial-gradient(circle at 35% 30%, #fff 0, ${c} 45%, ${gl} 100%)`;
+      return `<i class="gs ball" style="background:${bg};${sk.glow ? `box-shadow:0 0 10px ${gl}` : ''}"></i>`;
     }
     const h = sk.std ? '#2a2c30' : '#' + sk.head.toString(16).padStart(6, '0'), gl = sk.glow ? '#' + sk.glow.toString(16).padStart(6, '0') : null;
     return `<i class="gs club ${sk.slot}" style="--h:${h};--g:${gl || 'transparent'};${gl ? `box-shadow:0 0 10px ${gl}` : ''}"></i>`;
   };
-  return '<h4 class="gear-h">球具與高爾夫球</h4><p class="small">達成特定的困難成就可以解鎖特殊外觀，裝備後在球場上就看得到。</p>' + ['driver', 'iron', 'putter', 'ball'].map(slot => {
+  gearSwatch = swatch;
+  return `<h4 class="gear-h">球具與高爾夫球</h4><div class="gear-bal">可用星星 <b class="num">${starBalance()}</b> 顆</div>
+    <div class="gear-legend"><span><em class="gtag ach">成就解鎖</em>達成指定成就才會取得</span><span><em class="gtag star">星星 N 顆</em>用挑戰模式的星星購買</span><span><em class="gtag fx">特效</em>裝備後有小特效（不影響打球）</span></div>` + ['driver', 'iron', 'putter', 'ball'].map(slot => {
     const cur = skinById(slot, draft.look[LOOK_KEY[slot]]).id;
     return `<div class="gear-slot"><h5>${SLOT_NAME[slot]}</h5><div class="gear-list">${SKINS.filter(x => x.slot === slot).map(sk => {
-      const got = skinUnlocked(sk), a = sk.ach && achById(sk.ach);
-      return `<button class="gear ${cur === sk.id ? 'on' : ''} ${got ? '' : 'locked'}" data-slot="${slot}" data-skin="${sk.id}" ${got ? '' : 'disabled'}>
-        ${swatch(sk)}<span><b>${sk.name}</b><small>${cur === sk.id ? '裝備中' : got ? '點一下裝備' : `解鎖：${a ? a.name + '（' + a.desc + '）' : ''}`}</small></span></button>`;
+      const got = skinUnlocked(sk);
+      const sub = cur === sk.id ? '裝備中' : got ? '已擁有' : '尚未取得';
+      const tags = (sk.std ? '' : sk.price ? `<em class="gtag star">星星 ${sk.price} 顆</em>` : '<em class="gtag ach">成就解鎖</em>') + (sk.fx ? '<em class="gtag fx">特效</em>' : '');
+      return `<button class="gear ${cur === sk.id ? 'on' : ''} ${got ? '' : 'locked'}" data-slot="${slot}" data-skin="${sk.id}">${swatch(sk)}<span><b>${sk.name}</b><span class="gtags">${tags}</span><small>${sub}</small></span></button>`;
     }).join('')}</div></div>`;
   }).join('');
+}
+let gearSwatch = null;
+
+// 外觀詳細視窗：大圖、介紹、取得方式（成就進度 / 星星價格），按鈕：裝備、卸下、購買、關閉
+function openSkin(slot, id) {
+  const sk = SKINS.find(x => x.slot === slot && x.id === id);
+  const got = skinUnlocked(sk), cur = skinById(slot, draft.look[LOOK_KEY[slot]]).id === sk.id;
+  const a = sk.ach && achById(sk.ach);
+  let how = '';
+  if (sk.std) how = '一開始就擁有。';
+  else if (a) {
+    const pr = a.cnt && a.n > 1 ? `<div class="ach-bar big"><i style="width:${progressOf(a) / a.n * 100}%"></i><span class="num">${progressOf(a)} / ${a.n}</span></div>` : '';
+    how = `<b>達成成就「${a.name}」</b><span>${a.desc}</span>${pr}`;
+  } else how = `<b>用 ${sk.price} 顆星星購買</b><span>你現在有 ${starBalance()} 顆可以用的星星。星星在挑戰模式取得，買外觀不會減少排行上的總星數。</span>`;
+  $('sk-body').innerHTML = `<div class="sk-show">${gearSwatch(sk).replace('class="gs', 'class="gs big')}</div>
+    <small class="sk-slot">${SLOT_NAME[slot]}</small><h3>${sk.name}</h3>
+    <div class="sk-tags">${sk.std ? '<em class="gtag">預設</em>' : sk.price ? `<em class="gtag star big">星星商店 · ${sk.price} 顆</em>` : '<em class="gtag ach big">成就解鎖</em>'}${sk.fx ? `<em class="gtag fx big">特效：${FX_NAME[sk.fx]}</em>` : ''}</div>
+    <p class="sk-desc">${skinDesc(sk) || '標準外觀。'}</p>${sk.fx ? `<p class="sk-fx">裝備後，${sk.slot === 'ball' ? '球在飛行時會拖著' : '桿頭會飄出'}「${FX_NAME[sk.fx]}」的小特效，${sk.slot === 'ball' ? '靜止時也會偶爾閃一下' : '揮桿時特別明顯'}。只是外觀，不影響打球。</p>` : ''}
+    <div class="sk-state ${got ? 'ok' : ''}">${cur ? '目前裝備中' : got ? '已擁有' : '尚未取得'}</div>
+    <div class="sk-how"><small>取得方式</small>${how}</div>`;
+  const btns = [];
+  if (got && !cur) btns.push(`<button class="btn brass" data-act="equip">裝備</button>`);
+  if (got && cur && !sk.std) btns.push(`<button class="btn ghost-dark" data-act="unequip">卸下（換回標準）</button>`);
+  if (!got && sk.price) btns.push(`<button class="btn brass" data-act="buy" ${starBalance() < sk.price ? 'disabled' : ''}>${starBalance() < sk.price ? `星星不足（還差 ${sk.price - starBalance()} 顆）` : `用 ${sk.price} 顆星星購買`}</button>`);
+  btns.push('<button class="btn ghost-dark" data-act="close">關閉</button>');
+  $('sk-btns').innerHTML = btns.join('');
+  $('sk-btns').querySelectorAll('[data-act]').forEach(b => b.onclick = () => skinAct(b.dataset.act, sk));
+  $('dlg-skin').classList.add('open');
+}
+async function skinAct(act, sk) {
+  if (act === 'close') { $('dlg-skin').classList.remove('open'); return; }
+  if (act === 'buy') {
+    if (!confirm(`用 ${sk.price} 顆星星購買「${sk.name}」？`)) return;
+    if (!buySkin(sk)) { alert('星星不足'); return; }
+    openSkin(sk.slot, sk.id);
+    renderChar();
+    return;
+  }
+  draft.look[LOOK_KEY[sk.slot]] = act === 'equip' ? sk.id : 'std';
+  if (preview && preview.golfer.setClubSkins) preview.golfer.setClubSkins(equippedSkins(draft.look));
+  // 外觀直接存（素質的變更還是要按「儲存」）
+  try {
+    const p = session.profile;
+    const r = await call('saveProfile', { profile: { stats: p.stats, look: draft.look, points: p.points, respecs: p.respecs, spent: p.spent } });
+    session.profile = { ...session.profile, ...r };
+  } catch (e) { msg('ch-msg', e.message); }
+  $('dlg-skin').classList.remove('open');
+  renderChar();
 }
 
 function renderChar() {
@@ -685,12 +751,7 @@ function renderChar() {
   });
   $('ch-look').querySelectorAll('[data-lk]').forEach(b => b.onclick = () => { draft.look[b.dataset.lk] = b.dataset.lv; renderChar(); if (preview) preview.golfer.setLook(draft.look); });
   $('ch-gear').innerHTML = gearHtml();
-  $('ch-gear').querySelectorAll('[data-skin]').forEach(b => b.onclick = () => {
-    draft.look[LOOK_KEY[b.dataset.slot]] = b.dataset.skin;
-    if (preview && preview.golfer.setClubSkins) preview.golfer.setClubSkins(equippedSkins(draft.look));
-    renderChar();
-    msg('ch-msg', '記得按「儲存」', true);
-  });
+  $('ch-gear').querySelectorAll('[data-skin]').forEach(b => b.onclick = () => openSkin(b.dataset.slot, b.dataset.skin));
 }
 
 // 素質詳細說明：影響什麼、公式、你目前的數值實際等於多少
@@ -881,7 +942,7 @@ function renderChallenge() {
   $('cg-stars').innerHTML = `已拿 <b>${c.total}</b> / ${LEVELS.length * 3} 顆星`;
   $('cg-grid').innerHTML = LEVELS.map(lv => {
     const open = levelOpen(lv), n = c.stars[lv.id] || 0;
-    const tag = (lv.theme ? THEME_NAME[lv.theme] : STYLE_NAME[lv.style]) || '';
+    const tag = THEME_NAME[lv.theme] || '';
     return `<button class="cg-card ${open ? '' : 'locked'} ${n === 3 ? 'full' : ''}" data-lv="${lv.id}" ${open ? '' : 'disabled'}>
       <span class="cg-n num">${lv.n}</span><b>${escapeHtml(lv.title)}</b><small>${tag} · PAR ${lv.par} · ${lv.yards} Y</small>
       ${open ? starsHtml(n) : `<em>通過第 ${lv.n - 1} 關後開放</em>`}</button>`;
@@ -890,8 +951,8 @@ function renderChallenge() {
 }
 function openLevel(lv) {
   const c = chal(), n = c.stars[lv.id] || 0;
-  const tag = (lv.theme ? THEME_NAME[lv.theme] : STYLE_NAME[lv.style]) || '';
-  const rules = [`限 ${lv.max} 桿`, lv.clubs ? `只能用 ${lv.clubs.map(id => ({ '7I': '7 號鐵', PT: '推桿' }[id] || id)).join('、')}` : '', lv.wind ? `固定 ${lv.wind.mph} mph ${{ L: '左側風', R: '右側風', H: '逆風', T: '順風' }[lv.wind.from]}` : ''].filter(Boolean);
+  const tag = THEME_NAME[lv.theme] || '';
+  const rules = [`限 ${lv.max} 桿`, lv.clubs ? `只能用 ${lv.clubs.map(id => clubById(id).zh).join('、')}` : '', lv.wind ? `固定 ${lv.wind.mph} mph ${{ L: '左側風', R: '右側風', H: '逆風', T: '順風' }[lv.wind.from]}` : ''].filter(Boolean);
   $('lv-body').innerHTML = `<div class="lv-head"><span class="cg-n num">${lv.n}</span><div><small>${escapeHtml(lv.en)} · ${tag}</small><h3>${escapeHtml(lv.title)}</h3><span class="lv-meta">PAR ${lv.par} · ${lv.yards} Y · ${rules.join(' · ')}</span></div></div>
     <p class="lv-intro">${escapeHtml(lv.intro)}</p>
     <div class="cr-goals">${lv.goals.map((g, i) => `<div class="crg ${i < n ? 'ok' : ''}"><span class="crg-star">${STAR}</span><span>${escapeHtml(g.text)}</span></div>`).join('')}</div>

@@ -254,6 +254,7 @@ export class MixamoGolfer {
   }
 
   setClubSkins(sk) { this.clubMaker.setClubSkins(sk); }
+  clubHead() { return this.clubMaker.headMesh; }
 
   setup(ballPos, yaw, clubIcon) {
     if (!this.ready) return;

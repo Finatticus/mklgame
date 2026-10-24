@@ -118,6 +118,7 @@ export class ProceduralGolfer {
 
   // 裝備的球桿皮膚 { driver, iron, putter }（progress.js 的 SKINS）
   setClubSkins(sk) { this.skins = sk || null; this._clubKey = null; }
+  clubHead() { return this.headMesh; }
 
   buildClub(type, lenOverride) {
     // 只有換球桿（或站位角度、長度改變）才重建；舊的模型要釋放，否則每次瞄準都會漏記憶體、越玩越卡

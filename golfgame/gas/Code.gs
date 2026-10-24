@@ -331,6 +331,10 @@ function mergeChal_(a, b) {
   Object.keys(b.stars || {}).forEach(k => { o.stars[k] = Math.max(Number(o.stars[k]) || 0, Math.min(3, Number(b.stars[k]) || 0)); });
   Object.keys(b.best || {}).forEach(k => { o.best[k] = o.best[k] ? Math.min(o.best[k], b.best[k]) : b.best[k]; });
   o.total = Object.keys(o.stars).reduce((s, k) => s + o.stars[k], 0);
+  // 星星商店：買過的外觀只會增加；花掉的星星不能超過總星數
+  o.owned = (a.owned || []).slice();
+  (b.owned || []).forEach(k => { if (o.owned.indexOf(k) < 0) o.owned.push(k); });
+  o.spent = Math.min(o.total, Math.max(Number(a.spent) || 0, Number(b.spent) || 0));
   return o;
 }
 function starSheet_() {

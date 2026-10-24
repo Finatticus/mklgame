@@ -8,6 +8,44 @@ const ss = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t
 // 奇幻主題（其他主題是寫實的球場外觀）
 export const THEME_FANTASY = { jungle: 1, lava: 1, void: 1, mushroom: 1, frost: 1 };
 
+// 挑戰模式專用的新主題：樹（trees）、遠景（scen）、地標（marks）用資料描述，程式共用
+//   每一項 [種類, 權重, 高度下限, 高度上限, 半徑下限, 半徑上限, 額外屬性]；dens：樹林密度（park = 沿走廊越外越密、數字 = 每次嘗試種下的機率）
+//   marks：[種類, 數量, 距離下限, 距離上限, 高度…, 半徑…, 額外屬性]（fy = 指定高度、不貼地）
+//   void：島外是虛空（屋頂、雲海）；waste：長草外是荒地
+export const TDEF = {
+  candy: { dens: 'park', trees: [['lolli', 45, 4, 8, 1.6, 2.6], ['gumdrop', 35, 1.4, 3, 1.4, 2.4], ['broad', 20, 7, 11, 3.5, 5, { candy: 1 }]],
+    scen: [1100, [['lolli', 50, 5, 10, 2, 3], ['broad', 50, 8, 12, 4, 5.5, { candy: 1 }]]], marks: [['lolli', 22, 280, 1100, 30, 70, 10, 18]] },
+  city: { void: true, dens: 0.18, trees: [['lantern', 70, 4, 6, 0.4, 0.5], ['rock', 30, 0.8, 1.6, 1, 1.6]], scen: [0, []],
+    marks: [['tower', 150, 140, 1500, 280, 520, 14, 42, { fy: -320 }]] },
+  sky: { void: true, dens: 0.4, trees: [['broad', 45, 8, 13, 3.5, 5], ['pine', 25, 10, 15, 2.6, 3.4], ['obelisk', 30, 7, 12, 0.9, 1.3, { marble: 1 }]], scen: [0, []],
+    marks: [['isle', 60, 180, 1300, 30, 120, 10, 70, { fyR: [-120, 160] }]] },
+  moon: { waste: true, dens: 0.35, trees: [['rock', 70, 0.8, 2.6, 1, 2.6], ['crystal', 30, 2, 4, 0.8, 1.4]], scen: [300, [['rock', 100, 1, 3, 1.5, 3]]],
+    marks: [['dome', 9, 220, 900, 18, 40, 18, 40], ['mesa', 18, 1300, 2300, 120, 260, 260, 420, { tint3: [0.62, 0.62, 0.68] }]] },
+  mars: { waste: true, dens: 0.4, trees: [['rock', 60, 0.8, 2.8, 1, 2.8], ['basalt', 30, 2, 6, 1.2, 2.2], ['dome', 10, 3, 5, 3, 5]], scen: [400, [['rock', 70, 1, 3, 1.5, 3], ['basalt', 30, 3, 8, 1.5, 3]]],
+    marks: [['mesa', 22, 700, 1900, 120, 300, 200, 380, { tint3: [1.1, 0.62, 0.45] }]] },
+  reef: { waste: true, dens: 'park', trees: [['coral', 50, 3, 7, 2, 3.5], ['fern', 30, 1.6, 3, 1.6, 2.4, { anemone: 1 }], ['rock', 20, 1, 2.4, 1.2, 2.4]],
+    scen: [1300, [['coral', 70, 4, 9, 2.5, 4], ['fern', 30, 2, 3, 2, 3, { anemone: 1 }]]], marks: [['coral', 40, 200, 900, 30, 70, 14, 26], ['karst', 12, 500, 1300, 90, 200, 30, 55]] },
+  autumn: { dens: 'park', trees: [['broad', 70, 11, 18, 4, 6, { autumn: 1 }], ['pine', 30, 13, 20, 2.8, 3.6]],
+    scen: [2600, [['broad', 75, 12, 18, 4.5, 6.5, { autumn: 1 }], ['pine', 25, 13, 20, 3, 3.8]]], marks: [['peak', 14, 1500, 2600, 350, 700, 260, 440]] },
+  lavender: { dens: 0.5, trees: [['pine', 55, 9, 14, 1.6, 2.2, { cypress: 1 }], ['broad', 30, 6, 9, 3, 4.2, { olive: 1 }], ['rock', 15, 0.8, 1.6, 1, 1.6]],
+    scen: [500, [['pine', 70, 9, 15, 1.8, 2.4, { cypress: 1 }], ['broad', 30, 6, 9, 3.5, 4.5, { olive: 1 }]]], marks: [['windmill', 3, 500, 1100, 22, 30, 4, 5]] },
+  tulip: { dens: 0.35, trees: [['broad', 50, 8, 12, 3.5, 5, { willow: 1 }], ['shrub', 50, 1, 1.6, 1.2, 2]],
+    scen: [400, [['broad', 100, 8, 13, 4, 5.5, { willow: 1 }]]], marks: [['windmill', 12, 220, 1000, 20, 30, 4, 5]] },
+  egypt: { waste: true, dens: 0.45, trees: [['palm', 50, 9, 15, 3, 4], ['obelisk', 30, 9, 16, 1.1, 1.6], ['rock', 20, 1, 2, 1.2, 2]],
+    scen: [260, [['palm', 100, 9, 15, 3.2, 4]]], marks: [['pyramid', 5, 700, 1500, 150, 260, 120, 200], ['obelisk', 12, 160, 520, 18, 30, 1.8, 2.6]] },
+  swamp: { dens: 'park', trees: [['deadtree', 45, 7, 13, 2.2, 3.2], ['broad', 35, 9, 14, 4, 5.5, { swamp: 1 }], ['fern', 20, 1.4, 2.4, 1.6, 2.4]],
+    scen: [1500, [['deadtree', 50, 8, 14, 2.4, 3.4], ['broad', 50, 9, 14, 4.5, 6, { swamp: 1 }]]], marks: [] },
+  dino: { dens: 'park', trees: [['palm', 30, 10, 16, 3.5, 4.5], ['fern', 40, 2.4, 4.5, 2.4, 3.6], ['broad', 30, 12, 18, 4.5, 6.5, { jungle: 1 }]],
+    scen: [1800, [['fern', 40, 3, 5, 3, 4], ['palm', 30, 11, 16, 3.5, 4.5], ['broad', 30, 12, 18, 5, 7, { jungle: 1 }]]],
+    marks: [['volcano', 2, 1500, 2100, 420, 650, 700, 950], ['bone', 7, 110, 420, 14, 24, 10, 16]] },
+  neon: { dens: 0.4, trees: [['palm', 80, 9, 14, 3, 4, { neon: 1 }], ['lantern', 20, 5, 7, 0.4, 0.5, { neon: 1 }]],
+    scen: [300, [['palm', 100, 10, 15, 3.2, 4.2, { neon: 1 }]]], marks: [['tower', 70, 500, 1600, 90, 320, 16, 40, { neon: 1 }]] },
+  crystal: { dens: 0.45, trees: [['crystal', 70, 3, 9, 1.2, 2.4], ['rock', 30, 1, 2.6, 1.2, 2.6]],
+    scen: [700, [['crystal', 100, 4, 12, 1.5, 3]]], marks: [['crystal', 46, 150, 900, 30, 90, 8, 20]] },
+};
+
+const NO_TRUNK = { rock: 1, basalt: 1, crystal: 1, icespike: 1, gumdrop: 1, dome: 1, obelisk: 1 };      // 整顆都是實心的（不另外算樹幹）
+
 const STYLE = {
   links: { macroA: 2.2, macroL: 120, microA: 1.5, microL: 16, edgeRise: 3, potDepth: 0.85, bunkerSize: [3.4, 4.6] },
   parkland: { macroA: 4.5, macroL: 110, microA: 0.6, microL: 28, edgeRise: 9, potDepth: 0.45, bunkerSize: [5, 9] },
@@ -123,9 +161,9 @@ export function buildHole(course, holeIdx, opts = {}) {
   const L = yards * YD;
   const canyon = course.style === 'canyon', links = course.style === 'links', park = course.style === 'parkland';
   // 奇幻主題（只改外觀與地形配置，物理照舊）：jungle 叢林、lava 熔岩（熔岩 = 水障礙）、void 浮島（虛空 = 峽谷）
-  const theme = course.theme || null, isVoid = theme === 'void';
+  const theme = course.theme || null, TD = TDEF[theme], isVoid = theme === 'void' || !!(TD && TD.void);
   const lift = (links ? 3.5 : 0) + (theme === 'cliffs' ? 16 : 0);          // 陸地墊高（林克斯 3.5m，斷崖再高 16m）
-  const desertWaste = canyon || theme === 'dunes' || theme === 'salt';      // 長草外面是沙漠荒地
+  const desertWaste = canyon || theme === 'dunes' || theme === 'salt' || !!(TD && TD.waste);      // 長草外面是荒地
 
   // ---------- 1. 中心線 ----------
   const raw = [[0, 0]];
@@ -735,6 +773,11 @@ export function buildHole(course, holeIdx, opts = {}) {
         const sB = atY(q.exitAt), [eu, ev, ed] = at(sB, q.exitLat || 0);
         specials.push({ kind: 'portal', u, v, y: gh + (q.h ?? 5.5), r: q.r ?? 5, dir: d, exit: { u: eu, v: ev, y: Math.max(height(eu, ev), rawH(eu, ev, sB, 0)) + 6, dir: ed } });
       } else if (q.kind === 'vent') specials.push({ kind: 'vent', u, v, y: gh, r: q.r ?? 3.6, avoid: 6 });
+      else if (q.kind === 'tramp') specials.push({ kind: 'tramp', u, v, y: gh, r: q.r ?? 4, avoid: (q.r ?? 4) + 3 });
+      else if (q.kind === 'boost') {
+        const an = rad(q.ang || 0), bd = [d[0] * Math.cos(an) + d[1] * Math.sin(an), -d[0] * Math.sin(an) + d[1] * Math.cos(an)];
+        specials.push({ kind: 'boost', u, v, y: gh, r: q.r ?? 4.5, dir: bd, avoid: 7 });
+      } else if (q.kind === 'cannon') specials.push({ kind: 'cannon', u, v, y: gh, r: q.r ?? 3.6, target: [G[0], G[1]], ty: gCenterBaseF, avoid: 7 });
       else if (q.kind === 'shroom') specials.push({ kind: 'shroom', u, v, y: gh, top: gh + (q.h ?? 5), r: q.r ?? 5, tint: q.tint ?? srng(), avoid: (q.r ?? 5) + 3 });
       else if (q.kind === 'wall') {
         const len = q.len || 40, an = rad(q.ang || 0), wd = [d[0] * Math.cos(an) + d[1] * Math.sin(an), -d[0] * Math.sin(an) + d[1] * Math.cos(an)];
@@ -766,7 +809,13 @@ export function buildHole(course, holeIdx, opts = {}) {
   const area = (bbox.maxU - bbox.minU) * (bbox.maxV - bbox.minV);
   const attempts = Math.floor(area / 18 * Math.min(1.4, course.trees * (F.has('tr') ? 1.35 : 1)) + (canyon ? area / 60 : 0));
   // 奇幻主題的樹：叢林 = 棕櫚 / 大闊葉 / 蕨類，熔岩 = 玄武岩柱 / 枯樹 / 岩石，浮島 = 水晶
+  const pick = list => { let w = list.reduce((a, x) => a + x[1], 0) * trng(); for (const x of list) { w -= x[1]; if (w <= 0) return x; } return list[0]; };
+  const mk = x => ({ type: x[0], h: lerp(x[2], x[3], trng()), r: lerp(x[4], x[5], trng()), ...(x[6] || {}) });
   const themeTree = (ad, minAd) => {
+    if (TD) {
+      if (TD.dens === 'park' ? trng() > 0.35 + 0.65 * ss(minAd, minAd + 14, ad) : trng() > TD.dens) return null;
+      return mk(pick(TD.trees));
+    }
     const r0 = trng();
     if (theme === 'jungle') {
       if (trng() > 0.35 + 0.65 * ss(minAd, minAd + 14, ad)) return null;
@@ -821,7 +870,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   };
   // 碰撞球的中心高度與半徑
   const treeColl = t => {
-    const k = { rock: [0.3, 0.8], pine: [0.5, 0.9], palm: [0.93, 0.75], basalt: [0.45, 0.85], crystal: [0.4, 0.8], icespike: [0.4, 0.8], deadtree: [0.62, 0.55], shroom: [0.85, 1], bamboo: [0.55, 0.7] }[t.type] || [0.66, 1];
+    const k = { rock: [0.3, 0.8], pine: [0.5, 0.9], palm: [0.93, 0.75], basalt: [0.45, 0.85], crystal: [0.4, 0.8], icespike: [0.4, 0.8], deadtree: [0.62, 0.55], shroom: [0.85, 1], bamboo: [0.55, 0.7],
+      lolli: [0.85, 1], gumdrop: [0.4, 0.9], lantern: [0.5, 0.6], obelisk: [0.5, 0.9], dome: [0.3, 0.9], coral: [0.55, 0.75] }[t.type] || [0.66, 1];
     t.cy = t.y + t.h * k[0];
     t.cr = t.type === 'cactus' ? 0.6 : t.r * k[1];
     if (t.type === 'cactus') t.cy = t.y + t.h * 0.5;
@@ -907,7 +957,23 @@ export function buildHole(course, holeIdx, opts = {}) {
   const scenery = [];
   const bc = [(bbox.minU + bbox.maxU) / 2, (bbox.minV + bbox.maxV) / 2];
   const ring = (n, r0, r1, fn) => { for (let i = 0; i < n; i++) { const a = trng() * Math.PI * 2, r = lerp(r0, r1, trng()); fn(bc[0] + Math.cos(a) * r, bc[1] + Math.sin(a) * r); } };
-  if (theme === 'jungle') {
+  if (TD) {
+    const [n, list] = TD.scen;
+    for (let i = 0; i < n; i++) {
+      const u = lerp(bbox.minU - 250, bbox.maxU + 250, trng()), v = lerp(bbox.minV - 150, bbox.maxV + 350, trng());
+      const { s, d } = near(u, v);
+      if (Math.abs(d) < corridor + 20 && s > -40 && s < Lp + 60) continue;
+      scenery.push({ x: u, z: -v, uv: [u, v], ...mk(pick(list)), rot: trng() * 6.28, tint: trng() });
+    }
+    for (const m of TD.marks) {
+      const [type, cnt, d0, d1, h0, h1, r0, r1, ex = {}] = m;
+      ring(cnt, d0, d1, (u, v) => {
+        const t = { x: u, z: -v, uv: [u, v], type, h: lerp(h0, h1, trng()), r: lerp(r0, r1, trng()), rot: trng() * 6.28, tint: trng(), ...ex };
+        if (ex.fyR) t.fy = lerp(ex.fyR[0], ex.fyR[1], trng());
+        scenery.push(t);
+      });
+    }
+  } else if (theme === 'jungle') {
     // 叢林：近處棕櫚與大樹，遠方一根根高聳的石柱山
     for (let i = 0; i < 2400; i++) {
       const u = lerp(bbox.minU - 250, bbox.maxU + 250, trng()), v = lerp(bbox.minV - 150, bbox.maxV + 350, trng());
@@ -1000,7 +1066,7 @@ export function buildHole(course, holeIdx, opts = {}) {
       for (const t of arr) {
         if (t.type === 'shrub' || t.type === 'fern') { if (y < t.y + t.h && Math.hypot(x - t.x, z - t.z) < t.r) return t; continue; }
         if (Math.hypot(x - t.x, y - t.cy, z - t.z) < t.cr) return t;
-        if (t.type !== 'rock' && t.type !== 'basalt' && t.type !== 'crystal' && t.type !== 'icespike' && y < t.y + t.h * 0.4 && Math.hypot(x - t.x, z - t.z) < 0.35) return t; // 樹幹
+        if (!NO_TRUNK[t.type] && y < t.y + t.h * 0.4 && Math.hypot(x - t.x, z - t.z) < 0.35) return t; // 樹幹
       }
       return null;
     },
@@ -1044,6 +1110,20 @@ const PALETTE = {
   sakura: { fair: [104, 160, 74], fair2: [92, 148, 66], cut: [86, 138, 60], rough: [78, 126, 58], deep: [64, 106, 50], green: [100, 164, 80], green2: [90, 152, 72], fringe: [92, 154, 70], sand: [236, 228, 214], waste: [160, 150, 130], tee: [104, 160, 74], ob: [60, 96, 48], water: [56, 110, 96] },
   dunes: { fair: [104, 164, 66], fair2: [92, 152, 58], cut: [86, 142, 54], rough: [130, 150, 74], deep: [196, 170, 116], green: [100, 168, 72], green2: [90, 156, 64], fringe: [96, 160, 66], sand: [240, 222, 176], waste: [230, 196, 136], tee: [104, 164, 66], ob: [224, 188, 128], water: [40, 150, 170] },
   salt: { fair: [98, 158, 72], fair2: [88, 146, 64], cut: [82, 136, 58], rough: [128, 138, 92], deep: [196, 186, 160], green: [96, 162, 78], green2: [86, 150, 70], fringe: [92, 154, 72], sand: [232, 226, 214], waste: [240, 236, 226], tee: [98, 158, 72], ob: [238, 232, 220], water: [80, 200, 196] },
+  candy: { fair: [150, 225, 190], fair2: [138, 212, 178], cut: [128, 200, 168], rough: [250, 196, 218], deep: [240, 166, 204], green: [170, 240, 200], green2: [156, 228, 188], fringe: [160, 232, 196], sand: [255, 244, 210], waste: [255, 222, 186], tee: [150, 225, 190], ob: [230, 156, 196], water: [110, 64, 36] },
+  city: { fair: [90, 170, 120], fair2: [80, 156, 110], cut: [74, 144, 102], rough: [118, 122, 128], deep: [100, 104, 110], green: [110, 190, 130], green2: [100, 176, 120], fringe: [100, 180, 124], sand: [210, 200, 180], waste: [90, 92, 98], tee: [90, 170, 120], ob: [60, 62, 68], chasm: [10, 12, 24], water: [40, 120, 170] },
+  sky: { fair: [120, 200, 110], fair2: [108, 186, 100], cut: [100, 176, 94], rough: [150, 210, 130], deep: [130, 190, 110], green: [130, 215, 120], green2: [118, 202, 110], fringe: [124, 208, 114], sand: [250, 240, 215], waste: [220, 214, 200], tee: [120, 200, 110], ob: [200, 200, 210], chasm: [190, 214, 240], water: [90, 180, 230] },
+  moon: { fair: [70, 170, 150], fair2: [62, 156, 138], cut: [56, 144, 128], rough: [140, 140, 146], deep: [118, 118, 124], green: [90, 210, 190], green2: [80, 196, 178], fringe: [80, 180, 166], sand: [74, 74, 80], waste: [128, 128, 134], tee: [70, 170, 150], ob: [96, 96, 102], water: [30, 30, 44] },
+  mars: { fair: [110, 150, 70], fair2: [100, 138, 62], cut: [92, 128, 58], rough: [176, 96, 62], deep: [156, 76, 48], green: [120, 172, 80], green2: [110, 160, 72], fringe: [112, 162, 74], sand: [206, 128, 86], waste: [186, 90, 58], tee: [110, 150, 70], ob: [146, 64, 42], water: [80, 50, 40] },
+  reef: { fair: [90, 170, 140], fair2: [80, 156, 128], cut: [74, 146, 120], rough: [214, 204, 164], deep: [194, 180, 140], green: [110, 202, 162], green2: [100, 188, 150], fringe: [100, 190, 154], sand: [242, 232, 204], waste: [204, 192, 152], tee: [90, 170, 140], ob: [40, 90, 120], water: [12, 44, 86] },
+  autumn: { fair: [122, 152, 62], fair2: [110, 140, 56], cut: [102, 130, 52], rough: [146, 124, 62], deep: [156, 94, 42], green: [112, 162, 72], green2: [102, 150, 64], fringe: [106, 154, 66], sand: [232, 216, 182], waste: [162, 122, 72], tee: [122, 152, 62], ob: [124, 72, 32], water: [50, 92, 112] },
+  lavender: { fair: [110, 162, 80], fair2: [98, 150, 72], cut: [92, 140, 66], rough: [146, 116, 186], deep: [124, 94, 172], green: [112, 172, 92], green2: [102, 160, 84], fringe: [104, 164, 86], sand: [236, 226, 206], waste: [172, 152, 122], tee: [110, 162, 80], ob: [102, 82, 152], water: [62, 112, 142] },
+  tulip: { fair: [100, 172, 72], fair2: [90, 160, 64], cut: [84, 150, 60], rough: [232, 84, 94], deep: [250, 204, 66], green: [102, 178, 82], green2: [92, 164, 74], fringe: [96, 168, 76], sand: [236, 226, 202], waste: [152, 132, 102], tee: [100, 172, 72], ob: [82, 122, 62], water: [62, 112, 152] },
+  egypt: { fair: [120, 166, 72], fair2: [108, 154, 64], cut: [100, 144, 60], rough: [212, 182, 122], deep: [202, 166, 106], green: [112, 172, 82], green2: [102, 160, 74], fringe: [106, 164, 76], sand: [242, 222, 172], waste: [226, 192, 132], tee: [120, 166, 72], ob: [216, 182, 122], water: [40, 122, 142] },
+  swamp: { fair: [82, 122, 62], fair2: [74, 112, 56], cut: [68, 104, 52], rough: [62, 92, 52], deep: [50, 72, 42], green: [92, 142, 72], green2: [84, 132, 66], fringe: [86, 134, 66], sand: [172, 162, 122], waste: [92, 92, 62], tee: [82, 122, 62], ob: [40, 56, 36], water: [36, 58, 56] },
+  dino: { fair: [102, 152, 62], fair2: [92, 140, 56], cut: [86, 130, 52], rough: [82, 122, 52], deep: [62, 96, 42], green: [102, 162, 72], green2: [92, 150, 64], fringe: [96, 154, 66], sand: [212, 192, 142], waste: [142, 112, 72], tee: [102, 152, 62], ob: [72, 82, 42], water: [62, 122, 112] },
+  neon: { fair: [34, 24, 70], fair2: [40, 28, 80], cut: [48, 34, 94], rough: [16, 12, 34], deep: [12, 9, 26], green: [44, 34, 100], green2: [52, 40, 114], fringe: [64, 44, 130], sand: [255, 96, 206], waste: [22, 16, 44], tee: [34, 24, 70], ob: [8, 6, 18], water: [0, 200, 255] },
+  crystal: { fair: [82, 72, 142], fair2: [74, 64, 130], cut: [68, 58, 120], rough: [52, 42, 92], deep: [42, 32, 72], green: [112, 102, 192], green2: [102, 92, 178], fringe: [96, 86, 172], sand: [202, 182, 242], waste: [62, 52, 102], tee: [82, 72, 142], ob: [32, 26, 62], water: [122, 62, 222] },
   mushroom: { fair: [64, 140, 116], fair2: [56, 126, 104], cut: [50, 116, 96], rough: [46, 86, 96], deep: [40, 60, 84], green: [92, 182, 148], green2: [82, 168, 138], fringe: [72, 152, 128], sand: [214, 196, 236], waste: [74, 64, 96], tee: [64, 140, 116], ob: [30, 30, 62], water: [60, 200, 220] },
   frost: { fair: [146, 188, 186], fair2: [134, 176, 176], cut: [124, 166, 168], rough: [222, 230, 240], deep: [238, 243, 250], green: [104, 166, 138], green2: [94, 154, 128], fringe: [124, 176, 156], sand: [196, 208, 224], waste: [188, 198, 214], tee: [146, 188, 186], ob: [234, 240, 248], water: [70, 120, 170] },
   void: { fair: [72, 182, 160], fair2: [62, 166, 148], cut: [56, 152, 138], rough: [52, 116, 108], deep: [86, 70, 140], green: [96, 200, 176], green2: [86, 186, 164], fringe: [76, 176, 156], sand: [226, 220, 250], waste: [70, 60, 110], tee: [64, 164, 150], ob: [40, 30, 70], chasm: [16, 12, 34] },
@@ -1097,6 +1177,23 @@ export function paintMaps(hole, opts = {}) {
         case SURF.WATER: c = pal.water || [70, 92, 70]; break;
         case SURF.CHASM: c = pal.chasm || pal.waste; sand = pal.chasm ? 0 : 1; break;
         default: c = pal.ob; sand = hole.course.style === 'canyon' || hole.course.theme === 'dunes' || hole.course.theme === 'salt' ? 1 : 0;
+      }
+      const thm = hole.course.theme;
+      if ((thm === 'lavender' || thm === 'tulip') && (sf === SURF.ROUGH || sf === SURF.DEEP || sf === SURF.OB)) {
+        const row = Math.floor((u * 0.8 + v * 0.6) / 2.4);
+        if (thm === 'lavender') c = row % 2 ? [150, 118, 196] : [96, 132, 70];
+        else c = [[232, 70, 84], [252, 206, 60], [246, 150, 196], [96, 150, 66], [250, 120, 40]][((row % 5) + 5) % 5];
+      }
+      if (thm === 'neon' && sf !== SURF.WATER) {
+        const gx = Math.abs(((u % 6) + 6) % 6 - 3), gy = Math.abs(((v % 6) + 6) % 6 - 3);
+        if (gx > 2.75 || gy > 2.75) c = sf === SURF.FAIRWAY || sf === SURF.GREEN || sf === SURF.FRINGE || sf === SURF.TEE ? [0, 230, 255] : [255, 60, 200];
+      }
+      if (thm === 'candy' && (sf === SURF.ROUGH || sf === SURF.DEEP) && n2 > 0.55) c = [[255, 90, 120], [90, 200, 255], [255, 230, 90], [160, 110, 255]][Math.floor((u * 13.7 + v * 7.3) % 4 + 4) % 4];
+      if (thm === 'moon' && (sf === SURF.WASTE || sf === SURF.OB || sf === SURF.ROUGH)) {
+        // 隕石坑：每 36 公尺一格隨機放一個圓坑（坑內暗、坑緣亮）
+        const cx = Math.floor(u / 36), cy = Math.floor(v / 36), hs = k => { const x = Math.sin(cx * 127.1 + cy * 311.7 + k * 74.7) * 43758.5453; return x - Math.floor(x); };
+        if (hs(1) < 0.55) { const ox = (cx + 0.2 + hs(2) * 0.6) * 36, oy = (cy + 0.2 + hs(3) * 0.6) * 36, rr = 3 + hs(4) * 9, dd = Math.hypot(u - ox, v - oy);
+          if (dd < rr - 1) c = [104, 104, 110]; else if (dd < rr + 1.2) c = [176, 176, 182]; }
       }
       // 鹽湖：鹽殼上的多邊形龜裂紋
       if (salt && (sf === SURF.WASTE || sf === SURF.OB)) { const k = Math.abs(nz(u * 0.11, v * 0.11)) + Math.abs(nz(u * 0.23 + 7, v * 0.23)) * 0.5; if (k < 0.05) c = [196, 184, 160]; }
