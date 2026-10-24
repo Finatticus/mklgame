@@ -68,7 +68,18 @@ function decodeMap(m) {
     for (let h = 0; h < q.length; h++) { const i = q[h], x = i % W, y = (i / W) | 0;
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
         const j = yy * W + xx; if (nearW[j] < 0 && watOut[j] < 12) { nearW[j] = nearW[i]; q.push(j); } } } }
-  m._g = { g, W, H, outD, sandD, watIn, watOut, greenD, wid, nearW, waters,
+  // 果嶺分塊（有左右兩個果嶺的洞）
+  const gid = new Int16Array(W * H).fill(-1), gcent = [];
+  for (let i = 0; i < W * H; i++) {
+    if (g[i] !== 3 || gid[i] >= 0) continue;
+    const id = gcent.length, st = [i]; gid[i] = id; let sx = 0, sy = 0, n = 0;
+    while (st.length) {
+      const j = st.pop(), x = j % W, y = (j / W) | 0; sx += x; sy += y; n++;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; const k2 = yy * W + xx; if (g[k2] === 3 && gid[k2] < 0) { gid[k2] = id; st.push(k2); } }
+    }
+    gcent.push([sx / n, sy / n]);
+  }
+  m._g = { g, W, H, outD, sandD, watIn, watOut, greenD, wid, nearW, waters, gid, gcent,
     u0: m.origin[0] - PAD * m.mpp, v0: m.origin[1] + PAD * m.mpp, mpp: m.mpp };
   return m._g;
 }
@@ -81,6 +92,15 @@ export function buildHole(course, holeIdx, opts = {}) {
   // 有描圖地圖的洞：路線、地面、沙坑、水、果嶺、發球台、樹都照地圖
   const map = course.maps && course.maps[holeIdx] ? course.maps[holeIdx] : null;
   const MG = map ? decodeMap(map) : null;
+  // 左右兩個果嶺：每回合依旗桿種子選一個（另一個當果嶺邊短草）
+  const mapGreens = map ? (map.greens && map.greens.length ? map.greens : [map.green]) : null;
+  const gIdx = mapGreens && mapGreens.length > 1 ? (((opts.pinSeed || 0) % mapGreens.length) + mapGreens.length) % mapGreens.length : 0;
+  const mapGreen = mapGreens ? mapGreens[gIdx] : null;
+  let activeGid = -1;
+  if (MG && MG.gcent.length) {
+    const cx = (mapGreen.c[0] - MG.u0) / MG.mpp, cy = (MG.v0 - mapGreen.c[1]) / MG.mpp;
+    let best = 1e18; MG.gcent.forEach(([x, y], k) => { const d = (x - cx) ** 2 + (y - cy) ** 2; if (d < best) { best = d; activeGid = k; } });
+  }
   const cellAt = (u, v) => {
     const i = Math.round((u - MG.u0) / MG.mpp), j = Math.round((MG.v0 - v) / MG.mpp);
     return (i < 0 || j < 0 || i >= MG.W || j >= MG.H) ? -1 : j * MG.W + i;
@@ -200,7 +220,9 @@ export function buildHole(course, holeIdx, opts = {}) {
   const fwHalf = (s, side) => fwBase / 2 * (1 + 0.14 * nz(s * 0.018, side * 3.1) + 0.06 * nz(s * 0.07, side * 7.7));
   const elevTotal = F.has('UP') ? 14 : F.has('DN') ? -14 : F.has('up') ? 6 : F.has('dn') ? -6 : (rng() - 0.5) * 3;
   // spec.elev = [[距白梯碼數, 相對發球台高度(公尺)], …]，中間平滑內插（例如開球下坡、第二桿上坡）
-  const elevPts = spec && spec.elev ? [[0, 0], ...spec.elev].map(([y, m]) => [atY(y), m]) : null;
+  // 起伏來源：逐洞描述（spec.elev）優先，沒有的話用描圖地圖附的實際地形高程（map.elev）
+  const elevSrc = spec && spec.elev ? spec.elev : map && map.elev ? map.elev : null;
+  const elevPts = elevSrc ? (elevSrc[0] && elevSrc[0][0] === 0 ? elevSrc : [[0, 0], ...elevSrc]).map(([y, m]) => [atY(y), m]) : null;
   const baseElev = !elevPts ? s => elevTotal * ss(0, Lp, s) : s => {
     if (s <= elevPts[0][0]) return elevPts[0][1];
     for (let i = 1; i < elevPts.length; i++) {
@@ -211,14 +233,14 @@ export function buildHole(course, holeIdx, opts = {}) {
   };
 
   // ---------- 3. 果嶺 ----------
-  const G = map ? map.green.c.slice() : path[path.length - 1];
+  const G = map ? mapGreen.c.slice() : path[path.length - 1];
   const endDir = dirAt(Lp);
   const sg = spec && spec.green || {};
   // 地圖模式：果嶺中心、長短軸、方向都照描圖（rot 是影像座標的角度）
-  const gRot = map ? Math.PI / 2 - map.green.rot : Math.atan2(endDir[0], endDir[1]) + rad(spec ? (sg.rot || 0) : (rng() - 0.5) * 50);
+  const gRot = map ? Math.PI / 2 - mapGreen.rot : Math.atan2(endDir[0], endDir[1]) + rad(spec ? (sg.rot || 0) : (rng() - 0.5) * 50);
   // sg.size = [寬, 長]（碼）
-  const grx = map ? map.green.rx : sg.size ? sg.size[0] * YD / 2 : (par === 3 ? 10.5 : 11) + rng() * 2;
-  const gry = map ? map.green.ry : sg.size ? sg.size[1] * YD / 2 : (par === 3 ? 11 : 11.5) + rng() * 2;
+  const grx = map ? mapGreen.rx : sg.size ? sg.size[0] * YD / 2 : (par === 3 ? 10.5 : 11) + rng() * 2;
+  const gry = map ? mapGreen.ry : sg.size ? sg.size[1] * YD / 2 : (par === 3 ? 11 : 11.5) + rng() * 2;
   const gPh = [rng() * 6.28, rng() * 6.28];
   const gLocal = (u, v) => {
     const du = u - G[0], dv = v - G[1];
@@ -405,6 +427,7 @@ export function buildHole(course, holeIdx, opts = {}) {
       return MG.outD[i] * MG.mpp < 14 ? SURF.DEEP : SURF.OB;
     }
     for (const b of bunkers) if (b.grass && bunkerR(b, u, v) < 1) return SURF.DEEP;
+    if (c === 3 && MG.gid[i] !== activeGid) return SURF.FRINGE;          // 今天沒用的那個果嶺
     if (c === 1 && MG.greenD[i] * MG.mpp < 1.6) return SURF.FRINGE;
     if (c !== 6 && c !== 5 && inTee(u, v)) return SURF.TEE;        // 各梯台的發球區（官網碼數的位置）
     return MAP_SURF[c];
@@ -685,6 +708,7 @@ export function buildHole(course, holeIdx, opts = {}) {
   const H = (x, z) => height(x, -z);
   const api = {
     course, holeIdx, par, hcp, yards, feat: F, spec, L: Lp, path, S, bbox, tees, pin: [pin[0], -pin[1]],
+    greenSide: mapGreens && mapGreens.length > 1 ? (gIdx === 0 ? '左' : '右') : null,      // 有兩個果嶺時今天用哪一個
     green: { u: G[0], v: G[1], rx: grx, ry: gry, rot: gRot }, bunkers, waters: map ? MG.waters.map(w => ({ kind: 'pond', level: w.level, cells: w.cells, grid: MG })) : waters, cross, seaSide, seaEdge, trees, scenery,
     near, pointAt, dirAt, fwHalf, greenR, surfaceUV: surface, heightUV: height, fs, fe,
     height: H,

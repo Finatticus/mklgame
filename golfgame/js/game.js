@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { buildHole } from './terrain.js';
 import { simulate, makeLaunch, distanceTable, carryAt, airDensity, SURF, ADJ_SEEDS } from './physics.js';
 import { CLUBS, clubById, clubIndex } from './clubs.js';
-import { courseById, teeYards, loadCourseMaps } from './courses.js';
+import { courseById, teeYards, loadCourseMaps, holeLabel } from './courses.js';
 import { makeRng, hashStr, toYd, YD, MPH, FT, clamp, lerp, rad, smooth, fmtToPar, escapeHtml } from './util.js';
 import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
@@ -280,7 +280,8 @@ export class Game {
       l0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, -60),
     };
     const note = this.hole.spec && this.hole.spec.note;
-    this.hud.toast(`<small>第 ${idx + 1} 洞</small><b>PAR ${this.hole.par} · ${yd} Y</b>${note ? `<small class="hole-note">${escapeHtml(note)}</small>` : ''}`, note ? 3400 : 2600, 'big');
+    const lab = holeLabel(this.course, idx), side = this.hole.greenSide;
+    this.hud.toast(`<small>第 ${idx + 1} 洞${lab ? `（${lab}）` : ''}</small><b>PAR ${this.hole.par} · ${yd} Y</b>${side ? `<small class="hole-note">今日使用${side}果嶺</small>` : ''}${note ? `<small class="hole-note">${escapeHtml(note)}</small>` : ''}`, note ? 3600 : 2600, 'big');
     $('practice-bar').classList.toggle('hidden', !this.cfg.practice);
     if (this.cfg.practice) {
       this.intro = null;
@@ -912,13 +913,15 @@ export class Game {
     const holes = this.holeList.length;
     const strokes = p.scores.reduce((s, v) => s + (v || 0), 0);
     const par = p.pars.reduce((s, v) => s + (v || 0), 0);
+    // 分區球場打 9 洞時，名稱與代號只標打的那一區
+    const nine9 = this.course.nineNames && holes === 9;
     return {
-      course: this.course.name, holes, tee: this.cfg.tee, strokes, toPar: strokes - par,
+      course: nine9 ? `${this.course.name.split('（')[0]}（${this.course.nineNames[0]}）` : this.course.name, holes, tee: this.cfg.tee, strokes, toPar: strokes - par,
       putts: p.putts.reduce((s, v) => s + (v || 0), 0), fairways: `${p.fwHit}/${p.fwTotal}`, gir: `${p.gir}/${holes}`,
       mode: this.players.length > 1 ? (this.cfg.mode === 'match' ? '比洞賽' : '比桿賽') : '單人',
       partners: this.players.filter(q => q !== p).map(q => q.user).join(','), scores: p.scores,
       // 排行用：球場代號、範圍（全 18 / 前 9 / 後 9）、標準桿、這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞）
-      courseId: this.course.id, range: this.cfg.holes, par, events: this.specialEvents(p),
+      courseId: nine9 ? `${this.course.baseId}:${this.course.nineIds[0]}` : this.course.id, range: this.cfg.holes, par, events: this.specialEvents(p),
     };
   }
 

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { session, call, isLocalMode } from './api.js';
 import { gasUrl, getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS } from './stats.js';
-import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps } from './courses.js';
+import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo } from './courses.js';
 import { World } from './render.js';
 import { Hud } from './hud.js';
 import { Game } from './game.js';
@@ -179,7 +179,24 @@ function renderSetup() {
     $(id).querySelectorAll('button').forEach(b => b.onclick = () => { setup[key] = isNaN(b.dataset.v) ? b.dataset.v : Number(b.dataset.v); renderSetup(); });
   };
   const c = courseById(setup.courseId);
-  seg('st-holes', 'holes', [['all', '18 洞'], ['front', '前 9'], ['back', '後 9']]);
+  // 分區球場（長庚北 / 中 / 南）：洞數只有 18 / 9，前九、後九各選一區
+  const base = c.baseId ? COURSES.find(x => x.id === c.baseId) : null;
+  if (base && setup.holes === 'back') setup.holes = 'front';
+  $('st-nines-wrap').classList.toggle('hidden', !base || setup.kind === 'practice');
+  if (base) {
+    const [f, b] = c.nineIds;
+    const row = (label, cur, other, which) => `<div class="nine-row"><span>${label}</span>` + base.nines.map(n =>
+      `<button class="${n.id === cur ? 'on' : ''}" data-w="${which}" data-n="${n.id}" ${which === 'b' && n.id === other ? 'disabled' : ''}>${n.name}</button>`).join('') + '</div>';
+    $('st-nines').innerHTML = row(setup.holes === 'all' ? '前九' : '打哪一區', f, b, 'f') + (setup.holes === 'all' ? row('後九', b, f, 'b') : '');
+    $('st-nines').querySelectorAll('button').forEach(btn => btn.onclick = () => {
+      let nf = f, nb = b;
+      if (btn.dataset.w === 'f') { nf = btn.dataset.n; if (nf === nb) nb = f; }
+      else nb = btn.dataset.n;
+      setup.courseId = nineCombo(base, nf, nb);
+      renderSetup();
+    });
+  }
+  seg('st-holes', 'holes', base ? [['all', '18 洞'], ['front', '9 洞']] : [['all', '18 洞'], ['front', '前 9'], ['back', '後 9']]);
   seg('st-tee', 'tee', TEE_SETS.map(t => [t.id, `${t.name} ${courseYards(c, t.id).toLocaleString()}`]));
   seg('st-mode', 'mode', [['stroke', '比桿賽'], ['match', '比洞賽']]);
   seg('st-wind', 'wind', [['course', '球場預設'], ['calm', '無風'], ['light', '微風'], ['normal', '一般'], ['strong', '強風']]);
@@ -228,13 +245,13 @@ function openCoursePicker() {
   $('cp-list').innerHTML = COURSE_GROUPS.map(g => {
     const list = COURSES.filter(c => c.group === g.id);
     return `<h4>${g.name}</h4>` + (list.length ? list.map(c => `
-      <button class="cp-row ${c.id === setup.courseId ? 'on' : ''}" data-c="${c.id}">
+      <button class="cp-row ${c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':') ? 'on' : ''}" data-c="${c.id}">
         <div><b>${c.name}</b><em>${c.en}</em></div>
-        <span>Par 72 · ${courseYards(c, 'black').toLocaleString()} Y · Stimp(果嶺速度) ${c.stimp}</span>
+        <span>${c.nines ? `${c.nines.length * 9} 洞（${c.nines.map(n => n.name).join(' / ')}，前後九自選）` : `Par 72 · ${courseYards(c, 'black').toLocaleString()} Y`} · Stimp(果嶺速度) ${c.stimp}</span>
       </button>`).join('') : '<p class="small cp-empty">即將加入</p>');
   }).join('');
   $('cp-list').querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
-    setup.courseId = b.dataset.c; setup.stimp = null;
+    setup.courseId = courseById(b.dataset.c).id; setup.stimp = null;      // 分區球場 → 預設前兩區
     $('dlg-courses').classList.remove('open');
     renderSetup();
   });
@@ -472,7 +489,7 @@ function initGameMenu() {
     // 真實球場：這一洞的打法建議（依球場官網介紹整理）
     const sp = game && game.hole && game.hole.spec;
     $('gm-tip').classList.toggle('hidden', !(sp && sp.tip));
-    if (sp && sp.tip) $('gm-tip').innerHTML = `<b>第 ${game.holeNo} 洞 · PAR ${game.hole.par}</b><span>${escapeHtml(sp.note || '')}</span><p>${escapeHtml(sp.tip)}</p>`;
+    if (sp && sp.tip) $('gm-tip').innerHTML = `<b>第 ${game.holeNo} 洞${game.hole.greenSide ? `（今日${game.hole.greenSide}果嶺）` : ''} · PAR ${game.hole.par}</b><span>${escapeHtml(sp.note || '')}</span><p>${escapeHtml(sp.tip)}</p>`;
     // 連線模式：顯示遊戲間驗證碼，不小心離開時用「加入遊戲」輸入這組號碼就能回來接續
     const code = game && game.net && game.net.code;
     $('gm-room').classList.toggle('hidden', !code);
@@ -747,7 +764,7 @@ function renderRanking() {
 function strokeHtml() {
   const course = COURSES.find(c => c.id === rank.course);
   const list = rank.rows
-    .filter(r => r.holes === rank.holes && (rank.tab === 'total' || r.courseId === rank.course || (!r.courseId && course && r.course === course.name)))
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' || r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && r.course === course.name)))
     .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
     .slice(0, 100);
   if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>';

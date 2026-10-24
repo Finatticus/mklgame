@@ -665,3 +665,11 @@ body:not([data-practice]) .practice-only { display: none; }
 .gm-tip b { display: block; font: 700 15px "Noto Serif TC"; color: #e7c477; }
 .gm-tip span { display: block; font-size: 12px; color: #cdbf9a; margin: 2px 0 6px; }
 .gm-tip p { margin: 0; }
+
+/* 分區球場選區 */
+.nines { display: flex; flex-direction: column; gap: 8px; }
+.nine-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nine-row span { min-width: 64px; font-size: 13px; color: var(--muted); }
+.nine-row button { padding: 7px 14px; border-radius: 18px; background: #fff; border: 1px solid var(--line); font-size: 13px; }
+.nine-row button.on { background: var(--forest); color: var(--cream); border-color: var(--forest); }
+.nine-row button:disabled { opacity: .35; }

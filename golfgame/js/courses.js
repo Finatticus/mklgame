@@ -147,12 +147,202 @@ export const COURSES = [
         tip: '開球下坡、球道窄長。瞄左邊 2 個沙坑的右側：打得遠可以飛過，打不遠也會滾回球道。離果嶺約 90 碼有 4 個沙坑橫在球道上，第二桿不要直攻，留約 100 碼打第三桿，並打足距離飛過果嶺前沙坑，果嶺後面比較高。' }],
     ],
   },
+  {
+    // 長庚高爾夫俱樂部（桃園龜山）：北 / 中 / 南三區各 9 洞，依官網 www.cggc.com.tw 每洞「球道地圖」描圖與文字介紹建立。
+    // 官網有藍 / 白 / 紅三組 Tee → 黑梯、藍梯 = 藍 Tee，白梯 = 白 Tee，紅梯 = 紅 Tee。
+    // 官網的圖沒有分球道與長草、也沒有畫樹：球道是沿打球路線補上的，樹為自由發揮。海拔、果嶺速度為推估。
+    // 每洞 [標準桿, 藍 Tee 碼數, 0, '', 該區 HDCP(1~9), spec]；組成 18 洞時前九的 HCP 換成單數、後九換成雙數
+    id: 'cggc', name: '長庚', en: 'Chang Gung Golf Club', style: 'parkland', group: 'taiwan', real: true,
+    desc: '桃園龜山的台地林間球場，北、中、南三區各 9 洞，前九、後九可以自由選區。很多洞有左右兩個果嶺（每回合隨機使用其中一個），果嶺普遍偏硬不易停球，兩側多是樹林、車道與 OB。',
+    stimp: 9, firm: 1.08, altitude: 240, temp: 23, wind: [3, 12], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
+    mapsUrl: 'assets/courses/cggc-maps.json',
+    nines: [
+      { id: 'N', name: '北區', holes: [
+        [3, 220, 0, '', 7, { tees: { black: 220, blue: 220, white: 200, red: 160 }, green: { slope: 0.012 },
+          note: '藍、白 Tee 前方水池 · 果嶺右側沙坑 · 果嶺偏硬',
+          tip: '藍、白 Tee 要飛過前方的水池，紅 Tee 在左邊比較不受影響。果嶺右邊有沙坑，瞄果嶺中間或偏左；果嶺硬不好停，球盡量打高，距離算到果嶺前緣或中間偏前。' }],
+        [4, 450, 0, '', 4, { tees: { black: 450, blue: 450, white: 400, red: 350 }, ob: 'L', green: { slope: 0.012 },
+          note: '筆直球道、兩側樹林 · 左右兩個果嶺 · 左果嶺左側 OB',
+          tip: '筆直的球道，兩邊都是樹林，開球打中間，第二桿剩中長鐵。右果嶺右邊有沙坑，打中間或偏左；左果嶺比較長也比較難，右邊有沙坑、左邊是 OB，打果嶺中間或微左，落點偏前。' }],
+        [5, 525, 0, '', 6, { tees: { black: 525, blue: 525, white: 500, red: 480 }, ob: 'L', elev: [[380, 0], [500, 4]], green: { slope: 0.008 },
+          note: '微微左轉 · 左邊車道外 OB · 第三桿上坡 · 果嶺平坦',
+          tip: '球道先微微左轉再直直到果嶺。右邊是斜坡樹林比較窄，左邊車道外是 OB，但過了車道盡頭腹地很大，開球偏左。長打者第二桿可以直攻；第三桿上坡球不會過頭，打足距離，果嶺平坦可以直接攻旗。' }],
+        [4, 440, 0, '', 2, { tees: { black: 440, blue: 440, white: 420, red: 380 }, ob: 'L', elev: [[230, -6], [420, -7]], green: { slope: 0.01 },
+          note: '開球下坡、右高左低 · 左側斜坡接車道與 OB · 果嶺左右各一個沙坑',
+          tip: '球道先下坡再變平，整體往左傾斜：右邊腹地大，左邊斜坡接著車道和 OB，開球偏右，就算到右邊樹林邊也會往左彈回來。圓形果嶺左右各有一個沙坑，第二桿打果嶺中間；旗在後方不要超過中間，旗在前方算到前緣。' }],
+        [4, 450, 0, '', 1, { tees: { black: 450, blue: 450, white: 430, red: 385 }, green: { slope: 0.012 },
+          note: '北區最難 · 開球往右、第二桿稍微往左 · 果嶺左側沙坑、前後狹長偏硬',
+          tip: '球道先往右再往左，開球打中間偏右，左邊是樹林、車道和斜坡。第二桿大約中鐵，果嶺左邊有沙坑，打中間或偏右；果嶺前後狹長而且偏硬，距離可以少算一點。' }],
+        [4, 410, 0, '', 9, { tees: { black: 410, blue: 410, white: 380, red: 360 }, green: { slope: 0.01 },
+          note: '開球由右往左 · 右側樹林 · 果嶺左右狹長、前後各一個沙坑',
+          tip: '開球打中間偏左，不然很容易直接打進右邊樹林。第二桿剩中短鐵，果嶺左右長、前後窄，前緣和後面各有一個沙坑，球打高一點減少滾動。' }],
+        [5, 540, 0, '', 3, { tees: { black: 540, blue: 540, white: 525, red: 485 }, green: { side: 0.022, slope: 0.006 },
+          note: '筆直五桿洞 · 右側斜坡樹林、長打左側水池 · 兩層果嶺（左低右高）',
+          tip: '比較筆直的洞，開球避開右邊斜坡樹林，長打者小心左邊水池，打中間。三桿上果嶺的人第二桿用球道木或混血桿，留短鐵；兩層果嶺左低右高，右下方有沙坑，進攻偏左。' }],
+        [3, 190, 0, '', 8, { tees: { black: 190, blue: 190, white: 180, red: 135 }, elev: [[180, -3]], green: { slope: 0.016 },
+          note: '左右兩個果嶺、前方都有水池 · 微下坡',
+          tip: '兩個果嶺前面都有水池，從發球台到果嶺微微下坡。右果嶺右前方有沙坑，打中間或左邊；左果嶺左邊有沙坑，打中間或偏右。果嶺都是上坡，球打高不會滾太多，扣掉下坡算距離。' }],
+        [4, 410, 0, '', 5, { tees: { black: 410, blue: 410, white: 360, red: 335 }, ob: 'L', elev: [[230, 0], [360, -4]], green: { slope: 0.01 },
+          note: '球道左側窄、車道與 OB · 球道中間有蒲葵樹 · 第二桿微下坡 · 果嶺右側沙坑',
+          tip: '左邊比較窄，有車道和 OB；右邊是樹林。球道中間有一棵蒲葵樹，開球瞄它稍微偏右。第二桿微下坡，果嶺右邊有沙坑，距離算到果嶺中間偏前；果嶺硬，太後面會滾出去，而且草紋往後長，從後面推是逆草。' }],
+      ] },
+      { id: 'M', name: '中區', holes: [
+        [4, 410, 0, '', 4, { tees: { black: 410, blue: 410, white: 395, red: 360 }, elev: [[230, 0], [395, -4]], green: { slope: 0.012 },
+          note: '開球由左往右、第二桿稍微往左 · 第二桿下坡、右高左低 · 果嶺狹長、右側沙坑',
+          tip: '開球方向由左往右，左邊窄右邊寬，很容易拉左，開球瞄中間偏右，長打者可以用三號木或長鐵留 120~150 碼。第二桿下坡而且右高左低，要乾淨擊球。狹長果嶺右邊有沙坑，旗在右邊打中間，旗在左邊可以直攻。' }],
+        [4, 375, 0, '', 6, { tees: { black: 375, blue: 375, white: 365, red: 335 }, ob: 'L', elev: [[220, 5], [365, 9]], green: { slope: 0.022 },
+          note: '從球道到果嶺都上坡 · 右側斜坡樹林 · 果嶺左沙坑、再過去是車道與 OB',
+          tip: '整洞上坡，右邊窄有斜坡和樹林，左邊比較寬，開球用一號木打中間偏左。第二桿注意左邊沙坑，沙坑左邊是車道、再過去是 OB，瞄旗桿右邊；果嶺硬，打短一點，過洞太多回推很難。' }],
+        [5, 550, 0, '', 7, { tees: { black: 550, blue: 550, white: 520, red: 500 }, ob: 'L', green: { slope: 0.01 },
+          note: '右側斜坡、左側車道接 OB · 果嶺前後短的扁長形、不易停球',
+          tip: '右邊是斜坡，再過去是隔壁洞的樹林；左邊是車道接 OB，但左邊腹地比較大。藍 Tee 開中間偏左，白、紅 Tee 開中間或偏右。長打者第二桿有機會上果嶺；扁長果嶺不好停，以前緣為落點。' }],
+        [3, 190, 0, '', 9, { tees: { black: 190, blue: 190, white: 180, red: 140 }, ob: 'L', green: { side: -0.02, slope: 0.008 },
+          note: '果嶺左側 OB 樹林、左前方沙坑 · 右低左高的狹長果嶺',
+          tip: '主要的障礙是果嶺左邊的 OB 樹林和左前方的沙坑。果嶺由右到左狹長、右低左高。旗在左邊打中間並打足，千萬不要攻左邊；旗在中間或右邊可以直攻。' }],
+        [5, 605, 0, '', 1, { tees: { black: 605, blue: 605, white: 590, red: 570 }, elev: [[450, 0], [590, 5]], green: { slope: 0.012 },
+          note: '中區最難、最長 · 由右往左 · 第二桿留在水池前 · 最後上坡到果嶺',
+          tip: '球道由右往左再直直走，最後上坡到果嶺。開球打中間偏左，從左邊樹林右上方飛過，右邊沒有腹地。第二桿打 200 碼內留在水池前，第三桿 100~120 碼讓球落在果嶺前半部滾向旗桿；旗在右邊打中間（右邊窄又有沙坑），旗在左邊直攻。' }],
+        [4, 460, -10, '', 3, { tees: { black: 460, blue: 460, white: 445, red: 400 }, elev: [[200, -4], [330, 0], [460, -2]], green: { slope: 0.012 },
+          note: '先下坡、上坡、再下坡 · 第二桿往左上 · 左右兩個果嶺',
+          tip: '地形先下坡、再上坡、再下坡，球道直線後往左上。開球打中間偏左，第二桿剩中長鐵、而且是下坡球位不容易打高。右果嶺比較近、右邊有沙坑，打左半邊；左果嶺左邊有沙坑，打右半邊，前緣上坡要打足、打高。' }],
+        [4, 400, 0, '', 5, { tees: { black: 400, blue: 400, white: 385, red: 320 }, ob: 'R', elev: [[230, -4], [385, 1]], green: { side: -0.02, slope: 0.01 },
+          note: '狗腿右 · 開球下坡、右側車道與 OB、轉角沙坑 · 第二桿上坡 · 果嶺左高右低',
+          tip: '由左往右的狗腿右，開球下坡，左邊寬，右邊有車道和 OB，轉角有沙坑；瞄沙坑左角，長打者可以直接飛過沙坑，留 110~150 碼。第二桿上坡，注意果嶺前緣左右兩個沙坑；果嶺左高右低，不管旗在哪都瞄中間偏左。' }],
+        [3, 180, 0, '', 8, { tees: { black: 180, blue: 180, white: 160, red: 140 }, green: { slope: 0.014 },
+          note: '狹窄的三桿洞 · 前後狹長果嶺、左右前緣各一個沙坑',
+          tip: '開球比較窄，果嶺前後狹長，左右前緣各有一個沙坑，腹地小要注意落點。旗在前面打正中間、短一點；旗在後面從右側飛過沙坑，距離控制在果嶺中間，千萬不要打過果嶺，果嶺硬不好停。' }],
+        [4, 435, -16, '', 2, { tees: { black: 435, blue: 435, white: 390, red: 370 }, green: { slope: 0.012 },
+          note: '狗腿左 · 轉角左側沙坑（長打可飛越）· 果嶺右側前方沙坑',
+          tip: '狗腿左。長打者可以從左邊沙坑上方飛過，第二桿剩短鐵；距離短的要避開左邊沙坑，打球道右側中間。第二桿打果嶺左邊或中間，盡量不要往右，右邊前方有沙坑，飛過去也不容易停。' }],
+      ] },
+      { id: 'S', name: '南區', holes: [
+        [5, 615, 0, '', 6, { tees: { black: 615, blue: 615, white: 595, red: 525 }, elev: [[250, 3], [330, -1], [515, 0], [595, 2]], green: { slope: 0.012 },
+          note: '落點有兩個高起的山坡 · 第二層球道較低 · 左右兩個果嶺（通常用左果嶺）',
+          tip: '第一桿落點有兩個高起的山坡，長打者可以從右邊小山坡上方飛過，落到第二層比較低的球道，剩 200 碼內；一般三桿上果嶺，開中間偏左。最後 100 碼微上坡，果嶺窄小，左邊有沙坑，瞄中間偏右。' }],
+        [5, 525, 0, '', 2, { tees: { black: 525, blue: 525, white: 515, red: 430 }, green: { slope: 0.01 },
+          note: '左側整排樹林、右邊寬 · 落點遠處右側一排沙坑 · 兩個果嶺（右果嶺靠懸崖）',
+          tip: '發球台在左邊，左邊一整排樹林，右邊比較寬，遠一點的落點右側有一排沙坑。開球打中間偏右，長打者第二桿用球道木或混血就能上果嶺。旗在左果嶺可以直攻；在右果嶺打左側，避開右邊懸崖。' }],
+        [4, 425, -8, '', 5, { tees: { black: 425, blue: 425, white: 400, red: 375 }, ob: 'R', elev: [[250, 5], [350, 1], [425, 3]], green: { slope: 0.012 },
+          note: '小狗腿左 · 先上坡到最高點再下坡、最後上果嶺 · 右果嶺右側整排 OB',
+          tip: '由右往左的小狗腿左，開球打中間。球道先上坡，第一桿落點是最高的地方，第二桿往下，再起伏上到果嶺，正常剩 150 碼左右。右果嶺右邊一整排 OB，打中間偏左；左果嶺左下方有沙坑，打中間偏右。' }],
+        [3, 190, 0, '', 9, { tees: { black: 190, blue: 190, white: 175, red: 140 }, ob: 'L', green: { slope: 0.012 },
+          note: '左右兩個果嶺 · 左果嶺左側 OB、前方左右水池 · 右果嶺前方水池、右側沙坑',
+          tip: '旗在左果嶺：左邊一整排 OB，前緣左右都有水池，打右半邊，落在左邊很容易順著斜坡滾進沙坑或 OB。旗在右果嶺：前面一樣有水池、右邊有沙坑，相對單純，可以直攻旗桿。' }],
+        [4, 460, 0, '', 4, { tees: { black: 460, blue: 460, white: 445, red: 405 }, elev: [[250, -6], [445, -9]], green: { slope: 0.01 },
+          note: '從發球台一路往下 · 兩個果嶺（中間下坡處 / 右側）· 右果嶺右側沙坑',
+          tip: '從發球台開始往下的球道，右邊腹地雖大但沒什麼用，開球放中間或偏左，因為右邊樹林會擋住右果嶺的進攻路線，第二桿剩中長鐵。左果嶺下坡不停球，算到前半部；右果嶺比較遠，打中間偏左，右邊有沙坑。' }],
+        [4, 400, 0, '', 3, { tees: { black: 400, blue: 400, white: 375, red: 325 }, ob: 'R', elev: [[230, 5], [375, 10]], green: { slope: 0.012 },
+          note: '直線上坡 · 右側樹林與 OB · 左側樹林與一個沙坑 · 上坡多算 15 碼',
+          tip: '直線上坡的洞，最危險的是右邊樹林和 OB，開球打中間偏左比較寬，但左邊也有樹林和一個沙坑，看風向決定。左果嶺左邊有沙坑，打右半邊；右果嶺直接打中間。上坡很陡，中鐵以上至少多算 15 碼。' }],
+        [3, 190, 0, '', 7, { tees: { black: 190, blue: 190, white: 175, red: 135 }, green: { slope: 0.016 },
+          note: '果嶺前大水池 · 左右兩個果嶺 · 左果嶺左側與後方沙坑',
+          tip: '主要的障礙是果嶺前的大水池。右果嶺上坡好停球，可以直攻打足。左果嶺比較難，左邊和後面都有沙坑，靠右半邊進攻，讓球在右邊長草彈上果嶺；直接落在果嶺上，果嶺硬，大多會滾進後面沙坑。' }],
+        [4, 330, -14, '', 8, { tees: { black: 330, blue: 330, white: 310, red: 255 }, elev: [[200, 2], [310, 3]], green: { slope: 0.014 },
+          note: '短的狗腿左 · 開球微上坡 · 左果嶺左側沙坑、右果嶺右側沙坑',
+          tip: '距離短，開球位置微上坡，由右往左的狗腿左。長打者可以瞄左邊樹梢頂端開球，第二桿剩短鐵或挖起桿；距離短的打中間偏左。左果嶺左邊有沙坑，打右半邊；右果嶺右邊有沙坑、上坡，可以直攻或打左半邊。' }],
+        [4, 500, -8, '', 1, { tees: { black: 500, blue: 500, white: 485, red: 355 }, green: { slope: 0.01 },
+          note: '南區最難、很長的四桿洞 · 前方水池 · 小狗腿左 · 兩個果嶺',
+          tip: '前方有水池，主要難在距離很長，小狗腿左，開球打中間偏左或小左曲爭取距離，第二桿用短木桿或長鐵靠近果嶺。右果嶺右邊有沙坑、車道和樹林，打左半邊；左果嶺一樣有斜坡和樹林，打右半邊。打出 Bogey 也不錯了。' }],
+      ] },
+    ],
+  },
+  {
+    // 美麗華高爾夫鄉村俱樂部（新北林口）：北 / 東 / 南 / 西四區共 36 洞。官網只有一張全場球場圖和各區計分卡，沒有逐洞的圖：
+    // 全場圖比例不準對不到位置，所以路線、旗桿、水池用 OpenStreetMap，沙坑、樹林、果嶺判讀衛星影像（判讀不到的果嶺補上），
+    // 球道沿實際開闊的走廊補上，起伏用公開的地形高程。官網梯台：黃 / 藍 / 白 / 綠 / 紅 → 黑梯 = 黃 Tee、藍 = 藍、白 = 白、紅 = 紅（綠 Tee 只記錄）。
+    // 地圖資料順序依 maps 檔：北 1~9、東 1~9、南 1~9、西 1~9（nines 的順序是畫面上的排列）
+    id: 'miramar', name: '美麗華', en: 'Miramar Golf Country Club', style: 'parkland', group: 'taiwan', real: true,
+    desc: '新北林口的丘陵球場，北、東、南、西四區共 36 洞（官方分成西北、東南兩個 18 洞），前九、後九可以自由選區。依官網各區計分卡、OpenStreetMap 與衛星影像建立（沙坑、水池、樹林照實際位置），起伏用實際地形高程。',
+    stimp: 8.5, firm: 1.0, altitude: 110, temp: 22, wind: [4, 13], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
+    mapsUrl: 'assets/courses/miramar-maps.json', mapsOrder: ['N', 'E', 'S', 'W'],
+    nines: [
+      { id: 'W', name: '西區', holes: [
+        [4, 438, 0, '', 4, { tees: { black: 438, blue: 394, white: 360, green: 323, red: 283 } }],
+        [4, 389, 0, '', 6, { tees: { black: 389, blue: 371, white: 348, green: 337, red: 331 } }],
+        [5, 514, 0, '', 8, { tees: { black: 514, blue: 489, white: 459, green: 413, red: 375 } }],
+        [4, 450, 0, '', 1, { tees: { black: 450, blue: 424, white: 395, green: 368, red: 337 } }],
+        [3, 211, 0, '', 7, { tees: { black: 211, blue: 181, white: 153, green: 134, red: 117 } }],
+        [4, 432, 0, '', 2, { tees: { black: 432, blue: 420, white: 389, green: 325, red: 296 } }],
+        [4, 424, 0, '', 5, { tees: { black: 424, blue: 374, white: 354, green: 294, red: 263 } }],
+        [3, 167, 0, '', 9, { tees: { black: 167, blue: 142, white: 123, green: 108, red: 85 } }],
+        [5, 544, 0, '', 3, { tees: { black: 544, blue: 521, white: 504, green: 440, red: 398 } }],
+      ] },
+      { id: 'N', name: '北區', holes: [
+        [4, 358, 0, '', 9, { tees: { black: 358, blue: 338, white: 310, green: 274, red: 251 } }],
+        [5, 559, 0, '', 7, { tees: { black: 559, blue: 525, white: 491, green: 455, red: 408 } }],
+        [3, 209, 0, '', 6, { tees: { black: 209, blue: 194, white: 182, green: 154, red: 129 } }],
+        [4, 430, 0, '', 5, { tees: { black: 430, blue: 405, white: 384, green: 365, red: 313 } }],
+        [4, 389, 0, '', 3, { tees: { black: 389, blue: 364, white: 328, green: 303, red: 273 } }],
+        [5, 519, 0, '', 2, { tees: { black: 519, blue: 493, white: 466, green: 434, red: 398 } }],
+        [3, 177, 0, '', 4, { tees: { black: 177, blue: 153, white: 140, green: 130, red: 121 } }],
+        [4, 342, 0, '', 8, { tees: { black: 342, blue: 316, white: 290, green: 253, red: 225 } }],
+        [4, 456, 0, '', 1, { tees: { black: 456, blue: 434, white: 415, green: 358, red: 336 } }],
+      ] },
+      { id: 'E', name: '東區', holes: [
+        [4, 363, 0, '', 4, { tees: { black: 363, blue: 340, white: 305, green: 274, red: 246 } }],
+        [3, 175, 0, '', 7, { tees: { black: 175, blue: 155, white: 141, green: 122, red: 99 } }],
+        [4, 404, 0, '', 3, { tees: { black: 404, blue: 379, white: 344, green: 320, red: 284 } }],
+        [5, 528, 0, '', 8, { tees: { black: 528, blue: 496, white: 482, green: 459, red: 418 } }],
+        [4, 416, 0, '', 1, { tees: { black: 416, blue: 400, white: 371, green: 344, red: 294 } }],
+        [4, 344, 0, '', 5, { tees: { black: 344, blue: 330, white: 309, green: 263, red: 210 } }],
+        [3, 190, 0, '', 6, { tees: { black: 190, blue: 169, white: 153, green: 134, red: 110 } }],
+        [5, 515, 0, '', 9, { tees: { black: 515, blue: 494, white: 462, green: 430, red: 403 } }],
+        [4, 410, 0, '', 2, { tees: { black: 410, blue: 382, white: 352, green: 312, red: 278 } }],
+      ] },
+      { id: 'S', name: '南區', holes: [
+        [4, 416, 0, '', 6, { tees: { black: 416, blue: 392, white: 364, green: 321, red: 292 } }],
+        [3, 151, 0, '', 9, { tees: { black: 151, blue: 134, white: 118, green: 93, red: 78 } }],
+        [5, 555, 0, '', 2, { tees: { black: 555, blue: 542, white: 524, green: 486, red: 455 } }],
+        [4, 365, 0, '', 5, { tees: { black: 365, blue: 342, white: 335, green: 300, red: 271 } }],
+        [4, 424, 0, '', 1, { tees: { black: 424, blue: 403, white: 380, green: 351, red: 308 } }],
+        [3, 178, 0, '', 8, { tees: { black: 178, blue: 152, white: 137, green: 120, red: 90 } }],
+        [4, 420, 0, '', 3, { tees: { black: 420, blue: 394, white: 368, green: 325, red: 272 } }],
+        [4, 440, 0, '', 7, { tees: { black: 440, blue: 403, white: 366, green: 334, red: 313 } }],
+        [5, 498, 0, '', 4, { tees: { black: 498, blue: 479, white: 450, green: 419, red: 395 } }],
+      ] },
+    ],
+  },
 ];
 
-export const courseById = id => COURSES.find(c => c.id === id);
+// 分區球場（例如長庚北 / 中 / 南）：base.holes 先放全部 27 洞，選區後用「代號:前九後九」組成 18 洞（例如 cggc:NM）
+for (const c of COURSES) if (c.nines) c.holes = c.nines.flatMap(n => n.holes);
+const combos = new Map();
+export function nineCombo(base, f, b) { return `${base.id}:${f}${b || ''}`; }
+export function courseById(id) {
+  const direct = COURSES.find(c => c.id === id);
+  if (direct) return direct.nines ? courseById(nineCombo(direct, direct.nines[0].id, direct.nines[1].id)) : direct;
+  if (combos.has(id)) return combos.get(id);
+  const [bid, code = ''] = String(id).split(':');
+  const base = COURSES.find(c => c.id === bid);
+  if (!base || !base.nines) return COURSES[0];
+  const pick = [...code].map(k => base.nines.find(n => n.id === k)).filter(Boolean);
+  if (!pick.length) pick.push(base.nines[0]);
+  if (pick.length < 2) pick.push(base.nines.find(n => n !== pick[0]));
+  // 18 洞的差點：前九換成單數（1,3,…17）、後九換成雙數（2,4,…18）
+  const holes = pick.flatMap((n, k) => n.holes.map(h => { const x = h.slice(); x[4] = h[4] * 2 - (k === 0 ? 1 : 0); return x; }));
+  const c = {
+    ...base, id: `${bid}:${pick[0].id}${pick[1].id}`, baseId: bid, nineIds: pick.map(n => n.id), nineNames: pick.map(n => n.name),
+    name: `${base.name}（${pick[0].name}＋${pick[1].name}）`, holes, maps: null, _mapsP: null, mapsUrl: null,
+  };
+  combos.set(id, c);
+  if (c.id !== id) combos.set(c.id, c);
+  return c;
+}
+// 分區球場某一洞的名稱（例如「北區 3」）
+export function holeLabel(course, idx) {
+  return course.nineNames ? `${course.nineNames[Math.floor(idx / 9)]} ${idx % 9 + 1}` : '';
+}
 
 // 真實球場的描圖地圖：第一次用到時下載（之後從手機快取讀），建洞之前要先等它
 export async function loadCourseMaps(course) {
+  if (course && course.baseId && !course.maps) {
+    // 分區組合：先載入整座球場 27 洞的地圖，再挑出選到的兩區
+    const base = COURSES.find(c => c.id === course.baseId);
+    await loadCourseMaps(base);
+    const order = base.mapsOrder || base.nines.map(n => n.id);
+    if (base.maps) course.maps = course.nineIds.flatMap(k => { const i = order.indexOf(k); return base.maps.slice(i * 9, i * 9 + 9); });
+    return;
+  }
   if (!course || !course.mapsUrl || course.maps) return;
   if (!course._mapsP) course._mapsP = fetch(course.mapsUrl).then(r => r.json()).then(m => { course.maps = m; }).catch(e => { course._mapsP = null; throw e; });
   await course._mapsP;
