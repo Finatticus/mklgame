@@ -159,6 +159,14 @@ function openSetup(kind) {
   show('scr-setup');
 }
 
+// 奇幻球場的特色玩法：跟一般球場差很多，獨立一段、字比介紹明顯一點（不混在介紹文字裡）
+function featureCard(c) {
+  const f = c.feature;
+  if (!f) return '';
+  const n = c.holes.filter(h => f.tags.some(t => h[3].split(/\s+/).includes(t))).length;
+  return `<div class="ci-feature"><h6>特色玩法　${f.name}（${n} 洞）</h6><p>${f.text}${f.tip}</p></div>`;
+}
+
 function renderSetup() {
   // 目前選的球場：只顯示資訊卡（不畫縮圖，省流量也不會卡），按「更換球場」打開分群組的選單
   const cur = courseById(setup.courseId);
@@ -171,6 +179,7 @@ function renderSetup() {
         <span>Par <b>72</b></span><span>黑梯 <b>${courseYards(cur, 'black').toLocaleString()} Y</b></span>
         <span>Stimp(果嶺速度) <b>${cur.stimp}</b></span><span>風 <b>${cur.wind[0]}~${Math.min(15, cur.wind[1])} mph</b></span><span>海拔 <b>${cur.altitude} m</b></span>
       </div>
+      ${featureCard(cur)}
       <p>${cur.desc}</p>
       <button class="btn-chip" id="st-preview-btn">⛳ 18 洞預覽</button>
     </div>`;
@@ -229,16 +238,24 @@ function holeFeatures(course, spec) {
   const out = [];
   if (Math.abs(bend) >= 8) out.push(bend < 0 ? '狗腿左' : '狗腿右');
   // 奇幻主題：障礙的名稱不同
-  const th = course.theme;
+  const th = course.group === 'fantasy' ? course.theme : null;
   if (th) {
-    const hz = th === 'lava' ? '熔岩湖' : th === 'void' ? '虛空' : '潟湖';
-    if (F.has('IG')) out.push('果嶺浮島（四周都是虛空）');
+    const hz = th === 'lava' ? '熔岩湖' : th === 'void' ? '虛空' : th === 'frost' ? '冰湖' : th === 'mushroom' ? '螢光池' : '潟湖';
+    if (F.has('S')) out.push('S 型彎'); else if (F.has('D')) out.push('雙狗腿大弧形');
+    else if (F.has('E')) out.push('早轉狗腿'); else if (F.has('J')) out.push('果嶺前才轉彎');
+    if (F.has('IG')) out.push(th === 'void' ? '果嶺浮島（四周都是虛空）' : `孤島果嶺（四周是${hz}）`);
+    if (F.has('wd')) out.push('寬球道');
+    if (F.has('fr2')) out.push('2 個螢火之環'); else if (F.has('fr1')) out.push('螢火之環');
+    if (F.has('pt')) out.push('星門');
+    if (F.has('gv')) out.push('噴發口');
+    if (F.has('mu')) out.push('彈跳巨菇');
+    if (F.has('iw')) out.push('冰鏡牆');
     if (F.has('g2')) out.push('要飛越 2 道虛空裂縫'); else if (F.has('g1')) out.push('要飛越虛空裂縫');
-    if (F.has('nw')) out.push('窄島');
+    if (F.has('nw')) out.push(th === 'void' ? '窄島' : '窄球道');
     if (F.has('wl')) out.push('左側' + hz);
     if (F.has('wr')) out.push('右側' + hz);
     if (F.has('wc')) out.push('果嶺前' + hz);
-    if (F.has('xc')) out.push(th === 'lava' ? '橫越熔岩河' : '橫越溪流');
+    if (F.has('xc')) out.push(th === 'lava' ? '橫越熔岩河' : th === 'frost' ? '橫越冰河' : '橫越溪流');
     if (F.has('UP')) out.push('大上坡'); else if (F.has('up')) out.push('上坡');
     if (F.has('DN')) out.push('大下坡'); else if (F.has('dn')) out.push('下坡');
     if (F.has('ww')) out.push('兩側火山渣荒地');
@@ -250,7 +267,11 @@ function holeFeatures(course, spec) {
   if (F.has('wl')) out.push(canyon ? '左側深谷' : '左側水池');
   if (F.has('wr')) out.push(canyon ? '右側深谷' : '右側水池');
   if (F.has('wc')) out.push(canyon ? '果嶺前深谷' : '果嶺前水池');
-  if (F.has('xc')) out.push(canyon ? '要飛越峽谷' : course.style === 'links' ? '橫越小溪' : '橫越溪流');
+  if (F.has('S')) out.push('S 型彎'); else if (F.has('D')) out.push('雙狗腿大弧形');
+  else if (F.has('E')) out.push('早轉狗腿'); else if (F.has('J')) out.push('果嶺前才轉彎');
+  if (F.has('IG')) out.push('孤島果嶺（四周是水）');
+  if (F.has('nw')) out.push('窄球道'); else if (F.has('wd')) out.push('寬球道');
+  if (F.has('xc')) out.push(canyon ? '要飛越峽谷' : course.theme === 'cliffs' ? '要從崖頂飛越海灣' : course.style === 'links' ? '橫越小溪' : '橫越溪流');
   if (F.has('UP')) out.push('大上坡'); else if (F.has('up')) out.push('上坡');
   if (F.has('DN')) out.push('大下坡'); else if (F.has('dn')) out.push('下坡');
   if (F.has('tr')) out.push('樹林窄球道');
@@ -265,7 +286,7 @@ function openCoursePicker() {
     const list = COURSES.filter(c => c.group === g.id);
     return `<h4>${g.name}</h4>` + (list.length ? list.map(c => `
       <button class="cp-row ${c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':') ? 'on' : ''}" data-c="${c.id}">
-        <div><b>${c.name}</b><em>${c.en}</em></div>
+        <div><b>${c.name}</b><em>${c.en}</em>${c.feature ? `<i class="cp-feat">特色玩法：${c.feature.name}</i>` : ''}</div>
         <span>${c.nines ? `${c.nines.length * 9} 洞（${c.nines.map(n => n.name).join(' / ')}，前後九自選）` : `Par 72 · ${courseYards(c, 'black').toLocaleString()} Y`} · Stimp(果嶺速度) ${c.stimp}</span>
       </button>`).join('') : '<p class="small cp-empty">即將加入</p>');
   }).join('');

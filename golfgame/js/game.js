@@ -281,7 +281,10 @@ export class Game {
     };
     const note = this.hole.spec && this.hole.spec.note;
     const lab = holeLabel(this.course, idx), side = this.hole.greenSide;
-    this.hud.toast(`<small>第 ${idx + 1} 洞${lab ? `（${lab}）` : ''}</small><b>PAR ${this.hole.par} · ${yd} Y</b>${side ? `<small class="hole-note">今日使用${side}果嶺</small>` : ''}${note ? `<small class="hole-note">${escapeHtml(note)}</small>` : ''}`, note ? 3600 : 2600, 'big');
+    // 奇幻球場：這一洞有特色機關就在開場標出來
+    const ft = this.course.feature, hasFt = ft && ft.tags.some(t => this.hole.feat.has(t));
+    const ftHtml = hasFt ? `<small class="hole-feat">本洞有${ft.name}：${ft.short}</small>` : '';
+    this.hud.toast(`<small>第 ${idx + 1} 洞${lab ? `（${lab}）` : ''}</small><b>PAR ${this.hole.par} · ${yd} Y</b>${side ? `<small class="hole-note">今日使用${side}果嶺</small>` : ''}${note ? `<small class="hole-note">${escapeHtml(note)}</small>` : ''}${ftHtml}`, note || hasFt ? 3600 : 2600, 'big');
     $('practice-bar').classList.toggle('hidden', !this.cfg.practice);
     if (this.cfg.practice) {
       this.intro = null;
@@ -652,7 +655,8 @@ export class Game {
     const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.puttScale });
     const ws = Math.hypot(this.wind[0], this.wind[1]);
     const gust = ws > 0 ? Math.min(1 + rng.normal() * 0.12, WIND_MAX_MPH * MPH / ws) : 1;
-    const res = simulate({ ...launch, pos: p.ball.slice() }, { rho: this.rho, wind: [this.wind[0] * gust, this.wind[1] * gust], rng }, this.hole);
+    const env = { rho: this.rho, wind: [this.wind[0] * gust, this.wind[1] * gust], rng };
+    const res = this.applySpecials(simulate({ ...launch, pos: p.ball.slice() }, env, this.hole), { ...launch, pos: p.ball.slice() }, env);
     const msg = {
       t: 'shot', p: pi, input,
       launch: { launchDeg: launch.launchDeg, spin: launch.spin, axisDeg: launch.axisDeg, ...launch.info },
@@ -665,6 +669,84 @@ export class Game {
     this.lastShotUndo = { p: pi, state: JSON.stringify({ ball: p.ball, lie: p.lie, strokes: p.strokes, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, holed: false, picked: false }) };
     if (this.net) this.net.send(msg);
     this.playShot(msg);
+  }
+
+  // ---------------- 奇幻機關 ----------------
+  // 球的飛行 / 滾動路線碰到機關時，從那一點換一組速度、用同一套物理重新模擬，把兩段路線接起來（最多連續觸發 4 次）
+  applySpecials(res, launch, env, depth = 0, skip = null) {
+    const sps = this.hole.specials;
+    if (!sps || !sps.length || depth > 3) return res;
+    const fr = res.frames;
+    let hit = null;
+    for (let i = 1; i < fr.length && !hit; i++) {
+      for (const sp of sps) {
+        if (sp === skip && fr[i][0] < 0.25) continue;
+        const h = this.specialHit(sp, fr[i - 1], fr[i], env);
+        if (h) { hit = { sp, i, ...h }; break; }
+      }
+    }
+    if (!hit) return res;
+    const [vx, vy, vz] = hit.vel, hor = Math.hypot(vx, vz);
+    const nl = { speed: Math.hypot(vx, vy, vz), launchDeg: Math.atan2(vy, hor) * 180 / Math.PI, yaw: Math.atan2(vx, -vz), spin: hit.spin ?? launch.spin * 0.6, axisDeg: 0, pos: hit.pos };
+    const r2 = this.applySpecials(simulate(nl, env, this.hole), nl, env, depth + 1, hit.sp);
+    const t0 = hit.t;
+    const frames = fr.slice(0, hit.i).concat([[t0, ...hit.pos]], r2.frames.map(f => [f[0] + t0, f[1], f[2], f[3]]));
+    const events = res.events.filter(e => e.t < t0).concat([{ t: t0, type: 'special', kind: hit.sp.kind, pos: hit.pos }], r2.events.map(e => ({ ...e, t: e.t + t0 })));
+    const [sx, , sz] = launch.pos, dX = Math.sin(launch.yaw), dZ = -Math.cos(launch.yaw);
+    const [ex, , ez] = r2.end;
+    return { ...r2, frames, events, carry: res.carry, flightTime: res.flightTime || r2.flightTime, descent: res.descent, apex: Math.max(res.apex, r2.apex + hit.pos[1] - launch.pos[1]),
+      total: (ex - sx) * dX + (ez - sz) * dZ, offline: (ex - sx) * Math.cos(launch.yaw) + (ez - sz) * Math.sin(launch.yaw), duration: r2.duration + t0 };
+  }
+
+  // 一段路線（a → b，[t, x, y, z]）有沒有碰到機關；碰到就回傳觸發點、時間、新的速度
+  specialHit(sp, a, b, env) {
+    const dt = (b[0] - a[0]) || 1e-3;
+    const v = [(b[1] - a[1]) / dt, (b[2] - a[2]) / dt, (b[3] - a[3]) / dt];
+    if (sp.kind === 'ring' || sp.kind === 'portal') {
+      // 直立的圓環：路線穿過圓環所在的平面，而且穿過點在圓環內
+      const nx = sp.dir[0], nz = -sp.dir[1], cx = sp.u, cy = sp.y, cz = -sp.v;
+      const d0 = (a[1] - cx) * nx + (a[3] - cz) * nz, d1 = (b[1] - cx) * nx + (b[3] - cz) * nz;
+      if (d0 > 0 || d1 <= 0) return null;                        // 只算從前面（發球台那側）穿過去
+      const k = d0 / (d0 - d1), X = [a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k];
+      if (Math.hypot(X[0] - cx, X[1] - cy, X[2] - cz) > sp.r) return null;
+      const t = a[0] + dt * k;
+      if (sp.kind === 'ring') return { t, pos: X, vel: v.map(c => c * sp.boost) };
+      // 星門：從出口中心飛出，水平方向轉成出口朝向（相對入口的偏角保留），速度不變
+      const e = sp.exit, hor = Math.hypot(v[0], v[2]);
+      const rel = Math.atan2(v[0], -v[2]) - Math.atan2(nx, -nz), ey = Math.atan2(e.dir[0], e.dir[1]) + rel;
+      return { t, pos: [e.u + (X[0] - cx), e.y + (X[1] - cy), -e.v + (X[2] - cz)], vel: [Math.sin(ey) * hor, v[1], -Math.cos(ey) * hor] };
+    }
+    if (sp.kind === 'vent') {
+      // 噴發口：球貼著地面經過噴發口（落地或滾進去）→ 往前上方噴出去
+      if (b[2] - this.hole.height(b[1], b[3]) > 0.35 || Math.hypot(b[1] - sp.u, b[3] + sp.v) > sp.r) return null;
+      const hor = Math.hypot(v[0], v[2]);
+      let yaw = hor > 0.8 ? Math.atan2(v[0], -v[2]) : Math.atan2(this.hole.pin[0] - b[1], -(this.hole.pin[1] - b[3]));
+      yaw += (env.rng() - 0.5) * 0.7;
+      const sp0 = 23 + env.rng() * 5, ang = (60 + env.rng() * 10) * Math.PI / 180;
+      return { t: b[0], pos: [b[1], b[2] + 0.1, b[3]], vel: [Math.sin(yaw) * Math.cos(ang) * sp0, Math.sin(ang) * sp0, -Math.cos(yaw) * Math.cos(ang) * sp0], spin: 1200 };
+    }
+    if (sp.kind === 'shroom') {
+      // 菇傘頂面：從上往下穿過菇傘的高度、而且在菇傘範圍內 → 往上彈
+      if (!(a[2] >= sp.top && b[2] < sp.top)) return null;
+      const k = (a[2] - sp.top) / ((a[2] - b[2]) || 1e-6), X = [a[1] + (b[1] - a[1]) * k, sp.top + 0.05, a[3] + (b[3] - a[3]) * k];
+      if (Math.hypot(X[0] - sp.u, X[2] + sp.v) > sp.r) return null;
+      return { t: a[0] + dt * k, pos: X, vel: [v[0] * 0.85, Math.max(7, -v[1] * 0.78 + 4), v[2] * 0.85], spin: 900 };
+    }
+    if (sp.kind === 'wall') {
+      // 冰鏡牆：水平方向的線段相交，而且球的高度低於牆頂 → 水平速度反射
+      const ax = sp.a[0], az = -sp.a[1], bx = sp.b[0], bz = -sp.b[1];
+      const ex = bx - ax, ez = bz - az, fx = b[1] - a[1], fz = b[3] - a[3];
+      const den = fx * ez - fz * ex;
+      if (Math.abs(den) < 1e-9) return null;
+      const tt = ((ax - a[1]) * ez - (az - a[3]) * ex) / den, uu = ((ax - a[1]) * fz - (az - a[3]) * fx) / den;
+      if (tt < 0 || tt > 1 || uu < 0 || uu > 1) return null;
+      const X = [a[1] + fx * tt, a[2] + (b[2] - a[2]) * tt, a[3] + fz * tt];
+      if (X[1] > sp.y0 + sp.h + 0.5) return null;
+      const L = Math.hypot(ex, ez), nx = -ez / L, nz = ex / L;
+      const dot = v[0] * nx + v[2] * nz, side = Math.sign((a[1] - ax) * nx + (a[3] - az) * nz) || 1;
+      return { t: a[0] + dt * tt, pos: [X[0] + nx * side * 0.25, X[1], X[2] + nz * side * 0.25], vel: [(v[0] - 2 * dot * nx) * 0.82, v[1] * 0.8, (v[2] - 2 * dot * nz) * 0.82], spin: 400 };
+    }
+    return null;
   }
 
   // ---------------- 兩端：播放一桿 ----------------
@@ -722,6 +804,15 @@ export class Game {
         else if (e.type === 'tree') sfx.playLeaves();
         else if (e.type === 'splash') sfx.playSplash();
         else if (e.type === 'cup') { sfx.playCup(); const [px, pz] = this.hole.pin; this.world.cupBurst(px, this.hole.height(px, pz), pz); }
+        else if (e.type === 'special') {
+          // 機關觸發：光點爆開 + 一句提示
+          const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！' }[e.kind];
+          const hue = { ring: 0.2, portal: 0.75, vent: 0.05, shroom: 0.88, wall: 0.55 }[e.kind];
+          this.world.cupBurst(e.pos[0], e.pos[1], e.pos[2], hue, 2.2);
+          this.world.specialPulse(e.kind);
+          sfx.playCup();
+          if (txt) this.hud.toast(txt, 1200);
+        }
       }
       f.vel = new THREE.Vector3(b[1] - a[1], b[2] - a[2], b[3] - a[3]).divideScalar((b[0] - a[0]) || 1);
       if (f.t >= fr[fr.length - 1][0]) {
@@ -764,7 +855,7 @@ export class Game {
       p.strokes++;
       p.ball = this.dropPoint(r.frames, prevBall);
       const th = this.course.theme;
-      toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'void' && r.result === 'chasm' ? '墜入虛空　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
+      toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'void' && r.result === 'chasm' ? '墜入虛空　罰 1 桿' : th === 'cliffs' && r.result === 'chasm' ? '掉進海灣　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
     } else if (r.result === 'ob') {
       p.strokes++;
       p.ball = prevBall;

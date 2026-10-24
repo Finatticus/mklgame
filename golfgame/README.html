@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 28）· 2026-10-24<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 31）· 2026-10-24<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -165,6 +165,12 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td><b>長庚</b><br>Chang Gung Golf Club</td><td>台灣・台地林間（真實球場，27 洞）</td><td class="n">北 3,635 / 中 3,605 / 南 3,635 Y（藍 Tee）</td><td class="n">9</td><td>海拔約 240m、23°C、風 3~12 mph</td><td>北、中、南三區各 9 洞，<b>前九、後九自己選區</b>；很多洞有左右兩個果嶺；果嶺偏硬。依官網球道地圖描圖與文字介紹建立。</td></tr>
   <tr><td><b>美麗華</b><br>Miramar Golf Country Club</td><td>台灣・丘陵林間（真實球場，36 洞）</td><td class="n">北 3,439 / 東 3,345 / 南 3,447 / 西 3,569 Y（黃 Tee）</td><td class="n">8.5</td><td>海拔約 110m、22°C、風 4~13 mph</td><td>北、東、南、西四區，<b>前九、後九自己選區</b>；水池多（東區、南區、西 9）；依計分卡、OpenStreetMap 與衛星影像建立。</td></tr>
   <tr><td><b>赤岩峽谷</b><br>Red Rock Canyon</td><td>高海拔沙漠</td><td class="n">7,240 Y</td><td class="n">9</td><td>海拔 1,600m、29°C、風 3~12 mph</td><td>空氣稀薄球多飛約 6~8%、要飛越峽谷、球道外是紅色荒地（可以打但會損失距離）、岩石與仙人掌、果嶺最快最硬。</td></tr>
+  <tr><td><b>棕櫚灣</b><br>Palm Cove Resort</td><td>海邊・熱帶島嶼</td><td class="n">6,830 Y</td><td class="n">8.5</td><td>海拔 5m、31°C、風 5~14 mph</td><td>綠松石色的海、白沙、棕櫚；多洞沿海岸線，潟湖中的孤島果嶺。</td></tr>
+  <tr><td><b>霧岬斷崖</b><br>Mistral Cliffs</td><td>海邊・海崖</td><td class="n">7,115 Y</td><td class="n">9</td><td>海拔 40m、15°C、風 7~16 mph</td><td>球道在離海面約 16m 的崖頂，陰天強風；好幾洞要飛越海灣（掉下去照峽谷規則，提示「掉進海灣」），跨海三桿洞。</td></tr>
+  <tr><td><b>雪峰松嶺</b><br>Summit Pines</td><td>山地・高山</td><td class="n">7,185 Y</td><td class="n">9.5</td><td>海拔 2,100m、12°C、風 3~12 mph</td><td>積雪山峰、松林、冰河湖；大上大下坡，空氣稀薄球飛得遠。</td></tr>
+  <tr><td><b>櫻川庭苑</b><br>Sakura Gardens</td><td>山地・日式庭園</td><td class="n">6,650 Y</td><td class="n">9</td><td>海拔 300m、18°C、風 1~8 mph</td><td>櫻花、竹林、修剪的松樹、錦鯉池與小溪，花瓣飄落；距離短但水多、孤島果嶺。</td></tr>
+  <tr><td><b>金沙綠洲</b><br>Golden Oasis</td><td>沙漠・沙丘</td><td class="n">7,245 Y</td><td class="n">9.5</td><td>海拔 300m、36°C、風 4~14 mph</td><td>金色沙丘大波浪起伏，球道外全是沙漠荒地，棕櫚圍繞的綠洲水池。</td></tr>
+  <tr><td><b>白鹽湖</b><br>White Salt Flats</td><td>沙漠・鹽湖</td><td class="n">7,435 Y</td><td class="n">10</td><td>海拔 1,100m、28°C、風 6~16 mph</td><td>幾乎全平，球道外是有龜裂紋的白色鹽殼，土耳其藍的鹽水池，遠方粉紫色山脈；風大、滾得遠。</td></tr>
 </table></div>
 
 <h3>東方高爾夫（真實球場）</h3>
@@ -193,16 +199,19 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td>18</td><td>5</td><td>558 / 533 / 469</td><td>12</td><td>開球下坡球道窄長、左側 2 個沙坑、離果嶺約 90 碼 4 個橫向沙坑、果嶺較高</td></tr>
 </table></div>
 
-<h3>奇幻球場（翡翠秘境、熔岩之心、星環浮島）</h3>
-<p>遠離日常風景的主題球場。<b>物理完全照原本的規則</b>，主題（球場資料的 <code>theme</code>）只改外觀與地形配置：熔岩就是水障礙、虛空就是峽谷，掉進去都是罰 1 桿、在進入點附近拋球（提示文字會寫「掉進熔岩」「墜入虛空」）。</p>
+<h3>球道變化與寫實主題球場</h3>
+<p>所有一般球場（鷺灣、楓林谷、赤岩，以及新增的六座）都改用洞型代號增加變化：<code>S</code> S 型彎、<code>D</code> 五桿洞雙狗腿同方向、<code>E</code> 早轉、<code>J</code> 晚轉、<code>nw / wd</code> 窄 / 寬球道、<code>IG</code> 孤島果嶺，轉彎角度 20~50°。新增的六座用 <code>theme</code> 換成不同的外觀（天空、霧、光線、水色、樹種、遠景與外圍地形），物理照舊：<code>tropical</code> 熱帶、<code>cliffs</code> 海崖（陸地墊高 16m、<code>xc</code> 是要飛越的海灣）、<code>alpine</code> 高山、<code>sakura</code> 日式庭園（飄落的花瓣）、<code>dunes</code> 沙丘、<code>salt</code> 鹽湖（後兩者長草外是沙漠荒地）。</p>
+<h3>奇幻球場（五座）</h3>
+<p>遠離日常風景的主題球場。<b>物理公式完全沒改</b>：熔岩就是水障礙、虛空就是峽谷（罰 1 桿抛球，提示寫「掉進熔岩」「墜入虛空」）。每座球場有一個<b>特色機關</b>：球的路線碰到機關時，遊戲從那一點換一組速度、<b>用同一套物理重新模擬</b>接著飛（<code>game.js</code> 的 <code>applySpecials</code>，最多連續觸發 4 次），觸發時會有光點爆開和提示文字。選奇幻球場時，回合設定會在介紹上方獨立一段「特色玩法」（標題黃銅色、內文比介紹深一點；規則、打法提示、幾洞有這個機關，資料在球場的 <code>feature</code>），球場選單的球場名稱下也會寫「特色玩法：…」；有機關的洞，開場提示會多一行「本洞有…」。</p>
 <table>
-  <tr><th>球場</th><th>難度</th><th>Par / 碼數（黑梯）</th><th>Stimp</th><th>特色</th></tr>
-  <tr><td><b>翡翠秘境</b><br>Emerald Lagoon</td><td>簡單</td><td class="n">72 / 6,695 Y</td><td class="n">8</td><td>雨林：綠松石潟湖、棕櫚、巨大蕨類、遠方高聳的石柱山、金色花粉。球道寬（42m）、風小、果嶺慢。</td></tr>
-  <tr><td><b>熔岩之心</b><br>Ember Caldera</td><td>中等偏難</td><td class="n">72 / 7,195 Y</td><td class="n">10</td><td>活火山口：黑色火山岩、黑沙坑、玄武岩柱、枯樹，會流動發光的熔岩河（約 14m 寬）橫越球道、熔岩湖守果嶺，遠方火山冒煙發光、火星往上飄。地面硬、海拔 900m、風 4~14 mph。</td></tr>
-  <tr><td><b>星環浮島</b><br>Starfall Isles</td><td>困難</td><td class="n">72</td><td class="n">10.5</td><td>漂浮在星雲裡的浮空島：島外是無底虛空，島下方是倒錐形岩座；發光水晶、環狀行星、四周飄著浮空島。五個<b>果嶺浮島三桿洞</b>（只有發球台和果嶺兩座島），四桿 / 五桿洞的球道中間有 1~2 道要飛越的虛空裂縫（7~12m 寬），還有窄島洞。</td></tr>
+  <tr><th>球場</th><th>難度</th><th>風景</th><th>特色機關</th></tr>
+  <tr><td><b>翡翠秘境</b><br>Emerald Lagoon</td><td>簡單</td><td>雨林潟湖、棕櫚與蕨類、遠方石柱山、一明一滅的螢火蟲</td><td><b>螢火之環</b>：空中漂浮的光環（半徑約 4.6m，第一個在開球飛行途中、fr2 的第二個在果嶺前），球從發球台那一側穿過 → 速度 ×1.3</td></tr>
+  <tr><td><b>蘑菇幻境</b><br>Glowcap Hollow</td><td>中等</td><td>永夜螢光森林、兩個月亮、淡淡的極光、發光蘑菇與彩色孢子、螢光池</td><td><b>彈跳巨菇</b>：菇傘高 3.5~7m、半徑 4~6.5m，球從上方落在菇傘上 → 往上彈（垂直速度至少 7 m/s，水平保留 85%）</td></tr>
+  <tr><td><b>熔岩之心</b><br>Ember Caldera</td><td>中等偏難</td><td>火山口、熔岩河與熔岩湖、玄武岩、遠方冒煙的火山、飄起的火星</td><td><b>噴發口</b>：每洞約 4 個，每隔幾秒噴發一次；球落到或滾進噴發口 → 以 23~28 m/s、60~70° 往前噴出（方向有隨機偏差）</td></tr>
+  <tr><td><b>極光冰境</b><br>Aurora Reach</td><td>中等偏難</td><td>雪原、冰湖、雪松與冰晶、冰山、會流動的極光、飄雪；海拔 1800m、−4°C</td><td><b>冰鏡牆</b>：球道兩側與狗腿彎道外側的冰牆（高 4m），球撞到 → 水平速度鏡面反射、保留 82%，可以打彈牆球</td></tr>
+  <tr><td><b>星環浮島</b><br>Starfall Isles</td><td>困難</td><td>星雲裡的浮空島（島下方是倒錐形岩座）、環狀行星、發光水晶</td><td><b>星門</b>：入口星門（半徑 5m）在球道上或懸在虛空裂縫上方，球穿過 → 從果嶺附近的出口星門飛出，速度不變、方向轉成出口的朝向</td></tr>
 </table>
-<p>球洞特徵代號（在 <code>js/courses.js</code>）：叢林與熔岩沿用 <code>wl / wr / wc / xc / ww</code>（熔岩主題的 <code>xc</code> 是較寬的熔岩河）；浮島另外有 <code>IG</code> 果嶺浮島、<code>g1 / g2</code> 虛空裂縫數、<code>nw</code> 窄島，<code>wl / wr / wc</code> 在浮島是虛空缺口。</p>
-
+<p><b>洞型</b>（球洞特徵代號，在 <code>js/courses.js</code>）：<code>S</code> S 型彎、<code>D</code> 五桿洞雙狗腿同方向（大弧形）、<code>E</code> 早轉（約 150m）、<code>J</code> 果嶺前才轉、<code>nw</code> / <code>wd</code> 窄 / 寬球道、<code>IG</code> 孤島果嶺（果嶺邊外一圈水 / 熔岩 / 冰湖；浮島則是只剩發球台和果嶺兩座島），轉彎角度 20~60°。浮島另有 <code>g1 / g2</code> 虛空裂縫、熔岩的 <code>xc</code> 是較寬的熔岩河。機關代號：<code>fr1 / fr2</code>、<code>mu</code>、<code>gv</code>、<code>iw</code>、<code>pt</code>。</p>
 <h3>東華（真實球場）</h3>
 <p>依 <code>donghuaelitegolf.com</code> 每洞的球道配置圖、攻擊策略和全區地圖頁的計分卡建立。</p>
 <ul>
@@ -476,7 +485,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <li>天空與環境光：Poly Haven 的真實全景天空 HDR（kloofendal_48d_partly_cloudy_puresky，CC0）。</li>
   <li>地形材質：先依地面種類畫一張顏色圖（約每像素 0.3m，含割草條紋、果嶺棋盤紋、果嶺邊），再在著色器裡疊上 Poly Haven 照片材質的明暗細節（草地 leafy_grass、沙 coast_sand_01、岩石 rock_face_03，都是 CC0）與法線貼圖；越遠細節越淡；赤岩峽谷的陡坡自動換成三平面投影的岩石材質。</li>
   <li>水面：反射天空的低粗糙度材質 + 程式產生的漣漪法線貼圖並持續流動。</li>
-  <li><b>奇幻主題</b>（<code>THEMES</code>）：天空是程式畫的全景圖（雨林晴空、火山灰紅天、星雲 + 環狀行星），同時當環境光；各自的霧色、太陽與半球光顏色、曝光、岩壁顏色。熔岩是自發光、會流動的程式貼圖；浮島外的地形往下延伸並在島面下約 10 公尺內用抖動透空淡出，另外加一層倒錐形的岩石底座；新的樹 / 地標形狀（棕櫚、蕨類、水晶、玄武岩柱、枯樹、石柱山、火山、浮空島）都用程式產生並共用；鏡頭附近有主題的空氣粒子（花粉、火星、星塵）。</li>
+  <li><b>奇幻主題</b>（<code>THEMES</code>）：天空是程式畫的全景圖（雨林晴空、火山灰紅天、星雲 + 環狀行星、雙月夜空、極光星空），冰原與蘑菇森林另外有一圈會流動的極光（著色器動畫），同時當環境光；各自的霧色、太陽與半球光顏色、曝光、岩壁顏色。熔岩是自發光、會流動的程式貼圖；浮島外的地形往下延伸並在島面下約 10 公尺內用抖動透空淡出，另外加一層倒錐形的岩石底座；新的樹 / 地標形狀（棕櫚、蕨類、水晶、玄武岩柱、枯樹、石柱山、火山、浮空島）都用程式產生並共用；鏡頭附近有主題的空氣粒子（一明一滅的螢火蟲、火星、星塵、彩色孢子、飄雪，每顆顏色與閃爍節奏不同）；機關的模型與動畫在 <code>buildSpecials</code>。</li>
   <li>樹：多顆凹凸球合併成樹冠（闊葉、楓樹）、多層錐體（松樹）、杜松、仙人掌、岩石，全部用 Instancing 一次畫出。</li>
   <li>球：遠處自動放大維持可見、地面投影圓點、金色彈道線（面向鏡頭的帶狀網格）。球停在地面時畫在「畫面地形網格」上方（網格每 1.5m 一點，凹處會比物理高度略高），所以不會看起來陷進沙裡；角色的腳也踩在畫面網格上（取兩腳位置較高者）。</li>
   <li>內建角色：膠囊體組成，外觀可換色；揮桿用「手臂平面 + 球桿平面」關鍵影格，手臂和腿用兩段式 IK 求解，所以雙手永遠握在桿上、腳不會滑；下桿時球桿比手慢（延遲釋放）。</li>

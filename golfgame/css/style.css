@@ -673,3 +673,10 @@ body:not([data-practice]) .practice-only { display: none; }
 .nine-row button { padding: 7px 14px; border-radius: 18px; background: #fff; border: 1px solid var(--line); font-size: 13px; }
 .nine-row button.on { background: var(--forest); color: var(--cream); border-color: var(--forest); }
 .nine-row button:disabled { opacity: .35; }
+
+/* 奇幻球場的特色玩法：跟介紹分開一段，標題用黃銅色、內文比介紹深一點 */
+.ci-feature { margin: 8px 0 2px; padding: 8px 0 0; border-top: 1px solid var(--line); }
+.ci-feature h6 { margin: 0 0 3px; font: 700 14px "Noto Serif TC"; color: var(--brass); letter-spacing: .04em; }
+.ci-feature p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
+.cp-feat { display: block; margin-top: 2px; font-style: normal; font-size: 12px; color: var(--brass); font-weight: 600; }
+.hole-feat { display: block; margin-top: 4px; color: #f0d898; font-weight: 600; }
