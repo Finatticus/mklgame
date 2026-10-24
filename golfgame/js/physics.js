@@ -282,11 +282,33 @@ export function makeLaunch(input, ctx) {
   };
 }
 
-// 固定的一組亂數種子：用來算「平均」距離（包含一般揮桿的隨機誤差），每次算出來都一樣
-export const AVG_SEEDS = [11, 23, 37, 41, 59, 67, 73, 89, 97, 101, 113, 127, 131, 149, 157, 163];
+
+// 平均距離表用的 80 組「平衡」種子：一般隨便挑的 80 組，前幾個亂數（力道浮動、打偏、發射角、桿面…）的平均
+// 會剛好偏一邊，算出來的平均距離就差 1~3%。這裡從候選種子裡一個一個挑，讓前 7 個亂數的平均 ≈ 0、
+// 絕對值平均 ≈ 0.798（常態分布的理論值），樣本就跟打很多很多球一樣有代表性。每次載入挑出來的都一樣
+const TABLE_SEEDS = balancedSeeds(80, 7);
+export const ADJ_SEEDS = balancedSeeds(12, 7);     // 特殊球位「預計少 xx%」用（每個力道 12 次揮桿）
+function balancedSeeds(count, draws) {
+  const S = new Array(draws).fill(0), A = new Array(draws).fill(0), out = [];
+  const draw = seed => { const r = makeRng(seed); return Array.from({ length: draws }, () => r.normal()); };
+  let cand = 1;
+  while (out.length < count) {
+    let best = null, bestScore = Infinity;
+    for (let tries = 0; tries < 40; tries++, cand++) {
+      const seed = (Math.imul(cand, 2654435761) ^ 0x9e3779b9) >>> 0;
+      const v = draw(seed), n = out.length + 1;
+      let score = 0;
+      for (let j = 0; j < draws; j++) { const m = (S[j] + v[j]) / n, a = (A[j] + Math.abs(v[j])) / n - 0.798; score += m * m + a * a; }
+      if (score < bestScore) { bestScore = score; best = { seed, v }; }
+    }
+    out.push(best.seed);
+    best.v.forEach((x, j) => { S[j] += x; A[j] += Math.abs(x); });
+  }
+  return out;
+}
 
 // 球桿平均距離表（HUD「平均 Carry」、預估落點、自動選桿用）：
-// 平坦、無風、發球台球位，用 AVG_SEEDS 的 16 次揮桿（含打偏、力道浮動、桿面誤差）取平均 → 等於實際打很多球的平均
+// 平坦、無風、發球台球位，用 TABLE_SEEDS 的 80 次揮桿（含打偏、力道浮動、桿面誤差）取平均 → 等於實際打很多球的平均
 export function distanceTable(stats, clubs, course, rho = 1.2) {
   const flat = {
     course: course || { firm: 1, stimp: 11 },
@@ -297,14 +319,50 @@ export function distanceTable(stats, clubs, course, rho = 1.2) {
   for (const c of clubs) {
     if (c.putter) continue;
     let carry = 0, total = 0;
-    for (const seed of AVG_SEEDS) {
+    for (const seed of TABLE_SEEDS) {
       const rng = makeRng(seed);
       // 用「發球台」球位：一號木在球道上直接打有 7% 懲罰，平均距離表應該是正常（球座上）的距離
       const l = makeLaunch({ power: 1, curve: 0, aimYaw: 0 }, { club: c, lie: SURF.TEE, stats, rng, distToPin: 999 });
       const r = simulate({ ...l, pos: [0, R, 0] }, { rho, wind: [0, 0], rng }, flat);
       carry += r.carry; total += r.total;
     }
-    out[c.id] = { carry: carry / AVG_SEEDS.length, total: total / AVG_SEEDS.length };
+    out[c.id] = { carry: carry / TABLE_SEEDS.length, total: total / TABLE_SEEDS.length };
+    // 各力道的 Carry（10%、20% … 110%）：距離和力道不是等比例（慢的球被空氣拖得比較多），所以每一段都實際模擬。
+    // 每段用一次「沒有誤差的理想揮桿」算出平滑曲線，再乘上「平均 / 理想」的比例（隨機誤差讓平均比理想短約 7~11%）。
+    // 這個比例在 50%、100%、110%（超揮誤差大很多）各量一次，中間內插；不會有少數樣本造成的忽高忽低
+    const ideal = pw => {
+      const l = makeLaunch({ power: pw, curve: 0, aimYaw: 0 }, { club: c, lie: SURF.TEE, stats, rng: ZERO_RNG, distToPin: 999 });
+      return simulate({ ...l, pos: [0, R, 0], carryOnly: true }, { rho, wind: [0, 0], rng: ZERO_RNG }, flat).carry;
+    };
+    const mean = pw => {
+      let sum = 0;
+      for (const seed of TABLE_SEEDS) {
+        const rng = makeRng(seed);
+        const l = makeLaunch({ power: pw, curve: 0, aimYaw: 0 }, { club: c, lie: SURF.TEE, stats, rng, distToPin: 999 });
+        sum += simulate({ ...l, pos: [0, R, 0], carryOnly: true }, { rho, wind: [0, 0], rng }, flat).carry;
+      }
+      return sum / TABLE_SEEDS.length;
+    };
+    const k1 = out[c.id].carry / ideal(1), kLo = mean(0.5) / ideal(0.5), kHi = mean(1.1) / ideal(1.1);
+    const k = pw => pw <= 0.5 ? kLo : pw <= 1 ? kLo + (k1 - kLo) * (pw - 0.5) / 0.5 : k1 + (kHi - k1) * (pw - 1) / 0.1;
+    out[c.id].curve = POWER_LEVELS.map(pw => pw === 1 ? out[c.id].carry : ideal(pw) * k(pw));
   }
   return out;
+}
+
+const ZERO_RNG = Object.assign(() => 0.5, { normal: () => 0 });
+export const POWER_LEVELS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1];
+
+// 依距離表算這個力道的平均 Carry（力道之間線性內插，0% = 0）
+export function carryAt(entry, power) {
+  const pw = Math.max(0, Math.min(1.1, power));
+  if (!entry.curve) return entry.carry * Math.pow(pw, 1.08);
+  if (pw <= POWER_LEVELS[0]) return entry.curve[0] * pw / POWER_LEVELS[0];
+  for (let i = 1; i < POWER_LEVELS.length; i++) {
+    if (pw <= POWER_LEVELS[i]) {
+      const t = (pw - POWER_LEVELS[i - 1]) / (POWER_LEVELS[i] - POWER_LEVELS[i - 1]);
+      return entry.curve[i - 1] + (entry.curve[i] - entry.curve[i - 1]) * t;
+    }
+  }
+  return entry.curve[entry.curve.length - 1];
 }

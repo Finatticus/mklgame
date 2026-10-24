@@ -618,3 +618,16 @@ body:not([data-practice]) .practice-only { display: none; }
   .turn-banner { top: calc(var(--u) * 16.2 + var(--safe-t)); left: calc(var(--u) + var(--safe-l)); transform: none; font-size: calc(var(--u) * .8); padding: 4px 12px; }
 }
 .turn-banner.pop { left: 50%; }
+
+/* 選單按鈕、風速 / 地圖面板、計分板、練習切換列一律排在洞資訊面板下面（--hole-b 由程式量出來） */
+@media (orientation: portrait) {
+  .hud-tools, .hud-env { top: var(--hole-b, calc(var(--u) * 6.9 + var(--safe-t))); }
+  .practice-bar, .hud-players { top: calc(var(--hole-b, calc(var(--u) * 6.9 + var(--safe-t))) + var(--u) * 3.6); }
+  .turn-banner { top: calc(var(--hole-b, calc(var(--u) * 6.9 + var(--safe-t))) + var(--u) * 9); }
+  /* 球放低之後力道條可以再長一點 */
+  .pv-track { height: min(calc(clamp(140px, 34vh, 300px) * 1.4), 30vh); }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .hud-tools { top: var(--hole-b, calc(var(--u) * 6.6 + var(--safe-t))); }
+  .hud-players { top: calc(var(--hole-b, calc(var(--u) * 6.6 + var(--safe-t))) + var(--u) * 3.1); }
+}

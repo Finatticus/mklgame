@@ -612,14 +612,19 @@ function initChar() {
   });
 }
 
+// 角色預覽：整個角色頁共用一個 WebGL 繪圖器（同一個畫布不能重建，否則舊的設定會殘留，手機上會畫成放大的局部）
+let previewRenderer = null;
 function startPreview() {
   if (preview) return;
   const cv = $('ch-canvas');
-  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
-  r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-  r.outputColorSpace = THREE.SRGBColorSpace;
-  r.toneMapping = THREE.ACESFilmicToneMapping;
-  r.shadowMap.enabled = true;
+  if (!previewRenderer) {
+    previewRenderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    previewRenderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    previewRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    previewRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    previewRenderer.shadowMap.enabled = true;
+  }
+  const r = previewRenderer;
   const scene = new THREE.Scene();
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x445533, 1.2));
@@ -633,38 +638,45 @@ function startPreview() {
   scene.add(ground);
   const def = characterDef(draft.look.model);
   const ballPos = new THREE.Vector3(0, 0.021, 0);
-  let golfer = new ProceduralGolfer(draft.look);
-  golfer.setup(ballPos, 0, 'iron');
-  scene.add(golfer.object);
+  const me = { golfer: new ProceduralGolfer(draft.look), alive: true, scene };
+  preview = me;
+  me.golfer.setup(ballPos, 0, 'iron');
+  scene.add(me.golfer.object);
   if (def.file) {
     // 寫實角色：先顯示「載入中」，下載完換上去
-    golfer.setVisible(false);
+    me.golfer.setVisible(false);
+    $('ch-loading').textContent = '角色載入中…';
     $('ch-loading').classList.remove('hidden');
     const mg = new MixamoGolfer(def, { animBase: ANIM_BASE });
     mg.load().then(() => {
-      if (!preview || preview.golfer !== golfer) return;
-      scene.remove(golfer.object);
-      golfer = mg; preview.golfer = mg;
+      if (preview !== me || !me.alive) return;       // 已經換成別的角色了
+      scene.remove(me.golfer.object);
+      me.golfer = mg;
       scene.add(mg.object);
       mg.setup(ballPos, 0, 'iron'); mg.skipPre();
       $('ch-loading').classList.add('hidden');
-    }).catch(() => { $('ch-loading').textContent = '角色載入失敗'; });
+    }).catch(() => { if (preview === me) $('ch-loading').textContent = '角色載入失敗'; });
   } else $('ch-loading').classList.add('hidden');
   const ball = new THREE.Mesh(new THREE.SphereGeometry(0.0213, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffffff }));
   ball.position.set(0, 0.021, 0);
   scene.add(ball);
-  let t = 0, last = performance.now(), swingT = 0;
-  preview = { r, golfer, alive: true };
+  let t = 0, last = performance.now(), swingT = 0, lastW = 0, lastH = 0;
+  const height = def.height || 1.78;
   const loop = now => {
-    if (!preview || !preview.alive) return;
+    if (preview !== me || !me.alive) return;           // 舊的預覽一定要停掉，不能和新的搶著畫
+    requestAnimationFrame(loop);
+    const golfer = me.golfer;
     const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
     const w = cv.clientWidth, h = cv.clientHeight;
-    if (cv.width !== w * r.getPixelRatio()) { r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+    if (!w || !h) return;                               // 畫面還沒排好（切頁中）
+    if (w !== lastW || h !== lastH) { lastW = w; lastH = h; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+    // 鏡頭距離依預覽框大小算：整個人（身高 + 頭上留白）和揮桿範圍都要放得進框裡
+    const vt = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)), ht = vt * cam.aspect;
+    const dist = Math.max((height + 0.5) / 2 / vt, 2.4 / 2 / ht) * 1.08;
+    const c = golfer.object.position.clone().lerp(ballPos, 0.25);
+    c.y = height * 0.5;
     const a = t * 0.35;
-    const c = golfer.object.position.clone().add(new THREE.Vector3(0, 0.9, 0));
-    // 預覽框很窄（直向手機）時鏡頭拉遠，整個人和球桿都要看得到
-    const dist = 4.2 * Math.max(1, 1.15 / Math.max(0.3, cam.aspect || 1));
-    cam.position.set(c.x + Math.sin(a) * dist, 1.5, c.z + Math.cos(a) * dist);
+    cam.position.set(c.x + Math.sin(a) * dist, c.y + dist * 0.12, c.z + Math.cos(a) * dist);
     cam.lookAt(c);
     // 每 7 秒示範一次揮桿（寫實角色也一樣：停在準備姿勢 → 上桿 → 揮桿）
     swingT += dt;
@@ -673,7 +685,6 @@ function startPreview() {
     else if (swingT >= 3 && !golfer.anim && !golfer.swinging && !golfer.finished) golfer.swing(() => {});
     golfer.update(dt);
     r.render(scene, cam);
-    requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
 }
@@ -681,7 +692,6 @@ function startPreview() {
 function stopPreview() {
   if (!preview) return;
   preview.alive = false;
-  preview.r.dispose();
   preview = null;
 }
 

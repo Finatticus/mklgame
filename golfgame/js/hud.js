@@ -9,6 +9,11 @@ const ICON = { driver: 'i-driver', wood: 'i-wood', iron: 'i-iron', wedge: 'i-wed
 export class Hud {
   constructor() {
     this.root = $('hud');
+    // 量出左上洞資訊面板的底部，選單按鈕、風速面板、計分板都排在它下面（字體大小、瀏海不同也不會重疊）
+    const hole = document.querySelector('.hud-hole');
+    const holeBottom = () => { const r = hole.getBoundingClientRect(); if (r.height) document.documentElement.style.setProperty('--hole-b', Math.round(r.bottom + 8) + 'px'); };
+    if (window.ResizeObserver) new ResizeObserver(holeBottom).observe(hole);
+    window.addEventListener('resize', holeBottom);
     this.toastTimer = null;
     this.mini = $('minimap');
     this.miniCtx = this.mini.getContext('2d');
@@ -96,7 +101,7 @@ export class Hud {
     $('c-icon').setAttribute('href', '#' + ICON[club.icon]);
     $('c-name').textContent = club.name;
     const t = table[club.id];
-    $('c-sub').textContent = club.putter ? '推桿' : `平均 ${Math.round(toYd(t.carry))} Y`;
+    $('c-sub').textContent = club.putter ? '推桿' : `平均 ${Math.round(toYd(t.carry))} Y · Total ${Math.round(toYd(t.total))} Y`;
     $('hud-club').classList.toggle('disabled', !mine);
   }
 
