@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 26）· 2026-10-24<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 27）· 2026-10-24<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -154,13 +154,14 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <p>比照實體記分卡：圓圈 = 小鳥、雙圓圈 = 老鷹以上、方框 = 柏忌、雙方框 = 雙柏忌以上。</p>
 
 <h2 id="courses">球場</h2>
-<p>回合設定只顯示目前選的球場資訊（群組、Par、碼數、Stimp(果嶺速度)、風、海拔、介紹），按「更換球場 ▾」打開選單，球場依群組分類：<b>海邊球場、山地 / 林間球場、沙漠 / 高原球場、台灣球場</b>（台灣球場目前有<b>東方高爾夫</b>、<b>長庚</b>、<b>美麗華</b>）。新增球場時在 <code>js/courses.js</code> 加一筆並指定 <code>group</code> 就會出現在對應群組。按「⛳ 18 洞預覽」會跳出視窗，列出每洞的縮圖、標準桿、碼數、難度與特徵。</p>
+<p>回合設定只顯示目前選的球場資訊（群組、Par、碼數、Stimp(果嶺速度)、風、海拔、介紹），按「更換球場 ▾」打開選單，球場依群組分類：<b>海邊球場、山地 / 林間球場、沙漠 / 高原球場、台灣球場</b>（台灣球場目前有<b>東方高爾夫</b>、<b>東華</b>、<b>長庚</b>、<b>美麗華</b>；選球場時台灣球場排在最上面，回合設定預設是東方高爾夫）。新增球場時在 <code>js/courses.js</code> 加一筆並指定 <code>group</code> 就會出現在對應群組。按「⛳ 18 洞預覽」會跳出視窗，列出每洞的縮圖、標準桿、碼數、難度與特徵。</p>
 <p>每座 18 洞、Par 72，四組梯台：黑（100%）、藍（94%）、白（88%）、紅（78%），<b>預設白梯</b>（真實球場用各梯台的實際碼數）。果嶺直徑約 26~30 碼（比照台灣球場），坡度大多 1~3%。果嶺速度在回合設定裡可以用數字調整（Stimp 6.0~13.0，每次 0.5；台灣一般球場約 8）。</p>
 <div class="scroll"><table>
   <tr><th>球場</th><th>風格</th><th>黑梯</th><th>果嶺 Stimp</th><th>環境</th><th>特色</th></tr>
   <tr><td><b>鷺灣海岸</b><br>Heron Bay Links</td><td>臨海林克斯</td><td class="n">7,086 Y</td><td class="n">8</td><td>海拔 8m、17°C、風 6~15 mph</td><td>幾乎無樹、海在一側（落海 = 水障礙）、球道硬（彈跳 ×1.25）、深壺型沙坑、球道外是金黃色長草（深草）。</td></tr>
   <tr><td><b>楓林谷</b><br>Maple Valley</td><td>林間公園</td><td class="n">6,912 Y</td><td class="n">8.5</td><td>海拔 220m、22°C、風 2~9 mph</td><td>兩側高大樹林（有楓樹）、多處水池與溪流、果嶺起伏較多、球道偏軟。</td></tr>
   <tr><td><b>東方高爾夫</b><br>Orient Golf Country Club</td><td>台灣・丘陵林間（真實球場）</td><td class="n">7,168 Y</td><td class="n">9</td><td>海拔約 120m、24°C、風 3~11 mph</td><td><b>依官網每洞的球道配置圖描圖建立</b>：球道、長草、果嶺、發球台、沙坑、水、車道、樹的形狀與位置都照配置圖；上下坡、OB、風依官網文字介紹。白梯 6,808 Y 與官網男士梯總碼數相同。</td></tr>
+  <tr><td><b>東華</b><br>Tong Hwa Golf Club</td><td>台灣・台地（真實球場）</td><td class="n">7,176 Y（藍 Tee）</td><td class="n">9</td><td>海拔約 250m、22°C、風 5~15 mph</td><td>佐藤毅設計，土丘隔開球道、視野開闊；果嶺很大（6、16 洞約 1000 平方公尺）；水池與大沙坑多。依官網 18 洞球道配置圖描圖。</td></tr>
   <tr><td><b>長庚</b><br>Chang Gung Golf Club</td><td>台灣・台地林間（真實球場，27 洞）</td><td class="n">北 3,635 / 中 3,605 / 南 3,635 Y（藍 Tee）</td><td class="n">9</td><td>海拔約 240m、23°C、風 3~12 mph</td><td>北、中、南三區各 9 洞，<b>前九、後九自己選區</b>；很多洞有左右兩個果嶺；果嶺偏硬。依官網球道地圖描圖與文字介紹建立。</td></tr>
   <tr><td><b>美麗華</b><br>Miramar Golf Country Club</td><td>台灣・丘陵林間（真實球場，36 洞）</td><td class="n">北 3,439 / 東 3,345 / 南 3,447 / 西 3,569 Y（黃 Tee）</td><td class="n">8.5</td><td>海拔約 110m、22°C、風 4~13 mph</td><td>北、東、南、西四區，<b>前九、後九自己選區</b>；水池多（東區、南區、西 9）；依計分卡、OpenStreetMap 與衛星影像建立。</td></tr>
   <tr><td><b>赤岩峽谷</b><br>Red Rock Canyon</td><td>高海拔沙漠</td><td class="n">7,240 Y</td><td class="n">9</td><td>海拔 1,600m、29°C、風 3~12 mph</td><td>空氣稀薄球多飛約 6~8%、要飛越峽谷、球道外是紅色荒地（可以打但會損失距離）、岩石與仙人掌、果嶺最快最硬。</td></tr>
@@ -191,6 +192,16 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td>17</td><td>4</td><td>478 / 460 / 403</td><td>2</td><td>右側水溝通到約 230 碼的水池、左側 OB、第二桿上坡多約 20 碼、雙層果嶺</td></tr>
   <tr><td>18</td><td>5</td><td>558 / 533 / 469</td><td>12</td><td>開球下坡球道窄長、左側 2 個沙坑、離果嶺約 90 碼 4 個橫向沙坑、果嶺較高</td></tr>
 </table></div>
+
+<h3>東華（真實球場）</h3>
+<p>依 <code>donghuaelitegolf.com</code> 每洞的球道配置圖、攻擊策略和全區地圖頁的計分卡建立。</p>
+<ul>
+  <li><b>梯台</b>：官網有藍 / 白 / 紅 Tee → 黑梯、藍梯 = 藍 Tee，白梯 = 白 Tee，紅梯 = 紅 Tee，碼數與計分卡相同。</li>
+  <li><b>描圖</b>：官網的圖分外框 / 長草（淺綠）、球道（中綠）、深綠、沙坑、水和紅色打球路線，程式逐點判讀（放大 2 倍再判讀）。比例尺 = 紅線長度 = 藍 Tee 碼數。</li>
+  <li><b>深綠色塊</b>：紅線終點那塊是果嶺，紅線起點附近的小塊是發球台，其他是樹叢。官網文字說最大的果嶺約 1000 平方公尺，所以比這更大的果嶺形狀不變、縮成 1000 平方公尺。</li>
+  <li><b>樹</b>：除了圖上的樹叢，官網沒有畫樹，外框邊緣稀疏種樹、球場範圍外是樹林（自由發揮）。</li>
+  <li>上下坡、OB 方向、果嶺傾斜、16 洞的山谷依「攻擊策略」的文字；選單裡的打法建議是依官網文字改寫。海拔、果嶺速度為推估。</li>
+</ul>
 
 <h3>長庚（真實球場，北 / 中 / 南三區）</h3>
 <p>依 <code>www.cggc.com.tw</code> 每洞的「球道地圖」與「擊球秘笈」建立。<b>回合設定選長庚後，「選區」可以選前九打哪一區、後九打哪一區</b>（不能兩個都選同一區；打 9 洞時只選一區）。組成的 18 洞：前九的差點換成單數（官網該區 HDCP × 2 − 1）、後九換成雙數（× 2），計分卡第 1~18 洞，開場畫面會標出「北區 3」這樣的原本洞號。排行裡長庚的各種組合都算在「長庚」的球場排行，名稱會寫出打的是哪兩區。</p>
@@ -525,7 +536,8 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td><code>js/render.js</code></td><td>3D 場景</td></tr>
   <tr><td><code>js/character.js</code></td><td>內建角色、球桿模型</td></tr>
   <tr><td><code>js/mixamo.js</code></td><td>寫實角色：載入、動作校正、球桿跟手、走位與揮桿切換</td></tr>
-  <tr><td><code>assets/courses/</code></td><td>真實球場的描圖地圖（東方高爾夫 <code>orient-maps.json</code>、長庚 27 洞 <code>cggc-maps.json</code>、美麗華 36 洞 <code>miramar-maps.json</code>）</td></tr>
+  <tr><td><code>assets/courses/</code></td><td>真實球場的描圖地圖（東方高爾夫 <code>orient-maps.json</code>、東華 <code>donghua-maps.json</code>、長庚 27 洞 <code>cggc-maps.json</code>、美麗華 36 洞 <code>miramar-maps.json</code>）</td></tr>
+  <tr><td><code>.claude/trace-donghua.py</code></td><td>把東華官網球道配置圖判讀成描圖地圖（本機用，不用上傳）</td></tr>
   <tr><td><code>.claude/trace-miramar.py</code></td><td>用 OpenStreetMap、衛星影像、地形高程產生美麗華 36 洞描圖地圖（本機用，不用上傳）</td></tr>
   <tr><td><code>.claude/trace-cggc.py</code></td><td>把長庚官網球道地圖判讀成描圖地圖（本機用，不用上傳）</td></tr>
   <tr><td><code>.claude/trace-orient.py</code></td><td>把東方高爾夫官網球道配置圖判讀成描圖地圖（本機用，不用上傳）</td></tr>
