@@ -8,6 +8,7 @@
  *   Account      A 帳號 / B 密碼 / C 啟用(Y/N)，第 1 列為標題
  *   <帳號名稱>    每位玩家一頁：上半部是個人資料（鍵/值），第 14 列起是回合紀錄
  *   排行          每打完一場（9 或 18 洞）一列，排行榜就是讀這一頁（每一場都單獨列入，不只取最好）
+ *   挑戰排行      每位玩家一列：挑戰模式的總星數（有更新就改寫那一列）
  * 遊戲間（驗證碼、連線資料、訊息）放在 CacheService，6 小時自動清除，不佔工作頁。
  */
 
@@ -15,12 +16,14 @@ const ADMIN = 'Michael';
 const ADMIN_PASS = '1220';
 const START_POINTS = 30;
 const START_RESPECS = 10;
-const RESERVED = ['Account', '排行'];
+const RESERVED = ['Account', '排行', '挑戰排行'];
+const STAR_SHEET = '挑戰排行';
+const STAR_HEADER = ['帳號', '總星數', '最遠關卡', '更新時間'];
 const RANK_SHEET = '排行';
 const RANK_HEADER = ['日期', '帳號', '球場', '球場代號', '洞數', '範圍', '梯台', '總桿', '標準桿', '對標準桿', '模式', '一桿進洞', '信天翁', '老鷹', '特殊紀錄'];
 
-// 玩家頁上半部的欄位（第 1~11 列，A=名稱 B=值）
-const PROFILE_KEYS = ['帳號', '能力點', '剩餘重新分配次數', '素質', '外觀', '總回合數', '最佳18洞', '建立時間', '最後登入', '已用能力點', '累計獲得點數'];
+// 玩家頁上半部的欄位（第 1~13 列，A=名稱 B=值）；成就 = 徽章 / 計數 / 球場護照（JSON），挑戰 = 每關星數（JSON）
+const PROFILE_KEYS = ['帳號', '能力點', '剩餘重新分配次數', '素質', '外觀', '總回合數', '最佳18洞', '建立時間', '最後登入', '已用能力點', '累計獲得點數', '成就', '挑戰'];
 const ROUND_HEADER_ROW = 14;
 const ROUND_HEADER = ['日期', '球場', '洞數', '梯台', '桿數', '對標準桿', '推桿數', '上球道', '標準桿上果嶺', '模式', '同組', '每洞桿數'];
 
@@ -36,6 +39,7 @@ function setup() {
   sh.getRange('B:B').setNumberFormat('@');
   ensurePlayerSheet_(ADMIN);
   rankSheet_();
+  starSheet_();
 }
 
 // 「排行」工作頁：沒有就建立（第 1 列標題）
@@ -166,6 +170,34 @@ const ACTIONS = {
     }));
   },
 
+  // 成就 / 球場護照 / 挑戰星數：跟伺服器上的合併（只會增加不會減少）；新達成的成就依 points 加能力點（每個最多 3 點）
+  saveProgress(req) {
+    const acc = auth_(req);
+    return withLock_(() => {
+      const cur = readProfile_(acc.user);
+      const prog = mergeProg_(cur.prog, req.prog || {});
+      const chal = mergeChal_(cur.chal, req.chal || {});
+      let add = 0;
+      const pts = req.points || {};
+      Object.keys(prog.ach || {}).forEach(id => { if (!(cur.prog.ach || {})[id]) add += Math.max(0, Math.min(3, Number(pts[id]) || 0)); });
+      const upd = { '成就': JSON.stringify(prog), '挑戰': JSON.stringify(chal) };
+      if (add) { upd['能力點'] = cur.points + add; upd['累計獲得點數'] = cur.earned + add; }
+      writeProfile_(acc.user, upd);
+      if (req.chal) starRow_(acc.user, chal);
+      return { added: add, profile: readProfile_(acc.user) };
+    });
+  },
+
+  getStarRanking(req) {
+    auth_(req);
+    const sh = starSheet_();
+    const last = sh.getLastRow();
+    if (last < 2) return [];
+    return sh.getRange(2, 1, last - 1, STAR_HEADER.length).getValues().filter(r => r[0] !== '').map(r => ({
+      user: String(r[0]), stars: Number(r[1]) || 0, level: Number(r[2]) || 0, date: r[3] instanceof Date ? r[3].toISOString() : r[3],
+    }));
+  },
+
   // ---------- 管理員 ----------
   listAccounts(req) {
     admin_(req);
@@ -283,6 +315,46 @@ const ACTIONS = {
   },
 };
 
+// ---------- 成就 / 挑戰 ----------
+function mergeProg_(a, b) {
+  const o = { ach: Object.assign({}, a.ach || {}), cnt: Object.assign({}, a.cnt || {}), stamps: Object.assign({}, a.stamps || {}) };
+  Object.keys(b.ach || {}).forEach(k => { if (!o.ach[k]) o.ach[k] = b.ach[k]; });
+  Object.keys(b.cnt || {}).forEach(k => { o.cnt[k] = Math.max(Number(o.cnt[k]) || 0, Number(b.cnt[k]) || 0); });
+  Object.keys(b.stamps || {}).forEach(k => {
+    const x = o.stamps[k], y = b.stamps[k];
+    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 1, Number(y.n) || 1) };
+  });
+  return o;
+}
+function mergeChal_(a, b) {
+  const o = { stars: Object.assign({}, a.stars || {}), best: Object.assign({}, a.best || {}) };
+  Object.keys(b.stars || {}).forEach(k => { o.stars[k] = Math.max(Number(o.stars[k]) || 0, Math.min(3, Number(b.stars[k]) || 0)); });
+  Object.keys(b.best || {}).forEach(k => { o.best[k] = o.best[k] ? Math.min(o.best[k], b.best[k]) : b.best[k]; });
+  o.total = Object.keys(o.stars).reduce((s, k) => s + o.stars[k], 0);
+  return o;
+}
+function starSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(STAR_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(STAR_SHEET, 2);
+    sh.getRange(1, 1, 1, STAR_HEADER.length).setValues([STAR_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function starRow_(user, chal) {
+  const sh = starSheet_();
+  const last = sh.getLastRow();
+  const far = Object.keys(chal.stars).reduce((m, k) => chal.stars[k] > 0 ? Math.max(m, Number(String(k).replace(/\D/g, '')) || 0) : m, 0);
+  const row = [user, chal.total, far, new Date()];
+  if (last >= 2) {
+    const users = sh.getRange(2, 1, last - 1, 1).getValues();
+    for (let i = 0; i < users.length; i++) if (String(users[i][0]) === user) { sh.getRange(i + 2, 1, 1, row.length).setValues([row]); return; }
+  }
+  sh.appendRow(row);
+}
+
 // ---------- helpers ----------
 function json_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
@@ -338,7 +410,7 @@ function ensurePlayerSheet_(user) {
   sh = ss.insertSheet(user);
   const init = {
     '帳號': user, '能力點': START_POINTS, '剩餘重新分配次數': START_RESPECS, '素質': '{}', '外觀': '{}',
-    '總回合數': 0, '最佳18洞': '', '建立時間': new Date(), '最後登入': '', '已用能力點': 0, '累計獲得點數': START_POINTS,
+    '總回合數': 0, '最佳18洞': '', '建立時間': new Date(), '最後登入': '', '已用能力點': 0, '累計獲得點數': START_POINTS, '成就': '{}', '挑戰': '{}',
   };
   sh.getRange(1, 1, PROFILE_KEYS.length, 2).setValues(PROFILE_KEYS.map(k => [k, init[k]]));
   sh.getRange(1, 1, PROFILE_KEYS.length, 1).setFontWeight('bold').setBackground('#f1ebdc');
@@ -363,6 +435,8 @@ function readProfile_(user) {
     best: m['最佳18洞'] === '' ? null : Number(m['最佳18洞']),
     spent: Number(m['已用能力點']) || 0,
     earned: Number(m['累計獲得點數']) || 0,
+    prog: safeParse_(m['成就'], {}),
+    chal: safeParse_(m['挑戰'], {}),
   };
 }
 
@@ -376,7 +450,7 @@ function writeProfile_(user, obj) {
   const sh = ensurePlayerSheet_(user);
   Object.keys(obj).forEach(k => {
     const idx = PROFILE_KEYS.indexOf(k);
-    if (idx >= 0) sh.getRange(idx + 1, 2).setValue(obj[k]);
+    if (idx >= 0) sh.getRange(idx + 1, 1, 1, 2).setValues([[k, obj[k]]]);     // 舊的玩家頁沒有新欄位的名稱，順便補上
   });
 }
 

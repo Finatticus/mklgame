@@ -33,7 +33,9 @@ function db() {
 function save(d) { localStorage.setItem(DBK, JSON.stringify(d)); }
 function prof(d, u) {
   if (!d.profiles[u]) d.profiles[u] = { user: u, points: START_POINTS, respecs: START_RESPECS, stats: {}, look: {}, rounds: 0, best: null, spent: 0, earned: START_POINTS };
-  return d.profiles[u];
+  const p = d.profiles[u];
+  p.prog = p.prog || {}; p.chal = p.chal || {};
+  return p;
 }
 function auth(d, b) {
   const a = d.accounts.find(x => x.user === b.user);
@@ -81,6 +83,23 @@ async function local(b) {
         if (r.holes === 18 && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
         return { earned, profile: cur };
       }
+      case 'saveProgress': {
+        // 跟 GAS 的 saveProgress 同樣的合併規則
+        auth(d, b);
+        const cur = prof(d, b.user), before = Object.assign({}, (cur.prog.ach || {}));
+        cur.prog = mergeProg(cur.prog, b.prog || {});
+        cur.chal = mergeChal(cur.chal, b.chal || {});
+        let add = 0;
+        for (const id of Object.keys(cur.prog.ach)) if (!before[id]) add += Math.max(0, Math.min(3, Number((b.points || {})[id]) || 0));
+        cur.points += add; cur.earned += add;
+        if (b.chal) {
+          const far = Object.keys(cur.chal.stars).reduce((m, k) => cur.chal.stars[k] > 0 ? Math.max(m, Number(k.replace(/\D/g, '')) || 0) : m, 0);
+          d.starRank = d.starRank || {};
+          d.starRank[b.user] = { user: b.user, stars: cur.chal.total, level: far, date: new Date().toISOString() };
+        }
+        return { added: add, profile: cur };
+      }
+      case 'getStarRanking': auth(d, b); return Object.values(d.starRank || {});
       case 'getRounds': auth(d, b); return (d.rounds[b.user] || []).slice(-40).reverse();
       case 'getRankings': auth(d, b); return (d.rankings || []).slice(-5000);
       case 'listAccounts': admin(d, b); return d.accounts.map(a => ({ ...a, ...pick(prof(d, a.user)) }));
@@ -127,3 +146,20 @@ async function local(b) {
   return JSON.parse(JSON.stringify(out));
 }
 const pick = p => ({ points: p.points, respecs: p.respecs, rounds: p.rounds });
+function mergeProg(a, b) {
+  const o = { ach: { ...(a.ach || {}) }, cnt: { ...(a.cnt || {}) }, stamps: { ...(a.stamps || {}) } };
+  for (const k in b.ach || {}) if (!o.ach[k]) o.ach[k] = b.ach[k];
+  for (const k in b.cnt || {}) o.cnt[k] = Math.max(Number(o.cnt[k]) || 0, Number(b.cnt[k]) || 0);
+  for (const k in b.stamps || {}) {
+    const x = o.stamps[k], y = b.stamps[k];
+    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 1, Number(y.n) || 1) };
+  }
+  return o;
+}
+function mergeChal(a, b) {
+  const o = { stars: { ...(a.stars || {}) }, best: { ...(a.best || {}) } };
+  for (const k in b.stars || {}) o.stars[k] = Math.max(Number(o.stars[k]) || 0, Math.min(3, Number(b.stars[k]) || 0));
+  for (const k in b.best || {}) o.best[k] = o.best[k] ? Math.min(o.best[k], b.best[k]) : b.best[k];
+  o.total = Object.values(o.stars).reduce((s, v) => s + v, 0);
+  return o;
+}

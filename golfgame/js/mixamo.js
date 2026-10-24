@@ -253,6 +253,8 @@ export class MixamoGolfer {
     this.placedFor = k;
   }
 
+  setClubSkins(sk) { this.clubMaker.setClubSkins(sk); }
+
   setup(ballPos, yaw, clubIcon) {
     if (!this.ready) return;
     const newShot = !this.ballPos || this.ballPos.distanceTo(ballPos) > 0.01 || this.clubType !== clubIcon || this.state === 'done';

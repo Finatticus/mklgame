@@ -680,3 +680,126 @@ body:not([data-practice]) .practice-only { display: none; }
 .ci-feature p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
 .cp-feat { display: block; margin-top: 2px; font-style: normal; font-size: 12px; color: var(--brass); font-weight: 600; }
 .hole-feat { display: block; margin-top: 4px; color: #f0d898; font-weight: 600; }
+
+/* ---------- 成就徽章（紀錄頁、達成提示共用）---------- */
+.medal { width: 46px; height: 46px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; position: relative;
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .35), inset 0 -4px 8px rgba(0, 0, 0, .25), 0 2px 6px rgba(0, 0, 0, .25); }
+.medal::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .45); }
+.medal span { font: 700 19px "Noto Serif TC"; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .45); }
+.medal.tier-bronze { background: radial-gradient(circle at 35% 30%, #f0c49a, #b57440 55%, #6e4220); }
+.medal.tier-silver { background: radial-gradient(circle at 35% 30%, #ffffff, #b9c2cc 55%, #6c7884); }
+.medal.tier-gold { background: radial-gradient(circle at 35% 30%, #fff2b8, #e0aa3a 55%, #8a5a12); }
+.medal.tier-legend { background: radial-gradient(circle at 35% 30%, #f0e0ff, #8a5ae0 50%, #2a1260); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .35), 0 0 12px rgba(160, 110, 255, .6); }
+.medal.locked { filter: grayscale(1); opacity: .32; }
+
+/* 達成時從上方滑下來的提示 */
+.ach-pop { position: fixed; top: -140px; left: 50%; transform: translateX(-50%); z-index: 9000; width: min(420px, calc(100vw - 24px));
+  display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(135deg, #142a1e, #1d3a2a); border: 1.5px solid var(--brass2); color: var(--cream);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45); transition: top .55s cubic-bezier(.2, 1.3, .4, 1); pointer-events: none; }
+.ach-pop.show { top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.ach-pop::before { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; left: -80px; background: linear-gradient(90deg, transparent, rgba(255, 240, 200, .35), transparent); transform: skewX(-20deg); }
+.ach-pop.show::before { animation: ap-shine 1.1s .45s ease-out; }
+@keyframes ap-shine { to { left: 110%; } }
+.ach-pop .ap-medal { width: 54px; height: 54px; }
+.ach-pop.show .ap-medal { animation: ap-medal .7s .3s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes ap-medal { from { transform: scale(.2) rotate(-90deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.ach-pop .ap-text { display: flex; flex-direction: column; min-width: 0; }
+.ach-pop small { font-size: 11px; letter-spacing: .12em; color: var(--brass2); }
+.ach-pop b { font: 700 17px "Noto Serif TC"; }
+.ach-pop span { font-size: 12.5px; color: #d8d2c0; }
+.ach-pop em { font-style: normal; font-size: 12.5px; color: #f0d898; font-weight: 600; margin-top: 2px; }
+.ach-pop.tier-legend { border-color: #b89aff; box-shadow: 0 10px 30px rgba(0, 0, 0, .45), 0 0 24px rgba(150, 100, 255, .45); }
+
+/* 紀錄頁：成就 */
+.ach-sum { margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
+.ach-sum b { font-size: 22px; color: var(--ink); }
+.ach-cat { display: flex; justify-content: space-between; margin: 16px 0 8px; font: 700 15px "Noto Serif TC"; color: var(--forest); }
+.ach-cat span { font: 500 12px "Noto Sans TC"; color: var(--muted); }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.ach { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.ach:not(.got) { background: #faf8f2; }
+.ach-t { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.ach-t b { font-size: 14px; display: flex; gap: 6px; align-items: baseline; }
+.ach-t b small { font-size: 11px; color: var(--brass); font-weight: 600; }
+.ach-t span { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.ach-t em { font-style: normal; font-size: 12px; color: var(--brass); font-weight: 600; margin-top: 2px; }
+.ach-t time { font-size: 11px; color: var(--fair); margin-top: 2px; }
+.ach-bar { position: relative; height: 14px; border-radius: 7px; background: #ece6d8; margin-top: 5px; overflow: hidden; }
+.ach-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--brass2), var(--brass)); }
+.ach-bar span { position: absolute; inset: 0; text-align: center; font-size: 10.5px; line-height: 14px; color: var(--ink); }
+
+/* 紀錄頁：球場護照的章 */
+.stamp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+.stamp { aspect-ratio: 1; border-radius: 50%; border: 2px dashed #cfc6b2; display: flex; align-items: center; justify-content: center; padding: 8px; text-align: center; background: #faf8f2; }
+.stamp-in { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.stamp small { font: italic 500 11px "Cormorant Garamond"; color: #b0a890; line-height: 1.1; }
+.stamp b { font: 700 15px "Noto Serif TC"; color: #a8a090; }
+.stamp span { font-size: 10.5px; color: #b0a890; }
+.stamp.got { border: 3px double var(--sc, var(--flag)); background: #fff; transform: rotate(-6deg); box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 5px var(--sc, var(--flag)); }
+.stamp.got b, .stamp.got small, .stamp.got span { color: var(--sc, var(--flag)); }
+.stamp.g-taiwan { --sc: #a3302a; } .stamp.g-fantasy { --sc: #5a3aa8; } .stamp.g-coast { --sc: #1f6a8a; } .stamp.g-mountain { --sc: #2f6a3a; } .stamp.g-desert { --sc: #a8682a; }
+
+/* ---------- 角色頁：分頁、球具與高爾夫球 ---------- */
+.char-body { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+.ch-tabs { margin: 4px 0 0; }
+.char-body[data-ct="stats"] .char-left { display: none; }
+.char-body[data-ct="look"] .char-right { display: none; }
+.ch-savebar { position: sticky; bottom: 0; padding: 8px 0 4px; background: linear-gradient(transparent, var(--paper) 30%); }
+.gear-h { margin: 18px 0 2px; font: 700 16px "Noto Serif TC"; color: var(--forest); }
+.gear-slot h5 { margin: 12px 0 6px; }
+.gear-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.gear { display: flex; gap: 10px; align-items: center; text-align: left; padding: 9px 10px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); }
+.gear.on { border-color: var(--brass); box-shadow: 0 0 0 2px rgba(169, 134, 74, .25); }
+.gear.locked { opacity: .55; background: #f4f1e8; }
+.gear span { display: flex; flex-direction: column; min-width: 0; }
+.gear b { font-size: 14px; }
+.gear small { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+.gs { width: 34px; height: 34px; flex: none; border-radius: 50%; display: block; border: 1px solid rgba(0, 0, 0, .12); }
+.gs.club { border-radius: 8px; background: linear-gradient(160deg, color-mix(in srgb, var(--h) 70%, #fff) 0%, var(--h) 55%, color-mix(in srgb, var(--h) 60%, #000) 100%); position: relative; }
+.gs.club::after { content: ""; position: absolute; left: 50%; top: -6px; width: 3px; height: 16px; background: #c8ccd0; transform: translateX(-50%) rotate(18deg); border-radius: 2px; }
+.gs.club.putter { border-radius: 4px; height: 22px; margin: 6px 0; }
+
+/* ---------- 挑戰模式 ---------- */
+.thumb.t5 { background: linear-gradient(160deg, #2a3a5a, #1d3a2a); }
+.cg-note { margin: 10px 0 12px; }
+.cg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding-bottom: 20px; }
+.cg-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 12px; border-radius: 14px; background: #fff; border: 1.5px solid var(--line); position: relative; min-height: 118px; }
+.cg-card.full { border-color: var(--brass); background: linear-gradient(160deg, #fffaf0, #f6ecd2); }
+.cg-card.locked { background: #efebe0; color: #9a9484; }
+.cg-n { font: 700 26px "Barlow Condensed", sans-serif; color: var(--brass); line-height: 1; }
+.cg-card b { font: 700 15px "Noto Serif TC"; }
+.cg-card small { font-size: 11.5px; color: var(--muted); }
+.cg-card em { font-style: normal; font-size: 11.5px; margin-top: auto; }
+.stars { display: flex; gap: 3px; margin-top: auto; }
+.st svg, .big-star svg, .crg-star svg { width: 100%; height: 100%; display: block; }
+.st { width: 20px; height: 20px; fill: #ddd6c4; }
+.st.on { fill: #e2a92a; filter: drop-shadow(0 1px 1px rgba(120, 80, 0, .35)); }
+.lv-head { display: flex; gap: 12px; align-items: center; }
+.lv-head .cg-n { font-size: 40px; }
+.lv-head small { font-size: 12px; color: var(--brass); }
+.lv-head h3 { margin: 0; }
+.lv-meta { font-size: 12.5px; color: var(--muted); }
+.lv-intro { margin: 10px 0; line-height: 1.6; }
+.cr-goals { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.crg { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: #f4f0e6; font-size: 14px; }
+.crg span:nth-child(2) { flex: 1; }
+.crg b { font-size: 12px; color: var(--muted); }
+.crg-star { width: 20px; height: 20px; fill: #d4ccb8; flex: none; }
+.crg.ok { background: #fbf3dc; }
+.crg.ok .crg-star { fill: #e2a92a; }
+.crg.ok b { color: #a87a1a; }
+.cr-head { text-align: center; }
+.cr-head small { color: var(--brass); font-size: 12px; letter-spacing: .08em; }
+.cr-head h3 { margin: 2px 0 0; font-size: 24px; }
+.cr-stars { display: flex; justify-content: center; gap: 10px; margin: 12px 0 4px; }
+.big-star { width: 58px; height: 58px; fill: #ddd6c4; }
+.big-star.on { animation: star-pop .55s cubic-bezier(.2, 1.7, .4, 1) both; }
+@keyframes star-pop { 0% { transform: scale(.2) rotate(-60deg); fill: #ddd6c4; } 60% { fill: #f2c04a; } 100% { transform: none; fill: #e2a92a; filter: drop-shadow(0 2px 4px rgba(150, 100, 0, .45)); } }
+/* 遊戲中：挑戰目標 */
+.chal-goals { position: absolute; left: max(14px, env(safe-area-inset-left)); top: calc(env(safe-area-inset-top, 0px) + 124px); padding: 8px 10px; max-width: 250px; font-size: 12.5px; }
+.chal-goals h6 { margin: 0 0 4px; font-size: 12px; color: var(--brass2); font-weight: 600; letter-spacing: .04em; }
+.chal-goals .cg { display: flex; gap: 6px; align-items: baseline; color: #d8d2c0; line-height: 1.45; }
+.chal-goals .cg i { font-style: normal; width: 16px; height: 16px; border-radius: 50%; border: 1px solid #8a8470; font-size: 10px; text-align: center; line-height: 14px; flex: none; }
+.chal-goals .cg.ok { color: #f0d898; }
+.chal-goals .cg.ok i { background: #e2a92a; border-color: #e2a92a; color: #1d1a10; }

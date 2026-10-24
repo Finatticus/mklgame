@@ -362,7 +362,21 @@ export class World {
     this.specialPulses = {};
     this.ensureSpark();
     const glowBasic = (color, opacity = 1) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
+    this.orbMeshes = {};
     for (const sp of hole.specials || []) {
+      if (sp.kind === 'orb') {
+        // 金球：發光的金色球、外面一圈光暈，上下浮動、慢慢轉
+        const grp = new THREE.Group();
+        grp.position.set(sp.u, sp.y, -sp.v);
+        const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9, 2), glowMaterial({ color: 0xffd04a, roughness: 0.25, metalness: 0.6, flatShading: true }, 0.7));
+        const shell = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.07, 8, 40), glowBasic(0xffe08a, 0.8));
+        grp.add(core, shell, glowSprite(this, new THREE.Vector3(0, 0, 0), 5.5, 0xffc84a, 0.55));
+        g.add(grp);
+        this.orbMeshes[sp.idx] = grp;
+        const ph = sp.idx * 1.7;
+        this.specialAnims.push(t => { if (!grp.visible) return; grp.position.y = sp.y + Math.sin(t * 1.6 + ph) * 0.35; core.rotation.y = t * 0.8; shell.rotation.x = t * 1.1 + ph; shell.rotation.y = t * 0.7; });
+        continue;
+      }
       if (sp.kind === 'ring' || sp.kind === 'portal') {
         const fire = sp.kind === 'ring';
         const ends = fire ? [[sp.u, sp.y, sp.v, sp.dir]] : [[sp.u, sp.y, sp.v, sp.dir], [sp.exit.u, sp.exit.y, sp.exit.v, sp.exit.dir]];
@@ -457,6 +471,14 @@ export class World {
         this.specialAnims.push(t => { const pu = this.specialPulses.wall || 0; mat.emissiveIntensity = 0.3 + 0.12 * Math.sin(t * 1.4 + ax) + pu * 1.5; });
       }
     }
+  }
+
+  // 收集到的金球：消失 + 金色光點
+  collectOrb(idx) {
+    const m = this.orbMeshes && this.orbMeshes[idx];
+    if (!m || !m.visible) return;
+    m.visible = false;
+    this.cupBurst(m.position.x, m.position.y, m.position.z, 0.12, 2.4);
   }
 
   // 機關觸發時，同一種機關一起閃一下
@@ -795,6 +817,7 @@ export class World {
   buildTeeMarkers(hole, g) {
     const geo = new THREE.SphereGeometry(0.11, 16, 12);
     for (const t of hole.tees) {
+      if (hole.course.challenge && t.id !== 'white') continue;          // 挑戰關卡只有一個發球位置
       const mat = new THREE.MeshStandardMaterial({ color: t.color, roughness: 0.35, metalness: 0.1 });
       for (const side of [-1, 1]) {
         const u = t.u + t.dir[1] * side * 3.6 + t.dir[0] * 1.5, v = t.v - t.dir[0] * side * 3.6 + t.dir[1] * 1.5;
@@ -890,6 +913,18 @@ export class World {
     const sh = this.ballShadow = new THREE.Mesh(new THREE.CircleGeometry(BALL_R * 1.1, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false }));
     sh.rotation.x = -Math.PI / 2;
     this.scene.add(sh);
+  }
+
+  // 球的皮膚：顏色、自發光、彈道顏色（七彩球的彈道會變色）
+  setBallSkin(skin) {
+    const m = this.ball.material;
+    const std = !skin || skin.std;
+    m.color.set(std ? 0xffffff : skin.color);
+    m.emissive.set(std || !skin.glow ? 0x000000 : skin.glow);
+    m.emissiveIntensity = std ? 0 : 0.9;
+    this.rainbowTrail = !std && skin.trail === 'rainbow';
+    this.tracer.material.color.set(std ? 0xf2d27a : this.rainbowTrail ? 0xff6ae0 : skin.trail);
+    this.tracer.material.opacity = std ? 0.85 : 0.95;
   }
 
   // 畫面上地形網格（每 1.5m 一個點、三角形內插）的高度。凹下去的地方（沙坑）網格會比物理高度高一點
@@ -1153,6 +1188,7 @@ export class World {
     if (this.specialAnims) for (const f of this.specialAnims) f(this.time);
     if (this.specialPulses) for (const k in this.specialPulses) this.specialPulses[k] = Math.max(0, this.specialPulses[k] - dt * 1.5);
     if (this.aurora) this.aurora.uniforms.uTime.value = this.time;
+    if (this.rainbowTrail) this.tracer.material.color.setHSL((this.time * 0.35) % 1, 0.9, 0.62);
     if (this.flagCloth && windVec) {
       const p = this.flagCloth.attributes.position, base = this.flagBase;
       const ws = Math.hypot(windVec[0], windVec[1]);

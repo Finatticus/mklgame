@@ -444,7 +444,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   // ---------- 浮島（星環浮島）：島上才有地面，其他地方是虛空（掉下去照峽谷規則）----------
   // islandF > 0 = 在島上。IG = 果嶺浮島（只有發球台和果嶺兩座島）、g1 / g2 = 球道中間有幾道虛空裂縫、nw = 窄島
   const gaps = [];
-  if (isVoid && par >= 4) {
+  if (isVoid && spec && spec.gaps) for (const g of spec.gaps) gaps.push({ s: atY(g.at), half: g.half });     // 挑戰關卡指定的裂縫
+  else if (isVoid && par >= 4) {
     const ng = F.has('g2') ? 2 : F.has('g1') ? 1 : 0;
     const s0 = Lp * 0.22 + 30, s1 = Lp - gry - 50;          // 紅梯之後、果嶺前
     for (let i = 0; i < ng; i++) gaps.push({ s: lerp(s0, s1, ng === 1 ? 0.45 : (i + 0.5) / ng), half: 7 + rng() * 5 });
@@ -721,6 +722,25 @@ export function buildHole(course, holeIdx, opts = {}) {
       const a = at(sA - len / 2, lat), b = at(sA + len / 2, lat);
       if (!okSpot(a[0], a[1]) || !okSpot(b[0], b[1])) continue;
       specials.push({ kind: 'wall', a: [a[0], a[1]], b: [b[0], b[1]], y0: Math.min(height(a[0], a[1]), height(b[0], b[1])), h: 4, u: (a[0] + b[0]) / 2, v: (a[1] + b[1]) / 2, avoid: len / 2 + 3 });
+    }
+  }
+  // 挑戰關卡指定位置的機關：at = 距發球台碼數、lat = 橫向（公尺，右正）、h = 離地高度；orb = 金球（只收集，不改變飛行）
+  if (spec && spec.specials) {
+    let orbIdx = 0;
+    for (const q of spec.specials) {
+      const sA = atY(q.at), [u, v, d] = at(sA, q.lat || 0);
+      const gh = Math.max(height(u, v), rawH(u, v, sA, 0));
+      if (q.kind === 'ring' || q.kind === 'orb') specials.push({ kind: q.kind, u, v, y: gh + (q.h ?? 12), r: q.r ?? (q.kind === 'orb' ? 2.6 : 4.6), dir: d, boost: 1.3, idx: q.kind === 'orb' ? orbIdx++ : undefined });
+      else if (q.kind === 'portal') {
+        const sB = atY(q.exitAt), [eu, ev, ed] = at(sB, q.exitLat || 0);
+        specials.push({ kind: 'portal', u, v, y: gh + (q.h ?? 5.5), r: q.r ?? 5, dir: d, exit: { u: eu, v: ev, y: Math.max(height(eu, ev), rawH(eu, ev, sB, 0)) + 6, dir: ed } });
+      } else if (q.kind === 'vent') specials.push({ kind: 'vent', u, v, y: gh, r: q.r ?? 3.6, avoid: 6 });
+      else if (q.kind === 'shroom') specials.push({ kind: 'shroom', u, v, y: gh, top: gh + (q.h ?? 5), r: q.r ?? 5, tint: q.tint ?? srng(), avoid: (q.r ?? 5) + 3 });
+      else if (q.kind === 'wall') {
+        const len = q.len || 40, an = rad(q.ang || 0), wd = [d[0] * Math.cos(an) + d[1] * Math.sin(an), -d[0] * Math.sin(an) + d[1] * Math.cos(an)];
+        const a = [u - wd[0] * len / 2, v - wd[1] * len / 2], b = [u + wd[0] * len / 2, v + wd[1] * len / 2];
+        specials.push({ kind: 'wall', a, b, y0: Math.min(height(a[0], a[1]), height(b[0], b[1])), h: q.h || 4, u, v, avoid: len / 2 + 3 });
+      }
     }
   }
   const nearSpecial = (u, v) => specials.some(q => q.avoid && Math.hypot(q.u - u, q.v - v) < q.avoid);

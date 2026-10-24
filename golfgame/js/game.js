@@ -11,6 +11,8 @@ import { MixamoGolfer } from './mixamo.js';
 import { characterDef, ANIM_BASE } from './config.js';
 import { SwingInput } from './input.js';
 import * as sfx from './audio.js';
+import { bump, unlock, checkCounters, stamp, save as saveProgress, setStars, equippedSkins, chal } from './progress.js';
+import { levelById, evaluate, goalMet } from './challenge.js';
 
 const WIND = { calm: [0, 0], light: [2, 6], normal: [6, 11], strong: [11, 15] };
 const ADJ_LEVELS = [1, 0.65, 0.3];    // 特殊球位增減比例計算的三個力道（由大到小）
@@ -101,7 +103,8 @@ export class Game {
     this.isHost = isHost;
     const base = courseById(cfg.courseId);
     this.course = { ...base, stimp: Number(cfg.stimp) > 0 ? Number(cfg.stimp) : base.stimp };
-    this.holeList = cfg.practice ? [cfg.startHole || 0] : cfg.holes === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : cfg.holes === 'back' ? [9, 10, 11, 12, 13, 14, 15, 16, 17] : [...Array(18).keys()];
+    this.level = cfg.challenge ? levelById(cfg.challenge) : null;        // 挑戰模式的關卡
+    this.holeList = cfg.practice || this.level ? [cfg.startHole || 0] : cfg.holes === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : cfg.holes === 'back' ? [9, 10, 11, 12, 13, 14, 15, 16, 17] : [...Array(18).keys()];
     this.seed = cfg.seed;
     const rng = makeRng(cfg.seed);
     const range = cfg.wind === 'course' || !WIND[cfg.wind] ? this.course.wind : WIND[cfg.wind];
@@ -122,8 +125,11 @@ export class Game {
       return {
         ...p, idx: i, golfer, table: distanceTable(p.stats, CLUBS, this.course, this.rho),
         scores: [], putts: [], pars: [], fwHit: 0, fwTotal: 0, gir: 0, mulligans: cfg.mulligans || 0, away: false,
+        rtrk: { haz: 0, voidFall: 0, three: false, bogey: false, streak: 0 },      // 成就用：這一場的失誤、三推、連續小鳥
       };
     });
+    // 裝備的球桿皮膚
+    for (const p of this.players) if (p.golfer.setClubSkins) p.golfer.setClubSkins(equippedSkins(p.look));
     this.matchStatus = 0;
     this.k = 0;
     this.shotNo = 0;
@@ -254,14 +260,25 @@ export class Game {
       dir = aim + (hs.wind === 'R' ? -Math.PI / 2 : Math.PI / 2) + (rng() - 0.5) * rad(50);
     }
     if (hs && hs.windMul) mph = Math.min(WIND_MAX_MPH, mph * hs.windMul);
+    // 挑戰關卡的固定風：L / R = 從左 / 右邊吹來、H = 逆風、T = 順風
+    if (this.level && this.level.wind) {
+      const t0 = this.hole.teePos(this.cfg.tee), pin0 = this.hole.pin;
+      const aim = Math.atan2(pin0[0] - t0[0], -(pin0[1] - t0[2]));
+      dir = aim + { L: Math.PI / 2, R: -Math.PI / 2, H: Math.PI, T: 0 }[this.level.wind.from];
+      mph = this.level.wind.mph;
+    }
     this.wind = [Math.sin(dir) * mph * MPH, -Math.cos(dir) * mph * MPH];
     const tee = this.hole.teePos(this.cfg.tee);
     for (const p of this.players) {
-      Object.assign(p, { ball: tee.slice(), lie: SURF.TEE, strokes: 0, holed: false, holePutts: 0, girDone: false, prev: null, picked: false, lieOverride: null });
+      Object.assign(p, { ball: tee.slice(), lie: SURF.TEE, strokes: 0, holed: false, holePutts: 0, girDone: false, prev: null, picked: false, lieOverride: null, failed: false, trk: { portal: false } });
       p.pars[k] = this.hole.par;
     }
     const yd = teeYards(this.course, idx, this.cfg.tee);
     this.hud.setHole(this.hole, idx + 1, yd, this.course.name);
+    // 挑戰：這一次的紀錄、已收集的金球、畫面上的目標
+    this.att = { holed: false, failed: false, strokes: 0, putts: 0, hazards: 0, sand: false, shots: [] };
+    this.orbGot = new Set();
+    this.updateChalHud();
     this.ui.loading(false);
     this.ready = true;
     this.world.clearTracer();
@@ -395,7 +412,15 @@ export class Game {
 
   distPin(p) { return this.hole.distToPin(p.ball[0], p.ball[2]); }
 
+  // 挑戰關卡限用的球桿
+  allowed(id) { return !this.level || !this.level.clubs || this.level.clubs.includes(id); }
+
   autoClub(p, dist) {
+    if (this.level && this.level.clubs) {
+      const onGreen = p.lie === SURF.GREEN || (p.lie === SURF.FRINGE && dist < 20);
+      const c = this.level.clubs.map(clubById);
+      return (onGreen && c.find(x => x.putter)) || c.find(x => !x.putter) || c[0];
+    }
     const lie = p.lie;
     if (lie === SURF.GREEN || (lie === SURF.FRINGE && dist < 20)) return clubById('PT');
     if (lie === SURF.SAND && dist < 55) return clubById('SW');
@@ -557,13 +582,14 @@ export class Game {
 
   cycleClub(dir) {
     if (!this.canControl()) return;
-    let i = clubIndex(this.club.id) + dir;
-    i = (i + CLUBS.length) % CLUBS.length;
+    let i = clubIndex(this.club.id);
+    for (let k = 0; k < CLUBS.length; k++) { i = (i + dir + CLUBS.length) % CLUBS.length; if (this.allowed(CLUBS[i].id)) break; }
     this.selectClub(CLUBS[i].id);
   }
 
   selectClub(id) {
     if (!this.canControl()) return;
+    if (!this.allowed(id)) { this.hud.toast('這一關只能用 ' + this.level.clubs.map(c => clubById(c).zh).join('、'), 1600); return; }
     if (this.cfg.practice) {
       // 練習場：選推桿就到果嶺，選其他球桿就回到發球台（或沙坑）
       const c = clubById(id);
@@ -656,7 +682,7 @@ export class Game {
     const ws = Math.hypot(this.wind[0], this.wind[1]);
     const gust = ws > 0 ? Math.min(1 + rng.normal() * 0.12, WIND_MAX_MPH * MPH / ws) : 1;
     const env = { rho: this.rho, wind: [this.wind[0] * gust, this.wind[1] * gust], rng };
-    const res = this.applySpecials(simulate({ ...launch, pos: p.ball.slice() }, env, this.hole), { ...launch, pos: p.ball.slice() }, env);
+    const res = this.collectOrbs(this.applySpecials(simulate({ ...launch, pos: p.ball.slice() }, env, this.hole), { ...launch, pos: p.ball.slice() }, env));
     const msg = {
       t: 'shot', p: pi, input,
       launch: { launchDeg: launch.launchDeg, spin: launch.spin, axisDeg: launch.axisDeg, ...launch.info },
@@ -696,6 +722,23 @@ export class Game {
     const [ex, , ez] = r2.end;
     return { ...r2, frames, events, carry: res.carry, flightTime: res.flightTime || r2.flightTime, descent: res.descent, apex: Math.max(res.apex, r2.apex + hit.pos[1] - launch.pos[1]),
       total: (ex - sx) * dX + (ez - sz) * dZ, offline: (ex - sx) * Math.cos(launch.yaw) + (ez - sz) * Math.sin(launch.yaw), duration: r2.duration + t0 };
+  }
+
+  // 挑戰的金球：路線經過金球旁邊（半徑內）就收集，只加事件、不改變飛行
+  collectOrbs(res) {
+    const orbs = (this.hole.specials || []).filter(q => q.kind === 'orb' && !this.orbGot.has(q.idx));
+    if (!orbs.length) return res;
+    const fr = res.frames, got = new Set(), ev = [];
+    for (let i = 1; i < fr.length; i++) {
+      const a = fr[i - 1], b = fr[i];
+      for (const q of orbs) {
+        if (got.has(q.idx)) continue;
+        const cx = q.u, cy = q.y, cz = -q.v, ex = b[1] - a[1], ey = b[2] - a[2], ez = b[3] - a[3], l2 = ex * ex + ey * ey + ez * ez || 1e-9;
+        const t = clamp(((cx - a[1]) * ex + (cy - a[2]) * ey + (cz - a[3]) * ez) / l2, 0, 1);
+        if (Math.hypot(a[1] + ex * t - cx, a[2] + ey * t - cy, a[3] + ez * t - cz) < q.r) { got.add(q.idx); ev.push({ t: a[0] + (b[0] - a[0]) * t, type: 'orb', idx: q.idx, pos: [cx, cy, cz] }); }
+      }
+    }
+    return ev.length ? { ...res, events: res.events.concat(ev).sort((x, y) => x.t - y.t) } : res;
   }
 
   // 一段路線（a → b，[t, x, y, z]）有沒有碰到機關；碰到就回傳觸發點、時間、新的速度
@@ -753,6 +796,8 @@ export class Game {
   playShot(msg) {
     const p = this.players[msg.p];
     this.cur = msg.p;
+    this.shotCtx = { lie: p.lie, dist: this.distPin(p), strokes: p.strokes };
+    this.world.setBallSkin(equippedSkins(p.look).ball);
     this.hud.enableControls(false);
     this.input.enabled = false;
     const club = clubById(msg.input.club);
@@ -804,6 +849,12 @@ export class Game {
         else if (e.type === 'tree') sfx.playLeaves();
         else if (e.type === 'splash') sfx.playSplash();
         else if (e.type === 'cup') { sfx.playCup(); const [px, pz] = this.hole.pin; this.world.cupBurst(px, this.hole.height(px, pz), pz); }
+        else if (e.type === 'orb') {
+          this.orbGot.add(e.idx);
+          this.world.collectOrb(e.idx);
+          sfx.playCup();
+          this.hud.toast(`金球 ${this.orbGot.size} / ${(this.hole.specials || []).filter(q => q.kind === 'orb').length}`, 900);
+        }
         else if (e.type === 'special') {
           // 機關觸發：光點爆開 + 一句提示
           const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！' }[e.kind];
@@ -828,6 +879,7 @@ export class Game {
   finishShot() {
     const msg = this.flight.msg;
     this.flight = null;
+    this.trackShot(msg);
     const club = clubById(msg.input.club);
     // 連線模式只顯示自己的 SHOT DATA，而且 3 秒後自動關閉，不影響比賽節奏
     const mine = !this.net || (this.players[msg.p] && this.players[msg.p].local);
@@ -872,7 +924,11 @@ export class Game {
       toasts.push('OK！　給推');
     }
     // Double Par：打完標準桿兩倍的桿數（5 桿洞第 10 桿、4 桿洞第 8 桿、3 桿洞第 6 桿）還沒進洞就強制結束這一洞
-    if (!p.holed && !this.cfg.practice && p.strokes >= this.hole.par * 2) {
+    if (this.level && !p.holed && p.strokes >= this.level.max) {
+      // 挑戰：桿數用完還沒進洞 → 這一次挑戰失敗
+      p.holed = true; p.picked = true; p.failed = true;
+      toasts.push(`桿數用完了<br><small>這一關限 ${this.level.max} 桿</small>`);
+    } else if (!p.holed && !this.cfg.practice && p.strokes >= this.hole.par * 2) {
       p.holed = true; p.picked = true; p.strokes = this.hole.par * 2;
       toasts.push(`Double Par（+${this.hole.par}）<br><small>已打 ${this.hole.par * 2} 桿，這一洞結束</small>`);
     }
@@ -975,6 +1031,117 @@ export class Game {
     return prev.slice();
   }
 
+  // ---------------- 成就 / 挑戰紀錄 ----------------
+  // 每一桿：機關、長推、切進、開球距離、失誤（只算自己這台裝置上的玩家，練習場不算）
+  trackShot(msg) {
+    const p = this.players[msg.p];
+    if (!p || !p.local || this.cfg.practice) return;
+    const r = msg.res, club = clubById(msg.input.club), ctx = this.shotCtx || {};
+    const fx = {};
+    for (const e of r.events) if (e.type === 'special') fx[e.kind] = (fx[e.kind] || 0) + 1;
+    const orbs = r.events.filter(e => e.type === 'orb').length;
+    const endSurf = r.result === 'rest' ? this.hole.surface(r.end[0], r.end[2]) : null;
+    const onGreen = r.result === 'holed' || endSurf === SURF.GREEN;
+    const distAfter = r.result === 'holed' ? 0 : toYd(this.hole.distToPin(r.end[0], r.end[2]));
+    if (this.level) {
+      const a = this.att;
+      a.shots.push({ club: club.id, onGreen, endSurf, distAfter, total: toYd(r.total), fx, orbs });
+      if (r.result !== 'rest' && r.result !== 'holed') a.hazards++;
+      if (endSurf === SURF.SAND) a.sand = true;
+      if (club.putter) a.putts++;
+    }
+    for (const k in fx) bump(k, fx[k]);
+    if ((fx.ring || 0) >= 2) unlock('ring_two');
+    if ((fx.shroom || 0) >= 2) bump('doubleBounce');
+    if (fx.vent && onGreen) bump('ventGreen');
+    if (fx.wall && onGreen) unlock('wall_green');
+    if (fx.portal) p.trk.portal = true;
+    if (club.id === 'D' && ctx.lie === SURF.TEE && r.result === 'rest') {
+      const yd = toYd(r.total);
+      if (yd >= 300) unlock('drive300');
+      if (yd >= 330) unlock('drive330');
+    }
+    if (r.result === 'holed') {
+      if (club.putter) { const d = toYd(ctx.dist || 0); if (d >= 15) unlock('putt15'); if (d >= 20) bump('putt20'); }
+      else if (ctx.lie !== SURF.TEE) { unlock('chipin'); if (ctx.lie === SURF.SAND) unlock('sandout'); }
+    }
+    if (r.result === 'water' || r.result === 'chasm' || r.result === 'ob') { p.rtrk.haz++; if (r.result === 'chasm' && this.course.theme === 'void') p.rtrk.voidFall++; }
+    checkCounters();
+    this.updateChalHud();
+  }
+
+  // 每一洞：小鳥 / 老鷹 / 一桿進洞、連續小鳥、星門洞的成績、三推、柏忌
+  trackHole(p) {
+    if (this.cfg.practice || p.copied?.[this.k]) return;
+    const s = p.scores[this.k], par = this.hole.par;
+    if (!s) return;
+    bump('holes');
+    if (!p.picked) {
+      const d = s - par;
+      if (s === 1) bump('hio');
+      if (d === -1) bump('birdie'); else if (d === -2) bump('eagle'); else if (d <= -3) bump('albatross');
+      p.rtrk.streak = d <= -1 ? p.rtrk.streak + 1 : 0;
+      if (p.rtrk.streak >= 3) unlock('streak3');
+      if (p.trk.portal && d <= -1) bump('portalBirdie');
+      if (d >= 1) p.rtrk.bogey = true;
+    } else p.rtrk.bogey = true;
+    if ((p.putts[this.k] || 0) >= 3) p.rtrk.three = true;
+    checkCounters();
+  }
+
+  // 每一場：回合數、球場護照的章、整場的成就
+  trackRound(p) {
+    if (this.cfg.practice || this.level) return;
+    bump('rounds');
+    const sum = this.roundSummary(p);
+    if (sum.holes === 18 && !p.copied?.some(Boolean)) {
+      const base = this.course.baseId || this.course.id;
+      stamp(base, sum.strokes);
+      const r = p.rtrk;
+      if (!r.haz) unlock('clean18');
+      if (!r.three) unlock('nothree');
+      if (!r.bogey) unlock('bogeyfree');
+      if (sum.toPar < 0) unlock('under18');
+      if (base === 'ember' && sum.toPar <= 0) unlock('ember_par');
+      if (base === 'aurora' && sum.toPar <= 0) unlock('aurora_par');
+      if (base === 'sakura' && !r.three) unlock('sakura_no3');
+      if (base === 'starfall' && !r.voidFall) unlock('void_clean');
+    }
+    checkCounters();
+    saveProgress(true);
+  }
+
+  // 挑戰結束：算星數、存檔、挑戰成就，跳出結果
+  finishChallenge() {
+    const lv = this.level, p = this.players.find(q => q.local) || this.players[0];
+    const a = this.att;
+    a.holed = p.holed && !p.failed; a.failed = !!p.failed; a.strokes = p.strokes;
+    const res = evaluate(lv, a);
+    const before = chal().stars[lv.id] || 0;
+    setStars(lv.id, res.stars, a.holed ? a.strokes : 0);
+    if (res.stars >= 1 && lv.n >= 5) unlock('ch5');
+    if (res.stars >= 1 && lv.n >= 20) unlock('ch20');
+    if (res.stars === 3 && lv.n === 10) unlock('ch10_3');
+    if (res.stars === 3 && lv.n === 20) unlock('ch20_3');
+    checkCounters();
+    saveProgress(true);
+    this.ui.showChallengeResult(this, { ...res, before, att: a });
+  }
+
+  // 挑戰的目標清單（畫面左上，達成的打勾）
+  updateChalHud() {
+    const el = $('chal-goals');
+    if (!el) return;
+    el.classList.toggle('hidden', !this.level);
+    if (!this.level || !this.att) return;
+    const hp = document.querySelector('.hud-hole');                // 放在左上角球洞資訊的下面
+    if (hp) el.style.top = Math.round(hp.getBoundingClientRect().bottom + 8) + 'px';
+    const p = this.players.find(q => q.local) || this.players[0];
+    const att = { ...this.att, strokes: p ? p.strokes : 0 };
+    el.innerHTML = `<h6>第 ${this.level.n} 關 · 第 ${att.strokes + 1} 桿 / 限 ${this.level.max} 桿</h6>` + this.level.goals.map((g, i) =>
+      `<div class="cg ${goalMet(g, att, this.level.par, false) ? 'ok' : ''}"><i>${i + 1}</i><span>${g.text}</span></div>`).join('');
+  }
+
   // ---------------- 洞結束 / 回合結束 ----------------
   endHole() {
     if (this.holeDone) return;
@@ -988,6 +1155,8 @@ export class Game {
       if (a < b) this.matchStatus++; else if (b < a) this.matchStatus--;
     }
     this.updatePlayersHud();
+    for (const p of this.players) if (p.local) this.trackHole(p);
+    if (this.level) { this.finishChallenge(); return; }
     const last = this.k >= this.holeList.length - 1;
     this.ui.showHoleResult(this, last).then(() => {
       if (last) this.endRound();
@@ -998,6 +1167,7 @@ export class Game {
   endRound() {
     this.running = false;
     this.roundOver = true;
+    for (const p of this.players) if (p.local) this.trackRound(p);
     this.ui.showRoundResult(this);
   }
 

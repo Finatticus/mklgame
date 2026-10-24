@@ -116,9 +116,14 @@ export class ProceduralGolfer {
     this.rig.add(this.club);
   }
 
+  // 裝備的球桿皮膚 { driver, iron, putter }（progress.js 的 SKINS）
+  setClubSkins(sk) { this.skins = sk || null; this._clubKey = null; }
+
   buildClub(type, lenOverride) {
     // 只有換球桿（或站位角度、長度改變）才重建；舊的模型要釋放，否則每次瞄準都會漏記憶體、越玩越卡
-    const key = type + ':' + (this.lie || 0.9).toFixed(3) + ':' + (lenOverride || 0).toFixed(3);
+    const sk = this.skins && this.skins[type === 'driver' || type === 'wood' ? 'driver' : type === 'putter' ? 'putter' : 'iron'];
+    const skin = sk && !sk.std ? sk : null;
+    const key = type + ':' + (this.lie || 0.9).toFixed(3) + ':' + (lenOverride || 0).toFixed(3) + ':' + (skin ? skin.id : '');
     if (this._clubKey === key) return;
     this._clubKey = key;
     this.club.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
@@ -128,7 +133,10 @@ export class ProceduralGolfer {
     const chrome = new THREE.MeshStandardMaterial({ color: 0xd8dde0, roughness: 0.18, metalness: 1 });
     const black = new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.35, metalness: 0.3 });
     const grip = new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.9 });
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0075, g.len, 8), chrome);
+    // 皮膚：桿頭顏色 / 金屬感 / 自發光，桿身換色
+    const skinHead = skin ? new THREE.MeshStandardMaterial({ color: skin.head, roughness: skin.metal ? 0.2 : 0.35, metalness: skin.metal ? 1 : 0.4, emissive: skin.glow || 0x000000, emissiveIntensity: skin.glow ? 0.8 : 0 }) : null;
+    const shaftMat = skin ? new THREE.MeshStandardMaterial({ color: skin.shaft, roughness: 0.25, metalness: 0.8, emissive: skin.glow || 0x000000, emissiveIntensity: skin.glow ? 0.25 : 0 }) : chrome;
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0075, g.len, 8), shaftMat);
     shaft.position.y = g.len / 2;
     const gr = new THREE.Mesh(new THREE.CylinderGeometry(0.0125, 0.0105, 0.27, 10), grip);
     gr.position.y = 0.135;
@@ -136,14 +144,14 @@ export class ProceduralGolfer {
     let head;
     if (type === 'driver' || type === 'wood') {
       const s = type === 'driver' ? 1 : 0.78;
-      head = new THREE.Mesh(new THREE.SphereGeometry(0.06 * s, 24, 16), black);
+      head = new THREE.Mesh(new THREE.SphereGeometry(0.06 * s, 24, 16), skinHead || black);
       head.scale.set(0.95, 0.55, 1.05);
       head.position.set(0.03 * s, 0, 0.055 * s);
     } else if (type === 'putter') {
-      head = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.028, 0.11), black);
+      head = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.028, 0.11), skinHead || black);
       head.position.set(0.01, 0, 0.045);
     } else {
-      head = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.05, 0.078), type === 'wedge' ? new THREE.MeshStandardMaterial({ color: 0xa9a59c, roughness: 0.4, metalness: 1 }) : chrome);
+      head = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.05, 0.078), skinHead || (type === 'wedge' ? new THREE.MeshStandardMaterial({ color: 0xa9a59c, roughness: 0.4, metalness: 1 }) : chrome));
       head.position.set(0.006, 0.006, 0.035);
     }
     // 桿頭的「趾端」方向 = 本地 (0, cosλ, sinλ)，讓桿底平貼地面

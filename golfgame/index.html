@@ -291,6 +291,17 @@
     <g id="lieBlades" fill="url(#gBlade)"></g>
   </symbol>
 
+  <symbol id="i-target" viewBox="0 0 120 120">
+    <ellipse cx="60" cy="100" rx="40" ry="9" fill="#000" opacity=".22" filter="url(#soft)"/>
+    <circle cx="60" cy="56" r="40" fill="#f6efdf"/>
+    <circle cx="60" cy="56" r="31" fill="#1d3a2a"/>
+    <circle cx="60" cy="56" r="22" fill="#f6efdf"/>
+    <circle cx="60" cy="56" r="13" fill="#a9864a"/>
+    <circle cx="60" cy="56" r="5" fill="#a3302a"/>
+    <path d="M60 56 L96 20" stroke="#2a2420" stroke-width="3" stroke-linecap="round"/>
+    <path d="M96 20 l-3 -10 l10 3 z M96 20 l10 3 l-3 -10" fill="#a3302a"/>
+  </symbol>
+
   <symbol id="i-green" viewBox="0 0 120 120">
     <ellipse cx="60" cy="80" rx="54" ry="26" fill="url(#gTurf)"/>
     <ellipse cx="60" cy="80" rx="54" ry="26" fill="url(#mowFine)"/>
@@ -346,11 +357,21 @@
   <header class="appbar"><small id="lb-greet">GOOD EVENING</small><h4 id="lb-name"></h4><p id="lb-stats" class="appbar-sub"></p><button id="btn-logout" class="appbar-act">登出</button><button id="btn-lobby-set" class="appbar-act set2">⚙ 設定</button></header>
   <div class="body narrow">
     <button class="mode" id="mode-single"><div class="thumb t1"><svg viewBox="0 0 120 120"><use href="#i-driver"/></svg></div><div><b>單人回合</b><span>選球場、梯台、9 / 18 洞</span></div><span class="chev">›</span></button>
+    <button class="mode" id="mode-chal"><div class="thumb t5"><svg viewBox="0 0 120 120"><use href="#i-target"/></svg></div><div><b>挑戰模式</b><span id="mode-chal-sub">特別設計的關卡，每關 1~3 顆星</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-host"><div class="thumb t2"><svg viewBox="0 0 120 120"><use href="#i-flag"/></svg></div><div><b>建立遊戲間</b><span>你的裝置當主機，產生驗證碼</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-join"><div class="thumb t3"><svg viewBox="0 0 120 120"><use href="#i-tee"/></svg></div><div><b>加入遊戲間</b><span>輸入朋友給的 6 位數驗證碼</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-practice"><div class="thumb t4"><svg viewBox="0 0 120 120"><use href="#i-ball"/></svg></div><div><b>練習場</b><span>發球台、沙坑、果嶺推桿，不計分</span></div><span class="chev">›</span></button>
   </div>
   <nav class="tabbar"><button data-tab="lobby" class="on"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
+</section>
+
+<!-- ============ 挑戰模式 ============ -->
+<section id="scr-chal" class="screen app-screen">
+  <header class="appbar"><small>CHALLENGE</small><h4>挑戰模式</h4><p id="cg-stars" class="appbar-sub"></p><button id="cg-back" class="appbar-act">返回</button></header>
+  <div class="body narrow scroll">
+    <p class="small cg-note">每一關都是一個特別設計的洞。在桿數上限內進洞得 1 顆星，另外兩個條件各 1 顆星。前一關拿到 1 顆星，就會開放下一關；想拿滿星可以隨時回來重打。</p>
+    <div id="cg-grid" class="cg-grid"></div>
+  </div>
 </section>
 
 <!-- ============ 回合設定 ============ -->
@@ -410,26 +431,30 @@
 <!-- ============ 角色 ============ -->
 <section id="scr-char" class="screen app-screen">
   <header class="appbar"><small>CHARACTER</small><h4>角色與素質</h4></header>
-  <div class="body char-body scroll">
+  <div class="body char-body scroll" id="ch-body" data-ct="stats">
+    <div id="ch-tabs" class="seg ch-tabs"><button data-ct="stats" class="on">能力值</button><button data-ct="look">外觀</button></div>
     <div class="char-left">
       <div class="ch-stage"><canvas id="ch-canvas"></canvas><div id="ch-loading" class="ch-loading hidden">角色載入中…</div></div>
       <div id="ch-look"></div>
+      <div id="ch-gear"></div>
     </div>
     <div class="char-right">
       <div class="pts"><div>可用能力點 <b id="ch-points" class="num">0</b></div><div>重新分配剩 <b id="ch-respecs" class="num">10</b> 次 <button id="ch-respec" class="mini">重新分配</button></div></div>
       <p class="small">每項基準值 50、上限 99。升級花費：50~69 每點 1、70~84 每點 2、85 以上每點 3。打完 9 洞得 1 點、18 洞得 2 點。</p>
       <div id="ch-stats"></div>
-      <button id="ch-save" class="btn brass big">儲存</button>
-      <p id="ch-msg" class="msg"></p>
     </div>
+    <div class="ch-savebar"><button id="ch-save" class="btn brass big">儲存</button><p id="ch-msg" class="msg"></p></div>
   </div>
   <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char" class="on"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
 
 <!-- ============ 紀錄 ============ -->
 <section id="scr-records" class="screen app-screen">
-  <header class="appbar"><small>RECORDS</small><h4>回合紀錄</h4></header>
-  <div class="body narrow scroll" id="rc-list"></div>
+  <header class="appbar"><small>RECORDS</small><h4>紀錄</h4></header>
+  <div class="body narrow scroll">
+    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="rounds" class="on">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button></div>
+    <div id="rc-list"></div>
+  </div>
   <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records" class="on"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
 
@@ -437,7 +462,7 @@
 <section id="scr-rank" class="screen app-screen">
   <header class="appbar"><small>RANKING</small><h4>排行</h4></header>
   <div class="body narrow scroll">
-    <div id="rk-tabs" class="seg rk-tabs"><button data-rk="total" class="on">總桿排行</button><button data-rk="course">球場排行</button><button data-rk="special">一桿進洞 / 老鷹 / 信天翁</button></div>
+    <div id="rk-tabs" class="seg rk-tabs"><button data-rk="total" class="on">總桿排行</button><button data-rk="course">球場排行</button><button data-rk="special">一桿進洞 / 老鷹 / 信天翁</button><button data-rk="stars">挑戰星數</button></div>
     <div id="rk-holes" class="seg rk-sub"><button data-h="18" class="on">18 洞</button><button data-h="9">9 洞</button></div>
     <div id="rk-courses" class="seg rk-sub hidden"></div>
     <div id="rk-list"></div>
@@ -469,6 +494,7 @@
     <div id="tgt-arrow" class="tgt-arrow"></div>
     <div id="lie-warn" class="lie-warn"></div>
     <div id="turn-banner" class="turn-banner hidden"></div>
+    <div id="chal-goals" class="hud-panel chal-goals hidden"></div>
 
     <div class="hud-panel hud-hole">
       <div class="holeno num"><sup>HOLE</sup><span id="h-hole">1</span></div>
@@ -575,6 +601,16 @@
   <div id="rr-card" class="scroll-x"></div>
   <p id="rr-save" class="small center"></p>
   <div class="dlg-btns"><button id="rr-done" class="btn brass">回到大廳</button></div>
+</div></div>
+
+<div id="dlg-level" class="dlg"><div class="dlg-box wide">
+  <div id="lv-body"></div>
+  <div class="dlg-btns"><button id="lv-cancel" class="btn ghost-dark">取消</button><button id="lv-go" class="btn brass">開始挑戰</button></div>
+</div></div>
+
+<div id="dlg-chal" class="dlg"><div class="dlg-box wide">
+  <div id="cr-body"></div>
+  <div class="dlg-btns"><button id="cr-list" class="btn ghost-dark">關卡列表</button><button id="cr-retry" class="btn ghost-dark">再挑戰一次</button><button id="cr-next" class="btn brass">下一關</button></div>
 </div></div>
 
 <div id="dlg-map" class="dlg"><div class="dlg-box wide map-box">

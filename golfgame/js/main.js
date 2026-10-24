@@ -12,9 +12,11 @@ import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
 import { escapeHtml, fmtToPar } from './util.js';
 import { setSound, unlockAudio } from './audio.js';
+import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, prog, chal, progressOf, medalHtml, skinUnlocked, skinById, equippedSkins, achById, checkCounters } from './progress.js';
+import { LEVELS, levelById, STYLE_NAME, THEME_NAME } from './challenge.js';
 
 const $ = id => document.getElementById(id);
-const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-admin', 'scr-game'];
+const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-chal', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-admin', 'scr-game'];
 function show(id) {
   screens.forEach(s => $(s).classList.toggle('active', s === id));
   document.body.dataset.screen = id;
@@ -122,7 +124,8 @@ function enterLobby() {
   $('lb-name').innerHTML = escapeHtml(session.user) + (session.isAdmin ? '<span class="badge">管理員</span>' : '');
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !session.isAdmin));
   const p = session.profile;
-  $('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${p.best ?? '—'}</b>`;
+  $('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${p.best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`;
+  $('mode-chal-sub').textContent = `${LEVELS.length} 個特別設計的關卡 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
   show('scr-lobby');
 }
 
@@ -131,6 +134,9 @@ function initLobby() {
   $('mode-host').onclick = () => openSetup('host');
   $('mode-join').onclick = () => { $('jn-code').value = ''; msg('jn-msg', ''); $('jn-wait').classList.add('hidden'); $('jn-form').classList.remove('hidden'); show('scr-join'); };
   $('mode-practice').onclick = () => openSetup('practice');
+  $('mode-chal').onclick = openChallenge;
+  $('cg-back').onclick = enterLobby;
+  $('lv-cancel').onclick = () => $('dlg-level').classList.remove('open');
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
     const t = b.dataset.tab;
     if (t === 'lobby') enterLobby();
@@ -484,6 +490,23 @@ const ui = {
     });
   },
   closeHoleResult() { $('dlg-hole').classList.remove('open'); },
+  // 挑戰結果：星星一顆一顆亮起、每個條件有沒有達成
+  showChallengeResult(g, r) {
+    const lv = g.level, box = $('dlg-chal');
+    const nextLv = LEVELS[lv.n];
+    const ok = r.stars > 0;
+    $('cr-body').innerHTML = `<div class="cr-head"><small>第 ${lv.n} 關 · ${escapeHtml(lv.title)}</small><h3>${ok ? (r.stars === 3 ? '完美通關' : '挑戰成功') : '挑戰失敗'}</h3></div>
+      <div class="cr-stars">${[0, 1, 2].map(i => `<span class="big-star ${i < r.stars ? 'on' : ''}" style="animation-delay:${0.25 + i * 0.35}s">${STAR}</span>`).join('')}</div>
+      <div class="cr-goals">${lv.goals.map((x, i) => `<div class="crg ${r.met[i] ? 'ok' : ''}"><span class="crg-star">${STAR}</span><span>${escapeHtml(x.text)}</span><b>${r.met[i] ? '達成' : '未達成'}</b></div>`).join('')}</div>
+      <p class="small center">${r.att.holed ? `${r.att.strokes} 桿進洞` : '沒有進洞'}${r.stars > r.before ? `　·　最佳紀錄更新為 ${r.stars} 星` : r.before ? `　·　最佳紀錄 ${r.before} 星` : ''}　·　挑戰總星數 ${chal().total}</p>`;
+    const unlockedNext = nextLv && (chal().stars[lv.id] || 0) >= 1;
+    $('cr-next').classList.toggle('hidden', !unlockedNext);
+    const leave = () => { box.classList.remove('open'); game.quit(); };
+    $('cr-retry').onclick = () => { leave(); startChallenge(lv); };
+    $('cr-next').onclick = () => { leave(); openLevel(nextLv); show('scr-chal'); renderChallenge(); };
+    $('cr-list').onclick = () => { leave(); openChallenge(); };
+    box.classList.add('open');
+  },
   // 主機離開後由自己判定：「等待主機…」的按鈕改成可以按
   enableHoleNext() {
     const btn = $('hr-next');
@@ -544,13 +567,14 @@ function initGameMenu() {
 
 離開後 ${other.user} 會改成一個人打完剩下的洞，你的成績不會儲存。
 要回來接續的話，到大廳「加入遊戲」輸入驗證碼 ${game.net.code}；你沒打到的洞會比照 ${other.user} 的桿數。`
-      : '確定離開這一回合？目前成績不會儲存。';
+      : game.level ? '確定放棄這一次挑戰？' : '確定離開這一回合？目前成績不會儲存。';
     if (!confirm(text)) return;
     $('dlg-menu').classList.remove('open');
     if (game.net) game.net.send({ t: 'leave' });
+    const wasChal = !!game.level;
     game.quit();
     net = null;
-    enterLobby();
+    if (wasChal) openChallenge(); else enterLobby();
   };
   $('rr-done').onclick = () => { $('dlg-round').classList.remove('open'); game.quit(); net = null; enterLobby(); };
 }
@@ -585,10 +609,37 @@ function scorecardHtml(g) {
 let draft = null, preview = null;
 function openChar() {
   const p = session.profile;
+  setCharTab('stats');
   draft = { stats: normalizeStats(p.stats), base: normalizeStats(p.stats), look: { ...DEFAULT_LOOK, ...p.look }, points: p.points, respecs: p.respecs ?? START_RESPECS, respecUsed: false };
   renderChar();
   show('scr-char');
-  startPreview();
+}
+
+// 角色頁分頁：能力值 / 外觀（外觀才開 3D 預覽，省電）
+function setCharTab(t) {
+  $('ch-body').dataset.ct = t;
+  $('ch-tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.ct === t));
+  if (t === 'look') { if (!preview) startPreview(); } else stopPreview();
+}
+
+// 球具與高爾夫球：解鎖的可以裝備，沒解鎖的顯示達成條件
+function gearHtml() {
+  const swatch = sk => {
+    if (sk.slot === 'ball') {
+      const c = sk.std ? '#ffffff' : '#' + sk.color.toString(16).padStart(6, '0'), gl = sk.glow ? '#' + sk.glow.toString(16).padStart(6, '0') : 'transparent';
+      return `<i class="gs ball" style="background:radial-gradient(circle at 35% 30%, #fff 0, ${c} 45%, ${gl} 100%);${sk.glow ? `box-shadow:0 0 10px ${gl}` : ''}${sk.trail === 'rainbow' ? ';background:conic-gradient(#ff6a6a,#ffd66a,#6aff9a,#6ad8ff,#b06aff,#ff6a6a)' : ''}"></i>`;
+    }
+    const h = sk.std ? '#2a2c30' : '#' + sk.head.toString(16).padStart(6, '0'), gl = sk.glow ? '#' + sk.glow.toString(16).padStart(6, '0') : null;
+    return `<i class="gs club ${sk.slot}" style="--h:${h};--g:${gl || 'transparent'};${gl ? `box-shadow:0 0 10px ${gl}` : ''}"></i>`;
+  };
+  return '<h4 class="gear-h">球具與高爾夫球</h4><p class="small">達成特定的困難成就可以解鎖特殊外觀，裝備後在球場上就看得到。</p>' + ['driver', 'iron', 'putter', 'ball'].map(slot => {
+    const cur = skinById(slot, draft.look[LOOK_KEY[slot]]).id;
+    return `<div class="gear-slot"><h5>${SLOT_NAME[slot]}</h5><div class="gear-list">${SKINS.filter(x => x.slot === slot).map(sk => {
+      const got = skinUnlocked(sk), a = sk.ach && achById(sk.ach);
+      return `<button class="gear ${cur === sk.id ? 'on' : ''} ${got ? '' : 'locked'}" data-slot="${slot}" data-skin="${sk.id}" ${got ? '' : 'disabled'}>
+        ${swatch(sk)}<span><b>${sk.name}</b><small>${cur === sk.id ? '裝備中' : got ? '點一下裝備' : `解鎖：${a ? a.name + '（' + a.desc + '）' : ''}`}</small></span></button>`;
+    }).join('')}</div></div>`;
+  }).join('');
 }
 
 function renderChar() {
@@ -633,6 +684,13 @@ function renderChar() {
     stopPreview(); startPreview();
   });
   $('ch-look').querySelectorAll('[data-lk]').forEach(b => b.onclick = () => { draft.look[b.dataset.lk] = b.dataset.lv; renderChar(); if (preview) preview.golfer.setLook(draft.look); });
+  $('ch-gear').innerHTML = gearHtml();
+  $('ch-gear').querySelectorAll('[data-skin]').forEach(b => b.onclick = () => {
+    draft.look[LOOK_KEY[b.dataset.slot]] = b.dataset.skin;
+    if (preview && preview.golfer.setClubSkins) preview.golfer.setClubSkins(equippedSkins(draft.look));
+    renderChar();
+    msg('ch-msg', '記得按「儲存」', true);
+  });
 }
 
 // 素質詳細說明：影響什麼、公式、你目前的數值實際等於多少
@@ -651,6 +709,7 @@ function statDetailHtml(s, v) {
 }
 
 function initChar() {
+  $('ch-tabs').querySelectorAll('button').forEach(b => b.onclick = () => setCharTab(b.dataset.ct));
   $('ch-respec').onclick = () => {
     if (draft.respecs <= 0) return alert('重新分配次數已用完，請找管理員');
     if (!confirm(`重新分配會把所有素質重設為 ${BASE}、退回全部已用能力點，並消耗 1 次機會（剩 ${draft.respecs} 次）。確定？`)) return;
@@ -759,16 +818,90 @@ function stopPreview() {
 }
 
 // ---------------- 紀錄 ----------------
+let rcTab = 'rounds';
 async function openRecords() {
   show('scr-records');
+  $('rc-tabs').querySelectorAll('button').forEach(b => b.onclick = () => { rcTab = b.dataset.rc; renderRecords(); });
+  renderRecords();
+}
+
+async function renderRecords() {
+  $('rc-tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.rc === rcTab));
+  if (rcTab === 'ach') { $('rc-list').innerHTML = achHtml(); return; }
+  if (rcTab === 'pass') { $('rc-list').innerHTML = passportHtml(); return; }
   $('rc-list').innerHTML = '<p class="small">讀取中…</p>';
   try {
     const list = await call('getRounds');
+    if (rcTab !== 'rounds') return;
     $('rc-list').innerHTML = list.length ? list.map(r => `
       <div class="rec"><div><b>${escapeHtml(r.course)}</b><span>${new Date(r.date).toLocaleDateString()} · ${r.holes} 洞 · ${escapeHtml(r.mode)}${r.partners ? ' · 與 ' + escapeHtml(r.partners) : ''}</span></div>
       <div class="rs"><b class="num">${r.strokes}</b><span class="num">${fmtToPar(Number(r.toPar))}</span></div>
       <div class="rx">推桿 ${r.putts} · 上球道 ${r.fairways} · GIR ${r.gir}</div></div>`).join('') : '<p class="small">還沒有紀錄，去打一場吧！</p>';
   } catch (e) { $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+}
+
+// 成就徽章：依分類列出，計數型有進度條；有獎勵（能力點、皮膚）的寫出來
+function achHtml() {
+  checkCounters();
+  const g = prog(), got = ACH.filter(a => g.ach[a.id]).length;
+  return `<div class="ach-sum"><b class="num">${got}</b> / ${ACH.length} 個成就已達成</div>` + ACH_CATS.map(([cat, name]) => {
+    const list = ACH.filter(a => a.cat === cat);
+    return `<h4 class="ach-cat">${name}<span>${list.filter(a => g.ach[a.id]).length} / ${list.length}</span></h4><div class="ach-grid">${list.map(a => {
+      const has = !!g.ach[a.id], skin = SKINS.find(x => x.ach === a.id);
+      const pr = a.cnt && a.n > 1 && !has ? `<div class="ach-bar"><i style="width:${progressOf(a) / a.n * 100}%"></i><span class="num">${progressOf(a)} / ${a.n}</span></div>` : '';
+      const reward = [a.pts ? `能力點 +${a.pts}` : '', skin ? `解鎖「${skin.name}」` : ''].filter(Boolean).join('　');
+      return `<div class="ach ${has ? 'got' : ''}">${medalHtml(a, has)}<div class="ach-t"><b>${a.name}<small>${TIER_NAME[a.tier]}</small></b><span>${a.desc}</span>${pr}${reward ? `<em>${reward}</em>` : ''}${has ? `<time>${new Date(g.ach[a.id]).toLocaleDateString()} 達成</time>` : ''}</div></div>`;
+    }).join('')}</div>`;
+  }).join('');
+}
+
+// 球場護照：每座球場打完 18 洞蓋一個章
+function passportHtml() {
+  const st = prog().stamps, n = PASSPORT.filter(c => st[c.id]).length;
+  return `<div class="ach-sum"><b class="num">${n}</b> / ${PASSPORT.length} 個章　<span class="small">在球場打完 18 洞就會蓋章（分區球場任選兩區都算）</span></div>` + COURSE_GROUPS.map(gr => {
+    const list = PASSPORT.filter(c => c.group === gr.id);
+    if (!list.length) return '';
+    return `<h4 class="ach-cat">${gr.name}<span>${list.filter(c => st[c.id]).length} / ${list.length}</span></h4><div class="stamp-grid">${list.map(c => {
+      const x = st[c.id];
+      return `<div class="stamp ${x ? 'got g-' + gr.id : ''}"><div class="stamp-in"><small>${escapeHtml(c.en)}</small><b>${escapeHtml(c.name)}</b>${x ? `<span>${new Date(x.date).toLocaleDateString()}</span><span>最佳 ${x.best} 桿 · ${x.n || 1} 場</span>` : '<span>尚未蓋章</span>'}</div></div>`;
+    }).join('')}</div>`;
+  }).join('');
+}
+
+// ---------------- 挑戰模式 ----------------
+const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2.6l2.85 6.05 6.6.78-4.88 4.55 1.3 6.55L12 17.25l-5.87 3.28 1.3-6.55L2.55 9.43l6.6-.78z"/></svg>';
+const starsHtml = n => `<span class="stars">${[0, 1, 2].map(i => `<span class="st ${i < n ? 'on' : ''}">${STAR}</span>`).join('')}</span>`;
+const levelOpen = lv => lv.n === 1 || (chal().stars[LEVELS[lv.n - 2].id] || 0) >= 1;
+function openChallenge() {
+  show('scr-chal');
+  renderChallenge();
+}
+function renderChallenge() {
+  const c = chal();
+  $('cg-stars').innerHTML = `已拿 <b>${c.total}</b> / ${LEVELS.length * 3} 顆星`;
+  $('cg-grid').innerHTML = LEVELS.map(lv => {
+    const open = levelOpen(lv), n = c.stars[lv.id] || 0;
+    const tag = (lv.theme ? THEME_NAME[lv.theme] : STYLE_NAME[lv.style]) || '';
+    return `<button class="cg-card ${open ? '' : 'locked'} ${n === 3 ? 'full' : ''}" data-lv="${lv.id}" ${open ? '' : 'disabled'}>
+      <span class="cg-n num">${lv.n}</span><b>${escapeHtml(lv.title)}</b><small>${tag} · PAR ${lv.par} · ${lv.yards} Y</small>
+      ${open ? starsHtml(n) : `<em>通過第 ${lv.n - 1} 關後開放</em>`}</button>`;
+  }).join('');
+  $('cg-grid').querySelectorAll('[data-lv]').forEach(b => b.onclick = () => openLevel(levelById(b.dataset.lv)));
+}
+function openLevel(lv) {
+  const c = chal(), n = c.stars[lv.id] || 0;
+  const tag = (lv.theme ? THEME_NAME[lv.theme] : STYLE_NAME[lv.style]) || '';
+  const rules = [`限 ${lv.max} 桿`, lv.clubs ? `只能用 ${lv.clubs.map(id => ({ '7I': '7 號鐵', PT: '推桿' }[id] || id)).join('、')}` : '', lv.wind ? `固定 ${lv.wind.mph} mph ${{ L: '左側風', R: '右側風', H: '逆風', T: '順風' }[lv.wind.from]}` : ''].filter(Boolean);
+  $('lv-body').innerHTML = `<div class="lv-head"><span class="cg-n num">${lv.n}</span><div><small>${escapeHtml(lv.en)} · ${tag}</small><h3>${escapeHtml(lv.title)}</h3><span class="lv-meta">PAR ${lv.par} · ${lv.yards} Y · ${rules.join(' · ')}</span></div></div>
+    <p class="lv-intro">${escapeHtml(lv.intro)}</p>
+    <div class="cr-goals">${lv.goals.map((g, i) => `<div class="crg ${i < n ? 'ok' : ''}"><span class="crg-star">${STAR}</span><span>${escapeHtml(g.text)}</span></div>`).join('')}</div>
+    <p class="small">${n ? `目前最佳 ${n} 星${c.best[lv.id] ? `、最少 ${c.best[lv.id]} 桿` : ''}。` : '還沒有通過這一關。'}星星要先進洞才算；同一次挑戰達成越多條件，星星越多。</p>`;
+  $('lv-go').onclick = () => { $('dlg-level').classList.remove('open'); startChallenge(lv); };
+  $('dlg-level').classList.add('open');
+}
+function startChallenge(lv) {
+  const cfg = { courseId: lv.id, challenge: lv.id, holes: 'all', tee: 'white', mode: 'stroke', wind: 'course', stimp: lv.course.stimp, gimme: 0, mulligans: 0, practice: false, seed: Math.floor(Math.random() * 2 ** 31) };
+  startGame(cfg, [{ ...me(), local: true }]);
 }
 
 // ---------------- 排行 ----------------
@@ -787,17 +920,25 @@ async function openRanking() {
   $('rk-courses').querySelectorAll('button').forEach(b => b.onclick = () => { rank.course = b.dataset.c; renderRanking(); });
   $('rk-list').innerHTML = '<p class="small">讀取中…</p>';
   try {
-    rank.rows = await call('getRankings');
+    const [rows, stars] = await Promise.all([call('getRankings'), call('getStarRanking').catch(() => [])]);
+    rank.rows = rows; rank.stars = stars;
     renderRanking();
   } catch (e) { $('rk-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+}
+
+// 挑戰星數排行：星數多的在前，同星數比較早達到的在前
+function starRankHtml() {
+  const list = (rank.stars || []).filter(r => r.stars > 0).sort((a, b) => b.stars - a.stars || String(a.date).localeCompare(String(b.date)));
+  if (!list.length) return '<p class="small">還沒有人拿到挑戰星星。</p>';
+  return list.map((r, i) => `<div class="rk-row ${r.user === session.user ? 'me' : ''}"><span class="rk-no ${i < 3 ? 'top' + (i + 1) : ''}">${i + 1}</span><div class="rk-who"><b>${escapeHtml(r.user)}</b><span>最遠通過第 ${r.level} 關 · ${fmtWhen(r.date)}</span></div><div class="rk-score"><b class="num">${r.stars}</b><span>顆星</span></div></div>`).join('');
 }
 
 function renderRanking() {
   const sel = (id, attr, v) => $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset[attr] === String(v)));
   sel('rk-tabs', 'rk', rank.tab); sel('rk-holes', 'h', rank.holes); sel('rk-courses', 'c', rank.course);
-  $('rk-holes').classList.toggle('hidden', rank.tab === 'special');
+  $('rk-holes').classList.toggle('hidden', rank.tab === 'special' || rank.tab === 'stars');
   $('rk-courses').classList.toggle('hidden', rank.tab !== 'course');
-  $('rk-list').innerHTML = rank.tab === 'special' ? specialHtml() : strokeHtml();
+  $('rk-list').innerHTML = rank.tab === 'stars' ? starRankHtml() : rank.tab === 'special' ? specialHtml() : strokeHtml();
   $('rk-list').querySelectorAll('[data-open]').forEach(el => el.onclick = () => { rank.open = rank.open === el.dataset.open ? null : el.dataset.open; renderRanking(); });
 }
 
