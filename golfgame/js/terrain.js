@@ -9,6 +9,9 @@ const STYLE = {
   links: { macroA: 2.2, macroL: 120, microA: 1.5, microL: 16, edgeRise: 3, potDepth: 0.85, bunkerSize: [3.4, 4.6] },
   parkland: { macroA: 4.5, macroL: 110, microA: 0.6, microL: 28, edgeRise: 9, potDepth: 0.45, bunkerSize: [5, 9] },
   canyon: { macroA: 3.0, macroL: 90, microA: 0.8, microL: 24, edgeRise: 24, potDepth: 0.45, bunkerSize: [4.5, 8] },
+  // 奇幻球場：火山地形起伏比較碎；浮島本身平緩（島外是虛空）
+  volcanic: { macroA: 4.0, macroL: 90, microA: 1.1, microL: 18, edgeRise: 18, potDepth: 0.5, bunkerSize: [4.5, 8.5] },
+  void: { macroA: 2.4, macroL: 120, microA: 0.5, microL: 26, edgeRise: 0, potDepth: 0.5, bunkerSize: [4, 7] },
 };
 
 // ---------- 真實球場的描圖地圖（球場官網球道配置圖判讀而來） ----------
@@ -111,6 +114,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   const st = STYLE[course.style];
   const L = yards * YD;
   const canyon = course.style === 'canyon', links = course.style === 'links', park = course.style === 'parkland';
+  // 奇幻主題（只改外觀與地形配置，物理照舊）：jungle 叢林、lava 熔岩（熔岩 = 水障礙）、void 浮島（虛空 = 峽谷）
+  const theme = course.theme || null, isVoid = theme === 'void';
 
   // ---------- 1. 中心線 ----------
   const raw = [[0, 0]];
@@ -336,7 +341,7 @@ export function buildHole(course, holeIdx, opts = {}) {
 
   // ---------- 5. 水障礙 / 峽谷 ----------
   const waters = [];
-  const pondKind = canyon ? 'chasm' : 'pond';
+  const pondKind = canyon || isVoid ? 'chasm' : 'pond';
   for (const side of [-1, 1]) {
     if (!F.has(side < 0 ? 'wl' : 'wr')) continue;
     const sAt = par === 5 ? clamp(L * 0.5, 240, 300) : clamp(L * 0.58, 200, 260);
@@ -379,7 +384,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     cross = { s: (s0 + s1) / 2, half: (s1 - s0) / 2, kind: 'valley' };
   } else if (F.has('xc')) {
     const sc = par === 5 ? clamp(L * 0.66, 330, 380) : par === 4 ? clamp(L * 0.42, 150, 185) : Lp * 0.5;
-    cross = { s: sc, half: canyon ? 13 : links ? 2.8 : 3.6, kind: canyon ? 'chasm' : 'creek' };
+    cross = { s: sc, half: canyon ? 13 : links ? 2.8 : theme === 'lava' ? 7 : 3.6, kind: canyon ? 'chasm' : 'creek' };
   }
   const crossDist = (s, d) => cross ? Math.abs(s - cross.s + (cross.kind === 'valley' ? 3 : 6) * nz2(d * 0.02, 5)) - cross.half : 99;
   // 其他區域：spec.waste = [{g:'R'}] 果嶺旁的荒地（很難切）
@@ -414,6 +419,31 @@ export function buildHole(course, holeIdx, opts = {}) {
   const fe = Lp - gry * 0.7;
   const roughW = course.roughW;
 
+  // ---------- 浮島（星環浮島）：島上才有地面，其他地方是虛空（掉下去照峽谷規則）----------
+  // islandF > 0 = 在島上。IG = 果嶺浮島（只有發球台和果嶺兩座島）、g1 / g2 = 球道中間有幾道虛空裂縫、nw = 窄島
+  const gaps = [];
+  if (isVoid && par >= 4) {
+    const ng = F.has('g2') ? 2 : F.has('g1') ? 1 : 0;
+    const s0 = Lp * 0.22 + 30, s1 = Lp - gry - 50;          // 紅梯之後、果嶺前
+    for (let i = 0; i < ng; i++) gaps.push({ s: lerp(s0, s1, ng === 1 ? 0.45 : (i + 0.5) / ng), half: 7 + rng() * 5 });
+  }
+  const islandF = (u, v, s, d) => {
+    const ad = Math.abs(d);
+    const n = 2.6 * nz3(u * 0.035, v * 0.035) + 1.2 * nz2(u * 0.11, v * 0.11);
+    let f = -99;
+    if (!F.has('IG')) {
+      const half = fwHalf(s, d > 0 ? 1 : -1) + (F.has('nw') ? 4 : roughW * 0.75);
+      f = Math.min(half - ad, s + 14, Lp + gry + 12 - s) + n;
+      for (const gp of gaps) f = Math.min(f, Math.abs(s - gp.s + 5 * nz2(d * 0.03, gp.s)) - gp.half);
+    }
+    for (const t of tees) {
+      const du = u - t.u, dv = v - t.v;
+      const e = Math.max(Math.abs(du * t.dir[0] + dv * t.dir[1]) - 5.5, Math.abs(du * t.dir[1] - dv * t.dir[0]) - 4);
+      f = Math.max(f, 5 + n * 0.4 - e);
+    }
+    return Math.max(f, (fringeR + 0.5 - greenR(u, v)) * Math.min(grx, gry) + n * 0.4);
+  };
+
   // ---------- 7. 地面種類 ----------
   const MAP_SURF = [SURF.OB, SURF.ROUGH, SURF.FAIRWAY, SURF.GREEN, SURF.TEE, SURF.SAND, SURF.WATER, SURF.ROUGH, SURF.DEEP, SURF.FRINGE];
   function mapSurface(u, v) {
@@ -436,6 +466,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (map) return mapSurface(u, v);
     const { s, d } = near(u, v);
     const ad = Math.abs(d);
+    if (isVoid && islandF(u, v, s, d) < 0) return SURF.CHASM;
     if (ad > corridor || s < -45 || s > Lp + 55) return SURF.OB;
     if (seaSide && seaSide * d > seaEdge(s)) return SURF.WATER;
     for (const w of waters) if (waterR(w, u, v) < 1) return w.kind === 'chasm' ? SURF.CHASM : SURF.WATER;
@@ -573,7 +604,16 @@ export function buildHole(course, holeIdx, opts = {}) {
         else hh = Math.min(hh, lerp(cross.level - 0.6, hh, ss(-0.5, 5, cd)));
       }
     }
+    // 浮島邊緣：物理上掉到島面下 30 公尺就算掉進虛空
+    if (isVoid) { const f = islandF(u, v, s, d); if (f < 0.5) hh -= 30 * ss(0.5, -2.5, f); }
     return hh;
+  }
+  // 畫面用的高度：浮島外的虛空往下一路延伸到雲霧裡（物理仍用 height）
+  function heightVis(u, v) {
+    const hh = height(u, v);
+    if (!isVoid) return hh;
+    const { s, d } = near(u, v), f = islandF(u, v, s, d);
+    return f < 0 ? hh - 40 * ss(0, -12, f) - 900 * ss(-6, -60, f) : hh;
   }
 
   // ---------- 9. 旗桿位置 ----------
@@ -613,6 +653,31 @@ export function buildHole(course, holeIdx, opts = {}) {
   const trng = makeRng(seed + 5);
   const area = (bbox.maxU - bbox.minU) * (bbox.maxV - bbox.minV);
   const attempts = Math.floor(area / 18 * Math.min(1.4, course.trees * (F.has('tr') ? 1.35 : 1)) + (canyon ? area / 60 : 0));
+  // 奇幻主題的樹：叢林 = 棕櫚 / 大闊葉 / 蕨類，熔岩 = 玄武岩柱 / 枯樹 / 岩石，浮島 = 水晶
+  const themeTree = (ad, minAd) => {
+    const r0 = trng();
+    if (theme === 'jungle') {
+      if (trng() > 0.35 + 0.65 * ss(minAd, minAd + 14, ad)) return null;
+      return r0 < 0.34 ? { type: 'palm', h: 10 + trng() * 7, r: 3.2 + trng() * 1.2 }
+        : r0 < 0.72 ? { type: 'broad', h: 13 + trng() * 10, r: 4.5 + trng() * 3, jungle: 1 }
+          : { type: 'fern', h: 1.4 + trng() * 1.2, r: 1.6 + trng() * 1.4 };
+    }
+    if (theme === 'lava') {
+      if (trng() > 0.55) return null;
+      return r0 < 0.4 ? { type: 'basalt', h: 2 + trng() * 6, r: 1.2 + trng() * 1.8 }
+        : r0 < 0.75 ? { type: 'deadtree', h: 6 + trng() * 6, r: 2.2 + trng() * 1.5 }
+          : { type: 'rock', h: 1 + trng() * 2.4, r: 0.8 + trng() * 2.2 };
+    }
+    if (trng() > 0.5) return null;
+    return r0 < 0.78 ? { type: 'crystal', h: 3 + trng() * 7, r: 1 + trng() * 1.4 } : { type: 'rock', h: 1 + trng() * 2, r: 0.8 + trng() * 1.6 };
+  };
+  // 碰撞球的中心高度與半徑
+  const treeColl = t => {
+    const k = { rock: [0.3, 0.8], pine: [0.5, 0.9], palm: [0.93, 0.75], basalt: [0.45, 0.85], crystal: [0.4, 0.8], deadtree: [0.62, 0.55] }[t.type] || [0.66, 1];
+    t.cy = t.y + t.h * k[0];
+    t.cr = t.type === 'cactus' ? 0.6 : t.r * k[1];
+    if (t.type === 'cactus') t.cy = t.y + t.h * 0.5;
+  };
   const plantMapTree = (u, v, big) => {
     const pine = trng() < 0.25;
     const t = { type: pine ? 'pine' : (trng() < 0.1 ? 'maple' : 'broad'), h: (pine ? 14 : 11) + trng() * (big ? 9 : 6), r: pine ? 3 + trng() : 3.4 + trng() * 2.2 };
@@ -640,12 +705,13 @@ export function buildHole(course, holeIdx, opts = {}) {
     const { s, d } = near(u, v);
     const ad = Math.abs(d);
     const fh = fwHalf(s, d > 0 ? 1 : -1);
-    const minAd = fh + (park ? 9 : 14) + (s < fs ? 4 : 0);
+    const minAd = fh + (isVoid ? 5 : park ? 9 : 14) + (s < fs ? 4 : 0);
     if (ad < minAd || greenR(u, v) < 2.8 || inTee(u, v, 6)) continue;
     const sf = surface(u, v);
     if (sf === SURF.WATER || sf === SURF.CHASM || sf === SURF.SAND) continue;
     let t;
-    if (park) {
+    if (theme) { t = themeTree(ad, minAd); if (!t) continue; }
+    else if (park) {
       // 越靠近走廊邊越密，形成樹牆
       const edge = ss(minAd, minAd + 14, ad);
       if (trng() > 0.35 + 0.65 * edge) continue;
@@ -664,8 +730,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     const x = u, z = -v;
     if (tooClose(x, z, t.r * 0.8)) continue;
     t.x = x; t.z = z; t.y = height(u, v); t.rot = trng() * 6.28; t.tint = trng();
-    t.cy = t.type === 'rock' ? t.y + t.h * 0.3 : t.type === 'pine' ? t.y + t.h * 0.5 : t.type === 'cactus' ? t.y + t.h * 0.5 : t.y + t.h * 0.66;
-    t.cr = t.type === 'pine' ? t.r * 0.9 : t.type === 'cactus' ? 0.6 : t.type === 'rock' ? t.r * 0.8 : t.r;
+    treeColl(t);
     addTree(t);
   }
 
@@ -692,7 +757,32 @@ export function buildHole(course, holeIdx, opts = {}) {
 
   // 遠景樹（只畫不碰撞）
   const scenery = [];
-  if (!links) {
+  const bc = [(bbox.minU + bbox.maxU) / 2, (bbox.minV + bbox.maxV) / 2];
+  const ring = (n, r0, r1, fn) => { for (let i = 0; i < n; i++) { const a = trng() * Math.PI * 2, r = lerp(r0, r1, trng()); fn(bc[0] + Math.cos(a) * r, bc[1] + Math.sin(a) * r); } };
+  if (theme === 'jungle') {
+    // 叢林：近處棕櫚與大樹，遠方一根根高聳的石柱山
+    for (let i = 0; i < 2400; i++) {
+      const u = lerp(bbox.minU - 250, bbox.maxU + 250, trng()), v = lerp(bbox.minV - 150, bbox.maxV + 350, trng());
+      const { s, d } = near(u, v);
+      if (Math.abs(d) < corridor + 20 && s > -40 && s < Lp + 60) continue;
+      const palm = trng() < 0.35;
+      scenery.push({ x: u, z: -v, uv: [u, v], type: palm ? 'palm' : 'broad', jungle: 1, h: palm ? 11 + trng() * 7 : 14 + trng() * 10, r: palm ? 3.5 : 5 + trng() * 3, rot: trng() * 6.28, tint: trng() });
+    }
+    ring(34, 520, 1500, (u, v) => scenery.push({ x: u, z: -v, uv: [u, v], type: 'karst', h: 130 + trng() * 230, r: 22 + trng() * 34, rot: trng() * 6.28, tint: trng() }));
+  } else if (theme === 'lava') {
+    for (let i = 0; i < 700; i++) {
+      const u = lerp(bbox.minU - 250, bbox.maxU + 250, trng()), v = lerp(bbox.minV - 150, bbox.maxV + 350, trng());
+      const { s, d } = near(u, v);
+      if (Math.abs(d) < corridor + 20 && s > -40 && s < Lp + 60) continue;
+      const b = trng() < 0.55;
+      scenery.push({ x: u, z: -v, uv: [u, v], type: b ? 'basalt' : 'deadtree', h: b ? 3 + trng() * 9 : 6 + trng() * 6, r: b ? 1.5 + trng() * 2.5 : 2.5, rot: trng() * 6.28, tint: trng() });
+    }
+    // 遠方的火山（山頂發光）
+    ring(3, 1400, 2000, (u, v) => scenery.push({ x: u, z: -v, uv: [u, v], type: 'volcano', h: 380 + trng() * 320, r: 700 + trng() * 300, rot: trng() * 6.28, tint: trng() }));
+  } else if (isVoid) {
+    // 浮島：四周飄著大大小小的浮空島（高度自己指定，不貼地）
+    ring(70, 160, 1300, (u, v) => { const r = 8 + trng() ** 2 * 70; scenery.push({ x: u, z: -v, uv: [u, v], type: 'isle', h: r * (1.6 + trng()), r, fy: -160 + trng() * 280, rot: trng() * 6.28, tint: trng() }); });
+  } else if (!links) {
     const n = park ? 2600 : 500;
     for (let i = 0; i < n; i++) {
       const u = lerp(bbox.minU - 250, bbox.maxU + 250, trng()), v = lerp(bbox.minV - 150, bbox.maxV + 350, trng());
@@ -710,7 +800,8 @@ export function buildHole(course, holeIdx, opts = {}) {
     course, holeIdx, par, hcp, yards, feat: F, spec, L: Lp, path, S, bbox, tees, pin: [pin[0], -pin[1]],
     greenSide: mapGreens && mapGreens.length > 1 ? (gIdx === 0 ? '左' : '右') : null,      // 有兩個果嶺時今天用哪一個
     green: { u: G[0], v: G[1], rx: grx, ry: gry, rot: gRot }, bunkers, waters: map ? MG.waters.map(w => ({ kind: 'pond', level: w.level, cells: w.cells, grid: MG })) : waters, cross, seaSide, seaEdge, trees, scenery,
-    near, pointAt, dirAt, fwHalf, greenR, surfaceUV: surface, heightUV: height, fs, fe,
+    near, pointAt, dirAt, fwHalf, greenR, surfaceUV: surface, heightUV: height, heightVisUV: heightVis, fs, fe, theme,
+    islandUV: isVoid ? (u, v) => { const { s, d } = near(u, v); return islandF(u, v, s, d); } : null,
     height: H,
     surface: (x, z) => surface(x, -z),
     normal(x, z) {
@@ -725,9 +816,9 @@ export function buildHole(course, holeIdx, opts = {}) {
       const arr = treeGrid.get(key(x, z));
       if (!arr) return null;
       for (const t of arr) {
-        if (t.type === 'shrub') { if (y < t.y + t.h && Math.hypot(x - t.x, z - t.z) < t.r) return t; continue; }
+        if (t.type === 'shrub' || t.type === 'fern') { if (y < t.y + t.h && Math.hypot(x - t.x, z - t.z) < t.r) return t; continue; }
         if (Math.hypot(x - t.x, y - t.cy, z - t.z) < t.cr) return t;
-        if (t.type !== 'rock' && y < t.y + t.h * 0.4 && Math.hypot(x - t.x, z - t.z) < 0.35) return t; // 樹幹
+        if (t.type !== 'rock' && t.type !== 'basalt' && t.type !== 'crystal' && y < t.y + t.h * 0.4 && Math.hypot(x - t.x, z - t.z) < 0.35) return t; // 樹幹
       }
       return null;
     },
@@ -762,6 +853,10 @@ const PALETTE = {
   links: { fair: [128, 148, 78], fair2: [116, 136, 70], cut: [110, 128, 64], rough: [108, 120, 62], deep: [160, 146, 94], green: [104, 140, 64], green2: [94, 130, 58], fringe: [110, 140, 66], sand: [222, 204, 160], waste: [196, 178, 132], tee: [128, 158, 72], ob: [150, 140, 92] },
   parkland: { fair: [92, 134, 58], fair2: [80, 120, 50], cut: [76, 114, 48], rough: [62, 98, 42], deep: [50, 82, 34], green: [90, 138, 60], green2: [80, 128, 54], fringe: [84, 130, 56], sand: [232, 222, 196], waste: [130, 118, 84], tee: [90, 134, 58], ob: [46, 76, 32] },
   canyon: { fair: [100, 142, 60], fair2: [88, 130, 52], cut: [84, 122, 50], rough: [92, 116, 54], deep: [178, 112, 72], green: [94, 144, 62], green2: [84, 134, 56], fringe: [90, 136, 58], sand: [222, 200, 160], waste: [186, 118, 76], tee: [108, 158, 64], ob: [170, 104, 66] },
+  // 奇幻主題（依 course.theme）
+  jungle: { fair: [74, 156, 62], fair2: [64, 142, 54], cut: [58, 132, 50], rough: [44, 112, 44], deep: [30, 84, 36], green: [84, 170, 76], green2: [74, 158, 68], fringe: [70, 150, 62], sand: [238, 224, 176], waste: [120, 104, 70], tee: [74, 156, 62], ob: [26, 70, 30], water: [40, 150, 140] },
+  lava: { fair: [78, 128, 66], fair2: [68, 116, 58], cut: [62, 106, 54], rough: [62, 58, 56], deep: [44, 40, 40], green: [92, 150, 74], green2: [82, 138, 66], fringe: [76, 128, 62], sand: [74, 70, 74], waste: [118, 54, 36], tee: [78, 128, 66], ob: [36, 32, 32], water: [255, 110, 30] },
+  void: { fair: [72, 182, 160], fair2: [62, 166, 148], cut: [56, 152, 138], rough: [52, 116, 108], deep: [86, 70, 140], green: [96, 200, 176], green2: [86, 186, 164], fringe: [76, 176, 156], sand: [226, 220, 250], waste: [70, 60, 110], tee: [64, 164, 150], ob: [40, 30, 70], chasm: [16, 12, 34] },
 };
 
 // opts.px：每像素幾公尺（縮圖用大一點的值，畫得很快）
@@ -770,7 +865,7 @@ export function paintMaps(hole, opts = {}) {
   const w = bbox.maxU - bbox.minU, h = bbox.maxV - bbox.minV;
   const px = opts.px || Math.max(0.3, Math.max(w, h) / 2048);
   const W = Math.round(w / px), Hh = Math.round(h / px);
-  const pal = PALETTE[hole.course.style];
+  const pal = PALETTE[hole.course.theme] || PALETTE[hole.course.style];
   const color = document.createElement('canvas');
   color.width = W; color.height = Hh;
   const mask = document.createElement('canvas');
@@ -808,8 +903,8 @@ export function paintMaps(hole, opts = {}) {
         case SURF.DEEP: c = pal.deep; break;
         case SURF.SAND: c = pal.sand; sand = 1; break;
         case SURF.WASTE: c = pal.waste; sand = 1; break;
-        case SURF.WATER: c = [70, 92, 70]; break;
-        case SURF.CHASM: c = pal.waste; sand = 1; break;
+        case SURF.WATER: c = pal.water || [70, 92, 70]; break;
+        case SURF.CHASM: c = pal.chasm || pal.waste; sand = pal.chasm ? 0 : 1; break;
         default: c = pal.ob; sand = hole.course.style === 'canyon' ? 1 : 0;
       }
       const f = 1 + n1 * 0.10 + n2 * 0.05;

@@ -763,7 +763,8 @@ export class Game {
     } else if (r.result === 'water' || r.result === 'chasm') {
       p.strokes++;
       p.ball = this.dropPoint(r.frames, prevBall);
-      toasts.push(r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
+      const th = this.course.theme;
+      toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'void' && r.result === 'chasm' ? '墜入虛空　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
     } else if (r.result === 'ob') {
       p.strokes++;
       p.ball = prevBall;

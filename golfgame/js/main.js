@@ -143,7 +143,7 @@ function initLobby() {
 }
 
 // ---------------- 回合設定 ----------------
-const setup = { kind: 'single', courseId: 'maple', holes: 'all', tee: 'white', mode: 'stroke', wind: 'course', stimp: null, gimme: 1, mulligans: 2, startHole: 0 };
+const setup = { kind: 'single', courseId: 'orient', holes: 'all', tee: 'white', mode: 'stroke', wind: 'course', stimp: null, gimme: 1, mulligans: 2, startHole: 0 };
 function openSetup(kind) {
   setup.kind = kind;
   $('st-title').textContent = { single: '單人回合', host: '建立遊戲間', practice: '練習場' }[kind];
@@ -152,7 +152,9 @@ function openSetup(kind) {
   document.querySelectorAll('.only-round').forEach(e => e.classList.toggle('hidden', kind === 'practice'));
   document.querySelectorAll('.only-practice').forEach(e => e.classList.toggle('hidden', kind !== 'practice'));
   document.querySelectorAll('.only-round-or-host').forEach(e => e.classList.toggle('hidden', kind === 'practice'));
-  if (kind === 'practice') { setup.courseId = 'maple'; setup.stimp = null; }
+  // 練習場固定用楓林谷；回到回合設定時換回原本選的球場
+  if (kind === 'practice') { if (!setup.inPractice) setup.roundCourse = setup.courseId; setup.inPractice = true; setup.courseId = 'maple'; setup.stimp = null; }
+  else if (setup.inPractice) { setup.inPractice = false; setup.courseId = setup.roundCourse || 'orient'; setup.stimp = null; }
   renderSetup();
   show('scr-setup');
 }
@@ -226,6 +228,23 @@ function holeFeatures(course, spec) {
   const canyon = course.style === 'canyon';
   const out = [];
   if (Math.abs(bend) >= 8) out.push(bend < 0 ? '狗腿左' : '狗腿右');
+  // 奇幻主題：障礙的名稱不同
+  const th = course.theme;
+  if (th) {
+    const hz = th === 'lava' ? '熔岩湖' : th === 'void' ? '虛空' : '潟湖';
+    if (F.has('IG')) out.push('果嶺浮島（四周都是虛空）');
+    if (F.has('g2')) out.push('要飛越 2 道虛空裂縫'); else if (F.has('g1')) out.push('要飛越虛空裂縫');
+    if (F.has('nw')) out.push('窄島');
+    if (F.has('wl')) out.push('左側' + hz);
+    if (F.has('wr')) out.push('右側' + hz);
+    if (F.has('wc')) out.push('果嶺前' + hz);
+    if (F.has('xc')) out.push(th === 'lava' ? '橫越熔岩河' : '橫越溪流');
+    if (F.has('UP')) out.push('大上坡'); else if (F.has('up')) out.push('上坡');
+    if (F.has('DN')) out.push('大下坡'); else if (F.has('dn')) out.push('下坡');
+    if (F.has('ww')) out.push('兩側火山渣荒地');
+    if (F.has('b3')) out.push(th === 'lava' ? '黑沙坑多' : '沙坑多');
+    return out.length ? out.join('、') : (par === 3 ? '直接攻果嶺' : '直線洞');
+  }
   if (F.has('sl')) out.push('左側是海');
   if (F.has('sr')) out.push('右側是海');
   if (F.has('wl')) out.push(canyon ? '左側深谷' : '左側水池');
@@ -739,8 +758,9 @@ const fmtWhen = iso => { const d = new Date(iso); const p = n => String(n).padSt
 
 async function openRanking() {
   show('scr-rank');
-  if (!rank.course) rank.course = COURSES[0].id;
-  $('rk-courses').innerHTML = COURSES.map(c => `<button data-c="${c.id}" class="${c.id === rank.course ? 'on' : ''}">${escapeHtml(c.name)}</button>`).join('');
+  if (!rank.course) rank.course = 'orient';
+  // 球場按分類排（台灣球場在最前面）
+  $('rk-courses').innerHTML = COURSE_GROUPS.flatMap(g => COURSES.filter(c => c.group === g.id)).map(c => `<button data-c="${c.id}" class="${c.id === rank.course ? 'on' : ''}">${escapeHtml(c.name)}</button>`).join('');
   $('rk-tabs').querySelectorAll('button').forEach(b => b.onclick = () => { rank.tab = b.dataset.rk; rank.open = null; renderRanking(); });
   $('rk-holes').querySelectorAll('button').forEach(b => b.onclick = () => { rank.holes = Number(b.dataset.h); renderRanking(); });
   $('rk-courses').querySelectorAll('button').forEach(b => b.onclick = () => { rank.course = b.dataset.c; renderRanking(); });
