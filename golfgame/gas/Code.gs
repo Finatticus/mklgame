@@ -7,6 +7,7 @@
  * 工作頁
  *   Account      A 帳號 / B 密碼 / C 啟用(Y/N)，第 1 列為標題
  *   <帳號名稱>    每位玩家一頁：上半部是個人資料（鍵/值），第 14 列起是回合紀錄
+ *   排行          每打完一場（9 或 18 洞）一列，排行榜就是讀這一頁（每一場都單獨列入，不只取最好）
  * 遊戲間（驗證碼、連線資料、訊息）放在 CacheService，6 小時自動清除，不佔工作頁。
  */
 
@@ -14,7 +15,9 @@ const ADMIN = 'Michael';
 const ADMIN_PASS = '1220';
 const START_POINTS = 30;
 const START_RESPECS = 10;
-const RESERVED = ['Account'];
+const RESERVED = ['Account', '排行'];
+const RANK_SHEET = '排行';
+const RANK_HEADER = ['日期', '帳號', '球場', '球場代號', '洞數', '範圍', '梯台', '總桿', '標準桿', '對標準桿', '模式', '一桿進洞', '信天翁', '老鷹', '特殊紀錄'];
 
 // 玩家頁上半部的欄位（第 1~11 列，A=名稱 B=值）
 const PROFILE_KEYS = ['帳號', '能力點', '剩餘重新分配次數', '素質', '外觀', '總回合數', '最佳18洞', '建立時間', '最後登入', '已用能力點', '累計獲得點數'];
@@ -32,6 +35,19 @@ function setup() {
   if (!findAccountRow_(ADMIN)) sh.appendRow([ADMIN, ADMIN_PASS, 'Y']);
   sh.getRange('B:B').setNumberFormat('@');
   ensurePlayerSheet_(ADMIN);
+  rankSheet_();
+}
+
+// 「排行」工作頁：沒有就建立（第 1 列標題）
+function rankSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(RANK_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(RANK_SHEET, 1);
+    sh.getRange(1, 1, 1, RANK_HEADER.length).setValues([RANK_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
+    sh.setFrozenRows(1);
+  }
+  return sh;
 }
 
 function doGet() {
@@ -108,7 +124,13 @@ const ACTIONS = {
     const r = req.round;
     return withLock_(() => {
       const sh = ensurePlayerSheet_(acc.user);
-      sh.appendRow([new Date(), r.course, r.holes, r.tee, r.strokes, r.toPar, r.putts, r.fairways, r.gir, r.mode, r.partners || '', JSON.stringify(r.scores)]);
+      const now = new Date();
+      sh.appendRow([now, r.course, r.holes, r.tee, r.strokes, r.toPar, r.putts, r.fairways, r.gir, r.mode, r.partners || '', JSON.stringify(r.scores)]);
+      // 排行：每一場都單獨記一列；特殊紀錄 = 這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞、標準桿）
+      const ev = Array.isArray(r.events) ? r.events : [];
+      const cnt = t => ev.filter(e => e.t === t).length;
+      const range = r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞';
+      rankSheet_().appendRow([now, acc.user, r.course, r.courseId || '', r.holes, range, r.tee, r.strokes, r.par || (r.strokes - r.toPar), r.toPar, r.mode, cnt('hio'), cnt('albatross'), cnt('eagle'), JSON.stringify(ev)]);
       const cur = readProfile_(acc.user);
       const earned = Math.floor(r.holes / 9);
       const upd = { '總回合數': cur.rounds + 1, '能力點': cur.points + earned, '累計獲得點數': cur.earned + earned };
@@ -128,6 +150,19 @@ const ACTIONS = {
     return rows.reverse().map(r => ({
       date: r[0] instanceof Date ? r[0].toISOString() : r[0], course: r[1], holes: r[2], tee: r[3], strokes: r[4],
       toPar: r[5], putts: r[6], fairways: r[7], gir: r[8], mode: r[9], partners: r[10], scores: safeParse_(r[11], []),
+    }));
+  },
+
+  // 排行榜：回傳「排行」工作頁的每一場（最多最近 5000 場），排序與分類在畫面端做
+  getRankings(req) {
+    auth_(req);
+    const sh = rankSheet_();
+    const last = sh.getLastRow();
+    if (last < 2) return [];
+    const n = Math.min(5000, last - 1);
+    return sh.getRange(last - n + 1, 1, n, RANK_HEADER.length).getValues().map(r => ({
+      date: r[0] instanceof Date ? r[0].toISOString() : r[0], user: String(r[1]), course: r[2], courseId: r[3], holes: Number(r[4]),
+      range: r[5], tee: r[6], strokes: Number(r[7]), par: Number(r[8]), toPar: Number(r[9]), mode: r[10], events: safeParse_(r[14], []),
     }));
   },
 

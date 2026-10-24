@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { buildHole } from './terrain.js';
 import { simulate, makeLaunch, distanceTable, carryAt, airDensity, SURF, ADJ_SEEDS } from './physics.js';
 import { CLUBS, clubById, clubIndex } from './clubs.js';
-import { courseById, teeYards } from './courses.js';
+import { courseById, teeYards, loadCourseMaps } from './courses.js';
 import { makeRng, hashStr, toYd, YD, MPH, FT, clamp, lerp, rad, smooth, fmtToPar, escapeHtml } from './util.js';
 import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
@@ -239,12 +239,21 @@ export class Game {
     this.ui.loading(true, `第 ${idx + 1} 洞 準備中…`);
     this.hud.hideShotData();
     await new Promise(r => setTimeout(r, 30));
+    await loadCourseMaps(this.course);
     this.hole = buildHole(this.course, idx, { pinSeed: this.seed + idx * 31 });
     await this.world.loadHole(this.hole);
     this.hud.setGreenHeat(this.hole);
     const rng = makeRng(this.seed + idx * 977);
-    const dir = this.windBase.dir + (rng() - 0.5) * rad(70);
-    const mph = Math.min(WIND_MAX_MPH, Math.max(0, this.windBase.mph * (0.75 + rng() * 0.5)));
+    let dir = this.windBase.dir + (rng() - 0.5) * rad(70);
+    let mph = Math.min(WIND_MAX_MPH, Math.max(0, this.windBase.mph * (0.75 + rng() * 0.5)));
+    // 真實球場：官網說「常吹右風 / 左風」的洞，風向改成從那一邊吹過來（±25°），最受風影響的洞風大一點
+    const hs = this.hole.spec;
+    if (hs && hs.wind) {
+      const t0 = this.hole.teePos(this.cfg.tee), pin0 = this.hole.pin;
+      const aim = Math.atan2(pin0[0] - t0[0], -(pin0[1] - t0[2]));
+      dir = aim + (hs.wind === 'R' ? -Math.PI / 2 : Math.PI / 2) + (rng() - 0.5) * rad(50);
+    }
+    if (hs && hs.windMul) mph = Math.min(WIND_MAX_MPH, mph * hs.windMul);
     this.wind = [Math.sin(dir) * mph * MPH, -Math.cos(dir) * mph * MPH];
     const tee = this.hole.teePos(this.cfg.tee);
     for (const p of this.players) {
@@ -270,7 +279,8 @@ export class Game {
       p0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, 45).add(new THREE.Vector3(0, 38, 0)),
       l0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, -60),
     };
-    this.hud.toast(`<small>第 ${idx + 1} 洞</small><b>PAR ${this.hole.par} · ${yd} Y</b>`, 2600, 'big');
+    const note = this.hole.spec && this.hole.spec.note;
+    this.hud.toast(`<small>第 ${idx + 1} 洞</small><b>PAR ${this.hole.par} · ${yd} Y</b>${note ? `<small class="hole-note">${escapeHtml(note)}</small>` : ''}`, note ? 3400 : 2600, 'big');
     $('practice-bar').classList.toggle('hidden', !this.cfg.practice);
     if (this.cfg.practice) {
       this.intro = null;
@@ -311,7 +321,7 @@ export class Game {
   serialize(turn) {
     return {
       k: this.k, turn, shotNo: this.shotNo, matchStatus: this.matchStatus, undoP: this.lastShotUndo ? this.lastShotUndo.p : -1,
-      players: this.players.map(p => ({ ball: p.ball, lie: p.lie, strokes: p.strokes, holed: p.holed, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, scores: p.scores, putts: p.putts, fwHit: p.fwHit, fwTotal: p.fwTotal, gir: p.gir, mulligans: p.mulligans, picked: p.picked, away: p.away, pars: p.pars })),
+      players: this.players.map(p => ({ ball: p.ball, lie: p.lie, strokes: p.strokes, holed: p.holed, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, scores: p.scores, putts: p.putts, fwHit: p.fwHit, fwTotal: p.fwTotal, gir: p.gir, mulligans: p.mulligans, picked: p.picked, away: p.away, pars: p.pars, copied: p.copied || [] })),
     };
   }
 
@@ -879,7 +889,7 @@ export class Game {
     this.input.enabled = false;
     // 離開的人：這一洞比照還在的人的桿數（回來接著打才公平）
     const ref = this.present()[0];
-    if (ref) for (const p of this.players) if (p.away && !p.scores[this.k]) { p.scores[this.k] = ref.scores[this.k]; p.putts[this.k] = ref.putts[this.k]; p.pars[this.k] = this.hole.par; }
+    if (ref) for (const p of this.players) if (p.away && !p.scores[this.k]) { p.scores[this.k] = ref.scores[this.k]; p.putts[this.k] = ref.putts[this.k]; p.pars[this.k] = this.hole.par; (p.copied = p.copied || [])[this.k] = true; }
     if (this.cfg.mode === 'match' && this.players.length === 2) {
       const [a, b] = this.players.map(p => p.scores[this.k]);
       if (a < b) this.matchStatus++; else if (b < a) this.matchStatus--;
@@ -907,7 +917,22 @@ export class Game {
       putts: p.putts.reduce((s, v) => s + (v || 0), 0), fairways: `${p.fwHit}/${p.fwTotal}`, gir: `${p.gir}/${holes}`,
       mode: this.players.length > 1 ? (this.cfg.mode === 'match' ? '比洞賽' : '比桿賽') : '單人',
       partners: this.players.filter(q => q !== p).map(q => q.user).join(','), scores: p.scores,
+      // 排行用：球場代號、範圍（全 18 / 前 9 / 後 9）、標準桿、這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞）
+      courseId: this.course.id, range: this.cfg.holes, par, events: this.specialEvents(p),
     };
+  }
+
+  // 這一場的特殊紀錄；離開期間比照對方桿數的洞不算
+  specialEvents(p) {
+    const out = [];
+    p.scores.forEach((s, k) => {
+      if (!s || p.copied?.[k]) return;
+      const par = p.pars[k], hole = this.holeList[k] + 1;
+      if (s === 1) out.push({ t: 'hio', hole, par });
+      else if (s - par <= -3) out.push({ t: 'albatross', hole, par });
+      else if (s - par === -2) out.push({ t: 'eagle', hole, par });
+    });
+    return out;
   }
 
   quit(opts = {}) {

@@ -276,6 +276,27 @@ export class World {
     this.waterMats = this.waterMats || [];
     for (const w of hole.waters) {
       if (w.kind !== 'pond') continue;
+      if (w.cells) {
+        // 描圖水池：每一列的水格子合成長條（往外多 3 格，岸邊地形會把多出來的蓋住）
+        const G = w.grid, rows = new Map();
+        for (const i of w.cells) { const x = i % G.W, y = (i / G.W) | 0; const r = rows.get(y); if (r) { r[0] = Math.min(r[0], x); r[1] = Math.max(r[1], x); } else rows.set(y, [x, x]); }
+        const pos = [];
+        for (const [y, [x0, x1]] of rows) {
+          const ua = G.u0 + (x0 - 3.5) * G.mpp, ub = G.u0 + (x1 + 3.5) * G.mpp;
+          const va = G.v0 - (y - 2) * G.mpp, vb = G.v0 - (y + 2) * G.mpp;
+          pos.push(ua, 0, -va, ub, 0, -va, ub, 0, -vb, ua, 0, -va, ub, 0, -vb, ua, 0, -vb);
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        geo.computeVertexNormals();
+        const mat = this.waterMaterial();
+        this.waterMats.push(mat);
+        const m = new THREE.Mesh(geo, mat);
+        m.position.y = w.level + 0.05;
+        m.receiveShadow = true;
+        g.add(m);
+        continue;
+      }
       const shape = new THREE.Shape();
       for (let i = 0; i <= 64; i++) {
         const a = i / 64 * Math.PI * 2;

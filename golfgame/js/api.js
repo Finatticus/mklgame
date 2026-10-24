@@ -71,13 +71,18 @@ async function local(b) {
       case 'saveRound': {
         auth(d, b);
         const r = b.round, cur = prof(d, b.user);
-        (d.rounds[b.user] = d.rounds[b.user] || []).push({ ...r, date: new Date().toISOString() });
+        const date = new Date().toISOString();
+        (d.rounds[b.user] = d.rounds[b.user] || []).push({ ...r, date });
+        // 排行（跟 GAS 的「排行」工作頁同一個格式）
+        (d.rankings = d.rankings || []).push({ date, user: b.user, course: r.course, courseId: r.courseId, holes: r.holes,
+          range: r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞', tee: r.tee, strokes: r.strokes, par: r.par, toPar: r.toPar, mode: r.mode, events: r.events || [] });
         const earned = Math.floor(r.holes / 9);
         cur.rounds++; cur.points += earned; cur.earned += earned;
         if (r.holes === 18 && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
         return { earned, profile: cur };
       }
       case 'getRounds': auth(d, b); return (d.rounds[b.user] || []).slice(-40).reverse();
+      case 'getRankings': auth(d, b); return (d.rankings || []).slice(-5000);
       case 'listAccounts': admin(d, b); return d.accounts.map(a => ({ ...a, ...pick(prof(d, a.user)) }));
       case 'setActive': {
         admin(d, b);

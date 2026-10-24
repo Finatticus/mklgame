@@ -631,3 +631,37 @@ body:not([data-practice]) .practice-only { display: none; }
   .hud-tools { top: var(--hole-b, calc(var(--u) * 6.6 + var(--safe-t))); }
   .hud-players { top: calc(var(--hole-b, calc(var(--u) * 6.6 + var(--safe-t))) + var(--u) * 3.1); }
 }
+
+/* 排行 */
+.rk-tabs { margin-bottom: 8px; }
+.rk-sub { margin-bottom: 12px; }
+.rk-sub button { padding: 5px 12px; font-size: 12.5px; }
+.rk-row { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.rk-row.me { border-color: var(--brass); box-shadow: inset 3px 0 0 var(--brass); }
+.rk-no { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 700 15px "Barlow Condensed"; color: var(--muted); background: #f3eee2; }
+.rk-no.top1 { background: linear-gradient(160deg, #f3d98b, #b98a2e); color: #2b1f05; }
+.rk-no.top2 { background: linear-gradient(160deg, #eceae4, #a7a59c); color: #26251f; }
+.rk-no.top3 { background: linear-gradient(160deg, #e6b48a, #9a5e33); color: #2a1609; }
+.rk-who b { display: block; font: 700 15px "Noto Serif TC"; }
+.rk-who span { font-size: 12px; color: var(--muted); }
+.rk-score { text-align: right; }
+.rk-score b { display: block; font: 700 26px/1 "Barlow Condensed"; color: var(--forest); }
+.rk-score span { font: 600 13px "Barlow Condensed"; color: var(--muted); }
+.rk-score span.under { color: #b2332b; }
+.rk-row.sp { cursor: pointer; }
+.rk-cnt { display: flex; gap: 10px; text-align: center; }
+.rk-cnt b { display: block; font: 700 22px/1 "Barlow Condensed"; color: var(--forest); }
+.rk-cnt span { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+.rk-detail { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3f3d34; }
+.rk-tag { display: inline-block; min-width: 58px; text-align: center; padding: 1px 8px; margin-right: 8px; border-radius: 10px; font-size: 11.5px; font-weight: 700; color: #fff; background: var(--forest); }
+.rk-tag.hio { background: #b2332b; }
+.rk-tag.albatross { background: #7a5a24; }
+.rk-empty { padding: 20px 4px; }
+.rk-note { margin-top: 10px; }
+
+/* 真實球場：洞介紹 */
+.toast .hole-note { display: block; max-width: min(86vw, 560px); margin: 6px auto 0; font-size: calc(var(--u) * .78); line-height: 1.45; white-space: normal; color: #f3e6c4; }
+.gm-tip { margin: 2px 0 12px; padding: 10px 14px; border-radius: 10px; background: #12271c; color: #f2ead8; font-size: 13.5px; line-height: 1.6; }
+.gm-tip b { display: block; font: 700 15px "Noto Serif TC"; color: #e7c477; }
+.gm-tip span { display: block; font-size: 12px; color: #cdbf9a; margin: 2px 0 6px; }
+.gm-tip p { margin: 0; }

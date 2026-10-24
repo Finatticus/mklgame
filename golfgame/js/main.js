@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { session, call, isLocalMode } from './api.js';
 import { gasUrl, getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS } from './stats.js';
-import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById } from './courses.js';
+import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps } from './courses.js';
 import { World } from './render.js';
 import { Hud } from './hud.js';
 import { Game } from './game.js';
@@ -14,7 +14,7 @@ import { escapeHtml, fmtToPar } from './util.js';
 import { setSound, unlockAudio } from './audio.js';
 
 const $ = id => document.getElementById(id);
-const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-records', 'scr-admin', 'scr-game'];
+const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-admin', 'scr-game'];
 function show(id) {
   screens.forEach(s => $(s).classList.toggle('active', s === id));
   document.body.dataset.screen = id;
@@ -136,6 +136,7 @@ function initLobby() {
     if (t === 'lobby') enterLobby();
     if (t === 'char') openChar();
     if (t === 'records') openRecords();
+    if (t === 'rank') openRanking();
     if (t === 'admin') openAdmin();
   });
   $('btn-logout').onclick = () => { session.user = null; setSetting('login', null); $('li-pass').value = ''; show('scr-login'); };
@@ -203,6 +204,7 @@ const holeThumbs = {};
 let previewToken = 0;
 function holeFeatures(course, spec) {
   const [par, , bend, feat] = spec;
+  if (spec[5] && spec[5].note) return escapeHtml(spec[5].note);      // 真實球場：用官網介紹整理的特徵
   const F = new Set(feat.split(/\s+/));
   const canyon = course.style === 'canyon';
   const out = [];
@@ -255,7 +257,7 @@ function renderPreview(id) {
     <div class="hole-card"><canvas data-h="${i}" width="124" height="200"></canvas>
       <div class="hc"><b>${i + 1}<em>PAR ${h[0]}</em></b>${teeYards(c, i, setup.tee)} Y · HCP ${h[4]}<br><i>${holeFeatures(c, h)}</i></div></div>`).join('');
   // 縮圖一洞一洞慢慢畫，不卡畫面
-  import('./terrain.js').then(({ buildHole, paintMaps }) => {
+  Promise.all([import('./terrain.js'), loadCourseMaps(c)]).then(([{ buildHole, paintMaps }]) => {
     let i = 0;
     const next = () => {
       if (token !== previewToken || i >= 18) return;
@@ -467,6 +469,10 @@ async function startGame(cfg, players, netObj = null, isHost = true, resume = nu
 function initGameMenu() {
   $('btn-menu').onclick = () => {
     $('gm-card').innerHTML = game ? scorecardHtml(game) : '';
+    // 真實球場：這一洞的打法建議（依球場官網介紹整理）
+    const sp = game && game.hole && game.hole.spec;
+    $('gm-tip').classList.toggle('hidden', !(sp && sp.tip));
+    if (sp && sp.tip) $('gm-tip').innerHTML = `<b>第 ${game.holeNo} 洞 · PAR ${game.hole.par}</b><span>${escapeHtml(sp.note || '')}</span><p>${escapeHtml(sp.tip)}</p>`;
     // 連線模式：顯示遊戲間驗證碼，不小心離開時用「加入遊戲」輸入這組號碼就能回來接續
     const code = game && game.net && game.net.code;
     $('gm-room').classList.toggle('hidden', !code);
@@ -706,6 +712,79 @@ async function openRecords() {
       <div class="rs"><b class="num">${r.strokes}</b><span class="num">${fmtToPar(Number(r.toPar))}</span></div>
       <div class="rx">推桿 ${r.putts} · 上球道 ${r.fairways} · GIR ${r.gir}</div></div>`).join('') : '<p class="small">還沒有紀錄，去打一場吧！</p>';
   } catch (e) { $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+}
+
+// ---------------- 排行 ----------------
+// 「排行」工作頁的每一場都單獨排名；分類與排序都在這裡做
+const rank = { tab: 'total', holes: 18, course: null, rows: [], open: null };
+const RK_TYPE = { hio: '一桿進洞', albatross: '信天翁', eagle: '老鷹' };
+const fmtWhen = iso => { const d = new Date(iso); const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+
+async function openRanking() {
+  show('scr-rank');
+  if (!rank.course) rank.course = COURSES[0].id;
+  $('rk-courses').innerHTML = COURSES.map(c => `<button data-c="${c.id}" class="${c.id === rank.course ? 'on' : ''}">${escapeHtml(c.name)}</button>`).join('');
+  $('rk-tabs').querySelectorAll('button').forEach(b => b.onclick = () => { rank.tab = b.dataset.rk; rank.open = null; renderRanking(); });
+  $('rk-holes').querySelectorAll('button').forEach(b => b.onclick = () => { rank.holes = Number(b.dataset.h); renderRanking(); });
+  $('rk-courses').querySelectorAll('button').forEach(b => b.onclick = () => { rank.course = b.dataset.c; renderRanking(); });
+  $('rk-list').innerHTML = '<p class="small">讀取中…</p>';
+  try {
+    rank.rows = await call('getRankings');
+    renderRanking();
+  } catch (e) { $('rk-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+}
+
+function renderRanking() {
+  const sel = (id, attr, v) => $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset[attr] === String(v)));
+  sel('rk-tabs', 'rk', rank.tab); sel('rk-holes', 'h', rank.holes); sel('rk-courses', 'c', rank.course);
+  $('rk-holes').classList.toggle('hidden', rank.tab === 'special');
+  $('rk-courses').classList.toggle('hidden', rank.tab !== 'course');
+  $('rk-list').innerHTML = rank.tab === 'special' ? specialHtml() : strokeHtml();
+  $('rk-list').querySelectorAll('[data-open]').forEach(el => el.onclick = () => { rank.open = rank.open === el.dataset.open ? null : el.dataset.open; renderRanking(); });
+}
+
+// 總桿 / 球場排行：桿數少的在前；同桿數比對標準桿，再比誰先打出來
+function strokeHtml() {
+  const course = COURSES.find(c => c.id === rank.course);
+  const list = rank.rows
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' || r.courseId === rank.course || (!r.courseId && course && r.course === course.name)))
+    .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
+    .slice(0, 100);
+  if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>';
+  return list.map((r, i) => `
+    <div class="rk-row ${r.user === session.user ? 'me' : ''}">
+      <span class="rk-no ${i < 3 ? 'top' + (i + 1) : ''}">${i + 1}</span>
+      <div class="rk-who"><b>${escapeHtml(r.user)}</b><span>${rank.tab === 'total' ? escapeHtml(r.course) + ' · ' : ''}${escapeHtml(r.range || r.holes + ' 洞')} · ${fmtWhen(r.date)}</span></div>
+      <div class="rk-score"><b class="num">${r.strokes}</b><span class="num ${r.toPar < 0 ? 'under' : ''}">${fmtToPar(r.toPar)}</span></div>
+    </div>`).join('');
+}
+
+// 一桿進洞 / 信天翁 / 老鷹：依帳號統計次數排行，點一下展開每一次的日期、球場、洞
+function specialHtml() {
+  const by = new Map();
+  for (const r of rank.rows) for (const e of r.events || []) {
+    if (!RK_TYPE[e.t]) continue;
+    if (!by.has(r.user)) by.set(r.user, { user: r.user, hio: 0, albatross: 0, eagle: 0, list: [] });
+    const u = by.get(r.user);
+    u[e.t]++;
+    u.list.push({ ...e, date: r.date, course: r.course });
+  }
+  const list = [...by.values()].sort((a, b) => (b.hio + b.albatross + b.eagle) - (a.hio + a.albatross + a.eagle) || b.hio - a.hio || b.albatross - a.albatross || a.user.localeCompare(b.user));
+  if (!list.length) return '<p class="small rk-empty">還沒有人打出一桿進洞、信天翁或老鷹。</p>';
+  return list.map((u, i) => {
+    const open = rank.open === u.user;
+    const detail = open ? `<div class="rk-detail">${u.list.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => {
+      const d = new Date(e.date);
+      return `<div><span class="rk-tag ${e.t}">${RK_TYPE[e.t]}</span>${d.getMonth() + 1} 月 ${d.getDate()} 日 · ${escapeHtml(e.course)} · 第 ${e.hole} 洞（Par ${e.par}）</div>`;
+    }).join('')}</div>` : '';
+    return `
+    <div class="rk-row sp ${u.user === session.user ? 'me' : ''} ${open ? 'open' : ''}" data-open="${escapeHtml(u.user)}">
+      <span class="rk-no ${i < 3 ? 'top' + (i + 1) : ''}">${i + 1}</span>
+      <div class="rk-who"><b>${escapeHtml(u.user)}</b><span>點一下看紀錄 ${open ? '▴' : '▾'}</span></div>
+      <div class="rk-cnt"><div><b class="num">${u.hio}</b><span>一桿進洞</span></div><div><b class="num">${u.albatross}</b><span>信天翁</span></div><div><b class="num">${u.eagle}</b><span>老鷹</span></div></div>
+      ${detail}
+    </div>`;
+  }).join('');
 }
 
 // ---------------- 管理員 ----------------
