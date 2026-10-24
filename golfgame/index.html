@@ -350,7 +350,7 @@
     <button class="mode" id="mode-join"><div class="thumb t3"><svg viewBox="0 0 120 120"><use href="#i-tee"/></svg></div><div><b>加入遊戲間</b><span>輸入朋友給的 6 位數驗證碼</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-practice"><div class="thumb t4"><svg viewBox="0 0 120 120"><use href="#i-ball"/></svg></div><div><b>練習場</b><span>發球台、沙坑、果嶺推桿，不計分</span></div><span class="chev">›</span></button>
   </div>
-  <nav class="tabbar"><button data-tab="lobby" class="on"><i></i>大廳</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
+  <nav class="tabbar"><button data-tab="lobby" class="on"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
 
 <!-- ============ 回合設定 ============ -->
@@ -422,14 +422,27 @@
       <p id="ch-msg" class="msg"></p>
     </div>
   </div>
-  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char" class="on"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
+  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char" class="on"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
 
 <!-- ============ 紀錄 ============ -->
 <section id="scr-records" class="screen app-screen">
   <header class="appbar"><small>RECORDS</small><h4>回合紀錄</h4></header>
   <div class="body narrow scroll" id="rc-list"></div>
-  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="records" class="on"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
+  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records" class="on"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
+</section>
+
+<!-- ============ 排行 ============ -->
+<section id="scr-rank" class="screen app-screen">
+  <header class="appbar"><small>RANKING</small><h4>排行</h4></header>
+  <div class="body narrow scroll">
+    <div id="rk-tabs" class="seg rk-tabs"><button data-rk="total" class="on">總桿排行</button><button data-rk="course">球場排行</button><button data-rk="special">一桿進洞 / 老鷹 / 信天翁</button></div>
+    <div id="rk-holes" class="seg rk-sub"><button data-h="18" class="on">18 洞</button><button data-h="9">9 洞</button></div>
+    <div id="rk-courses" class="seg rk-sub hidden"></div>
+    <div id="rk-list"></div>
+    <p class="small rk-note">每一場打完的回合都會單獨列入排行（不是只取最好的一場）。同桿數時對標準桿較低、較早打出的排前面。</p>
+  </div>
+  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank" class="on"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
 
 <!-- ============ 管理員 ============ -->
@@ -440,7 +453,7 @@
     <div id="ad-list" class="acc"></div>
     <p class="small">開關直接寫回 Google 試算表「Account」工作頁的 C 欄。Michael 固定為管理員，無法停用。</p>
   </div>
-  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only on"><i></i>管理</button></nav>
+  <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only on"><i></i>管理</button></nav>
 </section>
 
 <!-- ============ 遊戲 ============ -->
@@ -591,6 +604,7 @@
 
 <div id="dlg-menu" class="dlg"><div class="dlg-box wide">
   <h3>選單</h3>
+  <div id="gm-tip" class="gm-tip hidden"></div>
   <div id="gm-room" class="gm-room hidden"></div>
   <div id="gm-card" class="scroll-x"></div>
   <div class="gm-fs"><span>字體大小</span><div class="seg fs-seg" id="gm-fs"></div></div>

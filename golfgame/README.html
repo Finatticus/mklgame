@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 21）· 2026-10-24<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 24）· 2026-10-24<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -87,7 +87,14 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <div class="card"><b>加入遊戲間</b><br>輸入朋友給的 6 位數驗證碼。</div>
   <div class="card"><b>練習場</b><br>在楓林谷第 8 洞（長 Par 5，適合練開球），不計分。畫面上方切換：<b>發球台</b>（木桿、鐵桿、挖起桿，每球都回到發球台）、<b>沙坑</b>（發球台換成沙地，預設 SW）、<b>果嶺</b>（推桿，點右上小地圖的果嶺選站位，或按「換位置」隨機 2~9 碼；每推完回到同一個位置）。選推桿會自動到果嶺，選其他球桿會自動回到發球台。</div>
 </div>
-<p>下方分頁：<b>紀錄</b>（最近 40 回合）、<b>角色</b>（外觀與素質）、<b>管理</b>（只有 Michael 看得到）。</p>
+<p>下方分頁：<b>排行</b>、<b>紀錄</b>（最近 40 回合）、<b>角色</b>（外觀與素質）、<b>管理</b>（只有 Michael 看得到）。</p>
+<h3>排行</h3>
+<p>每一場打完的回合（9 洞或 18 洞，單人或連線都算，練習場不算）都會<b>單獨</b>列入排行，不是只取每個人最好的一場。中途離開沒打完的不列入。</p>
+<ul>
+  <li><b>總桿排行</b>：分 18 洞 / 9 洞（前 9、後 9 都算 9 洞），桿數越少排越前面；同桿數時對標準桿較低的在前，再相同就比誰先打出來。每一列顯示名次（前三名金銀銅）、誰打的、哪個球場、前 9 / 後 9 / 18 洞、日期時間、總桿與對標準桿（例如 74、+2）。自己的成績左邊有金色線。最多顯示前 100 名。</li>
+  <li><b>球場排行</b>：先選球場，再選 18 洞 / 9 洞，規則同上。</li>
+  <li><b>一桿進洞 / 老鷹 / 信天翁</b>：依帳號統計次數排行（總次數多的在前，同次數比一桿進洞、再比信天翁）。點一下帳號展開每一次的紀錄：種類、幾月幾號、哪個球場、第幾洞（Par 幾）。一桿進洞只算一桿進洞（不重複算成老鷹 / 信天翁）。連線時你離開期間「比照對方桿數」的洞不算。</li>
+</ul>
 
 <h2 id="controls">擊球操作</h2>
 <table>
@@ -146,14 +153,41 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <h3>記分卡記號</h3>
 <p>比照實體記分卡：圓圈 = 小鳥、雙圓圈 = 老鷹以上、方框 = 柏忌、雙方框 = 雙柏忌以上。</p>
 
-<h2 id="courses">三座球場</h2>
-<p>回合設定只顯示目前選的球場資訊（群組、Par、碼數、Stimp(果嶺速度)、風、海拔、介紹），按「更換球場 ▾」打開選單，球場依群組分類：<b>海邊球場、山地 / 林間球場、沙漠 / 高原球場、台灣球場</b>（台灣球場目前顯示「即將加入」）。新增球場時在 <code>js/courses.js</code> 加一筆並指定 <code>group</code> 就會出現在對應群組。按「⛳ 18 洞預覽」會跳出視窗，列出每洞的縮圖、標準桿、碼數、難度與特徵。</p>
-<p>每座 18 洞、Par 72，四組梯台：黑（100%）、藍（94%）、白（88%）、紅（78%），<b>預設白梯</b>。果嶺直徑約 26~30 碼（比照台灣球場），坡度大多 1~3%。果嶺速度在回合設定裡可以用數字調整（Stimp 6.0~13.0，每次 0.5；台灣一般球場約 8）。</p>
+<h2 id="courses">四座球場</h2>
+<p>回合設定只顯示目前選的球場資訊（群組、Par、碼數、Stimp(果嶺速度)、風、海拔、介紹），按「更換球場 ▾」打開選單，球場依群組分類：<b>海邊球場、山地 / 林間球場、沙漠 / 高原球場、台灣球場</b>（台灣球場目前有<b>東方高爾夫</b>）。新增球場時在 <code>js/courses.js</code> 加一筆並指定 <code>group</code> 就會出現在對應群組。按「⛳ 18 洞預覽」會跳出視窗，列出每洞的縮圖、標準桿、碼數、難度與特徵。</p>
+<p>每座 18 洞、Par 72，四組梯台：黑（100%）、藍（94%）、白（88%）、紅（78%），<b>預設白梯</b>（真實球場用各梯台的實際碼數）。果嶺直徑約 26~30 碼（比照台灣球場），坡度大多 1~3%。果嶺速度在回合設定裡可以用數字調整（Stimp 6.0~13.0，每次 0.5；台灣一般球場約 8）。</p>
 <div class="scroll"><table>
   <tr><th>球場</th><th>風格</th><th>黑梯</th><th>果嶺 Stimp</th><th>環境</th><th>特色</th></tr>
   <tr><td><b>鷺灣海岸</b><br>Heron Bay Links</td><td>臨海林克斯</td><td class="n">7,086 Y</td><td class="n">8</td><td>海拔 8m、17°C、風 6~15 mph</td><td>幾乎無樹、海在一側（落海 = 水障礙）、球道硬（彈跳 ×1.25）、深壺型沙坑、球道外是金黃色長草（深草）。</td></tr>
   <tr><td><b>楓林谷</b><br>Maple Valley</td><td>林間公園</td><td class="n">6,912 Y</td><td class="n">8.5</td><td>海拔 220m、22°C、風 2~9 mph</td><td>兩側高大樹林（有楓樹）、多處水池與溪流、果嶺起伏較多、球道偏軟。</td></tr>
+  <tr><td><b>東方高爾夫</b><br>Orient Golf Country Club</td><td>台灣・丘陵林間（真實球場）</td><td class="n">7,168 Y</td><td class="n">9</td><td>海拔約 120m、24°C、風 3~11 mph</td><td><b>依官網每洞的球道配置圖描圖建立</b>：球道、長草、果嶺、發球台、沙坑、水、車道、樹的形狀與位置都照配置圖；上下坡、OB、風依官網文字介紹。白梯 6,808 Y 與官網男士梯總碼數相同。</td></tr>
   <tr><td><b>赤岩峽谷</b><br>Red Rock Canyon</td><td>高海拔沙漠</td><td class="n">7,240 Y</td><td class="n">9</td><td>海拔 1,600m、29°C、風 3~12 mph</td><td>空氣稀薄球多飛約 6~8%、要飛越峽谷、球道外是紅色荒地（可以打但會損失距離）、岩石與仙人掌、果嶺最快最硬。</td></tr>
+</table></div>
+
+<h3>東方高爾夫（真實球場）</h3>
+<p><b>球場形狀照官網每一洞頁面的「球道配置圖」描出來</b>（2480×3508 的圖，球道、長草、果嶺、發球台、沙坑、水、車道、樹都用固定顏色畫）：程式逐點辨識顏色，排除碼數標註、果嶺尺寸小圖等文字；比例尺用「最後面的發球台沿球道中間走到果嶺中心」的路線長度 = 官網 Pro 碼數換算（18 張圖算出來都在每像素 0.65~0.78 公尺，代表圖本身比例一致）；配置圖上的果嶺畫得比較大，依每張圖果嶺尺寸小圖上標的碼數（例如 27y × 33y）縮放成正確大小、形狀不變。各梯台沿這條路線放在官網碼數的位置（誤差 1~3 碼）。圖外是樹林：離球場範圍 14 公尺內是深草（有樹），再外面界外；官網說某一邊是 OB 的洞，那一邊圖外直接界外。描圖資料在 <code>assets/courses/orient-maps.json</code>，判讀程式 <code>.claude/trace-orient.py</code>（官網的圖更新時重跑一次，並把 <code>sw.js</code> 的 <code>ASSET_CACHE</code> 版本號加一）。</p>
+<p>官網的三組梯台對應：<b>黑梯 = Pro、白梯 = 男士、紅梯 = 女士</b>，藍梯取 Pro 和男士的中間值。沙坑、水、樹以配置圖為準；官網文字提到、配置圖沒有畫出來的 OB 山谷（第 2 洞）、草坑（第 16 洞）、上下坡、果嶺坡度與雙層照文字描述加上；開場畫面會顯示該洞特徵，比賽中按左上 ☰ 選單可以看<b>這一洞的打法建議</b>（依官網介紹改寫）。第 6、7 洞官網說常吹右風 / 左風，風向就從那一邊吹；第 14 洞是最受風影響的四桿洞，風大 35%。</p>
+<p class="small">官網沒有列出、由 Dixen Golf 依描述推估的項目：<b>每洞差點順序（HCP）</b>、海拔、果嶺速度（Stimp 9）、果嶺坡度的確切數值、起伏的公尺數、圖外樹林的樹。實際下場請以球場記分卡為準；之後拿到記分卡可以直接改 <code>js/courses.js</code>。</p>
+<div class="scroll"><table>
+  <tr><th>洞</th><th>Par</th><th>Pro / 男士 / 女士</th><th>HCP（推估）</th><th>特徵</th></tr>
+  <tr><td>1</td><td>5</td><td>535 / 525 / 448</td><td>15</td><td>開球微狗腿左、左側 OB、第二桿下坡、果嶺左側沙坑、前低後高</td></tr>
+  <tr><td>2</td><td>3</td><td>185 / 165 / 125</td><td>17</td><td>上坡、要飛越 OB 山谷、果嶺前低後高</td></tr>
+  <tr><td>3</td><td>4</td><td>406 / 391 / 335</td><td>9</td><td>開球下坡、左側濕地 210~240 碼、第二桿上坡</td></tr>
+  <tr><td>4</td><td>4</td><td>385 / 365 / 324</td><td>11</td><td>右側球道長沙坑約 240 碼、果嶺左前沙坑、寧短勿長</td></tr>
+  <tr><td>5</td><td>5</td><td>556 / 536 / 430</td><td>7</td><td>開球微上坡看不到落點、兩側沒有 OB、第二桿下坡、果嶺長 37 碼、左前大沙坑</td></tr>
+  <tr><td>6</td><td>4</td><td>446 / 417 / 398</td><td>1</td><td>前九最難、左側約 230 碼樹叢、果嶺左沙坑、右前水池、常吹右風</td></tr>
+  <tr><td>7</td><td>3</td><td>190 / 175 / 127</td><td>13</td><td>高台開球但球往上飛、左側 OB、常吹左風、果嶺很陡、右側荒地</td></tr>
+  <tr><td>8</td><td>4</td><td>368 / 348 / 298</td><td>5</td><td>接近 90° 狗腿右、轉角密樹與 3 個沙坑、上坡、果嶺前沙坑、雙層果嶺</td></tr>
+  <tr><td>9</td><td>4</td><td>439 / 417 / 365</td><td>3</td><td>右側長沙坑約 220 碼、左側水池約 280 碼、果嶺左邊沙坑與濕地</td></tr>
+  <tr><td>10</td><td>5</td><td>536 / 515 / 463</td><td>8</td><td>右側大水池約 230 碼起、左側 OB、直攻要飛過水、左側 3 個沙坑是安全落點、果嶺較高</td></tr>
+  <tr><td>11</td><td>4</td><td>445 / 430 / 383</td><td>6</td><td>左側 3 個沙坑（飛過約 240 碼抄捷徑）、果嶺斜長形、沙坑都在左邊</td></tr>
+  <tr><td>12</td><td>4</td><td>418 / 386 / 322</td><td>10</td><td>狗腿左、左側馬路 OB、果嶺前 2 個沙坑、果嶺較高不容易停</td></tr>
+  <tr><td>13</td><td>3</td><td>178 / 158 / 128</td><td>18</td><td>短而漂亮、旗桿在右可直攻、不要打過頭</td></tr>
+  <tr><td>14</td><td>4</td><td>468 / 443 / 396</td><td>4</td><td>筆直上坡、右側整排水域到約 230 碼、果嶺前 2 個沙坑、最受風影響</td></tr>
+  <tr><td>15</td><td>4</td><td>362 / 342 / 293</td><td>16</td><td>右側長沙坑（飛過約 260 碼）、左側 2 個沙坑約 240 碼、果嶺比球道低</td></tr>
+  <tr><td>16</td><td>3</td><td>215 / 202 / 151</td><td>14</td><td>長距離上坡、果嶺前 2 個草坑、寧長勿短</td></tr>
+  <tr><td>17</td><td>4</td><td>478 / 460 / 403</td><td>2</td><td>右側水溝通到約 230 碼的水池、左側 OB、第二桿上坡多約 20 碼、雙層果嶺</td></tr>
+  <tr><td>18</td><td>5</td><td>558 / 533 / 469</td><td>12</td><td>開球下坡球道窄長、左側 2 個沙坑、離果嶺約 90 碼 4 個橫向沙坑、果嶺較高</td></tr>
 </table></div>
 <p>每洞的標準桿、碼數、狗腿方向、障礙都寫在 <code>js/courses.js</code>；地形由程式依這些資料生成（見下半部「球場生成」）。風、氣溫每回合隨機，每洞再小幅變化，每一桿還有陣風（±12%）。<b>風速（含陣風）最高 15 mph</b>。回合設定的風：微風 2~6、一般 6~11、強風 11~15 mph。</p>
 
@@ -257,8 +291,10 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td>第 14 列</td><td>回合紀錄標題：日期、球場、洞數、梯台、桿數、對標準桿、推桿數、上球道、標準桿上果嶺、模式、同組、每洞桿數（JSON）</td></tr>
   <tr><td>第 15 列起</td><td>每打完一回合新增一列</td></tr>
 </table>
+<h3>「排行」工作頁</h3>
+<p>第 1 列標題，之後每打完一場新增一列（所有玩家都在同一頁）：日期、帳號、球場、球場代號、洞數（9/18）、範圍（前 9 洞 / 後 9 洞 / 18 洞）、梯台、總桿、標準桿、對標準桿、模式、一桿進洞次數、信天翁次數、老鷹次數、特殊紀錄（JSON：<code>[{"t":"eagle","hole":7,"par":5}]</code>，t = hio / albatross / eagle）。第一次存成績時自動建立，也可以執行一次 <code>setup()</code> 先建立。排行頁讀的就是這一頁（最近 5000 場），排序在手機上做。<b>這個工作頁加入前打的回合不會出現在排行。</b>「排行」這個名稱不能註冊成帳號。</p>
 <h3>API（POST JSON，Content-Type 為 text/plain 以避開 CORS 預檢）</h3>
-<p>每個請求都帶 <code>user</code>、<code>pass</code> 驗證（帳號必須是 Y）。動作：<code>register</code>、<code>login</code>、<code>getProfile</code>、<code>saveProfile</code>、<code>saveRound</code>、<code>getRounds</code>；管理員：<code>listAccounts</code>、<code>setActive</code>、<code>grantPoints</code>、<code>grantRespecs</code>；遊戲間：<code>createRoom</code>、<code>getRoom</code>、<code>joinRoom</code>、<code>updateRoom</code>、<code>sendMsg</code>、<code>getMsgs</code>、<code>closeRoom</code>。</p>
+<p>每個請求都帶 <code>user</code>、<code>pass</code> 驗證（帳號必須是 Y）。動作：<code>register</code>、<code>login</code>、<code>getProfile</code>、<code>saveProfile</code>、<code>saveRound</code>（同時寫入玩家頁與「排行」頁）、<code>getRounds</code>、<code>getRankings</code>；管理員：<code>listAccounts</code>、<code>setActive</code>、<code>grantPoints</code>、<code>grantRespecs</code>；遊戲間：<code>createRoom</code>、<code>getRoom</code>、<code>joinRoom</code>、<code>updateRoom</code>、<code>sendMsg</code>、<code>getMsgs</code>、<code>closeRoom</code>。</p>
 <p>防作弊（簡單版）：<code>saveProfile</code> 時伺服器只允許能力點、重新分配次數往下減；只有在重新分配次數減少時，能力點才能退回到「累計獲得點數」。能力點只能由打完回合或管理員增加。</p>
 <p>遊戲間資料（驗證碼、WebRTC 連線資料、轉送訊息）放在 GAS 的 <code>CacheService</code>，6 小時自動消失，不會在試算表留下垃圾。</p>
 
@@ -362,6 +398,9 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 </ul>
 
 <h2 id="gen">球場生成（js/terrain.js）</h2>
+<p><b>描圖地圖</b>（球場資料有 <code>mapsUrl</code>）：每洞一張格子地圖（約 0.7 公尺一格，類別：長草、球道、果嶺、發球台、沙坑、水、車道、樹下、果嶺邊），路線（量碼數用）、各梯台位置、果嶺中心與長短軸、樹的位置也一起存。載入時解碼一次並算好：離球場範圍多遠（圖外樹林 / 界外、遠處地形抬升）、沙坑內深度（坑底平、邊坡 1.8 公尺）、每個水池的範圍與岸邊距離（水面比周圍低 1.1 公尺、岸邊 5 公尺緩坡；水面依水池格子畫出）。高低起伏仍依 <code>spec.elev</code>。</p>
+
+<p><b>真實球場</b>（每洞資料第 6 欄有 <code>spec</code>）不用隨機擺放，照資料指定：<code>tees</code> 各梯台碼數、<code>bendAt</code> 狗腿位置、<code>elev</code> 沿途高度（例如開球下坡、第二桿上坡）、<code>green</code> 坡度 / 雙層 / 大小 / 斜放角度、<code>bunkers</code> 球道沙坑（距離、左右、橫向、長條）與果嶺邊沙坑（F/B/L/R/FL/FR/BL/BR，可設草坑）、<code>water</code> 球道邊水池 / 水溝 / 果嶺旁水池、<code>valley</code> OB 山谷（掉進去算出界）、<code>ob</code> 哪一邊是 OB（球道外約 18 公尺）、<code>waste</code> 果嶺旁荒地、<code>trees</code> 指定位置的樹叢、<code>wind</code> 常吹的風、<code>windMul</code> 風的倍率。沒有 <code>spec</code> 的球場照下面的方式生成。</p>
 <ol>
   <li><b>中心線</b>：依碼數與狗腿角度畫出折線（Par 4 在 200~255m 轉彎、Par 5 兩個轉角），用 ±18m 移動平均平滑。</li>
   <li><b>球道</b>：沿中心線，寬度 = 球場基準寬（鷺灣 44m、楓林 32m、赤岩 34m）× (1 ± 雜訊)；有 <code>tr</code> 特徵的洞 × 0.85。</li>
@@ -462,6 +501,8 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td><code>js/render.js</code></td><td>3D 場景</td></tr>
   <tr><td><code>js/character.js</code></td><td>內建角色、球桿模型</td></tr>
   <tr><td><code>js/mixamo.js</code></td><td>寫實角色：載入、動作校正、球桿跟手、走位與揮桿切換</td></tr>
+  <tr><td><code>assets/courses/</code></td><td>真實球場的描圖地圖（東方高爾夫：<code>orient-maps.json</code>）</td></tr>
+  <tr><td><code>.claude/trace-orient.py</code></td><td>把東方高爾夫官網球道配置圖判讀成描圖地圖（本機用，不用上傳）</td></tr>
   <tr><td><code>assets/character/</code></td><td>寫實角色 <code>&lt;名字&gt;/model.glb</code>、共用動作 <code>anims/*.fbx</code></td></tr>
   <tr><td><code>.claude/convert-characters.html</code></td><td>角色轉檔工具（FBX → 壓縮 GLB，本機用，不用上傳）</td></tr>
   <tr><td><code>js/hud.js</code> / <code>js/input.js</code></td><td>畫面資訊 / 揮桿手勢</td></tr>
