@@ -123,10 +123,15 @@ export const ACH = [
   { id: 'ember_par', cat: 'fx', tier: 'legend', glyph: '炎', name: '熔岩征服者', desc: '熔岩之心 18 洞打出標準桿以內', pts: 3 },
   { id: 'aurora_par', cat: 'fx', tier: 'legend', glyph: '極', name: '極光之王', desc: '極光冰境 18 洞打出標準桿以內', pts: 3 },
   { id: 'sakura_no3', cat: 'fx', tier: 'gold', glyph: '櫻', name: '櫻下靜心', desc: '櫻川庭苑打完 18 洞沒有三推', pts: 2 },
+  { id: 'honey1', cat: 'fx', tier: 'bronze', glyph: '蜜', name: '甜蜜陷阱', desc: '第一次被蜂蜜池黏住', cnt: 'honey', n: 1 },
+  { id: 'gear1', cat: 'fx', tier: 'bronze', glyph: '輪', name: '齒輪轉轉', desc: '第一次被轉向齒輪甩出去', cnt: 'gear', n: 1 },
+  { id: 'wisp1', cat: 'fx', tier: 'bronze', glyph: '魂', name: '引魂之路', desc: '第一次被引魂燈拉向旗桿', cnt: 'wisp', n: 1 },
+  { id: 'bumper1', cat: 'fx', tier: 'bronze', glyph: '珠', name: '彈珠台', desc: '第一次撞到彈珠柱', cnt: 'bumper', n: 1 },
+  { id: 'cloud1', cat: 'fx', tier: 'bronze', glyph: '雷', name: '遭雷擊', desc: '第一次被雷雲的閃電打中', cnt: 'cloud', n: 1 },
 
   { id: 'stamp1', cat: 'pass', tier: 'bronze', glyph: '章', name: '第一個章', desc: '在任一球場打完 18 洞，蓋下第一個章', cnt: 'stamps', n: 1 },
-  { id: 'stamps_tw', cat: 'pass', tier: 'silver', glyph: '台', name: '台灣巡禮', desc: '集滿 4 個台灣球場的章', pts: 1 },
-  { id: 'stamps_fx', cat: 'pass', tier: 'gold', glyph: '幻', name: '奇幻旅人', desc: '集滿 5 個奇幻球場的章', pts: 2 },
+  { id: 'stamps_tw', cat: 'pass', tier: 'silver', glyph: '台', name: '台灣巡禮', desc: '集滿所有台灣球場的章', pts: 1 },
+  { id: 'stamps_fx', cat: 'pass', tier: 'gold', glyph: '幻', name: '奇幻旅人', desc: '集滿所有奇幻球場的章', pts: 2 },
   { id: 'stamps10', cat: 'pass', tier: 'gold', glyph: '旅', name: '旅行家', desc: '集滿 10 個球場的章', cnt: 'stamps', n: 10, pts: 2 },
   { id: 'stamps_world', cat: 'pass', tier: 'legend', glyph: '界', name: '環遊世界', desc: '集滿所有球場的章', pts: 3 },
 

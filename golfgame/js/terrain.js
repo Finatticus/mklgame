@@ -42,9 +42,25 @@ export const TDEF = {
     scen: [300, [['palm', 100, 10, 15, 3.2, 4.2, { neon: 1 }]]], marks: [['tower', 70, 500, 1600, 90, 320, 16, 40, { neon: 1 }]] },
   crystal: { dens: 0.45, trees: [['crystal', 70, 3, 9, 1.2, 2.4], ['rock', 30, 1, 2.6, 1.2, 2.6]],
     scen: [700, [['crystal', 100, 4, 12, 1.5, 3]]], marks: [['crystal', 46, 150, 900, 30, 90, 8, 20]] },
+  // ---- 奇幻球場第二批 ----
+  // 蜂蜜花谷：巨大的花、金黃的樹、遠方一座座蜂巢
+  honey: { dens: 'park', trees: [['flower', 45, 5, 10, 2.2, 3.6], ['broad', 35, 8, 13, 3.8, 5.2, { honey: 1 }], ['shrub', 20, 1, 1.8, 1.4, 2.2, { honey: 1 }]],
+    scen: [1500, [['flower', 45, 6, 12, 2.5, 4], ['broad', 55, 9, 14, 4.2, 5.8, { honey: 1 }]]], marks: [['hive', 14, 260, 1100, 26, 46, 14, 22], ['flower', 30, 200, 800, 30, 55, 12, 20]] },
+  // 齒輪工坊：立著的大齒輪、冒煙的煙囪、銅色路燈
+  clock: { dens: 0.32, trees: [['cog', 50, 4, 8, 1, 1], ['chimney', 12, 7, 13, 1, 1.6], ['lantern', 38, 4, 6, 0.4, 0.5, { brass: 1 }]],
+    scen: [500, [['chimney', 55, 9, 18, 1.2, 2], ['cog', 45, 6, 12, 1, 1]]], marks: [['cog', 18, 300, 1200, 60, 140, 1, 1, { big: 1 }], ['chimney', 26, 250, 1100, 50, 110, 5, 9]] },
+  // 幽光古堡：枯樹、墓碑、南瓜燈，遠方的古堡塔樓
+  haunt: { dens: 'park', trees: [['deadtree', 40, 7, 13, 2.2, 3.2], ['grave', 25, 1.2, 1.9, 0.6, 0.8], ['pumpkin', 15, 0.8, 1.3, 0.8, 1.2], ['broad', 20, 10, 15, 4, 5.5, { night: 1 }]],
+    scen: [1400, [['deadtree', 55, 8, 14, 2.4, 3.4], ['broad', 45, 11, 16, 4.5, 6, { night: 1 }]]], marks: [['castle', 7, 650, 1300, 90, 160, 40, 70], ['grave', 60, 90, 300, 2, 3, 1, 1.3]] },
+  // 積木樂園：一疊疊的積木、玩具樹
+  toy: { dens: 0.45, trees: [['block', 55, 3, 7, 1.6, 2.6], ['pine', 45, 6, 10, 2.4, 3.2, { toy: 1 }]],
+    scen: [700, [['block', 45, 4, 9, 2, 3], ['pine', 55, 7, 11, 2.6, 3.4, { toy: 1 }]]], marks: [['block', 30, 260, 1100, 40, 110, 14, 28]] },
+  // 雷鳴高原：玄武岩、枯樹、避雷針，遠方灰色的山
+  storm: { waste: true, dens: 0.4, trees: [['basalt', 35, 2, 6, 1.2, 2.2], ['deadtree', 30, 6, 11, 2, 3], ['rock', 20, 1, 2.6, 1.2, 2.6], ['lantern', 15, 6, 9, 0.4, 0.5, { rod: 1 }]],
+    scen: [500, [['basalt', 50, 3, 8, 1.5, 3], ['deadtree', 50, 7, 12, 2.2, 3]]], marks: [['peak', 22, 1300, 2300, 300, 560, 220, 380]] },
 };
 
-const NO_TRUNK = { rock: 1, basalt: 1, crystal: 1, icespike: 1, gumdrop: 1, dome: 1, obelisk: 1 };      // 整顆都是實心的（不另外算樹幹）
+const NO_TRUNK = { rock: 1, basalt: 1, crystal: 1, icespike: 1, gumdrop: 1, dome: 1, obelisk: 1, grave: 1, pumpkin: 1, block: 1, chimney: 1, cog: 1, hive: 1 };      // 整顆都是實心的（不另外算樹幹）
 
 const STYLE = {
   links: { macroA: 2.2, macroL: 120, microA: 1.5, microL: 16, edgeRise: 3, potDepth: 0.85, bunkerSize: [3.4, 4.6] },
@@ -457,7 +473,17 @@ export function buildHole(course, holeIdx, opts = {}) {
   // ---------- 6. 發球台 ----------
   const tees = TEE_SETS.map(t => {
     if (map && map.tees[t.id]) {
-      const [u, v] = map.tees[t.id], sT = near(u, v).s;
+      let [u, v] = map.tees[t.id];
+      // 描圖算出來的梯台落在水、沙坑、樹林或圖外 → 往最後面的梯台方向退，退到乾的草地上再多退 4 公尺
+      const dryAt = (uu, vv) => { const i = cellAt(uu, vv); return i >= 0 && [1, 2, 4, 9].includes(MG.g[i]); };
+      if (!dryAt(u, v) && map.tees.black) {
+        const [bu, bv] = map.tees.black, L0 = Math.hypot(bu - u, bv - v);
+        for (let k = 1; k <= Math.ceil(L0); k++) {
+          const f = Math.min(1, (k + 4) / (L0 || 1)), uu = lerp(u, bu, k / (L0 || 1)), vv = lerp(v, bv, k / (L0 || 1));
+          if (dryAt(uu, vv)) { u = lerp(u, bu, f); v = lerp(v, bv, f); break; }
+        }
+      }
+      const sT = near(u, v).s;
       return { id: t.id, s: sT, u, v, dir: dirAt(Math.max(0, sT)), color: t.color };
     }
     const sT = spec && spec.tees[t.id] ? clamp(Lp - spec.tees[t.id] * YD, 0, Lp - 40) : Lp * (1 - t.ratio);
@@ -466,6 +492,14 @@ export function buildHole(course, holeIdx, opts = {}) {
     return { id: t.id, s: sT, u: pt[0] + dir[1] * off, v: pt[1] - dir[0] * off, dir, color: t.color };
   });
   if (map) { const wt = tees.find(t => t.id === 'white'); atY = y => clamp(wt.s + y * YD, 0, Lp); }
+  // 發球台正前方 45 公尺內、往前漸寬的走道
+  const teeLane = (u, v) => {
+    for (const t of tees) {
+      const du = u - t.u, dv = v - t.v, a = du * t.dir[0] + dv * t.dir[1];
+      if (a > -4 && a < 45 && Math.abs(du * t.dir[1] - dv * t.dir[0]) < 6 + Math.max(0, a) * 0.12) return true;
+    }
+    return false;
+  };
   const inTee = (u, v, margin = 0) => {
     for (const t of tees) {
       const du = u - t.u, dv = v - t.v;
@@ -521,6 +555,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (c === 3 && MG.gid[i] !== activeGid) return SURF.FRINGE;          // 今天沒用的那個果嶺
     if (c === 1 && MG.greenD[i] * MG.mpp < 1.6) return SURF.FRINGE;
     if (c !== 6 && c !== 5 && inTee(u, v)) return SURF.TEE;        // 各梯台的發球區（官網碼數的位置）
+    if (c === 8 && teeLane(u, v)) return SURF.ROUGH;              // 發球台正前方的樹林邊改成長草（開球視野要清楚）
     return MAP_SURF[c];
   }
   function surface(u, v) {
@@ -762,6 +797,67 @@ export function buildHole(course, holeIdx, opts = {}) {
       specials.push({ kind: 'wall', a: [a[0], a[1]], b: [b[0], b[1]], y0: Math.min(height(a[0], a[1]), height(b[0], b[1])), h: 4, u: (a[0] + b[0]) / 2, v: (a[1] + b[1]) / 2, avoid: len / 2 + 3 });
     }
   }
+  // ---- 奇幻球場第二批的機關 ----
+  //   hy 蜂蜜池：球碰到蜂蜜（落地或滾進去）→ 立刻黏住停下
+  //   gr 轉向齒輪：球碰到旋轉中的齒輪盤 → 從齒輪邊緣往轉過去的方向甩出去
+  //   ws 引魂燈：球從燈旁邊飛過 → 水平方向被拉向旗桿（速度不變）
+  //   bp 彈珠柱：球撞到柱子 → 加速彈開
+  //   cl 雷雲：球穿過雷雲 → 被閃電打中，幾乎垂直掉下來
+  const fwAt = (sA, side) => fwHalf(sA, side);
+  if (F.has('hy')) {
+    // 一塊在果嶺前（接住打短的球），其他在開球落點兩側與果嶺後
+    const list = [[Lp - gry - 10 - srng() * 8, (srng() - 0.5) * 8, 4.5 + srng()]];
+    if (par >= 4) for (let i = 0; i < (par === 5 ? 3 : 2); i++) { const sA = sW + 190 + srng() * 70 + i * (par === 5 ? 90 : 0), side = srng() < 0.5 ? -1 : 1; list.push([sA, side * (fwAt(sA, side) * (0.6 + srng() * 0.6)), 4.5 + srng() * 1.5]); }
+    if (srng() < 0.6) list.push([Lp + gry + 8, (srng() - 0.5) * 6, 4.5]);
+    for (const [sA, lat, r] of list) {
+      const [u, v] = at(sA, lat);
+      if (!okSpot(u, v) || specials.some(q => Math.hypot(q.u - u, q.v - v) < (q.r || 4) + r + 4)) continue;
+      specials.push({ kind: 'honey', u, v, y: height(u, v), r, avoid: r + 2 });
+    }
+  }
+  if (F.has('gr')) {
+    // 狗腿洞的轉角放一個（往彎過去的方向轉），其他是隨機方向的齒輪（轉向 35~60 度）
+    const list = [];
+    if (par >= 4 && Math.abs(bend) >= 15) list.push([clamp(L * (F.has('E') ? 0.4 : F.has('J') ? 0.75 : 0.6), 140, 300) , 0, clamp(rad(bend) * 0.9, -1.2, 1.2)]);
+    const extra = par === 3 ? 1 : par === 4 ? 1 : 2;
+    for (let i = 0; i < extra; i++) list.push([lerp(sW + 150, Lp - gry - 45, srng()), (srng() - 0.5) * fwBase, (srng() < 0.5 ? -1 : 1) * rad(35 + srng() * 25)]);
+    for (const [sA, lat, turn] of list) {
+      const [u, v] = at(sA, lat);
+      if (!okSpot(u, v) || specials.some(q => Math.hypot(q.u - u, q.v - v) < 16)) continue;
+      specials.push({ kind: 'gear', u, v, y: height(u, v), r: 5, turn, avoid: 7 });
+    }
+  }
+  if (F.has('ws')) {
+    const n = par === 3 ? 1 : par === 4 ? 2 : 3;
+    for (let i = 0; i < n; i++) {
+      const sA = par === 3 ? (sW + Lp - gry) / 2 : lerp(sW + 120, Lp - gry - 60, (i + 0.3 + srng() * 0.4) / n), side = srng() < 0.5 ? -1 : 1;
+      const [u, v] = at(sA, side * fwAt(sA, side) * (0.4 + srng() * 0.9));
+      specials.push({ kind: 'wisp', u, v, y: Math.max(height(u, v), rawH(u, v, sA, 0)) + 9 + srng() * 7, r: 6, skipT: 1.2 });
+    }
+  }
+  if (F.has('bp')) {
+    // 球道兩側一根根的彈珠柱，果嶺兩旁各一根
+    const list = [];
+    const n = par === 3 ? 2 : par === 4 ? 4 : 6;
+    for (let i = 0; i < n; i++) { const sA = lerp(sW + 120, Lp - gry - 30, (i + 0.5) / n) + (srng() - 0.5) * 20, side = i % 2 ? 1 : -1; list.push([sA, side * (fwAt(sA, side) + 1 + srng() * 4)]); }
+    if (srng() < 0.5) { const sA = lerp(sW + 160, Lp - gry - 60, srng()); list.push([sA, (srng() - 0.5) * fwBase * 0.4]); }     // 偶爾一根在球道中間
+    for (const sd of [-1, 1]) list.push([Lp, sd * (grx + 4 + srng() * 2)]);
+    for (const [sA, lat] of list) {
+      const [u, v] = at(sA, lat);
+      if (!okSpot(u, v) || specials.some(q => Math.hypot(q.u - u, q.v - v) < 8)) continue;
+      specials.push({ kind: 'bumper', u, v, y: height(u, v), r: 1.8, h: 3.2, avoid: 4, skipT: 0.3 });
+    }
+  }
+  if (F.has('cl')) {
+    // 一朵在開球落點附近、一朵在果嶺前或後；五桿洞多一朵
+    const list = par === 3 ? [[(sW + Lp - gry) / 2 + 10, (srng() - 0.5) * 16]] : [[sW + 170 + srng() * 60, (srng() < 0.5 ? -1 : 1) * (8 + srng() * 10)]];
+    list.push([srng() < 0.5 ? Lp - gry - 22 : Lp + gry + 14, (srng() - 0.5) * 12]);
+    if (par === 5) list.push([lerp(sW + 280, Lp - 120, srng()), (srng() - 0.5) * 20]);
+    for (const [sA, lat] of list) {
+      const [u, v] = at(sA, lat);
+      specials.push({ kind: 'cloud', u, v, y: Math.max(height(u, v), rawH(u, v, sA, 0)) + 17 + srng() * 6, r: 8, th: 3.6, skipT: 4 });
+    }
+  }
   // 挑戰關卡指定位置的機關：at = 距發球台碼數、lat = 橫向（公尺，右正）、h = 離地高度；orb = 金球（只收集，不改變飛行）
   if (spec && spec.specials) {
     let orbIdx = 0;
@@ -792,7 +888,17 @@ export function buildHole(course, holeIdx, opts = {}) {
   const trees = [];
   const treeGrid = new Map();
   const key = (x, z) => Math.floor(x / 10) + ',' + Math.floor(z / 10);
+  // 開球區要視野清楚：每個發球台後方 10 公尺到前方 90 公尺、往前越來越寬的扇形裡不種樹（描圖的樹林邊緣常常貼著發球台）
+  const teeBlocked = (x, z, r) => {
+    const u = x, v = -z;
+    for (const t of tees) {
+      const du = u - t.u, dv = v - t.v, a = du * t.dir[0] + dv * t.dir[1], lat = Math.abs(du * t.dir[1] - dv * t.dir[0]);
+      if (a > -10 && a < 90 && lat - r < 9 + Math.max(0, a) * 0.22) return true;
+    }
+    return false;
+  };
   const addTree = t => {
+    if (teeBlocked(t.x, t.z, t.r || 0)) return;
     trees.push(t);
     const k = key(t.x, t.z);
     if (!treeGrid.has(k)) treeGrid.set(k, []);
@@ -871,7 +977,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   // 碰撞球的中心高度與半徑
   const treeColl = t => {
     const k = { rock: [0.3, 0.8], pine: [0.5, 0.9], palm: [0.93, 0.75], basalt: [0.45, 0.85], crystal: [0.4, 0.8], icespike: [0.4, 0.8], deadtree: [0.62, 0.55], shroom: [0.85, 1], bamboo: [0.55, 0.7],
-      lolli: [0.85, 1], gumdrop: [0.4, 0.9], lantern: [0.5, 0.6], obelisk: [0.5, 0.9], dome: [0.3, 0.9], coral: [0.55, 0.75] }[t.type] || [0.66, 1];
+      lolli: [0.85, 1], gumdrop: [0.4, 0.9], lantern: [0.5, 0.6], obelisk: [0.5, 0.9], dome: [0.3, 0.9], coral: [0.55, 0.75],
+      flower: [0.85, 0.9], grave: [0.45, 0.8], pumpkin: [0.45, 0.9], block: [0.5, 0.95], chimney: [0.5, 0.9], cog: [0.55, 1.2] }[t.type] || [0.66, 1];
     t.cy = t.y + t.h * k[0];
     t.cr = t.type === 'cactus' ? 0.6 : t.r * k[1];
     if (t.type === 'cactus') t.cy = t.y + t.h * 0.5;
@@ -1126,6 +1233,11 @@ const PALETTE = {
   crystal: { fair: [82, 72, 142], fair2: [74, 64, 130], cut: [68, 58, 120], rough: [52, 42, 92], deep: [42, 32, 72], green: [112, 102, 192], green2: [102, 92, 178], fringe: [96, 86, 172], sand: [202, 182, 242], waste: [62, 52, 102], tee: [82, 72, 142], ob: [32, 26, 62], water: [122, 62, 222] },
   mushroom: { fair: [64, 140, 116], fair2: [56, 126, 104], cut: [50, 116, 96], rough: [46, 86, 96], deep: [40, 60, 84], green: [92, 182, 148], green2: [82, 168, 138], fringe: [72, 152, 128], sand: [214, 196, 236], waste: [74, 64, 96], tee: [64, 140, 116], ob: [30, 30, 62], water: [60, 200, 220] },
   frost: { fair: [146, 188, 186], fair2: [134, 176, 176], cut: [124, 166, 168], rough: [222, 230, 240], deep: [238, 243, 250], green: [104, 166, 138], green2: [94, 154, 128], fringe: [124, 176, 156], sand: [196, 208, 224], waste: [188, 198, 214], tee: [146, 188, 186], ob: [234, 240, 248], water: [70, 120, 170] },
+  honey: { fair: [126, 176, 62], fair2: [114, 164, 54], cut: [106, 154, 50], rough: [168, 160, 66], deep: [196, 150, 52], green: [120, 186, 70], green2: [110, 174, 62], fringe: [114, 178, 64], sand: [250, 230, 170], waste: [200, 162, 82], tee: [126, 176, 62], ob: [176, 128, 40], water: [70, 160, 170] },
+  clock: { fair: [92, 140, 104], fair2: [82, 128, 94], cut: [76, 118, 88], rough: [122, 98, 72], deep: [96, 74, 56], green: [104, 160, 116], green2: [94, 148, 106], fringe: [96, 150, 108], sand: [196, 142, 96], waste: [104, 86, 70], tee: [92, 140, 104], ob: [62, 52, 46], water: [40, 96, 92] },
+  haunt: { fair: [58, 96, 82], fair2: [50, 86, 74], cut: [46, 78, 68], rough: [64, 62, 82], deep: [46, 42, 62], green: [70, 116, 96], green2: [62, 106, 88], fringe: [62, 104, 88], sand: [152, 146, 160], waste: [56, 52, 66], tee: [58, 96, 82], ob: [30, 28, 42], water: [70, 140, 96] },
+  toy: { fair: [92, 196, 84], fair2: [84, 184, 76], cut: [78, 174, 72], rough: [96, 160, 230], deep: [150, 132, 226], green: [110, 214, 100], green2: [100, 202, 92], fringe: [104, 206, 96], sand: [255, 236, 150], waste: [250, 206, 90], tee: [92, 196, 84], ob: [132, 112, 210], water: [60, 150, 240] },
+  storm: { fair: [86, 126, 82], fair2: [78, 116, 76], cut: [72, 108, 70], rough: [96, 104, 100], deep: [78, 84, 88], green: [94, 142, 92], green2: [86, 132, 84], fringe: [88, 134, 86], sand: [150, 150, 156], waste: [92, 96, 100], tee: [86, 126, 82], ob: [64, 68, 74], water: [64, 84, 104] },
   void: { fair: [72, 182, 160], fair2: [62, 166, 148], cut: [56, 152, 138], rough: [52, 116, 108], deep: [86, 70, 140], green: [96, 200, 176], green2: [86, 186, 164], fringe: [76, 176, 156], sand: [226, 220, 250], waste: [70, 60, 110], tee: [64, 164, 150], ob: [40, 30, 70], chasm: [16, 12, 34] },
 };
 

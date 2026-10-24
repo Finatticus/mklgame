@@ -319,7 +319,7 @@
 <!-- ============ 登入 ============ -->
 <section id="scr-login" class="screen login-screen">
   <div class="login-bg"></div>
-  <button id="btn-settings" class="icon-btn top-right" title="設定">⚙</button>
+  <button id="btn-settings" class="text-btn top-right">設定</button>
   <div class="login-top">
     <svg class="crest"><use href="#crest"/></svg>
     <div class="wm">DIXEN GOLF</div>
@@ -354,13 +354,13 @@
 
 <!-- ============ 大廳 ============ -->
 <section id="scr-lobby" class="screen app-screen">
-  <header class="appbar"><small id="lb-greet">GOOD EVENING</small><h4 id="lb-name"></h4><p id="lb-stats" class="appbar-sub"></p><button id="btn-logout" class="appbar-act">登出</button><button id="btn-lobby-set" class="appbar-act set2">⚙ 設定</button></header>
+  <header class="appbar"><small id="lb-greet">GOOD EVENING</small><h4 id="lb-name"></h4><p id="lb-stats" class="appbar-sub"></p><button id="btn-logout" class="appbar-act">登出</button><button id="btn-lobby-set" class="appbar-act set2">設定</button></header>
   <div class="body narrow">
     <button class="mode" id="mode-single"><div class="thumb t1"><svg viewBox="0 0 120 120"><use href="#i-driver"/></svg></div><div><b>單人回合</b><span>選球場、梯台、9 / 18 洞</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-chal"><div class="thumb t5"><svg viewBox="0 0 120 120"><use href="#i-target"/></svg></div><div><b>挑戰模式</b><span id="mode-chal-sub">特別設計的關卡，每關 1~3 顆星</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-host"><div class="thumb t2"><svg viewBox="0 0 120 120"><use href="#i-flag"/></svg></div><div><b>建立遊戲間</b><span>你的裝置當主機，產生驗證碼</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-join"><div class="thumb t3"><svg viewBox="0 0 120 120"><use href="#i-tee"/></svg></div><div><b>加入遊戲間</b><span>輸入朋友給的 6 位數驗證碼</span></div><span class="chev">›</span></button>
-    <button class="mode" id="mode-practice"><div class="thumb t4"><svg viewBox="0 0 120 120"><use href="#i-ball"/></svg></div><div><b>練習場</b><span>發球台、沙坑、果嶺推桿，不計分</span></div><span class="chev">›</span></button>
+    <button class="mode" id="mode-practice"><div class="thumb t4"><svg viewBox="0 0 120 120"><use href="#i-ball"/></svg></div><div><b>練習</b><span>練習場（發球台、沙坑、推桿）或任選一洞從開球打到進洞，不計分</span></div><span class="chev">›</span></button>
   </div>
   <nav class="tabbar"><button data-tab="lobby" class="on"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
@@ -378,11 +378,13 @@
 <section id="scr-setup" class="screen app-screen">
   <header class="appbar"><small>ROUND SETUP</small><h4 id="st-title">單人回合</h4><button id="st-back" class="appbar-act">返回</button></header>
   <div class="body narrow scroll">
+    <div class="only-practice-all hidden"><h5>練習方式</h5><div id="st-pkind" class="seg"></div></div>
     <div class="only-round-or-host"><h5>球場</h5>
     <div id="st-courses"></div>
     </div>
     <div class="only-round"><h5>洞數</h5><div id="st-holes" class="seg"></div></div>
     <div class="only-round hidden" id="st-nines-wrap"><h5>選區（前九 / 後九）</h5><div id="st-nines" class="nines"></div></div>
+    <div class="only-hp hidden"><h5>練習哪一洞</h5><div id="st-hp" class="hp-grid"></div><p class="small" style="margin-top:6px">從發球台一路打到推桿進洞，不記成績。打完可以再打一次或換下一洞。</p></div>
     <div class="only-practice hidden"><p class="small" style="margin-top:14px">練習場在楓林谷。可以隨時切換：<b>發球台</b>（木桿、鐵桿，每球都回到發球台）、<b>沙坑</b>（發球台換成沙地）、<b>果嶺</b>（推桿，點小地圖選站位）。</p></div>
     <h5>梯台</h5><div id="st-tee" class="seg"></div>
     <div class="only-host hidden"><h5>賽制</h5><div id="st-mode" class="seg"></div></div>
@@ -588,6 +590,18 @@
   <div class="dlg-btns"><button id="set-cancel" class="btn ghost-dark">取消</button><button id="set-save" class="btn brass">儲存</button></div>
 </div></div>
 
+<div id="dlg-resume" class="dlg"><div class="dlg-box">
+  <h3>上次的回合還沒打完</h3>
+  <p id="rs-body" class="center"></p>
+  <div class="dlg-btns"><button id="rs-no" class="btn ghost-dark">不用了</button><button id="rs-yes" class="btn brass">接著打</button></div>
+</div></div>
+
+<div id="dlg-hp" class="dlg"><div class="dlg-box">
+  <h3 id="hp-title">練習完成</h3>
+  <div id="hp-body"></div>
+  <div class="dlg-btns wrap"><button id="hp-quit" class="btn ghost-dark">結束練習</button><button id="hp-next" class="btn ghost-dark">下一洞</button><button id="hp-again" class="btn brass">再打一次</button></div>
+</div></div>
+
 <div id="dlg-hole" class="dlg"><div class="dlg-box wide">
   <h3 id="hr-title"></h3>
   <div id="hr-body"></div>
@@ -633,6 +647,7 @@
 
 <div id="dlg-courses" class="dlg"><div class="dlg-box wide">
   <h3>選擇球場</h3>
+  <div id="cp-kind" class="seg cp-kind"><button data-k="real">一般球場</button><button data-k="fantasy">奇幻球場</button></div>
   <div id="cp-list" class="cp-list"></div>
   <div class="dlg-btns"><button id="cp-close" class="btn ghost-dark">取消</button></div>
 </div></div>
@@ -650,6 +665,7 @@
   <div id="gm-room" class="gm-room hidden"></div>
   <div id="gm-card" class="scroll-x"></div>
   <div class="gm-fs"><span>字體大小</span><div class="seg fs-seg" id="gm-fs"></div></div>
+  <div class="gm-fs"><span>長推桿特寫</span><div class="seg fs-seg" id="gm-pcam"></div><small class="small">8 碼以上的推桿快進洞時切換成慢動作近拍</small></div>
   <div class="dlg-btns wrap">
     <button id="gm-quit" class="btn ghost-dark">離開回合</button>
     <button id="gm-retry" class="btn ghost-dark hidden">重新挑戰</button>

@@ -8,7 +8,7 @@ import { courseById, teeYards, loadCourseMaps, holeLabel } from './courses.js';
 import { makeRng, hashStr, toYd, YD, MPH, FT, clamp, lerp, rad, smooth, fmtToPar, escapeHtml } from './util.js';
 import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
-import { characterDef, ANIM_BASE } from './config.js';
+import { characterDef, ANIM_BASE, getSetting } from './config.js';
 import { SwingInput } from './input.js';
 import * as sfx from './audio.js';
 import { bump, unlock, checkCounters, stamp, save as saveProgress, setStars, equippedSkins, chal } from './progress.js';
@@ -104,7 +104,7 @@ export class Game {
     const base = courseById(cfg.courseId);
     this.course = { ...base, stimp: Number(cfg.stimp) > 0 ? Number(cfg.stimp) : base.stimp };
     this.level = cfg.challenge ? levelById(cfg.challenge) : null;        // 挑戰模式的關卡
-    this.holeList = cfg.practice || this.level ? [cfg.startHole || 0] : cfg.holes === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : cfg.holes === 'back' ? [9, 10, 11, 12, 13, 14, 15, 16, 17] : [...Array(18).keys()];
+    this.holeList = cfg.practice || this.level || cfg.holePractice ? [cfg.startHole || 0] : cfg.holes === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : cfg.holes === 'back' ? [9, 10, 11, 12, 13, 14, 15, 16, 17] : [...Array(18).keys()];
     this.seed = cfg.seed;
     const rng = makeRng(cfg.seed);
     const range = cfg.wind === 'course' || !WIND[cfg.wind] ? this.course.wind : WIND[cfg.wind];
@@ -155,9 +155,26 @@ export class Game {
       this.lastHeard = this.lastTick = Date.now();
       this.hbTimer = setInterval(() => this.heartbeat(), 4000);
     }
-    if (resume) await this.applyResume(resume);
+    if (resume && resume.local) {
+      // 接續上次沒打完的回合（APP 被關掉 / 中途離開）：載入那一洞後套用存下來的成績與球位
+      this.authority = false;
+      this.pendingState = resume.state;
+      await this.loadHole(resume.state.k);
+      this.authority = true;
+    } else if (resume) await this.applyResume(resume);
     else await this.loadHole(0);
   }
+
+  // 單人回合的進度存在手機裡：每一桿開始前存一次，回合打完才清掉（連線、練習場、挑戰不存）
+  saveLocal(turn) {
+    if (this.net || this.cfg.practice || this.level || this.roundOver || !this.authority) return;
+    const me = this.players.find(p => p.local) || this.players[0];
+    try {
+      localStorage.setItem('dixen.resume', JSON.stringify({ v: 1, at: Date.now(), user: me.user, cfg: this.cfg, state: this.serialize(turn),
+        course: this.course.name, holeNo: this.holeNo, label: holeLabel(this.course, this.holeList[this.k]), holes: this.holeList.length, strokes: me.strokes }));
+    } catch (e) { /* 私密模式存不了就算了 */ }
+  }
+  static clearLocal() { try { localStorage.removeItem('dixen.resume'); } catch (e) { /* 略過 */ } }
 
   // 目前還在遊戲裡的玩家（對方離開後就不算）
   present() { return this.players.filter(p => !p.away); }
@@ -358,6 +375,7 @@ export class Game {
 
   // ---------------- 一桿的準備 ----------------
   beginTurn(i) {
+    this.saveLocal(i);
     this.cur = i;
     const p = this.players[i];
     for (const q of this.players) q.golfer.setVisible(q === p);
@@ -719,7 +737,7 @@ export class Game {
     let hit = null;
     for (let i = 1; i < fr.length && !hit; i++) {
       for (const sp of sps) {
-        if (sp === skip && fr[i][0] < 0.25) continue;
+        if (sp === skip && fr[i][0] < (sp.skipT || 0.25)) continue;     // 剛觸發的機關先不重複觸發（引魂燈、雷雲要等球離開）
         const h = this.specialHit(sp, fr[i - 1], fr[i], env);
         if (h) { hit = { sp, i, ...h }; break; }
       }
@@ -805,6 +823,54 @@ export class Game {
       const sp2 = (lo + hi) / 2;
       return { t: b[0], pos, vel: [tx / D * sp2 * 0.7071, sp2 * 0.7071, tz / D * sp2 * 0.7071], spin: 2600 };
     }
+    if (sp.kind === 'honey') {
+      // 蜂蜜池：移動中的球碰到蜂蜜（貼地）→ 黏住，原地停下
+      if (Math.hypot(v[0], v[1], v[2]) < 0.8 || b[2] - this.hole.height(b[1], b[3]) > 0.35 || Math.hypot(b[1] - sp.u, b[3] + sp.v) > sp.r) return null;
+      return { t: b[0], pos: [b[1], this.hole.height(b[1], b[3]) + 0.05, b[3]], vel: [v[0] * 0.01, -0.3, v[2] * 0.01], spin: 0 };
+    }
+    if (sp.kind === 'gear') {
+      // 轉向齒輪：球碰到齒輪盤（貼地）→ 水平方向轉 turn 角度，從齒輪邊緣甩出去（至少 9 m/s），微微離地
+      if (b[2] - this.hole.height(b[1], b[3]) > 0.35 || Math.hypot(b[1] - sp.u, b[3] + sp.v) > sp.r) return null;
+      const hor = Math.hypot(v[0], v[2]);
+      const yaw = (hor > 0.8 ? Math.atan2(v[0], -v[2]) : Math.atan2(this.hole.pin[0] - b[1], -(this.hole.pin[1] - b[3]))) + sp.turn;
+      const dx = Math.sin(yaw), dz = -Math.cos(yaw), sp1 = Math.min(40, Math.max(9, hor * 0.95));
+      const ex = sp.u + dx * (sp.r + 0.3), ez = -sp.v + dz * (sp.r + 0.3);
+      return { t: b[0], pos: [ex, this.hole.height(ex, ez) + 0.15, ez], vel: [dx * sp1, 2.2, dz * sp1], spin: 300 };
+    }
+    if (sp.kind === 'wisp' || sp.kind === 'cloud') {
+      // 路線上離中心最近的點
+      const cx = sp.u, cy = sp.y, cz = -sp.v, ex = b[1] - a[1], ey = b[2] - a[2], ez = b[3] - a[3], l2 = ex * ex + ey * ey + ez * ez || 1e-9;
+      const k = clamp(((cx - a[1]) * ex + (cy - a[2]) * ey + (cz - a[3]) * ez) / l2, 0, 1);
+      const X = [a[1] + ex * k, a[2] + ey * k, a[3] + ez * k], t = a[0] + dt * k;
+      if (sp.kind === 'wisp') {
+        // 引魂燈：飛過燈旁邊（半徑內、水平速度夠快）→ 水平方向轉向旗桿，速度不變
+        const hor = Math.hypot(v[0], v[2]);
+        if (hor < 5 || Math.hypot(X[0] - cx, X[1] - cy, X[2] - cz) > sp.r) return null;
+        const yaw = Math.atan2(this.hole.pin[0] - X[0], -(this.hole.pin[1] - X[2]));
+        return { t, pos: X, vel: [Math.sin(yaw) * hor, v[1], -Math.cos(yaw) * hor] };
+      }
+      // 雷雲：穿過雲（橢球）→ 閃電打中，水平速度幾乎歸零、往下掉
+      if (((X[0] - cx) ** 2 + (X[2] - cz) ** 2) / (sp.r * sp.r) + ((X[1] - cy) / sp.th) ** 2 > 1) return null;
+      return { t, pos: X, vel: [v[0] * 0.06, -4, v[2] * 0.06], spin: 0 };
+    }
+    if (sp.kind === 'bumper') {
+      // 彈珠柱：路線（水平方向）碰到圓柱、而且高度低於柱頂 → 依碰撞點的法線反彈，加速 1.2 倍（至少 10 m/s）
+      const cx = sp.u, cz = -sp.v, fx = b[1] - a[1], fz = b[3] - a[3], gx = a[1] - cx, gz = a[3] - cz;
+      const A = fx * fx + fz * fz;
+      if (A < 1e-9) return null;
+      const B = 2 * (fx * gx + fz * gz), C = gx * gx + gz * gz - sp.r * sp.r, disc = B * B - 4 * A * C;
+      if (C < 0 || disc < 0) return null;
+      const k = (-B - Math.sqrt(disc)) / (2 * A);
+      if (k < 0 || k > 1) return null;
+      const X = [a[1] + fx * k, a[2] + (b[2] - a[2]) * k, a[3] + fz * k];
+      if (X[1] > sp.y + sp.h) return null;
+      const nx = (X[0] - cx) / sp.r, nz = (X[2] - cz) / sp.r, dot = v[0] * nx + v[2] * nz;
+      if (dot >= 0) return null;
+      let rx = v[0] - 2 * dot * nx, rz = v[2] - 2 * dot * nz;
+      const hor = Math.hypot(rx, rz) || 1, sp1 = Math.min(38, Math.max(10, hor * 1.2));
+      rx = rx / hor * sp1; rz = rz / hor * sp1;
+      return { t: a[0] + dt * k, pos: [cx + nx * (sp.r + 0.15), X[1], cz + nz * (sp.r + 0.15)], vel: [rx, Math.max(v[1], X[1] - this.hole.height(X[0], X[2]) < 0.4 ? 1.5 : v[1]), rz], spin: 300 };
+    }
     if (sp.kind === 'shroom') {
       // 菇傘頂面：從上往下穿過菇傘的高度、而且在菇傘範圍內 → 往上彈
       if (!(a[2] >= sp.top && b[2] < sp.top)) return null;
@@ -849,6 +915,13 @@ export class Game {
       sfx.playHit(club.icon, clamp(msg.input.power, 0.3, 1));
       const f = msg.res.frames;
       this.flight = { msg, frames: f, t: 0, i: 0, speed: 1, events: msg.res.events.slice(), start: new THREE.Vector3(f[0][1], f[0][2], f[0][3]), putt: !!club.putter, short: msg.res.total < 45, landed: false, endHold: 0 };
+      // 長推桿特寫：8 碼以上的推桿，進洞、差 1 碼以內或擦過洞口時，球快到洞口就切到洞旁的低角度慢動作（選單可以關掉）
+      if (club.putter && getSetting('puttCam', true) && (this.shotCtx.dist || 0) >= 8 * YD) {
+        const [px, pz] = this.hole.pin;
+        let md = 1e9; for (const q of f) md = Math.min(md, Math.hypot(q[1] - px, q[3] - pz));
+        const holed = msg.res.result === 'holed';
+        if (holed || md < YD) this.flight.cine = { on: false, done: false, t: 0, holed };
+      }
       this.world.clearTracer();
       if (!club.putter && !this.flight.short) this.cam.mode = 'flight';
       else this.cam.mode = 'follow';
@@ -880,6 +953,15 @@ export class Game {
       const k = clamp((f.t - a[0]) / ((b[0] - a[0]) || 1), 0, 1);
       const x = lerp(a[1], b[1], k), y = lerp(a[2], b[2], k), z = lerp(a[3], b[3], k);
       this.world.setBall(x, y, z);
+      if (f.cine && !f.cine.done) {
+        const dp = Math.hypot(x - this.hole.pin[0], z - this.hole.pin[1]);
+        if (!f.cine.on && dp < 1.3) { f.cine.on = true; f.cine.t = 0; f.speed = 0.45; document.body.classList.add('putt-cine'); }
+        if (f.cine.on) {
+          f.cine.t += dt;
+          // 最多 3 秒；沒進的球滾離洞口一段就結束，進洞的停在特寫直到這一桿結束
+          if (f.cine.t > 3 || (!f.cine.holed && dp > 1.1 && f.cine.t > 0.9)) { f.cine.on = false; f.cine.done = true; f.speed = 1; document.body.classList.remove('putt-cine'); }
+        }
+      }
       if (!f.putt) this.world.pushTracer(x, y, z);
       while (f.events.length && f.events[0].t <= f.t) {
         const e = f.events.shift();
@@ -895,8 +977,10 @@ export class Game {
         }
         else if (e.type === 'special') {
           // 機關觸發：光點爆開 + 一句提示
-          const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！', tramp: '彈跳床！', boost: '加速帶！', cannon: '大砲發射！' }[e.kind];
-          const hue = { ring: 0.2, portal: 0.75, vent: 0.05, shroom: 0.88, wall: 0.55, tramp: 0.92, boost: 0.5, cannon: 0.08 }[e.kind];
+          const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！', tramp: '彈跳床！', boost: '加速帶！', cannon: '大砲發射！',
+            honey: '被蜂蜜黏住了！', gear: '齒輪轉向！', wisp: '引魂燈把球拉向旗桿！', bumper: '彈珠柱！', cloud: '被閃電打中了！' }[e.kind];
+          const hue = { ring: 0.2, portal: 0.75, vent: 0.05, shroom: 0.88, wall: 0.55, tramp: 0.92, boost: 0.5, cannon: 0.08, honey: 0.12, gear: 0.09, wisp: 0.38, bumper: 0.0, cloud: 0.6 }[e.kind];
+          if (e.kind === 'cloud') this.world.lightning(e.pos);
           this.world.cupBurst(e.pos[0], e.pos[1], e.pos[2], hue, 2.2);
           this.world.specialPulse(e.kind);
           sfx.playCup();
@@ -915,6 +999,7 @@ export class Game {
   }
 
   finishShot() {
+    document.body.classList.remove('putt-cine');
     const msg = this.flight.msg;
     this.flight = null;
     this.trackShot(msg);
@@ -1074,7 +1159,7 @@ export class Game {
   // 每一桿：機關、長推、切進、開球距離、失誤（只算自己這台裝置上的玩家，練習場不算）
   trackShot(msg) {
     const p = this.players[msg.p];
-    if (!p || !p.local || this.cfg.practice) return;
+    if (!p || !p.local || this.cfg.practice || this.cfg.holePractice) return;
     const r = msg.res, club = clubById(msg.input.club), ctx = this.shotCtx || {};
     const fx = {};
     for (const e of r.events) if (e.type === 'special') fx[e.kind] = (fx[e.kind] || 0) + 1;
@@ -1111,7 +1196,7 @@ export class Game {
 
   // 每一洞：小鳥 / 老鷹 / 一桿進洞、連續小鳥、星門洞的成績、三推、柏忌
   trackHole(p) {
-    if (this.cfg.practice || p.copied?.[this.k]) return;
+    if (this.cfg.practice || this.cfg.holePractice || p.copied?.[this.k]) return;
     const s = p.scores[this.k], par = this.hole.par;
     if (!s) return;
     bump('holes');
@@ -1130,7 +1215,7 @@ export class Game {
 
   // 每一場：回合數、球場護照的章、整場的成就
   trackRound(p) {
-    if (this.cfg.practice || this.level) return;
+    if (this.cfg.practice || this.cfg.holePractice || this.level) return;
     bump('rounds');
     const sum = this.roundSummary(p);
     if (sum.holes === 18 && !p.copied?.some(Boolean)) {
@@ -1173,8 +1258,17 @@ export class Game {
     if (!el) return;
     el.classList.toggle('hidden', !this.level);
     if (!this.level || !this.att) return;
-    const hp = document.querySelector('.hud-hole');                // 放在左上角球洞資訊的下面
-    if (hp) el.style.top = Math.round(hp.getBoundingClientRect().bottom + 8) + 'px';
+    // 放在左上角球洞資訊的下面；手機直式時選單按鈕也在那裡，要再往下避開（面板高度變了之後再量一次）
+    const place = () => {
+      let top = 0;
+      for (const q of document.querySelectorAll('.hud-hole, .hud-tools')) {
+        const r = q.getBoundingClientRect();
+        if (r.height && r.left < innerWidth / 2) top = Math.max(top, r.bottom);
+      }
+      if (top) el.style.top = Math.round(top + 8) + 'px';
+    };
+    place(); setTimeout(place, 60);
+    if (!el.dataset.rs) { el.dataset.rs = 1; addEventListener('resize', () => setTimeout(place, 60)); }
     const p = this.players.find(q => q.local) || this.players[0];
     const att = { ...this.att, strokes: p ? p.strokes : 0 };
     el.innerHTML = `<h6>第 ${this.level.n} 關 · 第 ${att.strokes + 1} 桿 / 限 ${this.level.max} 桿</h6>` + this.level.goals.map((g, i) =>
@@ -1196,6 +1290,7 @@ export class Game {
     this.updatePlayersHud();
     for (const p of this.players) if (p.local) this.trackHole(p);
     if (this.level) { this.finishChallenge(); return; }
+    if (this.cfg.holePractice) { Game.clearLocal(); this.ui.showHolePracticeEnd(this); return; }
     const last = this.k >= this.holeList.length - 1;
     this.ui.showHoleResult(this, last).then(() => {
       if (last) this.endRound();
@@ -1206,6 +1301,7 @@ export class Game {
   endRound() {
     this.running = false;
     this.roundOver = true;
+    Game.clearLocal();
     for (const p of this.players) if (p.local) this.trackRound(p);
     this.ui.showRoundResult(this);
   }
@@ -1240,6 +1336,7 @@ export class Game {
   }
 
   quit(opts = {}) {
+    document.body.classList.remove('putt-cine');
     this.running = false;
     this.world.setSkinFx(null, null, null);
     this.ready = false;
@@ -1343,7 +1440,14 @@ export class Game {
       return;
     }
     const f = this.flight;
-    if (cam.mode === 'address' || (!f && cam.mode !== 'overview')) {
+    if (f && f.cine && f.cine.on) {
+      // 長推桿特寫：鏡頭在洞的另一側、貼近地面，看著球滾向洞口
+      const [px, pz] = this.hole.pin, pin = new THREE.Vector3(px, this.hole.height(px, pz), pz);
+      const dir = new THREE.Vector3(px - f.start.x, 0, pz - f.start.z).normalize(), side = new THREE.Vector3(-dir.z, 0, dir.x);
+      cam.dpos.copy(pin).addScaledVector(dir, 0.95).addScaledVector(side, 0.5).add(new THREE.Vector3(0, 0.24, 0));
+      cam.dlook.copy(pin).lerp(ball, 0.4).add(new THREE.Vector3(0, 0.02, 0));
+      k = 12;
+    } else if (cam.mode === 'address' || (!f && cam.mode !== 'overview')) {
       const a = this.addressCam(p, d, r);
       cam.dpos.copy(a.pos); cam.dlook.copy(a.look);
       k = 4;

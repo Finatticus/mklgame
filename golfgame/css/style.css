@@ -839,3 +839,27 @@ body:not([data-practice]) .practice-only { display: none; }
 .gtag.big { font-size: 13px; padding: 3px 10px; border-radius: 10px; }
 .sk-tags { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
 .sk-fx { font-size: 13.5px; line-height: 1.55; color: #1f7a74; background: #eef9f8; border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; text-align: left; }
+
+/* 窄螢幕：一列三顆按鈕時不要被切掉 */
+@media (max-width: 520px) {
+  .dlg-btns:not(.wrap) .btn { min-width: 0; padding-left: 6px; padding-right: 6px; letter-spacing: .06em; white-space: nowrap; }
+}
+
+/* 球場選單：一般 / 奇幻切換 */
+.cp-kind { margin: 2px 0 4px; }
+.cp-kind button { flex: 1; padding: 9px 10px; font-size: 14px; }
+
+/* 單一球道練習：選洞 */
+.hp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.hp-grid button { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 7px 4px; text-align: center; }
+.hp-grid button b { display: block; font: 700 14px "Noto Serif TC"; color: var(--forest); }
+.hp-grid button small { font-size: 11px; color: var(--muted); }
+.hp-grid button.on { background: var(--forest); border-color: var(--forest); }
+.hp-grid button.on b, .hp-grid button.on small { color: var(--cream); }
+
+/* 登入頁右上角的「設定」：細框文字按鈕 */
+.text-btn { padding: 7px 16px; border-radius: 18px; border: 1px solid rgba(214,187,130,.55); color: var(--cream); background: rgba(0,0,0,.22); font-size: 13px; letter-spacing: .12em; }
+
+/* 長推桿特寫時畫面資訊先淡出 */
+#hud { transition: opacity .35s; }
+body.putt-cine #hud { opacity: 0; }

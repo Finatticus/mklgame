@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { session, call, isLocalMode } from './api.js';
 import { gasUrl, getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS } from './stats.js';
-import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo } from './courses.js';
+import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel } from './courses.js';
 import { World } from './render.js';
 import { Hud } from './hud.js';
 import { Game } from './game.js';
@@ -93,6 +93,13 @@ function applyFontSize(v) {
   if (world) world.resize();
 }
 
+// 長推桿特寫（慢動作近拍）開 / 關
+function applyPuttCam(v) {
+  setSetting('puttCam', v);
+  $('gm-pcam').innerHTML = [[true, '開啟'], [false, '關閉']].map(([f, l]) => `<button type="button" class="${f === v ? 'on' : ''}" data-v="${f ? 1 : 0}">${l}</button>`).join('');
+  $('gm-pcam').querySelectorAll('button').forEach(b => b.onclick = () => applyPuttCam(b.dataset.v === '1'));
+}
+
 function openSettings() {
   $('set-gas').value = gasUrl();
   $('set-quality').value = getSetting('quality', 'high');
@@ -115,6 +122,7 @@ function initSettings() {
   $('set-cancel').onclick = () => $('dlg-settings').classList.remove('open');
   setSound(getSetting('sound', true));
   applyFontSize(getSetting('fs', 1));
+  applyPuttCam(getSetting('puttCam', true) !== false);
   $('btn-lobby-set').onclick = openSettings;
 }
 
@@ -128,6 +136,26 @@ function enterLobby() {
   $('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${p.best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`;
   $('mode-chal-sub').textContent = `${LEVELS.length} 個特別設計的關卡 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
   show('scr-lobby');
+  checkResume();
+}
+
+// 上次沒打完的單人回合（APP 被關掉或中途離開）：回到大廳時問要不要接著打（7 天內、同一個帳號）
+let resumeAsked = false;
+function checkResume() {
+  if (resumeAsked) return;
+  resumeAsked = true;
+  let r = null;
+  try { r = JSON.parse(localStorage.getItem('dixen.resume') || 'null'); } catch (e) { r = null; }
+  if (!r || r.user !== session.user || Date.now() - r.at > 7 * 864e5 || !r.cfg || !r.state) return;
+  const where = r.cfg.holePractice ? `單一球道練習 · ${r.label || '第 ' + r.holeNo + ' 洞'}` : `第 ${r.holeNo} 洞${r.label ? '（' + r.label + '）' : ''} · 已打 ${r.state.k} / ${r.holes} 洞`;
+  $('rs-body').innerHTML = `<b>${escapeHtml(r.course)}</b><br><span class="small">${where}</span>`;
+  $('rs-no').onclick = () => { $('dlg-resume').classList.remove('open'); try { localStorage.removeItem('dixen.resume'); } catch (e) { /* 略過 */ } };
+  $('rs-yes').onclick = () => {
+    $('dlg-resume').classList.remove('open');
+    if (r.cfg.holePractice) { setup.kind = 'practice'; setup.pkind = 'hole'; }
+    startGame(r.cfg, [{ ...me(), local: true }], null, true, { local: true, state: r.state });
+  };
+  $('dlg-resume').classList.add('open');
 }
 
 function initLobby() {
@@ -150,7 +178,7 @@ function initLobby() {
 }
 
 // ---------------- 回合設定 ----------------
-const setup = { kind: 'single', courseId: 'orient', holes: 'all', tee: 'white', mode: 'stroke', wind: 'course', stimp: null, gimme: 1, mulligans: 2, startHole: 0 };
+const setup = { kind: 'single', courseId: 'orient', holes: 'all', tee: 'white', mode: 'stroke', wind: 'course', stimp: null, gimme: 1, mulligans: 2, startHole: 0, pkind: 'range', hpHole: 0 };
 function openSetup(kind) {
   setup.kind = kind;
   $('st-title').textContent = { single: '單人回合', host: '建立遊戲間', practice: '練習場' }[kind];
@@ -159,11 +187,28 @@ function openSetup(kind) {
   document.querySelectorAll('.only-round').forEach(e => e.classList.toggle('hidden', kind === 'practice'));
   document.querySelectorAll('.only-practice').forEach(e => e.classList.toggle('hidden', kind !== 'practice'));
   document.querySelectorAll('.only-round-or-host').forEach(e => e.classList.toggle('hidden', kind === 'practice'));
-  // 練習場固定用楓林谷；回到回合設定時換回原本選的球場
-  if (kind === 'practice') { if (!setup.inPractice) setup.roundCourse = setup.courseId; setup.inPractice = true; setup.courseId = 'maple'; setup.stimp = null; }
+  // 練習場固定用楓林谷；單一球道練習用自己選的球場；回到回合設定時換回原本選的球場
+  if (kind === 'practice') { if (!setup.inPractice) setup.roundCourse = setup.courseId; setup.inPractice = true; setPracticeKind(setup.pkind); }
   else if (setup.inPractice) { setup.inPractice = false; setup.courseId = setup.roundCourse || 'orient'; setup.stimp = null; }
   renderSetup();
   show('scr-setup');
+}
+
+// 練習方式：練習場（楓林谷，三種練習）/ 單一球道（任選球場的某一洞，打到進洞為止）
+function setPracticeKind(k) {
+  if (setup.pkind === 'hole' && setup.inPractice) setup.hpCourse = setup.courseId;
+  setup.pkind = k;
+  setup.courseId = k === 'range' ? 'maple' : (setup.hpCourse || setup.roundCourse || 'orient');
+  setup.stimp = null;
+}
+function setupVisibility() {
+  const pr = setup.kind === 'practice', hp = pr && setup.pkind === 'hole';
+  $('st-title').textContent = pr ? (hp ? '單一球道練習' : '練習場') : { single: '單人回合', host: '建立遊戲間' }[setup.kind];
+  document.querySelectorAll('.only-practice-all').forEach(e => e.classList.toggle('hidden', !pr));
+  document.querySelectorAll('.only-practice').forEach(e => e.classList.toggle('hidden', !pr || hp));
+  document.querySelectorAll('.only-hp').forEach(e => e.classList.toggle('hidden', !hp));
+  document.querySelectorAll('.only-round-or-host').forEach(e => e.classList.toggle('hidden', pr && !hp));
+  document.querySelectorAll('.only-round').forEach(e => e.classList.toggle('hidden', pr && !(hp && (e.id === 'st-nines-wrap' || e.querySelector('#st-gimme')))));
 }
 
 // 奇幻球場的特色玩法：跟一般球場差很多，獨立一段、字比介紹明顯一點（不混在介紹文字裡）
@@ -175,6 +220,7 @@ function featureCard(c) {
 }
 
 function renderSetup() {
+  setupVisibility();
   // 目前選的球場：只顯示資訊卡（不畫縮圖，省流量也不會卡），按「更換球場」打開分群組的選單
   const cur = courseById(setup.courseId);
   const g = COURSE_GROUPS.find(x => x.id === cur.group);
@@ -188,9 +234,9 @@ function renderSetup() {
       </div>
       ${featureCard(cur)}
       <p>${cur.desc}</p>
-      <button class="btn-chip" id="st-preview-btn">⛳ 18 洞預覽</button>
+      <button class="btn-chip" id="st-preview-btn">18 洞預覽</button>
     </div>`;
-  $('st-change').onclick = openCoursePicker;
+  $('st-change').onclick = () => openCoursePicker();
   $('st-preview-btn').onclick = () => openPreview(cur.id);
   const seg = (id, key, opts) => {
     $(id).innerHTML = opts.map(([v, l]) => `<button class="${setup[key] === v ? 'on' : ''}" data-v="${v}">${l}</button>`).join('');
@@ -200,7 +246,17 @@ function renderSetup() {
   // 分區球場（長庚北 / 中 / 南）：洞數只有 18 / 9，前九、後九各選一區
   const base = c.baseId ? COURSES.find(x => x.id === c.baseId) : null;
   if (base && setup.holes === 'back') setup.holes = 'front';
-  $('st-nines-wrap').classList.toggle('hidden', !base || setup.kind === 'practice');
+  $('st-nines-wrap').classList.toggle('hidden', !base || (setup.kind === 'practice' && setup.pkind !== 'hole'));
+  // 練習方式與單一球道的洞
+  if (setup.kind === 'practice') {
+    $('st-pkind').innerHTML = [['range', '練習場'], ['hole', '單一球道']].map(([v, l]) => `<button class="${setup.pkind === v ? 'on' : ''}" data-v="${v}">${l}</button>`).join('');
+    $('st-pkind').querySelectorAll('button').forEach(b => b.onclick = () => { setPracticeKind(b.dataset.v); renderSetup(); });
+    if (setup.pkind === 'hole') {
+      if (setup.hpHole >= c.holes.length) setup.hpHole = 0;
+      $('st-hp').innerHTML = c.holes.map((h, i) => `<button class="${i === setup.hpHole ? 'on' : ''}" data-i="${i}"><b>${holeLabel(c, i) || i + 1}</b><small>Par ${h[0]} · ${teeYards(c, i, setup.tee)} Y</small></button>`).join('');
+      $('st-hp').querySelectorAll('button').forEach(b => b.onclick = () => { setup.hpHole = Number(b.dataset.i); renderSetup(); });
+    }
+  }
   if (base) {
     const [f, b] = c.nineIds;
     const row = (label, cur, other, which) => `<div class="nine-row"><span>${label}</span>` + base.nines.map(n =>
@@ -287,9 +343,14 @@ function holeFeatures(course, spec) {
   return out.length ? out.join('、') : (par === 3 ? '直接攻果嶺' : '直線洞');
 }
 
-// 球場選單：依群組列出所有球場，之後新增球場會自動出現在對應群組
-function openCoursePicker() {
-  $('cp-list').innerHTML = COURSE_GROUPS.map(g => {
+// 球場選單：上方切換一般球場（台灣、海邊、山地、沙漠）/ 奇幻球場，再依群組列出；之後新增球場會自動出現在對應群組
+function openCoursePicker(kind) {
+  if (!kind) kind = courseById(setup.courseId).group === 'fantasy' ? 'fantasy' : 'real';       // 打開時停在目前球場那一類
+  $('cp-kind').querySelectorAll('button').forEach(b => {
+    b.classList.toggle('on', b.dataset.k === kind);
+    b.onclick = () => { openCoursePicker(b.dataset.k); $('cp-list').scrollTop = 0; };
+  });
+  $('cp-list').innerHTML = COURSE_GROUPS.filter(g => (g.id === 'fantasy') === (kind === 'fantasy')).map(g => {
     const list = COURSES.filter(c => c.group === g.id);
     return `<h4>${g.name}</h4>` + (list.length ? list.map(c => `
       <button class="cp-row ${c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':') ? 'on' : ''}" data-c="${c.id}">
@@ -366,7 +427,8 @@ function roundCfg() {
   return {
     courseId: setup.courseId, holes: setup.holes, tee: setup.tee, mode: setup.kind === 'host' ? setup.mode : 'stroke',
     wind: setup.wind, stimp: setup.stimp ?? courseById(setup.courseId).stimp, gimme: setup.gimme, mulligans: setup.kind === 'practice' ? 0 : setup.mulligans,
-    practice: setup.kind === 'practice', startHole: 7, seed: Math.floor(Math.random() * 2 ** 31),
+    practice: setup.kind === 'practice' && setup.pkind !== 'hole', holePractice: setup.kind === 'practice' && setup.pkind === 'hole',
+    startHole: setup.kind === 'practice' && setup.pkind === 'hole' ? setup.hpHole : 7, seed: Math.floor(Math.random() * 2 ** 31),
   };
 }
 
@@ -469,6 +531,18 @@ const ui = {
     $('loading').classList.toggle('show', on);
     if (text) $('ld-text').textContent = text;
     if (progress !== undefined) $('ld-bar').style.width = Math.round(progress * 100) + '%';
+  },
+  // 單一球道練習打完：再打一次 / 下一洞 / 結束
+  showHolePracticeEnd(g) {
+    const box = $('dlg-hp'), p = g.players.find(q => q.local) || g.players[0];
+    const s = p.scores[g.k], d = s - g.hole.par, idx = g.holeList[0];
+    $('hp-title').textContent = `${holeLabel(g.course, idx) || '第 ' + (idx + 1) + ' 洞'} · PAR ${g.hole.par}`;
+    $('hp-body').innerHTML = `<p class="center" style="font-size:18px;margin:6px 0 10px"><b class="num">${s}</b> 桿　${s === 1 ? '一桿進洞' : ({ '-3': '信天翁', '-2': '老鷹', '-1': '小鳥', 0: '平標準桿', 1: '柏忌', 2: '雙柏忌' }[d] ?? (d > 0 ? '+' + d : d))}　·　推桿 ${p.putts[g.k] || 0}</p>`;
+    $('hp-next').classList.toggle('hidden', idx >= g.course.holes.length - 1);
+    $('hp-again').onclick = () => { box.classList.remove('open'); g.loadHole(0); };
+    $('hp-next').onclick = () => { box.classList.remove('open'); g.holeList = [idx + 1]; setup.hpHole = idx + 1; g.loadHole(0); };
+    $('hp-quit').onclick = () => { box.classList.remove('open'); g.quit(); openSetup('practice'); };
+    box.classList.add('open');
   },
   showHoleResult(g, last) {
     return new Promise(res => {
