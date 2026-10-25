@@ -1,5 +1,5 @@
 // 網路優先：有網路時永遠取最新版本，離線時使用快取
-const CACHE = 'ledger-v7';
+const CACHE = 'ledger-v8';
 const ASSETS = ['./', 'index.html', 'style.css', 'config.js', 'city.js', 'app.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
