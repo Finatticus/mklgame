@@ -11,8 +11,8 @@ import { MixamoGolfer } from './mixamo.js';
 import { characterDef, ANIM_BASE, getSetting } from './config.js';
 import { SwingInput } from './input.js';
 import * as sfx from './audio.js';
-import { bump, unlock, checkCounters, stamp, save as saveProgress, setStars, equippedSkins, chal } from './progress.js';
-import { levelById, evaluate, goalMet } from './challenge.js';
+import { bump, unlock, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal } from './progress.js';
+import { LEVELS, levelById, evaluate, goalMet } from './challenge.js';
 
 const WIND = { calm: [0, 0], light: [2, 6], normal: [6, 11], strong: [11, 15] };
 const ADJ_LEVELS = [1, 0.65, 0.3];    // 特殊球位增減比例計算的三個力道（由大到小）
@@ -310,7 +310,8 @@ export class Game {
     const back = new THREE.Vector3(pin[0] - t0.x, 0, pin[1] - t0.z).normalize();
     this.intro = {
       t: 0, dur: 3.4,
-      p0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, 45).add(new THREE.Vector3(0, 38, 0)),
+      // 果嶺後方有瀑布岩壁（Cliffhangers）時起點拉高，免得被岩壁擋住
+      p0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, 45).add(new THREE.Vector3(0, 38 + (this.hole.falls && this.hole.falls.length ? 14 : 0), 0)),
       l0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, -60),
     };
     const note = this.hole.spec && this.hole.spec.note;
@@ -965,14 +966,23 @@ export class Game {
       if (!f.putt) this.world.pushTracer(x, y, z);
       while (f.events.length && f.events[0].t <= f.t) {
         const e = f.events.shift();
-        if (e.type === 'bounce') { sfx.playThud(Math.min(1, e.speed / 15)); f.landed = true; }
+        if (e.type === 'bounce') {
+          const sk = e.surf === SURF.SAND ? 'sand' : e.surf === SURF.GREEN || e.surf === SURF.FRINGE ? 'green' : e.surf === SURF.WASTE ? 'hard' : 'grass';
+          sfx.playThud(Math.min(1, e.speed / 15), sk); f.landed = true;
+        }
         else if (e.type === 'tree') sfx.playLeaves();
-        else if (e.type === 'splash') sfx.playSplash();
+        else if (e.type === 'lip') sfx.playLip();
+        else if (e.type === 'splash') {
+          // 水：噗通；熔岩：嘶；峽谷 / 虛空：往下掉的風聲
+          if (f.msg.res.result === 'chasm') sfx.playFall();
+          else if (this.course.theme === 'lava') sfx.playSizzle();
+          else sfx.playSplash();
+        }
         else if (e.type === 'cup') { sfx.playCup(); const [px, pz] = this.hole.pin; this.world.cupBurst(px, this.hole.height(px, pz), pz); }
         else if (e.type === 'orb') {
           this.orbGot.add(e.idx);
           this.world.collectOrb(e.idx);
-          sfx.playCup();
+          sfx.playSpecial('orb');
           this.hud.toast(`金球 ${this.orbGot.size} / ${(this.hole.specials || []).filter(q => q.kind === 'orb').length}`, 900);
         }
         else if (e.type === 'special') {
@@ -983,7 +993,7 @@ export class Game {
           if (e.kind === 'cloud') this.world.lightning(e.pos);
           this.world.cupBurst(e.pos[0], e.pos[1], e.pos[2], hue, 2.2);
           this.world.specialPulse(e.kind);
-          sfx.playCup();
+          sfx.playSpecial(e.kind);
           if (txt) this.hud.toast(txt, 1200);
         }
       }
@@ -1218,9 +1228,14 @@ export class Game {
     if (this.cfg.practice || this.cfg.holePractice || this.level) return;
     bump('rounds');
     const sum = this.roundSummary(p);
+    // 球場護照：分區球場打完 9 洞也記下那一區；一般球場要打完 18 洞
+    const nines = this.course.nineIds ? this.course.nineIds.slice(0, sum.holes === 18 ? 2 : 1) : null;
+    if (!p.copied?.some(Boolean) && (sum.holes === 18 || nines)) {
+      const done = stamp(this.course.baseId || this.course.id, sum.holes === 18 ? sum.strokes : null, nines);
+      if (done) setTimeout(() => this.hud.toast(`<small>球場護照</small><b>蓋下「${escapeHtml(this.course.name.split('（')[0])}」的章</b>`, 3200, 'big'), 600);
+    }
     if (sum.holes === 18 && !p.copied?.some(Boolean)) {
       const base = this.course.baseId || this.course.id;
-      stamp(base, sum.strokes);
       const r = p.rtrk;
       if (!r.haz) unlock('clean18');
       if (!r.three) unlock('nothree');
@@ -1243,10 +1258,9 @@ export class Game {
     const res = evaluate(lv, a);
     const before = chal().stars[lv.id] || 0;
     setStars(lv.id, res.stars, a.holed ? a.strokes : 0);
-    if (res.stars >= 1 && lv.n >= 5) unlock('ch5');
-    if (res.stars >= 1 && lv.n >= 20) unlock('ch20');
-    if (res.stars === 3 && lv.n === 10) unlock('ch10_3');
-    if (res.stars === 3 && lv.n === 20) unlock('ch20_3');
+    if (a.holed && a.strokes === 1) unlock('ch_hio');
+    if (a.shots.some(s => Object.values(s.fx || {}).reduce((x, y) => x + y, 0) >= 3)) unlock('ch_combo');
+    checkChallenge(LEVELS);
     checkCounters();
     saveProgress(true);
     this.ui.showChallengeResult(this, { ...res, before, att: a });

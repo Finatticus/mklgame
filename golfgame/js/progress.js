@@ -1,5 +1,6 @@
 // 成就徽章、球場護照、特殊皮膚：定義、進度計數、達成判定、達成時的動畫提示、存回伺服器
-// 進度存在 session.profile.prog = { ach: {成就代號: 達成時間}, cnt: {計數: 數值}, stamps: {球場代號: {date, best, n}} }
+// 進度存在 session.profile.prog = { ach: {成就代號: 達成時間}, cnt: {計數: 數值}, stamps: {球場代號: {date, best, n, nines: {區代號: 第一次打完的時間}}} }
+//   分區球場（例如長庚北 / 中 / 南）要每一區都打完過，章才算蓋成（date 是蓋成的時間）
 // 挑戰星數存在 session.profile.chal = { stars: {關卡代號: 0~3}, best: {關卡代號: 最少桿數}, total }
 import { call, session } from './api.js';
 import { COURSES } from './courses.js';
@@ -11,10 +12,10 @@ export const SKINS = [
   { id: 'std', slot: 'driver', name: '標準 Driver', std: true },
   { id: 'goldD', slot: 'driver', name: '黃金 Driver', head: 0xd8a830, metal: 1, shaft: 0xe8c860, ach: 'drive330', fx: 'gold' },
   { id: 'frostD', slot: 'driver', name: '冰霜 Driver', head: 0x9fdcff, glow: 0x3aa8ff, shaft: 0xd8f2ff, ach: 'aurora_par', fx: 'frost' },
-  { id: 'galaxyD', slot: 'driver', name: '星河 Driver', head: 0x3a1a6a, glow: 0x9a5aff, shaft: 0xb89aff, ach: 'ch20_3', fx: 'galaxy' },
+  { id: 'galaxyD', slot: 'driver', name: '星河 Driver', head: 0x3a1a6a, glow: 0x9a5aff, shaft: 0xb89aff, ach: 'ch_p5', fx: 'galaxy' },
   { id: 'std', slot: 'iron', name: '標準鐵桿', std: true },
   { id: 'lavaI', slot: 'iron', name: '熔岩鐵桿', head: 0x2a1410, glow: 0xff5a10, shaft: 0x4a2a20, ach: 'ember_par', fx: 'ember' },
-  { id: 'obsidianI', slot: 'iron', name: '黑曜石鐵桿', head: 0x161420, glow: 0x6a4aff, metal: 1, shaft: 0x2a2838, ach: 'ch10_3', fx: 'void' },
+  { id: 'obsidianI', slot: 'iron', name: '黑曜石鐵桿', head: 0x161420, glow: 0x6a4aff, metal: 1, shaft: 0x2a2838, ach: 'ch_p2', fx: 'void' },
   { id: 'std', slot: 'putter', name: '標準推桿', std: true },
   { id: 'moonP', slot: 'putter', name: '月光推桿', head: 0xe8eeff, glow: 0x8ab8ff, shaft: 0xf0f4ff, ach: 'putt20x3', fx: 'moon' },
   { id: 'lavaP', slot: 'putter', name: '熔岩推桿', head: 0x301410, glow: 0xff7a20, shaft: 0x502a1a, ach: 'vent_green3', fx: 'ember' },
@@ -62,7 +63,9 @@ export const FX_NAME = { gold: '金色亮粉', frost: '冰晶閃光', galaxy: '�
 export const SLOT_NAME = { driver: 'Driver / 木桿', iron: '鐵桿 / 挖起桿', putter: '推桿', ball: '高爾夫球' };
 export const LOOK_KEY = { driver: 'drvSkin', iron: 'ironSkin', putter: 'putSkin', ball: 'ballSkin' };
 export const skinById = (slot, id) => SKINS.find(s => s.slot === slot && s.id === (id || 'std')) || SKINS.find(s => s.slot === slot && s.std);
-export const skinUnlocked = s => s.std || (s.ach ? !!prog().ach[s.ach] : (chal().owned || []).includes(skinKey(s)));
+// 挑戰模式改成 50 關之前的成就：當時已經拿到的人，對應的外觀照樣保留
+const LEGACY_ACH = { ch_p2: 'ch10_3', ch_p5: 'ch20_3' };
+export const skinUnlocked = s => s.std || (s.ach ? !!(prog().ach[s.ach] || (LEGACY_ACH[s.ach] && prog().ach[LEGACY_ACH[s.ach]])) : (chal().owned || []).includes(skinKey(s)));
 // 可以花的星星 = 挑戰總星數 - 已經買外觀花掉的（排行看的是總星數，不會因為消費而減少）
 export const starBalance = () => Math.max(0, chal().total - (chal().spent || 0));
 export function buySkin(s) {
@@ -129,26 +132,47 @@ export const ACH = [
   { id: 'bumper1', cat: 'fx', tier: 'bronze', glyph: '珠', name: '彈珠台', desc: '第一次撞到彈珠柱', cnt: 'bumper', n: 1 },
   { id: 'cloud1', cat: 'fx', tier: 'bronze', glyph: '雷', name: '遭雷擊', desc: '第一次被雷雲的閃電打中', cnt: 'cloud', n: 1 },
 
-  { id: 'stamp1', cat: 'pass', tier: 'bronze', glyph: '章', name: '第一個章', desc: '在任一球場打完 18 洞，蓋下第一個章', cnt: 'stamps', n: 1 },
+  { id: 'stamp1', cat: 'pass', tier: 'bronze', glyph: '章', name: '第一個章', desc: '蓋下第一個球場的章（分區球場要每一區都打過）', cnt: 'stamps', n: 1 },
   { id: 'stamps_tw', cat: 'pass', tier: 'silver', glyph: '台', name: '台灣巡禮', desc: '集滿所有台灣球場的章', pts: 1 },
   { id: 'stamps_fx', cat: 'pass', tier: 'gold', glyph: '幻', name: '奇幻旅人', desc: '集滿所有奇幻球場的章', pts: 2 },
   { id: 'stamps10', cat: 'pass', tier: 'gold', glyph: '旅', name: '旅行家', desc: '集滿 10 個球場的章', cnt: 'stamps', n: 10, pts: 2 },
   { id: 'stamps_world', cat: 'pass', tier: 'legend', glyph: '界', name: '環遊世界', desc: '集滿所有球場的章', pts: 3 },
 
+  // 挑戰模式（50 關、5 章，每章 10 關）：進度里程碑、累計星數、每章全 3 星、特殊表現
   { id: 'ch_star1', cat: 'chal', tier: 'bronze', glyph: '星', name: '第一顆星', desc: '在挑戰模式拿到第一顆星', cnt: 'chalStars', n: 1 },
   { id: 'ch5', cat: 'chal', tier: 'bronze', glyph: '五', name: '挑戰入門', desc: '通過挑戰第 5 關' },
+  { id: 'ch10', cat: 'chal', tier: 'bronze', glyph: '十', name: '第一章完成', desc: '通過挑戰第 10 關' },
+  { id: 'ch20', cat: 'chal', tier: 'silver', glyph: '貳', name: '第二章完成', desc: '通過挑戰第 20 關', pts: 1 },
+  { id: 'ch30', cat: 'chal', tier: 'silver', glyph: '參', name: '第三章完成', desc: '通過挑戰第 30 關', pts: 1 },
+  { id: 'ch40', cat: 'chal', tier: 'gold', glyph: '肆', name: '第四章完成', desc: '通過挑戰第 40 關', pts: 2 },
+  { id: 'ch50', cat: 'chal', tier: 'gold', glyph: '終', name: '終章', desc: '通過挑戰第 50 關「水晶終章」', pts: 2 },
   { id: 'ch_stars30', cat: 'chal', tier: 'silver', glyph: '摘', name: '摘星者', desc: '挑戰模式累計 30 顆星', cnt: 'chalStars', n: 30, pts: 1 },
-  { id: 'ch10_3', cat: 'chal', tier: 'gold', glyph: '曜', name: '熔岩試煉', desc: '挑戰第 10 關拿到 3 星', pts: 2 },
   { id: 'ch_stars45', cat: 'chal', tier: 'gold', glyph: '辰', name: '星光滿載', desc: '挑戰模式累計 45 顆星', cnt: 'chalStars', n: 45, pts: 2 },
-  { id: 'ch20', cat: 'chal', tier: 'gold', glyph: '終', name: '終局', desc: '通過挑戰第 20 關', pts: 2 },
-  { id: 'ch20_3', cat: 'chal', tier: 'legend', glyph: '河', name: '星河傳說', desc: '挑戰第 20 關拿到 3 星', pts: 3 },
-  { id: 'ch_stars60', cat: 'chal', tier: 'legend', glyph: '滿', name: '全滿星', desc: '挑戰模式 20 關全部 3 星', cnt: 'chalStars', n: 60, pts: 3 },
+  { id: 'ch_stars75', cat: 'chal', tier: 'gold', glyph: '銀', name: '銀河半程', desc: '挑戰模式累計 75 顆星', cnt: 'chalStars', n: 75, pts: 2 },
+  { id: 'ch_stars100', cat: 'chal', tier: 'gold', glyph: '百', name: '百星', desc: '挑戰模式累計 100 顆星', cnt: 'chalStars', n: 100, pts: 2 },
+  { id: 'ch_stars150', cat: 'chal', tier: 'legend', glyph: '滿', name: '全滿星', desc: '挑戰模式 50 關全部 3 星（150 顆）', cnt: 'chalStars', n: 150, pts: 3 },
+  { id: 'ch_p1', cat: 'chal', tier: 'silver', glyph: '壹', name: '第一章滿星', desc: '挑戰第 1~10 關全部 3 星', pts: 1 },
+  { id: 'ch_p2', cat: 'chal', tier: 'gold', glyph: '曜', name: '第二章滿星', desc: '挑戰第 11~20 關全部 3 星', pts: 2 },
+  { id: 'ch_p3', cat: 'chal', tier: 'gold', glyph: '輝', name: '第三章滿星', desc: '挑戰第 21~30 關全部 3 星', pts: 2 },
+  { id: 'ch_p4', cat: 'chal', tier: 'gold', glyph: '耀', name: '第四章滿星', desc: '挑戰第 31~40 關全部 3 星', pts: 2 },
+  { id: 'ch_p5', cat: 'chal', tier: 'legend', glyph: '河', name: '星河傳說', desc: '挑戰第 41~50 關全部 3 星', pts: 3 },
+  { id: 'ch_themes', cat: 'chal', tier: 'silver', glyph: '遊', name: '十四國旅人', desc: '14 種挑戰主題每一種都至少拿過 1 顆星', pts: 1 },
+  { id: 'ch_hio', cat: 'chal', tier: 'gold', glyph: '一', name: '挑戰一桿進洞', desc: '在挑戰模式打出一桿進洞', pts: 2 },
+  { id: 'ch_combo', cat: 'chal', tier: 'gold', glyph: '連', name: '機關連鎖', desc: '挑戰模式中一桿連續觸發 3 次以上機關', pts: 2 },
+  { id: 'ch50_3', cat: 'chal', tier: 'legend', glyph: '晶', name: '水晶之巔', desc: '挑戰第 50 關「水晶終章」拿到 3 星', pts: 3 },
 ];
 export const TIER_NAME = { bronze: '銅', silver: '銀', gold: '金', legend: '傳說' };
 export const achById = id => ACH.find(a => a.id === id);
 
 // 球場護照：每座一般球場（分區球場算同一座）
-export const PASSPORT = COURSES.map(c => ({ id: c.id, name: c.name, en: c.en, group: c.group }));
+export const PASSPORT = COURSES.map(c => ({ id: c.id, name: c.name, en: c.en, group: c.group, nines: c.nines ? c.nines.map(n => ({ id: n.id, name: n.name })) : null }));
+// 這個球場的章蓋成了沒（分區球場：每一區都打過）
+export function stampDone(id) {
+  const x = prog().stamps[id], c = PASSPORT.find(q => q.id === id);
+  if (!x || !c) return false;
+  if (c.nines) return c.nines.every(n => x.nines && x.nines[n.id]);
+  return !!x.date;
+}
 
 // ---------------- 進度 ----------------
 export function prog() {
@@ -184,23 +208,40 @@ export function unlock(id) {
 }
 
 // 計數型成就：數字到了就解鎖
+// 挑戰模式的關卡進度型成就（每次登入、每關打完都重新檢查；levels = challenge.js 的 LEVELS）
+export function checkChallenge(levels) {
+  const st = chal().stars, s = n => st[levels[n - 1].id] || 0;
+  for (const n of [5, 10, 20, 30, 40, 50]) if (levels.length >= n && s(n) >= 1) unlock('ch' + n);
+  for (let k = 0; k < 5; k++) { const lv = levels.slice(k * 10, k * 10 + 10); if (lv.length === 10 && lv.every(l => (st[l.id] || 0) >= 3)) unlock('ch_p' + (k + 1)); }
+  if (levels.length >= 50 && s(50) >= 3) unlock('ch50_3');
+  const themes = new Set(levels.map(l => l.theme));
+  if ([...themes].every(t => levels.some(l => l.theme === t && (st[l.id] || 0) >= 1))) unlock('ch_themes');
+}
+
 export function checkCounters() {
   const c = prog().cnt;
-  c.stamps = Object.keys(prog().stamps).length;
+  c.stamps = PASSPORT.filter(x => stampDone(x.id)).length;
   c.chalStars = chal().total;
   for (const a of ACH) if (a.cnt && (Number(c[a.cnt]) || 0) >= a.n) unlock(a.id);
-  const st = prog().stamps, has = id => !!st[id];
+  const has = stampDone;
   if (PASSPORT.filter(x => x.group === 'taiwan').every(x => has(x.id))) unlock('stamps_tw');
   if (PASSPORT.filter(x => x.group === 'fantasy').every(x => has(x.id))) unlock('stamps_fx');
   if (PASSPORT.every(x => has(x.id))) unlock('stamps_world');
   save();
 }
 
-// 蓋球場護照的章（打完 18 洞）
-export function stamp(courseId, strokes) {
-  const st = prog().stamps, cur = st[courseId];
-  st[courseId] = cur ? { date: cur.date, best: Math.min(cur.best || 999, strokes), n: (cur.n || 1) + 1 } : { date: new Date().toISOString(), best: strokes, n: 1 };
+// 蓋球場護照的章：一般球場打完 18 洞；分區球場記下這一場打完的區（nineIds），每一區都打過才算蓋成
+//   strokes = 18 洞的桿數（只打 9 洞時傳 null，不算最佳成績）；回傳 true = 這一場剛好把章蓋成
+export function stamp(courseId, strokes, nineIds = null) {
+  const st = prog().stamps, now = new Date().toISOString(), before = stampDone(courseId);
+  const cur = st[courseId] || { n: 0 };
+  if (strokes) { cur.best = Math.min(cur.best || 999, strokes); cur.n = (cur.n || 0) + 1; }
+  if (nineIds) { cur.nines = cur.nines || {}; for (const k of nineIds) if (!cur.nines[k]) cur.nines[k] = now; }
+  st[courseId] = cur;
+  if (!before && stampDone(courseId)) cur.date = now;
+  else if (!nineIds && strokes && !cur.date) cur.date = now;
   dirty = true;
+  return !before && stampDone(courseId);
 }
 
 // 挑戰星數（只會更新成比較好的成績）

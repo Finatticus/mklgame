@@ -80,6 +80,76 @@ const STYLE = {
 // 類別：0 圖外 1 長草 2 球道 3 果嶺 4 發球台 5 沙坑 6 水 7 車道 8 樹下 9 果嶺邊
 // 解碼一次後快取：外圍多補 PAD 格空白，順便算好「離畫面內多遠」「沙坑內深度」「水池編號與離水多遠」
 const PAD = 40;
+// 描圖地圖的清理（判讀官網圖留下的瑕疵）：
+//   1. 果嶺裡的小塊雜色（圖上的旗子、洞杯記號、文字）→ 果嶺；周圍大多是果嶺 / 果嶺邊的小塊都算
+//   2. 球道裡的小洞（雜點）→ 球道
+//   3. 零星的沙坑 / 水 / 車道小點（不到約 2.5 平方公尺）→ 周圍最多的那一類
+function cleanMap(g, W, H, mpp) {
+  const a2 = mpp * mpp, seen = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) {
+    if (seen[i] || g[i] === 0) continue;
+    const c = g[i], st = [i], comp = []; seen[i] = 1;
+    while (st.length) {
+      const j = st.pop(); comp.push(j); const x = j % W, y = (j / W) | 0;
+      if (x > 0 && !seen[j - 1] && g[j - 1] === c) { seen[j - 1] = 1; st.push(j - 1); }
+      if (x < W - 1 && !seen[j + 1] && g[j + 1] === c) { seen[j + 1] = 1; st.push(j + 1); }
+      if (y > 0 && !seen[j - W] && g[j - W] === c) { seen[j - W] = 1; st.push(j - W); }
+      if (y < H - 1 && !seen[j + W] && g[j + W] === c) { seen[j + W] = 1; st.push(j + W); }
+    }
+    const area = comp.length * a2;
+    if (area > 80) continue;
+    const cnt = {}; let nb = 0;
+    const cs = new Set(comp);
+    for (const j of comp) {
+      const x = j % W;
+      for (const k of [x > 0 ? j - 1 : -1, x < W - 1 ? j + 1 : -1, j - W, j + W]) {
+        if (k < 0 || k >= W * H || cs.has(k)) continue;
+        cnt[g[k]] = (cnt[g[k]] || 0) + 1; nb++;
+      }
+    }
+    if (!nb) continue;
+    const greenish = ((cnt[3] || 0) + (cnt[9] || 0)) / nb;
+    let to = -1;
+    if (c !== 3 && c !== 5 && c !== 6 && greenish >= 0.6 && (cnt[3] || 0) / nb >= 0.3 && area < 60) to = 3;      // 沙坑、水不動（果嶺旁的沙坑也被果嶺邊包著）
+    else if (c !== 2 && c !== 6 && c !== 3 && (cnt[2] || 0) / nb >= 0.7 && area < 15) to = 2;
+    else if ((c === 5 || c === 6 || c === 7 || c === 4) && area < 2.5) to = +Object.keys(cnt).filter(k => k !== '0').sort((p, q) => cnt[q] - cnt[p])[0];
+    if (to >= 0 && to !== c) for (const j of comp) g[j] = to;
+  }
+  // 4. 每塊果嶺：被果嶺整個包住的其他地面（判讀錯的亮色、沙、果嶺邊、車道色）→ 果嶺；太小的果嶺（不到 220 平方公尺）往外長到約 300
+  const gs = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) {
+    if (g[i] !== 3 || gs[i]) continue;
+    const st = [i], comp = []; gs[i] = 1; let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1;
+    while (st.length) {
+      const j = st.pop(); comp.push(j); const x = j % W, y = (j / W) | 0;
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      for (const k of [x > 0 ? j - 1 : -1, x < W - 1 ? j + 1 : -1, j - W, j + W]) if (k >= 0 && k < W * H && !gs[k] && g[k] === 3) { gs[k] = 1; st.push(k); }
+    }
+    if (comp.length * a2 < 40) continue;
+    x0 = Math.max(0, x0 - 1); y0 = Math.max(0, y0 - 1); x1 = Math.min(W - 1, x1 + 1); y1 = Math.min(H - 1, y1 + 1);
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1, reach = new Uint8Array(bw * bh), q = [];
+    for (let x = 0; x < bw; x++) q.push(x, (bh - 1) * bw + x);
+    for (let y = 0; y < bh; y++) q.push(y * bw, y * bw + bw - 1);
+    for (const k of q) reach[k] = 1;
+    for (let h = 0; h < q.length; h++) {
+      const k = q[h], x = k % bw, y = (k / bw) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= bw || yy >= bh) continue;
+        const kk = yy * bw + xx; if (reach[kk] || g[(y0 + yy) * W + x0 + xx] === 3) continue; reach[kk] = 1; q.push(kk);
+      }
+    }
+    for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) { const j = (y0 + y) * W + x0 + x; if (!reach[y * bw + x] && g[j] !== 3 && g[j] !== 6) { g[j] = 3; comp.push(j); gs[j] = 1; } }
+    let n = comp.length;
+    const small = n * a2 < 220;
+    for (let it = 0; small && it < 40 && n * a2 < 300; it++) {
+      const add = [];
+      for (const j of comp) { const x = j % W; for (const k of [x > 0 ? j - 1 : -1, x < W - 1 ? j + 1 : -1, j - W, j + W]) if (k >= 0 && k < W * H && (g[k] === 1 || g[k] === 2 || g[k] === 9)) add.push(k); }
+      if (!add.length) break;
+      for (const k of add) if (g[k] !== 3) { g[k] = 3; gs[k] = 1; comp.push(k); n++; }
+    }
+  }
+}
+
 function decodeMap(m) {
   if (m._g) return m._g;
   const w0 = m.w, h0 = m.h, W = w0 + PAD * 2, H = h0 + PAD * 2;
@@ -92,6 +162,7 @@ function decodeMap(m) {
     const n = j > k ? parseInt(s.slice(k, j), 16) : 1; k = j;
     for (let t = 0; t < n; t++) { g[(row + PAD) * W + col + PAD] = c; if (++col >= w0) { col = 0; row++; } }
   }
+  cleanMap(g, W, H, m.mpp);
   // 多來源距離（8 鄰居，格數）
   const bfs = (isSrc, pass) => {
     const d = new Float32Array(W * H).fill(1e9), q = new Int32Array(W * H); let qh = 0, qt = 0;
@@ -480,7 +551,7 @@ export function buildHole(course, holeIdx, opts = {}) {
         const [bu, bv] = map.tees.black, L0 = Math.hypot(bu - u, bv - v);
         for (let k = 1; k <= Math.ceil(L0); k++) {
           const f = Math.min(1, (k + 4) / (L0 || 1)), uu = lerp(u, bu, k / (L0 || 1)), vv = lerp(v, bv, k / (L0 || 1));
-          if (dryAt(uu, vv)) { u = lerp(u, bu, f); v = lerp(v, bv, f); break; }
+          if (dryAt(uu, vv) && dryAt(lerp(u, bu, f), lerp(v, bv, f))) { u = lerp(u, bu, f); v = lerp(v, bv, f); break; }
         }
       }
       const sT = near(u, v).s;
@@ -613,7 +684,21 @@ export function buildHole(course, holeIdx, opts = {}) {
   if (moat) moat.level = gCenterBaseF - 1.3;
   if (cross) cross.level = rawH(...pointAt(cross.s), cross.s, 0) - (cross.kind === 'chasm' ? 26 : cross.kind === 'valley' ? 9 : 1.3);
 
-  if (map) MG.waters.forEach(w => { const u = MG.u0 + w.cx * MG.mpp, v = MG.v0 - w.cy * MG.mpp; w.level = rawH(u, v, near(u, v).s, 0) - 1.1; });
+  // 描圖水池的水面高度：取岸邊一圈（水池外 4 格內，含旁邊的果嶺 / 梯台）最低的地面再低 0.5 公尺。
+  //   原本用水池中心的地面高度，地勢一邊高一邊低的地方，低的那一岸會比水面還低，水面就淹到岸上（蓋住球和擊球線）
+  if (map) MG.waters.forEach((w, id) => {
+    let lo = Infinity;
+    for (let k = 0; k < MG.g.length; k += 2) {
+      if (MG.nearW[k] !== id || MG.g[k] === 6 || MG.watOut[k] > 4.5) continue;
+      const u = MG.u0 + (k % MG.W) * MG.mpp, v = MG.v0 - Math.floor(k / MG.W) * MG.mpp;
+      let h = rawH(u, v, near(u, v).s, 0);
+      if (greenR(u, v) < 2.0) h = Math.min(h, gCenterBaseF - 0.2);
+      for (const t of tees) if (Math.hypot(u - t.u, v - t.v) < 10) h = Math.min(h, teeBase[t.id]);
+      lo = Math.min(lo, h);
+    }
+    if (!Number.isFinite(lo)) { const u = MG.u0 + w.cx * MG.mpp, v = MG.v0 - w.cy * MG.mpp; lo = rawH(u, v, near(u, v).s, 0) - 0.6; }
+    w.level = lo - 0.5;
+  });
   function mapHeight(u, v, s, ad) {
     let hh = rawH(u, v, s, ad);
     const i = cellAt(u, v);
@@ -639,7 +724,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (wi >= 0) {
       const w = MG.waters[wi];
       if (MG.g[i] === 6) hh = Math.min(hh, w.level - 0.4 - 1.4 * ss(0, 5, MG.watIn[i] * MG.mpp));
-      else { const bd = MG.watOut[i] * MG.mpp; if (bd < 5) hh = Math.min(hh, lerp(w.level + 0.3, hh, ss(0, 5, bd))); }
+      else { const bd = MG.watOut[i] * MG.mpp; if (bd < 5) hh = Math.max(Math.min(hh, lerp(w.level + 0.3, hh, ss(0, 5, bd))), w.level + 0.15); }     // 岸上一定比水面高
     }
     if (cross && cross.kind === 'valley') { const { s: s2, d } = near(u, v); const cd = crossDist(s2, d); if (cd < 2 && MG.g[i] !== 3 && MG.g[i] !== 4) hh = lerp(hh, cross.level, ss(0.5, -2.5, cd)); }
     return hh;
@@ -889,8 +974,16 @@ export function buildHole(course, holeIdx, opts = {}) {
   const treeGrid = new Map();
   const key = (x, z) => Math.floor(x / 10) + ',' + Math.floor(z / 10);
   // 開球區要視野清楚：每個發球台後方 10 公尺到前方 90 公尺、往前越來越寬的扇形裡不種樹（描圖的樹林邊緣常常貼著發球台）
+  // 瀑布（spec.falls）：果嶺邊的岩壁與瀑布位置，只有外觀；cave = 白梯在瀑布後的洞穴裡（洞穴、岩壁的範圍也不種樹）
+  const falls = spec && spec.falls ? spec.falls.map(f => { const [u, v] = nearGreen(f.g, f.d); return { u, v, w: f.w, h: f.h, club: !!f.club, face: Math.atan2(G[0] - u, G[1] - v) }; }) : [];
+  const caveTee = spec && spec.cave ? tees.find(t => t.id === 'white') : null;
   const teeBlocked = (x, z, r) => {
     const u = x, v = -z;
+    for (const f of falls) if (Math.hypot(u - f.u, v - f.v) < f.w * 0.7 + 6 + r) return true;
+    if (caveTee) {
+      const du = u - caveTee.u, dv = v - caveTee.v, a = du * caveTee.dir[0] + dv * caveTee.dir[1], lat = Math.abs(du * caveTee.dir[1] - dv * caveTee.dir[0]);
+      if (a > -34 && a < 14 && lat - r < 36) return true;
+    }
     for (const t of tees) {
       const du = u - t.u, dv = v - t.v, a = du * t.dir[0] + dv * t.dir[1], lat = Math.abs(du * t.dir[1] - dv * t.dir[0]);
       if (a > -10 && a < 90 && lat - r < 9 + Math.max(0, a) * 0.22) return true;
@@ -988,6 +1081,9 @@ export function buildHole(course, holeIdx, opts = {}) {
     const t = { type: pine ? 'pine' : (trng() < 0.1 ? 'maple' : 'broad'), h: (pine ? 14 : 11) + trng() * (big ? 9 : 6), r: pine ? 3 + trng() : 3.4 + trng() * 2.2 };
     const x = u, z = -v;
     if (tooClose(x, z, t.r * 0.75)) return;
+    // 樹位置加了隨機偏移，落到球道、果嶺、梯台、沙坑、水裡就不種
+    const sf0 = surface(u, v);
+    if (sf0 === SURF.FAIRWAY || sf0 === SURF.GREEN || sf0 === SURF.FRINGE || sf0 === SURF.TEE || sf0 === SURF.SAND || sf0 === SURF.WATER) return;
     t.x = x; t.z = z; t.y = height(u, v); t.rot = trng() * 6.28; t.tint = trng();
     t.cy = t.type === 'pine' ? t.y + t.h * 0.5 : t.y + t.h * 0.66;
     t.cr = t.type === 'pine' ? t.r * 0.9 : t.r;
@@ -1155,6 +1251,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     greenSide: mapGreens && mapGreens.length > 1 ? (gIdx === 0 ? '左' : '右') : null,      // 有兩個果嶺時今天用哪一個
     green: { u: G[0], v: G[1], rx: grx, ry: gry, rot: gRot }, bunkers, waters: map ? MG.waters.map(w => ({ kind: 'pond', level: w.level, cells: w.cells, grid: MG })) : waters, cross, seaSide, seaEdge, trees, scenery,
     near, pointAt, dirAt, fwHalf, greenR, surfaceUV: surface, heightUV: height, heightVisUV: heightVis, fs, fe, theme,
+    falls, cave: caveTee ? { u: caveTee.u, v: caveTee.v, dir: caveTee.dir } : null,
     specials, moat: moat ? { u: G[0], v: G[1], r: (moat.rOut + 0.3) * Math.max(grx, gry), level: moat.level } : null,
     islandUV: isVoid ? (u, v) => { const { s, d } = near(u, v); return islandF(u, v, s, d); } : null,
     height: H,
@@ -1319,3 +1416,6 @@ export function paintMaps(hole, opts = {}) {
   mx.putImageData(mimg, 0, 0);
   return { color, mask, px };
 }
+
+// 除錯用：解碼後的描圖地圖（含清理）
+export { decodeMap as _decodeMap };

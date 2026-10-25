@@ -863,3 +863,29 @@ body:not([data-practice]) .practice-only { display: none; }
 /* 長推桿特寫時畫面資訊先淡出 */
 #hud { transition: opacity .35s; }
 body.putt-cine #hud { opacity: 0; }
+
+/* 設定：快取大小 */
+.cache-box { display: block; }
+.cache-info { margin: 4px 0 8px; font-size: 14px; }
+.cache-info b { font-size: 18px; margin-right: 8px; }
+.cache-info span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.cache-box .small { margin-top: 6px; }
+
+/* 球場護照：印章 */
+.stamp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px 10px; }
+.sp { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 4px 10px; border-radius: 12px; background: #fbf8f0; border: 1px solid #eee6d4; }
+.sp.got { background: #fffdf7; box-shadow: 0 2px 8px -4px rgba(80, 60, 30, .25); }
+.stamp-svg { width: 104px; height: 104px; display: block; }
+.sp.got .stamp-svg { mix-blend-mode: multiply; }
+.sp-info { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.sp-info b { font: 700 14px "Noto Serif TC"; color: var(--forest); }
+.sp-info span { font-size: 11.5px; color: var(--muted); }
+.sp-info .sp-left { color: #a3302a; }
+.sp-nines { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 3px 0 2px; }
+.sp-nines span { font-size: 11px; padding: 1px 7px; border-radius: 10px; border: 1px dashed #c8bfa8; color: #a8a090; }
+.sp-nines span.on { border: 1px solid var(--forest); background: var(--forest); color: var(--cream); }
+@media (max-width: 420px) { .stamp-grid { grid-template-columns: repeat(2, 1fr); } .stamp-svg { width: 96px; height: 96px; } }
+
+/* 球場選單：國外球場的國家與特色 */
+.cp-country { display: block; margin-top: 2px; font-style: normal; font-size: 12px; color: #2a4a7a; font-weight: 600; }
+.rk-note { margin: 0 4px 10px; color: #8a8270; }

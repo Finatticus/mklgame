@@ -12,7 +12,8 @@ import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
 import { escapeHtml, fmtToPar } from './util.js';
 import { setSound, unlockAudio } from './audio.js';
-import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, prog, chal, progressOf, medalHtml, skinUnlocked, skinById, equippedSkins, achById, checkCounters, skinDesc, starBalance, buySkin, FX_NAME } from './progress.js';
+import { stampSvg } from './stamps.js';
+import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, stampDone, prog, chal, progressOf, medalHtml, checkChallenge, skinUnlocked, skinById, equippedSkins, achById, checkCounters, skinDesc, starBalance, buySkin, FX_NAME } from './progress.js';
 import { LEVELS, levelById, THEME_NAME } from './challenge.js';
 import { clubById } from './clubs.js';
 
@@ -100,7 +101,40 @@ function applyPuttCam(v) {
   $('gm-pcam').querySelectorAll('button').forEach(b => b.onclick = () => applyPuttCam(b.dataset.v === '1'));
 }
 
+// 快取大小：程式本體（每次改版換新）與下載的資料（角色、材質、球場地圖，用到才下載）
+const fmtMB = b => (b / 1048576).toFixed(b < 10485760 ? 1 : 0) + ' MB';
+async function cacheSizes() {
+  const out = { assets: 0, app: 0, files: 0 };
+  if (!('caches' in window)) return null;
+  for (const name of await caches.keys()) {
+    if (!name.startsWith('dixen-')) continue;
+    const c = await caches.open(name), isAsset = name.startsWith('dixen-assets');
+    for (const req of await c.keys()) {
+      const r = await c.match(req); if (!r) continue;
+      const len = Number(r.headers.get('content-length')) || (await r.clone().blob()).size;
+      if (isAsset) { out.assets += len; out.files++; } else out.app += len;
+    }
+  }
+  return out;
+}
+async function showCacheInfo() {
+  $('set-cache').textContent = '計算中…';
+  try {
+    const s = await cacheSizes();
+    if (!s) { $('set-cache').textContent = '這個瀏覽器不支援離線快取'; $('set-cache-clear').disabled = true; return; }
+    $('set-cache').innerHTML = `共 <b class="num">${fmtMB(s.assets + s.app)}</b><span>下載的資料 ${fmtMB(s.assets)}（${s.files} 個檔案）· 程式 ${fmtMB(s.app)}</span>`;
+    $('set-cache-clear').disabled = s.assets === 0;
+  } catch (e) { $('set-cache').textContent = '無法讀取快取大小'; }
+}
+async function clearAssetCache() {
+  if (!confirm('要清除下載的角色、材質與球場地圖嗎？帳號與成績不受影響，下次用到時會重新下載。')) return;
+  for (const name of await caches.keys()) if (name.startsWith('dixen-assets')) await caches.delete(name);
+  await showCacheInfo();
+}
+
 function openSettings() {
+  showCacheInfo();
+  $('set-cache-clear').onclick = clearAssetCache;
   $('set-gas').value = gasUrl();
   $('set-quality').value = getSetting('quality', 'high');
   $('set-sound').checked = getSetting('sound', true);
@@ -136,6 +170,7 @@ function enterLobby() {
   $('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${p.best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`;
   $('mode-chal-sub').textContent = `${LEVELS.length} 個特別設計的關卡 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
   show('scr-lobby');
+  checkChallenge(LEVELS);
   checkResume();
 }
 
@@ -229,7 +264,7 @@ function renderSetup() {
       <div class="ci-top"><div><small>${g ? g.name : ''}</small><b>${cur.name}</b><em>${cur.en}</em></div>
         <button class="btn-chip" id="st-change">更換球場 ▾</button></div>
       <div class="ci-stats">
-        <span>Par <b>72</b></span><span>黑梯 <b>${courseYards(cur, 'black').toLocaleString()} Y</b></span>
+        <span>Par <b>${cur.holes.reduce((a, h) => a + h[0], 0)}</b></span><span>黑梯 <b>${courseYards(cur, 'black').toLocaleString()} Y</b></span>
         <span>Stimp(果嶺速度) <b>${cur.stimp}</b></span><span>風 <b>${cur.wind[0]}~${Math.min(15, cur.wind[1])} mph</b></span><span>海拔 <b>${cur.altitude} m</b></span>
       </div>
       ${featureCard(cur)}
@@ -354,8 +389,8 @@ function openCoursePicker(kind) {
     const list = COURSES.filter(c => c.group === g.id);
     return `<h4>${g.name}</h4>` + (list.length ? list.map(c => `
       <button class="cp-row ${c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':') ? 'on' : ''}" data-c="${c.id}">
-        <div><b>${c.name}</b><em>${c.en}</em>${c.feature ? `<i class="cp-feat">特色玩法：${c.feature.name}</i>` : ''}</div>
-        <span>${c.nines ? `${c.nines.length * 9} 洞（${c.nines.map(n => n.name).join(' / ')}，前後九自選）` : `Par 72 · ${courseYards(c, 'black').toLocaleString()} Y`} · Stimp(果嶺速度) ${c.stimp}</span>
+        <div><b>${c.name}</b><em>${c.en}</em>${c.country ? `<i class="cp-country">${c.country}・${c.tagline}</i>` : ''}${c.feature ? `<i class="cp-feat">特色玩法：${c.feature.name}</i>` : ''}</div>
+        <span>${c.nines ? `${c.nines.length * 9} 洞（${c.nines.map(n => n.name).join(' / ')}，前後九自選）` : `Par ${c.holes.reduce((a, h) => a + h[0], 0)} · ${courseYards(c, 'black').toLocaleString()} Y`} · Stimp(果嶺速度) ${c.stimp}</span>
       </button>`).join('') : '<p class="small cp-empty">即將加入</p>');
   }).join('');
   $('cp-list').querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
@@ -377,7 +412,7 @@ function renderPreview(id) {
   const tee = TEE_SETS.find(t => t.id === setup.tee);
   const token = ++previewToken;
   const front = c.holes.slice(0, 9).reduce((a, h) => a + h[0], 0);
-  $('st-prev-sum').textContent = `${tee.name} ${courseYards(c, setup.tee).toLocaleString()} Y · 前九 Par ${front} · 後九 Par ${72 - front}`;
+  $('st-prev-sum').textContent = `${tee.name} ${courseYards(c, setup.tee).toLocaleString()} Y · 前九 Par ${front} · 後九 Par ${c.holes.slice(9).reduce((a, h) => a + h[0], 0)}`;
   $('st-preview').innerHTML = c.holes.map((h, i) => `
     <div class="hole-card"><canvas data-h="${i}" width="124" height="200"></canvas>
       <div class="hc"><b>${i + 1}<em>PAR ${h[0]}</em></b>${teeYards(c, i, setup.tee)} Y · HCP ${h[4]}<br><i>${holeFeatures(c, h)}</i></div></div>`).join('');
@@ -977,6 +1012,7 @@ async function renderRecords() {
 
 // 成就徽章：依分類列出，計數型有進度條；有獎勵（能力點、皮膚）的寫出來
 function achHtml() {
+  checkChallenge(LEVELS);
   checkCounters();
   const g = prog(), got = ACH.filter(a => g.ach[a.id]).length;
   return `<div class="ach-sum"><b class="num">${got}</b> / ${ACH.length} 個成就已達成</div>` + ACH_CATS.map(([cat, name]) => {
@@ -992,13 +1028,20 @@ function achHtml() {
 
 // 球場護照：每座球場打完 18 洞蓋一個章
 function passportHtml() {
-  const st = prog().stamps, n = PASSPORT.filter(c => st[c.id]).length;
-  return `<div class="ach-sum"><b class="num">${n}</b> / ${PASSPORT.length} 個章　<span class="small">在球場打完 18 洞就會蓋章（分區球場任選兩區都算）</span></div>` + COURSE_GROUPS.map(gr => {
+  const st = prog().stamps, n = PASSPORT.filter(c => stampDone(c.id)).length;
+  const fmtD = d => { const t = new Date(d); return `${t.getFullYear()}.${String(t.getMonth() + 1).padStart(2, '0')}.${String(t.getDate()).padStart(2, '0')}`; };
+  return `<div class="ach-sum"><b class="num">${n}</b> / ${PASSPORT.length} 個章　<span class="small">一般球場打完 18 洞就蓋章；分區球場要每一區都打完過（打 9 洞也算那一區）</span></div>` + COURSE_GROUPS.map(gr => {
     const list = PASSPORT.filter(c => c.group === gr.id);
     if (!list.length) return '';
-    return `<h4 class="ach-cat">${gr.name}<span>${list.filter(c => st[c.id]).length} / ${list.length}</span></h4><div class="stamp-grid">${list.map(c => {
-      const x = st[c.id];
-      return `<div class="stamp ${x ? 'got g-' + gr.id : ''}"><div class="stamp-in"><small>${escapeHtml(c.en)}</small><b>${escapeHtml(c.name)}</b>${x ? `<span>${new Date(x.date).toLocaleDateString()}</span><span>最佳 ${x.best} 桿 · ${x.n || 1} 場</span>` : '<span>尚未蓋章</span>'}</div></div>`;
+    return `<h4 class="ach-cat">${gr.name}<span>${list.filter(c => stampDone(c.id)).length} / ${list.length}</span></h4><div class="stamp-grid">${list.map((c, i) => {
+      const x = st[c.id] || {}, done = stampDone(c.id), rot = done ? ((c.id.charCodeAt(0) + c.id.length * 7) % 15) - 7 : 0;
+      // 分區球場：每一區打過沒
+      const nines = c.nines ? `<div class="sp-nines">${c.nines.map(nn => `<span class="${x.nines && x.nines[nn.id] ? 'on' : ''}">${escapeHtml(nn.name)}</span>`).join('')}</div>` : '';
+      const left = c.nines && !done ? c.nines.filter(nn => !(x.nines && x.nines[nn.id])).map(nn => nn.name) : [];
+      const info = done ? `<span>${fmtD(x.date)} 蓋章</span>${x.best && x.best < 999 ? `<span>最佳 ${x.best} 桿 · ${x.n || 1} 場</span>` : ''}`
+        : left.length && left.length < c.nines.length ? `<span class="sp-left">還沒打：${left.map(escapeHtml).join('、')}</span>`
+          : `<span>${c.nines ? '每一區都打完過就蓋章' : '打完 18 洞就蓋章'}</span>`;
+      return `<div class="sp ${done ? 'got' : ''}">${stampSvg(c, done, rot)}<div class="sp-info"><b>${escapeHtml(c.name)}</b>${nines}${info}</div></div>`;
     }).join('')}</div>`;
   }).join('');
 }
@@ -1078,14 +1121,17 @@ function renderRanking() {
 }
 
 // 總桿 / 球場排行：桿數少的在前；同桿數比對標準桿，再比誰先打出來
+// 三桿洞球場（例如 Cliffhangers，18 洞 Par 54）桿數本來就少很多，不列入總桿排行，只在自己的球場排行裡比
+const fullPar = r => !r.par || r.par >= (r.holes === 18 ? 66 : 33);
 function strokeHtml() {
   const course = COURSES.find(c => c.id === rank.course);
   const list = rank.rows
-    .filter(r => r.holes === rank.holes && (rank.tab === 'total' || r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && r.course === course.name)))
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? fullPar(r) : r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && r.course === course.name)))
     .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
     .slice(0, 100);
-  if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>';
-  return list.map((r, i) => `
+  const note = rank.tab === 'total' ? '<p class="small rk-note">三桿洞球場（例如 Cliffhangers，Par 54）不列入總桿排行，請到「球場」分頁看該球場的排行。</p>' : '';
+  if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>' + note;
+  return note + list.map((r, i) => `
     <div class="rk-row ${r.user === session.user ? 'me' : ''}">
       <span class="rk-no ${i < 3 ? 'top' + (i + 1) : ''}">${i + 1}</span>
       <div class="rk-who"><b>${escapeHtml(r.user)}</b><span>${rank.tab === 'total' ? escapeHtml(r.course) + ' · ' : ''}${escapeHtml(r.range || r.holes + ' 洞')} · ${fmtWhen(r.date)}</span></div>

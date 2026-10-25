@@ -82,7 +82,8 @@ async function local(b) {
           range: r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞', tee: r.tee, strokes: r.strokes, par: r.par, toPar: r.toPar, mode: r.mode, events: r.events || [] });
         const earned = Math.floor(r.holes / 9);
         cur.rounds++; cur.points += earned; cur.earned += earned;
-        if (r.holes === 18 && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
+        // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
+        if (r.holes === 18 && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
         return { earned, profile: cur };
       }
       case 'saveProgress': {
@@ -154,7 +155,7 @@ function mergeProg(a, b) {
   for (const k in b.cnt || {}) o.cnt[k] = Math.max(Number(o.cnt[k]) || 0, Number(b.cnt[k]) || 0);
   for (const k in b.stamps || {}) {
     const x = o.stamps[k], y = b.stamps[k];
-    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 1, Number(y.n) || 1) };
+    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 0, Number(y.n) || 0), nines: { ...(y.nines || {}), ...(x.nines || {}) } };
   }
   return o;
 }

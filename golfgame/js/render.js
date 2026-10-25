@@ -28,6 +28,20 @@ const LANDMARKS = {
   hsingfu: { sea: [270, 1500], turbines: [270, 1550, 6], towers: [[80, 1500, 14, 70, 120]], rocks: 6, egrets: 4, eagles: 2, magpies: 1 },
   // 林口 / 龜山交界的山坡地：松林、遠方大樓，偶爾有往桃園機場的飛機飛過
   taipei: { hills: 8, towers: [[100, 1500, 16, 70, 120]], planes: 300, egrets: 3, eagles: 3, magpies: 1 },
+  // 台南關廟：南部平原上的丘陵，遠處是低矮的山，球場裡有很多大水池
+  nanyi: { hills: 12, egrets: 6, eagles: 2 },
+  // 桃園大溪：河階台地，遠方是大溪的山，旁邊是威斯汀度假酒店
+  tashee: { hills: 12, hotel: [70, 900], egrets: 4, eagles: 3, magpies: 1 },
+  // 桃園龍潭：平坦、遠處有龍潭的社區大樓，旁邊是悅華大酒店
+  taoyuan: { towers: [[60, 1600, 14, 50, 100]], hotel: [200, 800], hills: 4, egrets: 5, eagles: 2 },
+  // 新竹湖口：丘陵林地，冬天東北季風強；遠方是湖口、新豐的風力發電機與海
+  yunghan: { hills: 8, turbines: [300, 1900, 5], egrets: 3, eagles: 2, magpies: 1 },
+  // 桃園楊梅：高台上的球場，看得到遠方的高壓電塔與社區；會館旁是飯店
+  sunrise: { hills: 6, pylons: [[80, 700, 4]], hotel: [180, 700], towers: [[40, 1800, 10, 50, 100]], egrets: 4, eagles: 3 },
+  // 桃園龍潭：平坦地形加大水池，遠方是龍潭的社區
+  lungtan: { towers: [[30, 1700, 12, 50, 100]], hills: 5, egrets: 7, eagles: 2 },
+  // 美國密蘇里州 Ozark 山區：俯瞰 Table Rock 湖，四周是長滿橡樹的山丘與灰白色的石灰岩峭壁，天上有白頭海鵰盤旋
+  cliffhangers: { sea: [20, 650], hills: 14, bluffs: 9, eagles: 2 },
 };
 const SURF_ROUGH = 4;      // physics.js 的 SURF.ROUGH
 const hashStrR = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
@@ -297,6 +311,7 @@ export class World {
     await frame();
     this.buildTrees(hole, g);
     this.buildLandmarks(hole, g);
+    this.buildFalls(hole, g);
     await frame();
     this.buildTeeMarkers(hole, g);
     this.buildFlag(hole, g);
@@ -710,8 +725,9 @@ export class World {
 
   waterMaterial() {
     return new THREE.MeshStandardMaterial({
-      color: 0x24464f, roughness: 0.06, metalness: 0.0, normalMap: this.waterNormal, normalScale: new THREE.Vector2(0.28, 0.28),
-      envMapIntensity: 1.25, transparent: true, opacity: 0.94,
+      // 反射天空太強（低角度看過去整片泛白）會被看成沙地：反射調弱、水色偏藍綠一點
+      color: 0x1d4f60, roughness: 0.14, metalness: 0.0, normalMap: this.waterNormal, normalScale: new THREE.Vector2(0.35, 0.35),
+      envMapIntensity: 0.5, transparent: true, opacity: 0.96,
     });
   }
 
@@ -771,6 +787,31 @@ export class World {
         const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); const u = ou + dx, v = ov + dz; m.position.set(u, gy(u, v) + h / 2 - 2, -v); m.rotation.y = 0.3; g.add(m);
       });
     }
+    // 度假酒店 / 會館：一棟寬的低層建築加幾層樓的主樓，暖色的窗
+    if (conf.hotel) {
+      const [ang, dist] = conf.hotel, [ou, ov] = at(ang, dist);
+      const mat = winMat('#e8e0d0', 'rgba(255,214,150,0.9)');
+      [[0, 0, 140, 28, 50], [0, 10, 60, 55, 40], [-90, 30, 50, 18, 40]].forEach(([dx, dz, w, h, d]) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); const u = ou + dx, v = ov + dz; m.position.set(u, gy(u, v) + h / 2 - 1, -v); m.rotation.y = 0.2; g.add(m);
+      });
+    }
+    // 高壓電塔：格子狀的鐵塔與電線
+    if (conf.pylons) for (const [ang, dist, n] of conf.pylons) {
+      const steel = new THREE.MeshStandardMaterial({ color: 0x8a8e94, roughness: 0.6, metalness: 0.5 });
+      const tops = [];
+      for (let k = 0; k < n; k++) {
+        const [u, v] = at(ang - 20 + k * 40 / Math.max(1, n - 1), dist + k * 60);
+        const y0 = gy(u, v), grp = new THREE.Group(); grp.position.set(u, y0, -v);
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 6, 55, 4, 6, true), new THREE.MeshStandardMaterial({ color: 0x8a8e94, wireframe: true }));
+        body.position.y = 27.5; grp.add(body);
+        for (const hgt of [40, 48]) { const arm = new THREE.Mesh(new THREE.BoxGeometry(18, 0.6, 0.6), steel); arm.position.y = hgt; grp.add(arm); }
+        g.add(grp); tops.push(new THREE.Vector3(u, y0 + 48, -v));
+      }
+      for (let k = 1; k < tops.length; k++) {
+        const pts = []; for (let t = 0; t <= 12; t++) { const p = tops[k - 1].clone().lerp(tops[k], t / 12); p.y -= Math.sin(Math.PI * t / 12) * 6; pts.push(p); }
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x3a3a3a })));
+      }
+    }
     // 林口發電廠：三根紅白相間的高煙囪
     if (conf.plant) {
       const [ang, dist] = conf.plant, [ou, ov] = at(ang, dist);
@@ -808,6 +849,16 @@ export class World {
       const [u, v] = at(rng() * 360, 1500 + rng() * 900);
       const m = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(0.27, 0.35, 0.22 + rng() * 0.06), roughness: 1 }));
       m.scale.set(300 + rng() * 300, 90 + rng() * 120, 260 + rng() * 260); m.position.set(u, gy(u, v) - 10, -v); g.add(m);
+    }
+    // 石灰岩峭壁：球場外圍一塊塊灰白色的大岩壁
+    if (conf.bluffs) {
+      const G = this.treeGeos(), mat = new THREE.MeshStandardMaterial({ map: this.tex.rockD, color: 0xc8c0b0, roughness: 0.95 });
+      for (let i = 0, tries = 0; i < conf.bluffs && tries < 300; tries++) {
+        const [u, v] = at(rng() * 360, 140 + rng() * 380);
+        if (u > b.minU && u < b.maxU && v > b.minV && v < b.maxV) continue;
+        const m = new THREE.Mesh(G.rock, mat), r = 14 + rng() * 18;
+        m.scale.set(r * (1.4 + rng()), r * (0.9 + rng() * 0.8), r * (0.6 + rng() * 0.5)); m.rotation.y = rng() * 6; m.position.set(u, gy(u, v) - r * 0.25, -v); g.add(m); i++;
+      }
     }
     // 球道旁的大石頭（幸福的奇石）
     if (conf.rocks) {
@@ -887,6 +938,112 @@ export class World {
     }
   }
 
+  // ---------- 瀑布與洞穴發球台（Cliffhangers，只有外觀）----------
+  // falls：果嶺邊的石灰岩壁與往下沖的瀑布（club = 岩壁上方加一棟山頂會館）；cave：白梯在岩壁裡的洞穴，洞口掛著瀑布，從洞裡隔著水簾開球
+  buildFalls(hole, g) {
+    if (!(hole.falls && hole.falls.length) && !hole.cave) return;
+    const gy = (u, v) => hole.heightUV(u, v);
+    const rockTex = rp => { const t = this.tex.rockD.clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rp[0], rp[1]); t.needsUpdate = true; return t; };
+    const rockMat = (rp, col = 0xb8b0a2, side = THREE.FrontSide) => new THREE.MeshStandardMaterial({ map: rockTex(rp), color: col, roughness: 0.95, side });
+    // 水簾：直條紋的半透明貼圖往下捲動
+    if (!this.fallTex) {
+      const c = document.createElement('canvas'); c.width = 128; c.height = 256; const x = c.getContext('2d');
+      for (let i = 0; i < 260; i++) {
+        const px = Math.random() * 128, len = 30 + Math.random() * 120, py = Math.random() * 256, a = 0.25 + Math.random() * 0.6, wd = 1 + Math.random() * 2.5;
+        for (const oy of [0, -256]) {
+          const gr = x.createLinearGradient(0, py + oy, 0, py + oy + len); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, `rgba(235,245,250,${a})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+          x.fillStyle = gr; x.fillRect(px, py + oy, wd, len);
+        }
+      }
+      this.fallTex = new THREE.CanvasTexture(c); this.fallTex.wrapS = this.fallTex.wrapT = THREE.RepeatWrapping; this.fallTex.colorSpace = THREE.SRGBColorSpace;
+    }
+    const curtain = (w, h, speed) => {
+      const t = this.fallTex.clone(); t.needsUpdate = true; t.repeat.set(w / 6, h / 10);
+      const mat = new THREE.MeshBasicMaterial({ map: t, color: 0xdfeef4, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide });
+      const back = new THREE.MeshBasicMaterial({ color: 0xb8d6e0, transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide });
+      const grp = new THREE.Group();
+      const geo = new THREE.PlaneGeometry(w, h, 1, 1); geo.translate(0, -h / 2, 0);
+      const m0 = new THREE.Mesh(geo, back), m1 = new THREE.Mesh(geo, mat); m1.position.z = 0.15; m0.renderOrder = m1.renderOrder = 6;
+      grp.add(m0, m1);
+      this.specialAnims.push(tt => { t.offset.y = tt * speed; });
+      return grp;
+    };
+    const mist = (grp, x, y, z, w) => { for (let k = 0; k < 4; k++) grp.add(glowSprite(this, new THREE.Vector3(x + (k - 1.5) * w * 0.25, y + 1 + k % 2, z), w * 0.55, 0xffffff, 0.22, true)); };
+    const G = this.treeGeos();
+    const rr = makeRng(hashStrR(hole.course.id + ':' + hole.holeIdx + 'falls'));
+    // 灰白色的石灰岩：低面數、表面凹凸的方塊（平面著色，跟樹的風格一致）
+    const lime = new THREE.MeshStandardMaterial({ color: 0x8f8b80, roughness: 0.95, flatShading: true });
+    const nzR = makeNoise(hashStrR(hole.course.id + hole.holeIdx));
+    const craggy = (w, h, d) => {
+      const geo = new THREE.BoxGeometry(w, h, d, Math.max(2, Math.round(w / 3)), Math.max(2, Math.round(h / 3)), 2).toNonIndexed();
+      const p = geo.attributes.position;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 1.3 * nzR(x * 0.25 + z * 0.1, y * 0.3);
+        p.setXYZ(i, x + k * 0.6, y + (y > h / 2 - 0.1 ? k * 0.8 : 0), z + k);
+      }
+      geo.computeVertexNormals(); return geo;
+    };
+    // 果嶺邊的瀑布：岩壁 + 幾塊大石頭 + 水簾 + 底部水霧
+    for (const f of hole.falls || []) {
+      const y0 = gy(f.u, f.v), grp = new THREE.Group();
+      grp.position.set(f.u, y0, -f.v); grp.rotation.y = Math.atan2(Math.sin(f.face), -Math.cos(f.face));      // 本地 +z 朝向果嶺
+      // 石灰岩是一層一層的：三段寬窄、前後錯開的岩層，上面散著大石頭
+      [[2.3, 0.45, -4.5, 0], [1.9, 0.8, -6, 0.15], [1.5, 1.08, -7.5, -0.1]].forEach(([kw, kh, z, dx]) => {
+        const hh = f.h * kh + 6, m = new THREE.Mesh(craggy(f.w * kw, hh, 7), lime);
+        m.position.set(dx * f.w, hh / 2 - 6, z); m.rotation.y = (rr() - 0.5) * 0.12; m.castShadow = true; grp.add(m);
+      });
+      const stone = lime;
+      for (let k = 0; k < 14; k++) {
+        const m = new THREE.Mesh(G.rock, stone), r = 1.6 + rr() * 3.4, sx = (rr() - 0.5) * f.w * 2.3;
+        if (Math.abs(sx) < f.w * 0.3 && rr() < 0.7) continue;          // 瀑布正前方少放
+        m.scale.set(r * (1 + rr() * 0.8), r * (0.6 + rr() * 0.6), r); m.rotation.set(rr() * 0.4, rr() * 6, rr() * 0.4);
+        m.position.set(sx, rr() < 0.4 ? f.h * (0.45 + rr() * 0.7) : rr() * 2, -1 + rr() * 2.5); m.castShadow = true; grp.add(m);
+      }
+      // 主瀑布 + 旁邊一道細的
+      const main = curtain(f.w * 0.62, f.h * 1.08 + 1.4, 1.5); main.position.set(0, f.h * 1.08 + 0.6, -0.9); grp.add(main);
+      const side1 = curtain(f.w * 0.16, f.h * 0.7, 1.2); side1.position.set(f.w * 0.55, f.h * 0.75, -0.6); grp.add(side1);
+      mist(grp, 0, -0.2, 1, f.w * 0.8);
+      if (f.club) {
+        // Mountain Top 會館：岩壁上方的石砌木屋，長窗透出暖光
+        const lodge = new THREE.Group(), stoneM = rockMat([2, 1], 0x9c9284), wood = new THREE.MeshStandardMaterial({ color: 0x6a4a32, roughness: 0.85 }), glass = new THREE.MeshStandardMaterial({ color: 0xffd9a0, emissive: 0x6a4a20, roughness: 0.3 });
+        const base = new THREE.Mesh(new THREE.BoxGeometry(30, 5, 12), stoneM); base.position.y = 2.5; lodge.add(base);
+        const win = new THREE.Mesh(new THREE.BoxGeometry(25, 2.6, 0.3), glass); win.position.set(0, 2.8, 6.1); lodge.add(win);
+        const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 10, 3, 4, 1), wood); roof.rotation.y = Math.PI / 4; roof.scale.set(2.3, 1, 1); roof.position.y = 6.5; lodge.add(roof);
+        const deck = new THREE.Mesh(new THREE.BoxGeometry(36, 0.6, 5), wood); deck.position.set(0, 0.3, 9); lodge.add(deck);
+        lodge.position.set(f.w * 0.15, f.h * 1.08 - 0.3, -9); grp.add(lodge);
+      }
+      g.add(grp);
+    }
+    // 洞穴發球台：岩壁（中間挖一個拱形洞口）+ 拱形隧道 + 洞頂的山丘；洞口外掛一道水簾
+    const cv = hole.cave;
+    if (cv) {
+      const y0 = gy(cv.u, cv.v), grp = new THREE.Group();
+      grp.position.set(cv.u, y0, -cv.v); grp.rotation.y = Math.atan2(cv.dir[0], -cv.dir[1]);     // 本地 +z = 開球方向
+      const AR = 6.5, AH = 10, FACE = 5, BACK = -17;
+      const arch = (sh, close) => { sh.moveTo(AR, -0.5); sh.lineTo(AR, 0); sh.absellipse(0, 0, AR, AH, 0, Math.PI, false); sh.lineTo(-AR, -0.5); if (close) sh.lineTo(AR, -0.5); };
+      const sh = new THREE.Shape(); sh.moveTo(-34, -20); sh.lineTo(34, -20); sh.lineTo(34, 13); sh.lineTo(16, 18); sh.lineTo(-12, 17); sh.lineTo(-34, 12); sh.lineTo(-34, -20);
+      const hole0 = new THREE.Path(); arch(hole0, true); sh.holes.push(hole0);
+      const face = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 4, bevelEnabled: false }), lime); face.position.z = FACE; face.castShadow = true; grp.add(face);
+      const tun = new THREE.CylinderGeometry(AR, AR, FACE - BACK + 0.5, 28, 1, true, Math.PI / 2, Math.PI); tun.rotateX(Math.PI / 2); tun.scale(1, AH / AR, 1);
+      const tunnel = new THREE.Mesh(tun, rockMat([4, 2], 0x7a7064, THREE.DoubleSide)); tunnel.position.set(0, 0, (FACE + BACK) / 2 + 0.25); tunnel.castShadow = true; grp.add(tunnel);
+      const capS = new THREE.Shape(); arch(capS, true);
+      const cap = new THREE.Mesh(new THREE.ShapeGeometry(capS), rockMat([0.2, 0.2], 0x5e564c, THREE.DoubleSide)); cap.position.z = BACK; grp.add(cap);
+      const mound = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x4f6234, roughness: 1 }));
+      mound.scale.set(34, 18, 26); mound.position.set(0, -1, FACE - 18); grp.add(mound);
+      const stone = lime;
+      for (let k = 0; k < 12; k++) {
+        const m = new THREE.Mesh(G.rock, stone), r = 2.5 + rr() * 4, sx = (rr() - 0.5) * 64;
+        m.scale.set(r * 1.4, r, r); m.rotation.y = rr() * 6; m.position.set(sx, 11 + rr() * 6 - Math.abs(sx) * 0.08, FACE + 1 + rr() * 3); grp.add(m);
+      }
+      // 洞內的暖色小燈，看得清楚洞穴的岩壁
+      const lamp = new THREE.PointLight(0xffc888, 18, 26, 1.6); lamp.position.set(0, AH - 2, -4); grp.add(lamp);
+      // 水簾從洞口上方落下，蓋住洞口（從洞裡隔著水簾看得到外面的球道）
+      const fall = curtain(AR * 2.4, AH + 18, 1.7); fall.position.set(0, AH + 4, FACE + 4.3); grp.add(fall);
+      mist(grp, 0, -12, FACE + 6, 14);
+      g.add(grp);
+    }
+  }
+
   buildSea(hole) {
     const geo = new THREE.PlaneGeometry(8000, 8000, 1, 1);
     geo.rotateX(-Math.PI / 2);
@@ -902,14 +1059,21 @@ export class World {
     for (const w of hole.waters) {
       if (w.kind !== 'pond') continue;
       if (w.cells) {
-        // 描圖水池：每一列的水格子合成長條（往外多 3 格，岸邊地形會把多出來的蓋住）
+        // 描圖水池：每一列裡連續的水格子合成一段長條（凹進去的岸不會被補成水），往外只多半格，岸邊的緩坡會蓋住鋸齒
+        //   原本整列取最左到最右、再往外多 3 格：C 字形的水池中間的陸地、比水面低的岸邊都會被水面蓋住（球和擊球線看起來在水裡）
         const G = w.grid, rows = new Map();
-        for (const i of w.cells) { const x = i % G.W, y = (i / G.W) | 0; const r = rows.get(y); if (r) { r[0] = Math.min(r[0], x); r[1] = Math.max(r[1], x); } else rows.set(y, [x, x]); }
+        for (const i of w.cells) { const y = (i / G.W) | 0; (rows.get(y) || rows.set(y, []).get(y)).push(i % G.W); }
         const pos = [];
-        for (const [y, [x0, x1]] of rows) {
-          const ua = G.u0 + (x0 - 3.5) * G.mpp, ub = G.u0 + (x1 + 3.5) * G.mpp;
-          const va = G.v0 - (y - 2) * G.mpp, vb = G.v0 - (y + 2) * G.mpp;
-          pos.push(ua, 0, -va, ub, 0, -va, ub, 0, -vb, ua, 0, -va, ub, 0, -vb, ua, 0, -vb);
+        for (const [y, xs] of rows) {
+          xs.sort((p, q) => p - q);
+          for (let k = 0; k < xs.length;) {
+            let e = k; while (e + 1 < xs.length && xs[e + 1] === xs[e] + 1) e++;
+            const ua = G.u0 + (xs[k] - 0.6) * G.mpp, ub = G.u0 + (xs[e] + 0.6) * G.mpp;
+            const va = G.v0 - (y - 0.6) * G.mpp, vb = G.v0 - (y + 0.6) * G.mpp;
+            // 三角形要逆時針（從上面看），法線朝上；順時針會被背面剔除，水面整片看不見
+            pos.push(ua, 0, -va, ub, 0, -vb, ub, 0, -va, ua, 0, -va, ua, 0, -vb, ub, 0, -vb);
+            k = e + 1;
+          }
         }
         const geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -1353,6 +1517,7 @@ export class World {
       geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
       this.ensureSpark();
       this.skinPts = new THREE.Points(geo, new THREE.PointsMaterial({ map: this.sparkTex, size: 0.16, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      this.skinPts.renderOrder = 10;      // 跟彈道線一樣排在水面之後畫
       this.skinPts.frustumCulled = false;
       this.scene.add(this.skinPts);
       this.skinP = Array.from({ length: N }, () => ({ p: new THREE.Vector3(0, -9999, 0), v: new THREE.Vector3(), life: 0, max: 1, c: new THREE.Color() }));
@@ -1484,6 +1649,8 @@ export class World {
     geo.setIndex(idx);
     this.tracer = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xf2d27a, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
     this.tracer.frustumCulled = false;
+    // 半透明的彈道線不寫深度：要排在水面（也是半透明）之後畫，不然水面會整片蓋在飛越水池的彈道上
+    this.tracer.renderOrder = 10;
     this.tracerPts = [];
     this.scene.add(this.tracer);
   }

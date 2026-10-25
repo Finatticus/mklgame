@@ -138,7 +138,8 @@ const ACTIONS = {
       const cur = readProfile_(acc.user);
       const earned = Math.floor(r.holes / 9);
       const upd = { '總回合數': cur.rounds + 1, '能力點': cur.points + earned, '累計獲得點數': cur.earned + earned };
-      if (r.holes === 18 && (!cur.best || r.strokes < cur.best)) upd['最佳18洞'] = r.strokes;
+      // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
+      if (r.holes === 18 && !(Number(r.par) < 66) && (!cur.best || r.strokes < cur.best)) upd['最佳18洞'] = r.strokes;
       writeProfile_(acc.user, upd);
       return { earned: earned, profile: readProfile_(acc.user) };
     });
@@ -322,7 +323,7 @@ function mergeProg_(a, b) {
   Object.keys(b.cnt || {}).forEach(k => { o.cnt[k] = Math.max(Number(o.cnt[k]) || 0, Number(b.cnt[k]) || 0); });
   Object.keys(b.stamps || {}).forEach(k => {
     const x = o.stamps[k], y = b.stamps[k];
-    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 1, Number(y.n) || 1) };
+    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 0, Number(y.n) || 0), nines: Object.assign({}, y.nines || {}, x.nines || {}) };
   });
   return o;
 }
