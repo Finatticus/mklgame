@@ -79,11 +79,11 @@ async function local(b) {
         (d.rounds[b.user] = d.rounds[b.user] || []).push({ ...r, date });
         // 排行（跟 GAS 的「排行」工作頁同一個格式）
         (d.rankings = d.rankings || []).push({ date, user: b.user, course: r.course, courseId: r.courseId, holes: r.holes,
-          range: r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞', tee: r.tee, strokes: r.strokes, par: r.par, toPar: r.toPar, mode: r.mode, events: r.events || [] });
+          range: r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞', tee: r.tee, strokes: r.strokes, par: r.par, toPar: r.toPar, mode: r.mode, events: r.events || [], rankable: r.rankable !== false });
         const earned = Math.floor(r.holes / 9);
         cur.rounds++; cur.points += earned; cur.earned += earned;
         // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
-        if (r.holes === 18 && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
+        if (r.holes === 18 && r.rankable !== false && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
         return { earned, profile: cur };
       }
       case 'saveProgress': {

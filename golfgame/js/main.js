@@ -12,7 +12,7 @@ import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
 import { escapeHtml, fmtToPar } from './util.js';
 import { setSound, unlockAudio } from './audio.js';
-import { stampSvg } from './stamps.js';
+import { stampSvg, stampTier, STAMP_TIERS } from './stamps.js';
 import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, stampDone, prog, chal, progressOf, medalHtml, checkChallenge, skinUnlocked, skinById, equippedSkins, achById, checkCounters, skinDesc, starBalance, buySkin, FX_NAME } from './progress.js';
 import { LEVELS, levelById, THEME_NAME } from './challenge.js';
 import { clubById } from './clubs.js';
@@ -161,13 +161,28 @@ function initSettings() {
 }
 
 // ---------------- 大廳 ----------------
+// 最佳 18 洞：從排行紀錄重新算（排除三桿洞球場與奇幻球場）；伺服器存的數字以前可能已經算進 Par 54 的回合
+const myBest = { user: null, v: null, at: 0 };
+async function refreshMyBest() {
+  if (myBest.user === session.user && Date.now() - myBest.at < 60000) return myBest.v;
+  const rows = await call('getRankings');
+  const mine = rows.filter(r => r.user === session.user && r.holes === 18);
+  const ok = mine.filter(countsForTotal).map(r => r.strokes);
+  // 伺服器存的數字：排行功能加入前打的成績不在排行裡，所以照樣採用；只有剛好等於某一場三桿洞 / 奇幻球場的桿數時才當作算錯的捨棄
+  const sv = session.profile.best;
+  if (sv && !mine.some(r => !countsForTotal(r) && r.strokes === sv)) ok.push(sv);
+  Object.assign(myBest, { user: session.user, v: ok.length ? Math.min(...ok) : null, at: Date.now() });
+  return myBest.v;
+}
 function enterLobby() {
   const h = new Date().getHours();
   $('lb-greet').textContent = h < 11 ? 'GOOD MORNING' : h < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
   $('lb-name').innerHTML = escapeHtml(session.user) + (session.isAdmin ? '<span class="badge">管理員</span>' : '');
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !session.isAdmin));
   const p = session.profile;
-  $('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${p.best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`;
+  const lbStats = best => ($('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`);
+  lbStats(myBest.user === session.user ? myBest.v : null);
+  refreshMyBest().then(lbStats).catch(() => lbStats(p.best));
   $('mode-chal-sub').textContent = `${LEVELS.length} 個特別設計的關卡 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
   show('scr-lobby');
   checkChallenge(LEVELS);
@@ -387,7 +402,8 @@ function openCoursePicker(kind) {
   });
   $('cp-list').innerHTML = COURSE_GROUPS.filter(g => (g.id === 'fantasy') === (kind === 'fantasy')).map(g => {
     const list = COURSES.filter(c => c.group === g.id);
-    return `<h4>${g.name}</h4>` + (list.length ? list.map(c => `
+    const gnote = g.id === 'fantasy' ? '<p class="small cp-note">奇幻球場不列入總桿排行與大廳的最佳 18 洞，每座球場仍有自己的球場排行。</p>' : '';
+    return `<h4>${g.name}</h4>${gnote}` + (list.length ? list.map(c => `
       <button class="cp-row ${c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':') ? 'on' : ''}" data-c="${c.id}">
         <div><b>${c.name}</b><em>${c.en}</em>${c.country ? `<i class="cp-country">${c.country}・${c.tagline}</i>` : ''}${c.feature ? `<i class="cp-feat">特色玩法：${c.feature.name}</i>` : ''}</div>
         <span>${c.nines ? `${c.nines.length * 9} 洞（${c.nines.map(n => n.name).join(' / ')}，前後九自選）` : `Par ${c.holes.reduce((a, h) => a + h[0], 0)} · ${courseYards(c, 'black').toLocaleString()} Y`} · Stimp(果嶺速度) ${c.stimp}</span>
@@ -634,6 +650,7 @@ const ui = {
     try {
       const r = await call('saveRound', { round: sum });
       session.profile = r.profile;
+      myBest.at = 0;          // 回大廳時重新算最佳 18 洞
       $('rr-save').textContent = r.earned ? `成績已儲存，獲得 ${r.earned} 能力點！` : '成績已儲存';
     } catch (e) { $('rr-save').textContent = '儲存失敗：' + e.message; }
   },
@@ -1038,10 +1055,13 @@ function passportHtml() {
       // 分區球場：每一區打過沒
       const nines = c.nines ? `<div class="sp-nines">${c.nines.map(nn => `<span class="${x.nines && x.nines[nn.id] ? 'on' : ''}">${escapeHtml(nn.name)}</span>`).join('')}</div>` : '';
       const left = c.nines && !done ? c.nines.filter(nn => !(x.nines && x.nines[nn.id])).map(nn => nn.name) : [];
-      const info = done ? `<span>${fmtD(x.date)} 蓋章</span>${x.best && x.best < 999 ? `<span>最佳 ${x.best} 桿 · ${x.n || 1} 場</span>` : ''}`
+      // 印章等級：3 / 5 / 10 次升級；下一級還差幾次
+      const tn = x.n || 1, tier = stampTier(tn), nextT = STAMP_TIERS[tier + 1];
+      const tierInfo = done ? `<span class="sp-tier t${tier}">${STAMP_TIERS[tier].name}${nextT ? `・再打 ${nextT.n - tn} 次升級${nextT.name}` : '・最高等級'}</span>` : '';
+      const info = done ? `<span>${fmtD(x.date)} 蓋章</span>${x.best && x.best < 999 ? `<span>最佳 ${x.best} 桿 · ${tn} 場</span>` : ''}${tierInfo}`
         : left.length && left.length < c.nines.length ? `<span class="sp-left">還沒打：${left.map(escapeHtml).join('、')}</span>`
           : `<span>${c.nines ? '每一區都打完過就蓋章' : '打完 18 洞就蓋章'}</span>`;
-      return `<div class="sp ${done ? 'got' : ''}">${stampSvg(c, done, rot)}<div class="sp-info"><b>${escapeHtml(c.name)}</b>${nines}${info}</div></div>`;
+      return `<div class="sp ${done ? 'got' : ''} ${done ? 'tier' + tier : ''}">${stampSvg(c, done, tier >= 2 ? 0 : rot, tn)}<div class="sp-info"><b>${escapeHtml(c.name)}</b>${nines}${info}</div></div>`;
     }).join('')}</div>`;
   }).join('');
 }
@@ -1121,15 +1141,17 @@ function renderRanking() {
 }
 
 // 總桿 / 球場排行：桿數少的在前；同桿數比對標準桿，再比誰先打出來
-// 三桿洞球場（例如 Cliffhangers，18 洞 Par 54）桿數本來就少很多，不列入總桿排行，只在自己的球場排行裡比
+// 三桿洞球場（例如 Cliffhangers，18 洞 Par 54）桿數本來就少很多、奇幻球場有機關幫忙，都不列入總桿排行與最佳 18 洞，只在自己的球場排行裡比
 const fullPar = r => !r.par || r.par >= (r.holes === 18 ? 66 : 33);
+const rowCourse = r => { const id = String(r.courseId || '').split(':')[0]; return COURSES.find(c => c.id === id) || COURSES.find(c => c.name === r.course); };
+const countsForTotal = r => r.rankable !== false && fullPar(r) && (rowCourse(r) || {}).group !== 'fantasy';
 function strokeHtml() {
   const course = COURSES.find(c => c.id === rank.course);
   const list = rank.rows
-    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? fullPar(r) : r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && r.course === course.name)))
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && r.course === course.name)))
     .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
     .slice(0, 100);
-  const note = rank.tab === 'total' ? '<p class="small rk-note">三桿洞球場（例如 Cliffhangers，Par 54）不列入總桿排行，請到「球場」分頁看該球場的排行。</p>' : '';
+  const note = rank.tab === 'total' ? '<p class="small rk-note">三桿洞球場（例如 Cliffhangers，Par 54）與奇幻球場不列入總桿排行，請到「球場」分頁看各球場的排行。</p>' : '';
   if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>' + note;
   return note + list.map((r, i) => `
     <div class="rk-row ${r.user === session.user ? 'me' : ''}">

@@ -43,6 +43,22 @@ const LANDMARKS = {
   // 美國密蘇里州 Ozark 山區：俯瞰 Table Rock 湖，四周是長滿橡樹的山丘與灰白色的石灰岩峭壁，天上有白頭海鵰盤旋
   cliffhangers: { sea: [20, 650], hills: 14, bluffs: 9, eagles: 2 },
 };
+// 國外真實球場（OSM 圖資）：建築外觀（牆 / 屋頂顏色）、有名建築的實際高度與顏色、遠方的山與島
+//   mounts：[方位, 實際距離(公尺), 實際高度, 山腳半徑, 山頂積雪比例]，依實際的視角縮小放到遠景
+const OSM_SCENE = {
+  // 聖安德魯斯：灰色砂岩牆、深灰石板屋頂；18 洞後方的 R&A 會館、紅砂岩的 Hamilton Grand、17 洞旁的 Old Course Hotel
+  standrews: { wall: [0xc9b48f, 0xbca988, 0xd2bf9c, 0xb09a78], roof: 0x464a52, pitch: 1, named: { 'The Royal and Ancient Golf Club of St Andrews': { h: 15, wall: 0xb8ad97 }, 'Hamilton Grand': { h: 25, wall: 0xa0563e },
+    'Old Course Hotel': { h: 22, wall: 0xd8cfbd }, 'Marine & Lawn Rusacks': { h: 17 } }, mounts: [[330, 9000, 160, 4000, 0], [20, 14000, 120, 5000, 0]] },
+  // 圓石灘：白、米色的木造房子；對岸是 Carmel Highlands 與 Point Lobos 的山
+  pebble: { wall: [0xeee6d4, 0xdccfb4, 0xd2d6d0, 0xc9b79a], roof: 0x5f5a54, pitch: 1, named: { 'The Lodge at Pebble Beach': { h: 12, wall: 0xf0ebe0 } }, mounts: [[160, 6500, 260, 3200, 0], [185, 9000, 420, 4200, 0], [140, 12000, 520, 5000, 0]] },
+  // 川奈：遠方西北的富士山（約 59 公里、3,776 公尺）、東南的伊豆大島、東北的初島；川奈飯店是紅瓦白牆
+  //   川奈飯店在 OSM 沒有名字：用位置（球場座標）認出來
+  kawana: { wall: [0xece6da, 0xd8d4cc, 0xc9c2b6], roof: 0x4c4e55, pitch: 1, named: {}, at: [[-274, -975, { h: 20, wall: 0xf1eadb, roof: 0xb4553a }]],
+    //   伊豆的山：西北約 10 公里的巣雲山一帶（約 580 公尺）、西南 4.5 公里的大室山（580 公尺的圓錐火山）
+    mounts: [[321, 59000, 3776, 22000, 0.18], [137, 34000, 758, 7000, 0], [17, 10500, 50, 1200, 0], [298, 12000, 520, 3200, 0], [262, 8000, 480, 3600, 0], [236, 4500, 580, 650, 0]] },
+  // 曼吉勞：白色水泥建築；四周是太平洋
+  mangilao: { wall: [0xeeeeea, 0xdedad0], roof: 0x9a9a96, named: {}, mounts: [] },
+};
 const SURF_ROUGH = 4;      // physics.js 的 SURF.ROUGH
 const hashStrR = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 const lerpR = (a, b, t) => a + (b - a) * t;
@@ -264,6 +280,7 @@ export class World {
     const maskTex = new THREE.CanvasTexture(maps.mask);
     this.holeTextures = [colorTex, maskTex];
     this.colorCanvas = maps.color;
+    this.miniCanvas = maps.mini;          // 小地圖用（水是水藍色）
 
     // 精細地形網格
     const b = hole.bbox, step = this.q.grid;
@@ -297,7 +314,7 @@ export class World {
 
     // 外圍大地形（同一個高度函數，地圖範圍內往下壓避免重疊）
     if (!th || th.skirt) g.add(this.buildSkirt(hole, style, theme));
-    if (hole.seaSide || style === 'links') g.add(this.buildSea(hole));
+    if (hole.seaSide || style === 'links' || hole.mapSea) g.add(this.buildSea(hole));
     this.buildWaters(hole, g);
     if (hole.islandUV) g.add(this.buildUnderside(hole));
     if (hole.moat) {
@@ -312,6 +329,7 @@ export class World {
     this.buildTrees(hole, g);
     this.buildLandmarks(hole, g);
     this.buildFalls(hole, g);
+    this.buildOsmScene(hole, g);
     await frame();
     this.buildTeeMarkers(hole, g);
     this.buildFlag(hole, g);
@@ -375,7 +393,8 @@ export class World {
       else if (style === 'canyon') hh += 45 * Math.max(0, nz.fbm(u / 300, v / 300, 3) + 0.05) * clamp((far - 500) / 500, 0, 1);
       else if (style === 'parkland') hh += 30 * (0.5 + nz.fbm(u / 500, v / 500, 3)) * clamp((far - 450) / 700, 0, 1);
       else hh += 6 * nz.fbm(u / 120, v / 120, 2) * clamp((far - 400) / 400, 0, 1);
-      if (inside > 0) hh -= 0.6 * clamp(inside / 12, 0, 1);
+      // 球場範圍內這層粗網格要藏在真正的地面下面：起伏大的真實地形，粗網格在凹處會比細地形高，浮出一塊一塊的平台（球像埋在裡面）
+      if (inside > 0) hh -= 0.6 * clamp(inside / 6, 0, 1) + 150 * clamp((inside - 6) / 14, 0, 1);
       // 靠海的真實球場：海那一側的地面往下降成海岸，讓遠方的海露出來
       if (seaDir) { const along = (u - cu) * seaDir[0] + (v - cv) * seaDir[1]; const k = clamp((along - (seaD - 250)) / 250, 0, 1); hh = hh * (1 - k) + (-14) * k; }
       pos.setXYZ(i, u, hh, -v);
@@ -938,6 +957,120 @@ export class World {
     }
   }
 
+  // ---------- 國外真實球場的場景：OSM 的建築（照實際的形狀與高度）、橋、遠方的山與島、海岸的浪花 ----------
+  buildOsmScene(hole, g) {
+    const sc = hole.scene, conf = OSM_SCENE[hole.course.baseId || hole.course.id];
+    if (!sc || !conf) return;
+    const [gx, gy0] = hole.geo, b = hole.bbox, cu = (b.minU + b.maxU) / 2, cv = (b.minV + b.maxV) / 2;
+    const H = (u, v) => hole.heightUV(u, v);
+    const rng = makeRng(hashStrR(hole.course.id + ':' + hole.holeIdx + 'osm'));
+    // 建築：每棟擠出成實際的平面形狀，屋頂另一個顏色；全部合併成一個網格
+    const geos = [], col = new THREE.Color();
+    for (const bd of sc.buildings) {
+      const pts = bd.p.map(([x, y]) => [x - gx, y - gy0]);
+      let mu = 0, mv = 0; for (const [u, v] of pts) { mu += u; mv += v; } mu /= pts.length; mv /= pts.length;
+      const dist = Math.hypot(mu - cu, mv - cv);
+      if (dist > 1500 || (dist > 700 && pts.length < 5 && bd.h < 6)) continue;
+      let nm = conf.named[bd.n] || {};
+      if (conf.at) { const cx = mu + gx, cy = mv + gy0; for (const [ax, ay, o] of conf.at) if (Math.hypot(cx - ax, cy - ay) < 30) nm = o; }
+      const h = nm.h || bd.h;
+      const shape = new THREE.Shape(pts.map(([u, v]) => new THREE.Vector2(u, v)));
+      let geo;
+      try { geo = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false, curveSegments: 1 }); } catch (e) { continue; }
+      geo.rotateX(-Math.PI / 2);
+      let base = Infinity; for (const [u, v] of pts) base = Math.min(base, H(u, v));
+      geo.translate(0, base - 0.4, 0);
+      geo = geo.index ? geo.toNonIndexed() : geo;
+      geo.computeVertexNormals();
+      const wall = new THREE.Color(nm.wall || conf.wall[Math.floor(rng() * conf.wall.length)]).offsetHSL(0, 0, (rng() - 0.5) * 0.05), roof = new THREE.Color(nm.roof || conf.roof);
+      const n = geo.attributes.normal, cc = new Float32Array(n.count * 3);
+      for (let i = 0; i < n.count; i++) { const c0 = n.getY(i) > 0.5 ? roof : wall; cc[i * 3] = c0.r; cc[i * 3 + 1] = c0.g; cc[i * 3 + 2] = c0.b; }
+      geo.setAttribute('color', new THREE.BufferAttribute(cc, 3));
+      for (const k of Object.keys(geo.attributes)) if (!['position', 'normal', 'color'].includes(k)) geo.deleteAttribute(k);
+      geos.push(geo);
+      // 斜屋頂：一般大小的房子沿著平面的長軸加一個人字形屋頂（大型建築維持平頂）
+      if (conf.pitch && pts.length >= 4) {
+        let sxx = 0, syy = 0, sxy = 0; for (const [u, v] of pts) { sxx += (u - mu) ** 2; syy += (v - mv) ** 2; sxy += (u - mu) * (v - mv); }
+        const th = 0.5 * Math.atan2(2 * sxy, sxx - syy), ax = Math.cos(th), ay = Math.sin(th);
+        let a0 = 1e9, a1 = -1e9, b0 = 1e9, b1 = -1e9;
+        for (const [u, v] of pts) { const a = (u - mu) * ax + (v - mv) * ay, bb = -(u - mu) * ay + (v - mv) * ax; a0 = Math.min(a0, a); a1 = Math.max(a1, a); b0 = Math.min(b0, bb); b1 = Math.max(b1, bb); }
+        const Wd = b1 - b0, Ln = a1 - a0;
+        if (Wd > 3 && Wd < 22 && Ln * Wd < 1400) {
+          const rh = Math.min(5, Wd * 0.42), y0 = base - 0.4 + h, bc = (b0 + b1) / 2;
+          const P = (a, bb, y) => [mu + a * ax - bb * ay, y, -(mv + a * ay + bb * ax)];
+          const A = P(a0, b0, y0), B = P(a1, b0, y0), Cc = P(a1, b1, y0), Dd = P(a0, b1, y0), R0 = P(a0, bc, y0 + rh), R1 = P(a1, bc, y0 + rh);
+          const tri = [A, B, R1, A, R1, R0, Cc, Dd, R0, Cc, R0, R1, A, R0, Dd, B, Cc, R1].flat();
+          const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.Float32BufferAttribute(tri, 3)); rg.computeVertexNormals();
+          const rc = new Float32Array(18 * 3); for (let i = 0; i < 18; i++) { const c0 = i >= 12 ? wall : roof; rc[i * 3] = c0.r; rc[i * 3 + 1] = c0.g; rc[i * 3 + 2] = c0.b; }
+          rg.setAttribute('color', new THREE.BufferAttribute(rc, 3)); geos.push(rg);
+        }
+      }
+    }
+    if (geos.length) {
+      const m = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, side: THREE.DoubleSide }));
+      m.castShadow = true; m.receiveShadow = true; g.add(m);
+    }
+    // 有名字的石橋（Swilcan Bridge）：小小的單拱石橋跨過溪
+    const stone = new THREE.MeshStandardMaterial({ map: this.tex.rockD, color: 0xb5ab98, roughness: 0.95 });
+    for (const br of sc.bridges || []) {
+      const a = br.p[0], z = br.p[br.p.length - 1];
+      const u0 = a[0] - gx, v0 = a[1] - gy0, u1 = z[0] - gx, v1 = z[1] - gy0;
+      const L = Math.hypot(u1 - u0, v1 - v0); if (L < 2 || Math.hypot((u0 + u1) / 2 - cu, (v0 + v1) / 2 - cv) > 900) continue;
+      const len = Math.max(L, 9), w = 2.6, rise = 1.3;
+      const sh = new THREE.Shape(); sh.moveTo(-len / 2, 0);
+      for (let i = 0; i <= 16; i++) { const t = i / 16; sh.lineTo(-len / 2 + len * t, rise * Math.sin(Math.PI * t) + 0.45); }
+      sh.lineTo(len / 2, 0); sh.lineTo(len * 0.22, 0); sh.absarc(0, 0, len * 0.22, 0, Math.PI, false); sh.lineTo(-len / 2, 0);
+      const geo = new THREE.ExtrudeGeometry(sh, { depth: w, bevelEnabled: false }); geo.translate(0, 0, -w / 2);
+      const m = new THREE.Mesh(geo, stone);
+      const mu = (u0 + u1) / 2, mv = (v0 + v1) / 2;
+      m.position.set(mu, Math.min(H(u0, v0), H(u1, v1)) - 0.25, -mv); m.rotation.y = Math.atan2(v1 - v0, u1 - u0);
+      m.castShadow = true; g.add(m);
+    }
+    // 遠方的山與島：依實際方位、用實際的視角大小放到 3.4 公里外（不受霧影響，顏色帶一點大氣的藍）
+    const D = 3400;
+    for (const [ang, dist, hgt, rad, snow] of conf.mounts || []) {
+      // 有積雪的高山（富士山）照片和肉眼看起來都比相機的視角大，放大 1.6 倍才看得出那種「遠方巨大的山」的感覺
+      const k = D / dist * (snow ? 1.6 : 1), hh = hgt * k, rr = rad * k, a = ang * Math.PI / 180;
+      const geo = new THREE.ConeGeometry(1, 1, 48, 6, true); geo.translate(0, 0.5, 0);
+      const pos = geo.attributes.position, cc = new Float32Array(pos.count * 3), hz = new THREE.Color(0x8a9cb0), sn = new THREE.Color(0xf2f4f8), gr = new THREE.Color(0x5d7464);
+      for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i), th = Math.atan2(pos.getZ(i), pos.getX(i));
+        // 富士山那種下緣往外張開的曲線；小島比較圓
+        const f = snow ? Math.pow(1 - y, 2.2) : Math.sqrt(Math.max(0, 1 - y * y));
+        const wob = 1 + 0.05 * Math.sin(th * 5 + ang) * (1 - y);
+        pos.setX(i, Math.cos(th) * f * wob); pos.setZ(i, Math.sin(th) * f * wob); pos.setY(i, snow ? y : Math.pow(y, 1.4));
+        const c0 = snow && y > 1 - snow - 0.03 * Math.sin(th * 7) ? sn : (dist > 20000 ? hz : gr.clone().lerp(hz, Math.min(1, dist / 15000)));
+        cc[i * 3] = c0.r; cc[i * 3 + 1] = c0.g; cc[i * 3 + 2] = c0.b;
+      }
+      geo.setAttribute('color', new THREE.BufferAttribute(cc, 3)); geo.computeVertexNormals();
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }));
+      m.scale.set(rr, hh, rr); m.position.set(cu + Math.sin(a) * D, -1.5, -(cv + Math.cos(a) * D)); g.add(m);
+    }
+    // 海岸的浪花：沿著海岸線一段段白色的泡沫，慢慢起伏
+    if (hole.mapSea && sc.coast) {
+      const pos = [], al = [];
+      for (const [x0, y0, x1, y1] of sc.coast) {
+        const u0 = x0 - gx, v0 = y0 - gy0, u1 = x1 - gx, v1 = y1 - gy0;
+        if (Math.hypot((u0 + u1) / 2 - cu, (v0 + v1) / 2 - cv) > 1200) continue;
+        const L = Math.hypot(u1 - u0, v1 - v0); if (L < 0.5) continue;
+        const nu = (v1 - v0) / L, nv = -(u1 - u0) / L;                // 海在右側
+        for (const off of [0.5, 3.5]) {
+          const a0 = [u0 + nu * off, v0 + nv * off], a1 = [u1 + nu * off, v1 + nv * off], b0 = [u0 + nu * (off + 4), v0 + nv * (off + 4)], b1 = [u1 + nu * (off + 4), v1 + nv * (off + 4)];
+          pos.push(a0[0], -0.86, -a0[1], b1[0], -0.86, -b1[1], a1[0], -0.86, -a1[1], a0[0], -0.86, -a0[1], b0[0], -0.86, -b0[1], b1[0], -0.86, -b1[1]);
+          const k = off < 1 ? 1 : 0.5; al.push(k, 0, k, k, 0, 0);
+        }
+      }
+      if (pos.length) {
+        const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('a', new THREE.Float32BufferAttribute(al, 1));
+        const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, uniforms: { t: { value: 0 } },
+          vertexShader: 'attribute float a; varying float va; varying vec3 wp; void main(){ va=a; wp=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+          fragmentShader: 'uniform float t; varying float va; varying vec3 wp; void main(){ float w=0.55+0.45*sin(t*1.3+wp.x*0.05+wp.z*0.07); gl_FragColor=vec4(1.0,1.0,1.0,va*w*0.75); }' });
+        const m = new THREE.Mesh(geo, mat); m.renderOrder = 4; g.add(m);
+        this.specialAnims.push(tt => { mat.uniforms.t.value = tt; });
+      }
+    }
+  }
+
   // ---------- 瀑布與洞穴發球台（Cliffhangers，只有外觀）----------
   // falls：果嶺邊的石灰岩壁與往下沖的瀑布（club = 岩壁上方加一棟山頂會館）；cave：白梯在岩壁裡的洞穴，洞口掛著瀑布，從洞裡隔著水簾開球
   buildFalls(hole, g) {
@@ -1057,7 +1190,7 @@ export class World {
   buildWaters(hole, g) {
     this.waterMats = this.waterMats || [];
     for (const w of hole.waters) {
-      if (w.kind !== 'pond') continue;
+      if (w.kind !== 'pond' || w.sea) continue;          // OSM 球場的海：用遠方那一整片海面
       if (w.cells) {
         // 描圖水池：每一列裡連續的水格子合成一段長條（凹進去的岸不會被補成水），往外只多半格，岸邊的緩坡會蓋住鋸齒
         //   原本整列取最左到最右、再往外多 3 格：C 字形的水池中間的陸地、比水面低的岸邊都會被水面蓋住（球和擊球線看起來在水裡）
@@ -1281,6 +1414,10 @@ export class World {
       if (t.night) return c.setHSL(0.5 + t.tint * 0.12, 0.45, 0.16 + t.tint * 0.06);
       if (t.jungle) return c.setHSL(0.27 + t.tint * 0.07, 0.55 + t.tint * 0.15, 0.24 + t.tint * 0.08);
       if (t.honey) return c.setHSL(0.11 + t.tint * 0.05, 0.75, 0.48 + t.tint * 0.1);
+      // 國外真實球場的當地植物：金雀花（蘇格蘭林克斯，深綠帶黃花）、蒙特利柏樹（加州海岸，深墨綠）、日本黑松
+      if (t.gorse) return t.tint < 0.3 ? c.setHSL(0.13, 0.75, 0.42 + t.tint * 0.2) : c.setHSL(0.22 + t.tint * 0.04, 0.32, 0.17 + t.tint * 0.05);
+      if (t.mcyp) return c.setHSL(0.3 + t.tint * 0.04, 0.3, 0.15 + t.tint * 0.05);
+      if (t.jpine) return c.setHSL(0.32 + t.tint * 0.04, 0.35, 0.17 + t.tint * 0.05);
       if (t.type === 'maple') return c.setHSL(0.04 + t.tint * 0.06, 0.62, 0.36 + t.tint * 0.08);
       if (t.type === 'shrub') return c.setHSL(0.2, 0.3, 0.15 + t.tint * 0.05);
       if (t.type === 'juniper') return c.setHSL(0.22, 0.2, 0.17 + t.tint * 0.05);
@@ -1289,6 +1426,8 @@ export class World {
     for (const sfx of ['N', 'F']) {
       make(G.broad, leafMat, groups['canopy' + sfx], (t, P, S) => {
         const lowCanopy = t.type === 'shrub' || t.type === 'juniper';
+        // 蒙特利柏樹、日本黑松：平頂、往兩側展開的樹冠，樹幹露出來
+        if (t.mcyp || t.jpine) { P.set(t.x, t.y + t.h * 0.78, t.z); S.set(t.r * 1.35, t.r * (t.mcyp ? 0.5 : 0.6), t.r * 1.15); return canopyColor(t); }
         P.set(t.x, lowCanopy ? t.y + t.h * 0.45 : t.y + t.h * 0.64, t.z);
         S.set(t.r, lowCanopy ? t.h * 0.55 : t.r * 1.08 + t.h * 0.05, t.r);
         return canopyColor(t);
@@ -1299,8 +1438,8 @@ export class World {
       }, sfx === 'N');
       make(G.trunk, barkMat, groups['trunk' + sfx], (t, P, S) => {
         P.set(t.x, t.y - 0.3, t.z);
-        const tr = t.type === 'juniper' ? 0.12 : 0.16 + t.h * 0.012;
-        S.set(tr, t.type === 'pine' ? t.h * 0.4 : t.h * 0.55, tr);
+        const tr = t.type === 'juniper' ? 0.12 : 0.16 + t.h * 0.012 + (t.mcyp ? 0.25 : 0);
+        S.set(tr, t.type === 'pine' ? t.h * 0.4 : t.mcyp || t.jpine ? t.h * 0.78 : t.h * 0.55, tr);
         return null;
       }, sfx === 'N');
     }

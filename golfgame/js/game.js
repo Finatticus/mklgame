@@ -561,7 +561,7 @@ export class Game {
       this.world.setTarget(tx, tz, clamp(c / 60, 0.6, 3.5), true);
       this.targetPt = [tx, tz];
     }
-    this.hud.drawMini(this.hole, this.world.colorCanvas, p.ball, this.targetPt, this.players.map(q => ({ ball: q.ball, holed: q.holed, current: q.idx === this.cur })));
+    this.hud.drawMini(this.hole, this.world.miniCanvas || this.world.colorCanvas, p.ball, this.targetPt, this.players.map(q => ({ ball: q.ball, holed: q.holed, current: q.idx === this.cur })));
   }
 
   // 推桿預測線：無誤差模擬，只顯示「讀果嶺」素質允許的長度
@@ -1014,6 +1014,13 @@ export class Game {
     this.flight = null;
     this.trackShot(msg);
     const club = clubById(msg.input.club);
+    // 上果嶺：從果嶺外（不是推桿）打上來、停在果嶺上 → NICE ON 動畫 + 鐘聲，小字是距旗碼數
+    const sp = this.players[msg.p], end = msg.res.end;
+    if (!club.putter && msg.res.result === 'rest' && end && sp && sp.lie !== SURF.GREEN && this.hole.surface(end[0], end[2]) === SURF.GREEN) {
+      const d = toYd(this.hole.distToPin(end[0], end[2]));
+      this.hud.niceOn(`距旗 ${d < 27 ? d.toFixed(1) : Math.round(d)} Y`);
+      sfx.playNiceOn();
+    }
     // 連線模式只顯示自己的 SHOT DATA，而且 3 秒後自動關閉，不影響比賽節奏
     const mine = !this.net || (this.players[msg.p] && this.players[msg.p].local);
     if (mine && !club.putter && msg.res.result !== 'ob') this.hud.shotData(club, msg.launch, msg.res, this.net ? 3000 : 0);
@@ -1333,6 +1340,8 @@ export class Game {
       partners: this.players.filter(q => q !== p).map(q => q.user).join(','), scores: p.scores,
       // 排行用：球場代號、範圍（全 18 / 前 9 / 後 9）、標準桿、這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞）
       courseId: nine9 ? `${this.course.baseId}:${this.course.nineIds[0]}` : this.course.id, range: this.cfg.holes, par, events: this.specialEvents(p),
+      // 能不能算總桿排行 / 最佳 18 洞：奇幻球場（有機關）與三桿洞球場（Par 54）不算
+      rankable: this.course.group !== 'fantasy' && par >= (holes === 18 ? 66 : 33),
     };
   }
 
@@ -1536,7 +1545,10 @@ export class Game {
     const ph = this.hole.height(px, pz);
     const dist = this.hole.distToPin(this.world.ball.position.x, this.world.ball.position.z);
     const txt = dist < 27 ? toYd(dist).toFixed(1) + ' Y' : Math.round(toYd(dist)) + ' Y';
-    this.hud.tag('tag-pin', this.world.project(px, ph + 2.6, pz), txt);
+    // 第二行：旗桿比球高或低多少（正 = 上坡）
+    const dz = toYd(ph - this.world.ball.position.y), near = dist < 27;
+    const dzt = Math.abs(dz) < (near ? 0.05 : 0.5) ? '高低差 0 Y' : `高低差 ${dz > 0 ? '+' : '−'}${near ? Math.abs(dz).toFixed(1) : Math.round(Math.abs(dz))} Y`;
+    this.hud.tag('tag-pin', this.world.project(px, ph + 2.6, pz), undefined, `${txt}<small>${dzt}</small>`);
     // 擊球區（圓圈、力道條、瞄準、球位資訊）跟著球在畫面上的位置
     const atBall = !this.flight && !this.swingAnim && !this.intro && !this.holeDone && this.cam.mode !== 'overview';
     const b = this.world.ball.position;
@@ -1553,12 +1565,27 @@ export class Game {
       const dist = Math.hypot(b.x - f.start.x, b.z - f.start.z);
       this.hud.tag('tag-ball', this.world.project(b.x, b.y + 0.15, b.z), f.putt ? toYd(dist).toFixed(1) + ' Y' : Math.round(toYd(dist)) + ' Y');
     } else this.hud.tag('tag-ball', null);
-    // 頭頂提醒跟著角色
+    // 頭頂提醒跟著角色；會蓋到旗桿距離標籤或落點碼數時，依序改放角色左邊、右邊、腳下
     const warn = $('lie-warn');
     if (warn.classList.contains('show')) {
       const o = p.golfer.object.position;
-      const q = this.world.project(o.x, o.y + 2.1, o.z);
-      warn.style.transform = `translate(${q.x.toFixed(1)}px, ${q.y.toFixed(1)}px) translate(-50%, -100%)`;
+      const head = this.world.project(o.x, o.y + 2.1, o.z), chest = this.world.project(o.x, o.y + 1.2, o.z), feet = this.world.project(o.x, o.y - 0.1, o.z);
+      // 要避開：旗桿距離標籤、落點碼數、力道條、球位資訊、計分板 / 風速地圖面板 / 按鈕
+      const els = [...['tag-pin', 'p-land', 'p-adj'].map(id => $(id)).filter(e => e && e.textContent), ...document.querySelectorAll('.pv-track, .lie-info, .hud-panel, .hud-btn')];
+      // 旗桿距離與力道條是擊球時一定要看的，重疊的代價加重
+      const avoid = els.filter(e => { if (!e.offsetParent) return false; const cs = getComputedStyle(e); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05; })
+        .map(e => Object.assign(e.getBoundingClientRect().toJSON(), { k: e.id === 'tag-pin' || e.classList.contains('pv-track') ? 4 : 1 })).filter(r => r.width && r.height);
+      const w = warn.offsetWidth, h = warn.offsetHeight, pad = 6;
+      const spots = [
+        ['up', head.x - w / 2, head.y - h - 8], ['left', chest.x - w - 40, chest.y - h / 2], ['left', head.x - w - 30, head.y - h / 2], ['right', chest.x + 40, chest.y - h / 2],
+        ['down', feet.x - w / 2, feet.y + 14], ['top', innerWidth / 2 - w / 2, Math.max(...avoid.filter(r => r.top < innerHeight * 0.25 && r.k === 1).map(r => r.bottom), 0) + 10],
+      ];
+      // 每個位置算和要避開的東西重疊多少面積（超出畫面也算），選重疊最少的
+      const cost = (x, y) => avoid.reduce((sum, r) => sum + r.k * Math.max(0, Math.min(x + w, r.right + pad) - Math.max(x, r.left - pad)) * Math.max(0, Math.min(y + h, r.bottom + pad) - Math.max(y, r.top - pad)), 0)
+        + (Math.max(0, 4 - x) + Math.max(0, x + w - innerWidth + 4)) * h + (Math.max(0, 4 - y) + Math.max(0, y + h - innerHeight + 4)) * w;
+      const [side, x, y] = spots.reduce((best, sp) => { const c = cost(sp[1], sp[2]); return c < best[3] ? [...sp, c] : best; }, [...spots[0], Infinity]);
+      warn.dataset.side = side;
+      warn.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
     }
   }
 

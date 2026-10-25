@@ -13,7 +13,7 @@ const hill = (pts) => `<path d="M24 64 ${pts} L76 64z"/>`;
 
 const M = {
   // ---- 台灣 ----
-  orient: () => hill('C34 48 42 44 50 50 C58 44 68 48') + `<ellipse cx="50" cy="66" rx="20" ry="3.5" fill="none" stroke-width="1.6"/>` + flag(52, 50) + bird(36, 32) + bird(62, 28, 0.8),
+  orient: () => hill('C34 48 42 44 50 50 C58 44 68 48 72 56') + `<ellipse cx="50" cy="66" rx="20" ry="3.5" fill="none" stroke-width="1.6"/>` + flag(52, 50) + bird(36, 32) + bird(62, 28, 0.8),
   donghua: () => wave(62) + wave(68, 30, 70) + `<path d="M24 56 L44 56 L48 46 L76 46 L76 56" fill="none" stroke-width="2"/>` + turbine(60, 46, 22) + turbine(70, 46, 16) + flag(36, 56, 14),
   cggc: () => tree(36, 50, 1.2) + tree(64, 52, 1) + `<rect x="44" y="30" width="12" height="26" fill="none" stroke-width="1.8"/><path d="M47 35h2M51 35h2M47 40h2M51 40h2M47 45h2M51 45h2" stroke-width="1.6"/>` + ground(),
   miramar: () => [26, 34, 41, 60, 67].map((x, i) => `<rect x="${x}" y="${[34, 26, 38, 30, 40][i]}" width="6" height="${64 - [34, 26, 38, 30, 40][i]}"/>`).join('') + flag(51, 62, 20) + ground(),
@@ -24,6 +24,14 @@ const M = {
   taoyuan: () => `<path d="M50 68 L42 30 Q50 26 58 30z" fill="none" stroke-width="2"/>` + flag(50, 32, 12) + `<text x="68" y="60" font-size="16" font-weight="700" font-family="Barlow Condensed, sans-serif" text-anchor="middle">6</text><text x="68" y="68" font-size="5.5" text-anchor="middle">PAR</text>` + tree(32, 56, 0.8),
   yunghan: () => tree(30, 54, 0.9) + tree(70, 54, 0.9) + `<path d="M38 36 q10 -6 20 0 q-10 2 -20 0z M36 44 q12 -6 26 0 q-12 2 -26 0z" />` + `<path d="M50 64 L46 50 h8z" fill="none" stroke-width="1.8"/>` + ground(),
   sunrise: () => `<path d="M26 58 a24 24 0 0 1 48 0z" fill="none" stroke-width="2"/>` + `<path d="M34 58 a16 16 0 0 1 32 0z"/>` + [0, 1, 2, 3, 4, 5, 6].map(i => { const a = Math.PI + i / 6 * Math.PI; return `<path d="M${50 + Math.cos(a) * 28} ${58 + Math.sin(a) * 28}L${50 + Math.cos(a) * 34} ${58 + Math.sin(a) * 34}" stroke-width="1.8"/>`; }).join('') + wave(64, 28, 72, 1.6),
+  // 聖安德魯斯：18 洞的 Swilcan 石拱橋與溪水、遠方的旗
+  standrews: () => `<path fill-rule="evenodd" d="M20 64 Q50 40 80 64 L80 69 L20 69z M38 69 Q50 53 62 69z"/>` + `<path d="M24 74 q6 -3 12 0 t12 0 t12 0 t12 0" fill="none" stroke-width="1.8"/>` + flag(66, 46, 16) + bird(34, 30, 0.8),
+  // 圓石灘：海崖上一棵平頂的蒙特利柏樹、下方的浪
+  pebble: () => `<path d="M22 66 L22 52 L40 48 L54 54 L60 66z"/>` + `<path d="M40 48 L41 34" fill="none" stroke-width="2"/><ellipse cx="36" cy="33" rx="11" ry="4"/><ellipse cx="46" cy="29" rx="9" ry="3.5"/>` + wave(70, 26, 76, 2) + flag(70, 60, 14),
+  // 川奈：遠方積雪的富士山、相模灣、海崖上的松樹
+  kawana: () => `<path d="M26 58 L44 30 Q50 26 56 30 L74 58z"/><path d="M44 30 Q50 26 56 30 L59 35 L54 33 L50 37 L46 33 L41 35z" fill="#fff"/>` + wave(64, 26, 74, 1.8) + `<path d="M24 70 L24 62 L34 62" fill="none" stroke-width="2"/><ellipse cx="30" cy="56" rx="7" ry="2.6"/><path d="M30 62 V57" stroke-width="1.6"/>`,
+  // 曼吉勞：兩邊的海崖、中間的海灣，對岸岩石上的果嶺與旗
+  mangilao: () => `<path d="M20 66 L20 46 L34 48 L38 66z"/><path d="M80 66 L80 50 L64 52 L60 66z"/>` + wave(62, 38, 60, 1.8) + wave(68, 36, 62, 1.8) + `<ellipse cx="71" cy="51" rx="7" ry="2" fill="none" stroke-width="1.4"/>` + flag(72, 50, 14) + bird(48, 32, 0.8),
   // 洞穴口垂下的瀑布、下方水池與旗桿
   cliffhangers: () => `<path d="M24 68 L24 44 Q24 22 50 22 Q76 22 76 44 L76 68 L66 68 L66 46 Q66 32 50 32 Q34 32 34 46 L34 68z"/>` + `<path d="M40 34 v26 M46 33 v29 M52 33 v28 M58 34 v27" fill="none" stroke-width="1.6"/>` + `<ellipse cx="50" cy="70" rx="24" ry="4" fill="none" stroke-width="1.8"/>`,
   lungtan: () => `<path d="M28 50 q6 -10 12 -2 q6 8 12 0 q6 -8 12 0 q4 6 10 -2 l-2 6 q-6 6 -10 0 q-6 -8 -12 0 q-6 8 -12 0 q-6 -8 -10 0z"/><circle cx="72" cy="46" r="1.2" fill="#fff"/><path d="M74 44 l4 -4 M73 43 l2 -5" stroke-width="1.4"/>` + `<ellipse cx="50" cy="64" rx="22" ry="4" fill="none" stroke-width="1.8"/>` + flag(40, 62, 10),
@@ -55,27 +63,105 @@ export const STAMP_INK = { taiwan: '#a3302a', abroad: '#2a4a7a', fantasy: '#5a3a
 
 let uid = 0;
 const PFX = Math.random().toString(36).slice(2, 6);      // 每個印章的 defs 編號不重複
-// 回傳一個印章的 SVG；got = 已蓋章（墨水色、略為傾斜、斑駁），否則是淡灰色的虛線輪廓
-export function stampSvg(c, got, rot = 0) {
+
+// 印章等級：打完 1 次蓋墨印，3 次升級銅印、5 次銀章、10 次金章（越來越華麗、越來越寫實）
+export const STAMP_TIERS = [
+  { n: 1, name: '墨印' }, { n: 3, name: '銅印' }, { n: 5, name: '銀章' }, { n: 10, name: '金章' },
+];
+export function stampTier(n) { let t = 0; STAMP_TIERS.forEach((x, k) => { if (n >= x.n) t = k; }); return t; }
+
+// 銀章 / 金章裡的實景：依球場群組的天空、地面、遠景
+const SCENE = {
+  taiwan: { sky: ['#fbe3b4', '#f0a56c'], sun: '#fff4cf', land: ['#7cb062', '#3f7a3c'], far: '#6f8f6a' },
+  abroad: { sky: ['#dcefff', '#82b8e2'], sun: '#ffffff', land: ['#86b86e', '#4a8648'], far: '#7a9ab0' },
+  fantasy: { sky: ['#2c1f5e', '#8a5ac8'], sun: '#ffe9a8', land: ['#4f9a86', '#244f58'], far: '#5a4a9a', stars: 1 },
+  coast: { sky: ['#e2f4fb', '#8ccbea'], sun: '#ffffff', land: ['#5aaed4', '#286a9a'], far: '#9ac8d8', sea: 1 },
+  mountain: { sky: ['#e6f2f2', '#a6cdd6'], sun: '#ffffff', land: ['#76a862', '#386a3a'], far: '#7d9a92' },
+  desert: { sky: ['#feeac0', '#f2ab68'], sun: '#fff1c8', land: ['#dcaa6a', '#a86c3c'], far: '#c48a5a' },
+};
+
+// 回傳一個印章的 SVG；got = 已蓋章；n = 打完的次數（決定等級）
+export function stampSvg(c, got, rot = 0, n = 1) {
+  const tier = got ? stampTier(n) : 0;
   const ink = got ? STAMP_INK[c.group] || '#8a3a2a' : '#bdb49e';
   const id = 'st' + PFX + (++uid);
   const motif = (M[c.id] || (() => flag(50, 58, 24)))();
-  const en = String(c.en || '').toUpperCase().replace(/GOLF|COUNTRY|CLUB|&|\./g, '').replace(/\s+/g, ' ').trim();
+  const en = String(c.en || '').toUpperCase().replace(/GOLF|COUNTRY|CLUB|&|\./g, '').replace(/\s+/g, ' ').trim().slice(0, 26);
   const name = c.name.length > 4 ? c.name.slice(0, 4) : c.name;
-  return `<svg class="stamp-svg" viewBox="0 0 120 120" style="transform:rotate(${rot}deg)">
+  const ringText = (fill, r = 41) => `<path id="${id}a" d="M60 60 m-${r} 0 a${r} ${r} 0 1 1 ${r * 2} 0" fill="none" stroke="none"/>
+      <text font-size="${Math.min(9.6, Math.PI * r * 0.92 / (en.length * 0.62 + 0.1)).toFixed(2)}" font-weight="700" letter-spacing="${en.length > 20 ? 0.8 : 1.4}" font-family="Barlow Condensed, sans-serif" fill="${fill}" stroke="none"><textPath href="#${id}a" startOffset="50%" text-anchor="middle">${en}</textPath></text>`;
+  const motifG = (fill, stroke, extra = '') => `<g transform="translate(12.5 9) scale(0.95)" fill="${fill}" stroke="${stroke}" stroke-linecap="round" stroke-linejoin="round" ${extra}>${motif}</g>`;
+
+  // ---- 墨印 / 銅印：蓋上去的墨水章（斑駁），銅印多了淡色底、銅色外圈與小珠 ----
+  if (tier <= 1) {
+    const bronze = tier === 1;
+    return `<svg class="stamp-svg t${tier}" viewBox="0 0 120 120" style="transform:rotate(${rot}deg)">
     <defs>
-      <path id="${id}a" d="M60 60 m-41 0 a41 41 0 1 1 82 0"/>
-      ${got ? `<filter id="${id}f"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="${(c.id.length * 7) % 50}"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.55 1.3"/><feComposite in="SourceGraphic" operator="in"/></filter>` : ''}
+      ${got ? `<filter id="${id}f"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="${(c.id.length * 7) % 50}"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 ${bronze ? -0.35 : -0.55} 1.3"/><feComposite in="SourceGraphic" operator="in"/></filter>` : ''}
+      ${bronze ? `<linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2b07a"/><stop offset=".5" stop-color="#a8662e"/><stop offset="1" stop-color="#d89a5e"/></linearGradient>` : ''}
     </defs>
+    ${bronze ? `<circle cx="60" cy="60" r="57" fill="url(#${id}b)" opacity="0.35"/><circle cx="60" cy="60" r="49" fill="${ink}" opacity="0.2"/>` : ''}
     <g fill="${ink}" stroke="${ink}" ${got ? `filter="url(#${id}f)"` : 'opacity="0.75"'}>
       <circle cx="60" cy="60" r="55" fill="none" stroke-width="${got ? 3.2 : 1.6}" ${got ? '' : 'stroke-dasharray="4 4"'}/>
       <circle cx="60" cy="60" r="50" fill="none" stroke-width="1"/>
-      
-      <text font-size="9.6" font-weight="700" letter-spacing="1.4" font-family="Barlow Condensed, sans-serif" stroke="none"><textPath href="#${id}a" startOffset="50%" text-anchor="middle">${en.slice(0, 26)}</textPath></text>
+      ${ringText(ink)}
       <path d="M14 66 l2 -2 2 2 -2 2z M102 66 l2 -2 2 2 -2 2z" stroke="none"/>
-      <g transform="translate(12.5 9) scale(0.95)" stroke-linecap="round" stroke-linejoin="round">${motif}</g>
+      ${motifG(ink, ink)}
       <rect x="${60 - name.length * 7 - 6}" y="92" width="${name.length * 14 + 12}" height="17" rx="2" fill="${got ? ink : 'none'}" stroke-width="1.2"/>
       <text x="60" y="105" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif" stroke="none" fill="${got ? '#fffdf7' : ink}" letter-spacing="1">${name}</text>
     </g>
+    ${bronze ? `<circle cx="60" cy="60" r="57.5" fill="none" stroke="url(#${id}b)" stroke-width="3.6"/>
+      ${[...Array(24)].map((_, k) => { const a = k / 24 * Math.PI * 2; return `<circle cx="${(60 + Math.cos(a) * 52.5).toFixed(1)}" cy="${(60 + Math.sin(a) * 52.5).toFixed(1)}" r="1.3" fill="#b8763a"/>`; }).join('')}` : ''}
+  </svg>`;
+  }
+
+  // ---- 銀章 / 金章：金屬外框、裡面是彩色的實景小畫，圖案是有陰影的剪影 ----
+  const gold = tier === 3, sc = SCENE[c.group] || SCENE.taiwan;
+  const metal = gold ? ['#fff3b8', '#e0a832', '#8a5a12', '#f6d26a'] : ['#ffffff', '#c9ced4', '#7e868e', '#eef1f4'];
+  const textCol = gold ? '#5a3a08' : '#3a4048';
+  const rays = gold ? [...Array(16)].map((_, k) => { const a = k / 16 * Math.PI * 2; return `<path d="M${60 + Math.cos(a - 0.09) * 6} ${44 + Math.sin(a - 0.09) * 6} L${60 + Math.cos(a) * 60} ${44 + Math.sin(a) * 60} L${60 + Math.cos(a + 0.09) * 6} ${44 + Math.sin(a + 0.09) * 6}z"/>`; }).join('') : '';
+  const teeth = gold ? (() => { let d = ''; for (let k = 0; k < 48; k++) { const a = k / 48 * Math.PI * 2, r = k % 2 ? 54.5 : 59; d += `${k ? 'L' : 'M'}${(60 + Math.cos(a) * r).toFixed(2)} ${(60 + Math.sin(a) * r).toFixed(2)}`; } return d + 'z'; })() : '';
+  // 月桂葉：沿著下半圈兩側各一串
+  const laurel = gold ? [-1, 1].map(sd => [...Array(7)].map((_, k) => { const a = (sd > 0 ? 25 : 155) + sd * k * 9.5, r = a * Math.PI / 180, x = 60 + Math.cos(r) * 48, y = 60 + Math.sin(r) * 48;
+    return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="4.2" ry="1.7" transform="rotate(${(a + sd * 55).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }).join('')).join('') : '';
+  const stars = sc.stars || gold ? [[30, 30], [84, 26], [74, 40], [40, 22], [92, 46]].map(([x, y], k) => gold && !sc.stars
+    ? `<path d="M${x} ${y - 3}L${x + 0.8} ${y - 0.8}L${x + 3} ${y}L${x + 0.8} ${y + 0.8}L${x} ${y + 3}L${x - 0.8} ${y + 0.8}L${x - 3} ${y}L${x - 0.8} ${y - 0.8}z" fill="#fff" opacity="${0.75 - k * 0.1}"/>`
+    : `<circle cx="${x}" cy="${y}" r="${0.9 - k * 0.1}" fill="#fff"/>`).join('') : '';
+  const plateW = name.length * 14 + 14;
+  const plate = gold
+    ? `<path d="M${60 - plateW / 2 - 9} 95 l7 0 0 13 -7 0 4 -6.5z M${60 + plateW / 2 + 9} 95 l-7 0 0 13 7 0 -4 -6.5z" fill="#8a1c22"/>
+       <rect x="${60 - plateW / 2 - 2}" y="91" width="${plateW + 4}" height="18" rx="1.5" fill="#b3262b" stroke="url(#${id}m)" stroke-width="1.4"/>`
+    : `<rect x="${60 - plateW / 2}" y="92" width="${plateW}" height="17" rx="3" fill="${ink}" stroke="url(#${id}m)" stroke-width="1.2"/>`;
+  return `<svg class="stamp-svg t${tier}" viewBox="0 0 120 120" style="transform:rotate(${rot}deg)">
+    <defs>
+      <linearGradient id="${id}m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${metal[0]}"/><stop offset=".35" stop-color="${metal[1]}"/><stop offset=".7" stop-color="${metal[2]}"/><stop offset="1" stop-color="${metal[3]}"/></linearGradient>
+      <linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sc.sky[1]}"/><stop offset="1" stop-color="${sc.sky[0]}"/></linearGradient>
+      <linearGradient id="${id}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sc.land[0]}"/><stop offset="1" stop-color="${sc.land[1]}"/></linearGradient>
+      <radialGradient id="${id}g" cx="60" cy="44" r="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${sc.sun}" stop-opacity=".95"/><stop offset="1" stop-color="${sc.sun}" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <clipPath id="${id}c"><circle cx="60" cy="60" r="45.5"/></clipPath>
+      <filter id="${id}d" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0.8" dy="1.4" stdDeviation="1" flood-color="#000" flood-opacity=".45"/></filter>
+    </defs>
+    <circle cx="60" cy="61.5" r="58" fill="#000" opacity=".18"/>
+    ${gold ? `<path d="${teeth}" fill="url(#${id}m)"/>` : `<circle cx="60" cy="60" r="57" fill="url(#${id}m)"/>`}
+    <circle cx="60" cy="60" r="${gold ? 53 : 54}" fill="none" stroke="${metal[2]}" stroke-width="0.8" opacity=".7"/>
+    <circle cx="60" cy="60" r="47" fill="${metal[2]}"/>
+    <g clip-path="url(#${id}c)">
+      <rect x="10" y="10" width="100" height="100" fill="url(#${id}s)"/>
+      <circle cx="60" cy="44" r="30" fill="url(#${id}g)"/>
+      ${gold ? `<g fill="${sc.sun}" opacity=".22">${rays}</g>` : ''}
+      ${stars}
+      <path d="M10 72 Q30 60 46 66 T80 62 T110 68 V110 H10z" fill="${sc.far}" opacity=".55"/>
+      <path d="M10 76 Q40 68 60 72 T110 72 V110 H10z" fill="url(#${id}l)"/>
+      ${sc.sea ? `<path d="M10 82 q8 -2 16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#fff" stroke-width="1" opacity=".6"/>` : ''}
+      ${motifG(gold ? '#2a1d10' : '#1f2a2c', gold ? '#2a1d10' : '#1f2a2c', `filter="url(#${id}d)"`)}
+      <ellipse cx="60" cy="34" rx="44" ry="22" fill="url(#${id}h)"/>
+    </g>
+    <circle cx="60" cy="60" r="45.5" fill="none" stroke="${metal[0]}" stroke-width="1.2" opacity=".8"/>
+    ${ringText(textCol, 50.5)}
+    ${gold ? `<g fill="#3f7a2e" stroke="#1f4a18" stroke-width="0.3">${laurel}</g>` : ''}
+    ${plate}
+    <text x="60" y="${gold ? 104.5 : 105}" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Noto Serif TC, serif" fill="${gold ? '#fff3c8' : '#fffdf7'}" letter-spacing="1">${name}</text>
+    <path d="M24 28 A46 46 0 0 1 72 13" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".55"/>
   </svg>`;
 }

@@ -93,6 +93,17 @@ export function playCup() {
   });
 }
 
+// 上果嶺：兩個音的輕柔鐘聲（往上的大三度），配 NICE ON 動畫
+export function playNiceOn() {
+  const c = enabled && ac();
+  if (!c) return;
+  const t0 = c.currentTime + 0.03;
+  [[880, 0], [1108.7, 0.11]].forEach(([f, dt]) => {
+    tone(c, t0 + dt, 'sine', f, f, 0.004, 0.16, 0.55);
+    tone(c, t0 + dt, 'sine', f * 2.01, f * 2.01, 0.003, 0.04, 0.3);         // 一點泛音，像小鐘
+  });
+}
+
 // 擦過洞口：球擦到杯緣的一聲短「叮」
 export function playLip() {
   const c = enabled && ac();

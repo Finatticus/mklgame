@@ -238,9 +238,14 @@ export function makeLaunch(input, ctx) {
   }
 
   let pw = clamp(input.power, 0.05, 1.1);
-  let sig = 1;
-  let speedF = pw;
-  if (pw > 1) { speedF = 1 + (pw - 1) * 0.5; sig = 1 + (pw - 1) * 8; }     // 超揮：多一點距離、誤差大很多
+  // 超揮（100~110%）：桿頭速度最多再快 10%（距離平均多約 8~19%，素質越低差越多；球速和距離不是等比例）；
+  //   不穩定主要在方向：桿面 / 曲球誤差放大，準度越高放大越少（準度 50：110% 時 ×1.6、準度 99：×1.3）；
+  //   距離的誤差只稍微變大（×1.15），而且打偏甜蜜點的程度封頂，再怎麼失誤也不會比 100% 短太多
+  const over = Math.max(0, pw - 1);
+  const speedF = pw <= 1 ? pw : 1 + over * 1.0;
+  const sig = 1 + over * 1.5;
+  const acc = (2.6 - d.faceSigma) / 0.019;                         // 準度素質（faceSigma = 2.6 − 準度 × 0.019 反推）
+  const dirSig = 1 + over * (9 - acc * 0.06);
 
   // 球位影響
   let lieKeep = 1, lieSpin = 1, lieSig = 1, launchAdd = 0;
@@ -260,7 +265,7 @@ export function makeLaunch(input, ctx) {
 
   const clubMph = d.driverMph * club.ratio * speedF;
   const powerNoise = 1 + n() * (shortGame ? d.chipSigma : d.powerSigma) * sig * pm;
-  const mis = Math.abs(n()) * d.mishitSigma * sig * pm * lieSig;
+  const mis = Math.min(Math.abs(n()), over > 0 ? 2.5 : 9) * d.mishitSigma * sig * pm * lieSig;
   const smash = club.smash * d.smashMul * (1 - mis * 1.6);
   const ballMph = clubMph * powerNoise * smash * lieKeep;
 
@@ -269,9 +274,9 @@ export function makeLaunch(input, ctx) {
   if (club.wedge || club.id === '9I' || club.id === '8I') spin *= d.spinMul;
   spin *= 1 + mis * 2.5 * (n() > 0 ? 1 : -0.4);
 
-  const faceErr = n() * d.faceSigma * sig * pm * lieSig * (shortGame ? d.chipFace : 1);
+  const faceErr = n() * d.faceSigma * dirSig * pm * lieSig * (shortGame ? d.chipFace : 1);
   const intended = clamp(input.curve, -1, 1) * 30;                 // 出桿方向決定的旋轉軸（度），Draw/Fade 2~8°、Hook/Slice 12~28°
-  const shaped = intended * (1 + n() * d.shapeSigma * pm);
+  const shaped = intended * (1 + n() * d.shapeSigma * dirSig * pm);
   const axisDeg = shaped + faceErr * 1.5;
   // 起飛方向：桿面誤差的 75%；小曲球會先往反方向開出去再彎回來，大曲球（Hook/Slice）只補 8° 份量，所以會彎出目標線
   const yaw = input.aimYaw + rad(faceErr * 0.75 - Math.sign(shaped) * Math.min(Math.abs(shaped), 8) * 0.36);

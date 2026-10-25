@@ -1,5 +1,5 @@
 // 離線快取：程式與材質快取在手機裡，第二次開啟不用重新下載。更新版本時把 VERSION 加 1。
-const VERSION = 'dixen-v35';
+const VERSION = 'dixen-v39';
 // 角色與材質另外一個快取：程式更新時不會被清掉，玩家不用重新下載大檔案
 const ASSET_CACHE = 'dixen-assets-v1';
 const CORE = [

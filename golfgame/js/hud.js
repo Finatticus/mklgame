@@ -135,6 +135,11 @@ export class Hud {
     const f = p <= 1 ? p * 0.75 : 0.75 + clamp((p - 1) / 0.1, 0, 1) * 0.25;
     $('p-fill').style.height = f * 100 + '%';
     $('p-fill').classList.toggle('over', p > 1);
+    // 超過 100%：力道條開始抖，越接近 110% 抖得越大越快（上桿的緊繃感）
+    const tense = clamp((p - 1) / 0.1, 0, 1), tr = $('p-fill').parentElement;
+    tr.classList.toggle('tense', tense > 0);
+    tr.style.setProperty('--tense', tense.toFixed(2));
+    tr.style.animationDuration = (0.14 - tense * 0.08).toFixed(3) + 's';
     $('p-needle').style.top = f * 100 + '%';
     // 落點碼數 = 球桿平均距離，沒有算風，所以加小字提醒
     $('p-land').innerHTML = land ? `${land}<small>未含風速</small>` : '';
@@ -176,12 +181,13 @@ export class Hud {
     this.root.classList.toggle('waiting', !v);
   }
 
-  tag(id, pos, text) {
+  tag(id, pos, text, html) {
     const e = $(id);
     if (!pos || !pos.visible) { e.style.display = 'none'; return; }
     e.style.display = '';
     e.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -100%)`;
     if (text !== undefined) e.textContent = text;
+    if (html !== undefined && e._html !== html) { e.innerHTML = html; e._html = html; }
   }
 
   toast(html, ms = 2200, cls = '') {
@@ -190,6 +196,15 @@ export class Hud {
     t.className = 'toast show ' + cls;
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => { t.className = 'toast'; }, ms);
+  }
+
+  // 上果嶺：約 1.2 秒的「NICE ON」（字母依序彈出、金色漸層、光掃過、底下金線展開），sub = 距旗碼數
+  niceOn(sub) {
+    const e = $('nice-on');
+    e.innerHTML = `<div class="no-word">${[...'NICE ON'].map((ch, i) => `<span style="animation-delay:${i * 0.035}s">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('')}</div><i class="no-line"></i>${sub ? `<div class="no-sub">${sub}</div>` : ''}`;
+    e.classList.remove('show'); void e.offsetWidth; e.classList.add('show');
+    clearTimeout(this.niceTimer);
+    this.niceTimer = setTimeout(() => e.classList.remove('show'), 1300);
   }
 
   // 老鷹 / 信天翁 / 一桿進洞：全畫面金色慶祝動畫 3 秒（金色紙花從上方灑下、中間大字放大彈出）

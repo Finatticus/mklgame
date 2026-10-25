@@ -390,7 +390,7 @@ body:not([data-practice]) .practice-only { display: none; }
 .tgt-arrow.edge::before { top: -11px; animation: none; }
 @keyframes tgtBob { 50% { transform: translateY(-6px); } }
 .tag.ball { background: rgba(10,20,15,.75); font-size: calc(var(--u) * 1.15); border: 1px solid rgba(214,187,130,.4); }
-.lie-warn { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); background: #f2c230; color: #14130f; font-weight: 700; font-size: calc(var(--u) * .95); padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,.4); max-width: 70vw; text-align: center; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: normal; width: max-content; }
+.lie-warn { position: absolute; left: 0; top: 0; background: #f2c230; color: #14130f; font-weight: 700; font-size: calc(var(--u) * .95); padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,.4); max-width: min(300px, 46vw); text-align: center; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: normal; width: max-content; }
 .lie-warn.show { opacity: 1; }
 .lie-warn::after { content: ""; position: absolute; left: 50%; bottom: -8px; margin-left: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: #f2c230; }
 /* 小地圖放大 */
@@ -889,3 +889,56 @@ body.putt-cine #hud { opacity: 0; }
 /* 球場選單：國外球場的國家與特色 */
 .cp-country { display: block; margin-top: 2px; font-style: normal; font-size: 12px; color: #2a4a7a; font-weight: 600; }
 .rk-note { margin: 0 4px 10px; color: #8a8270; }
+
+/* 超揮時力道條的抖動（--tense 0~1，越接近 110% 越大） */
+.pv-track.tense { animation: pv-shake .12s linear infinite; }
+@keyframes pv-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(calc(var(--tense) * 2.4px), calc(var(--tense) * -0.8px)); }
+  50% { transform: translate(calc(var(--tense) * -1.6px), calc(var(--tense) * 1px)); }
+  75% { transform: translate(calc(var(--tense) * 2px), calc(var(--tense) * 0.6px)); }
+  100% { transform: translate(0, 0); }
+}
+
+/* 旗桿距離標籤的第二行：高低差 */
+.tag.pin { text-align: center; line-height: 1.15; }
+.tag.pin small { display: block; font-size: .72em; font-weight: 500; opacity: .92; }
+
+.cp-note { margin: -4px 4px 10px; color: #8a8270; }
+
+/* 提醒框放在角色旁邊或腳下時，小箭頭跟著換方向 */
+.lie-warn[data-side="left"]::after { left: auto; right: -8px; bottom: 50%; margin: 0 0 -8px; border: 8px solid transparent; border-right: 0; border-left-color: #f2c230; }
+.lie-warn[data-side="right"]::after { left: -8px; bottom: 50%; margin: 0 0 -8px; border: 8px solid transparent; border-left: 0; border-right-color: #f2c230; }
+.lie-warn[data-side="down"]::after { bottom: auto; top: -8px; border: 8px solid transparent; border-top: 0; border-bottom-color: #f2c230; }
+/* 印章等級：銀章、金章是彩色的金屬章，不用墨水的疊色 */
+.sp.got.tier2 .stamp-svg, .sp.got.tier3 .stamp-svg { mix-blend-mode: normal; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
+.sp.tier3 { background: linear-gradient(180deg, #fff8e2, #fbf3dc); border-color: #e8d39a; }
+.sp-info .sp-tier { font-size: 11px; font-weight: 600; }
+.sp-info .sp-tier.t0 { color: var(--muted); }
+.sp-info .sp-tier.t1 { color: #a0622a; }
+.sp-info .sp-tier.t2 { color: #6a737c; }
+.sp-info .sp-tier.t3 { color: #a87a12; }
+
+.lie-warn[data-side="top"]::after { display: none; }
+
+/* 上果嶺 NICE ON：畫面上方約三分之一處，1.2 秒 */
+.nice-on { position: absolute; left: 50%; top: 27%; transform: translateX(-50%); pointer-events: none; text-align: center; opacity: 0; z-index: 30; }
+.nice-on.show { animation: no-fade 1.25s ease forwards; }
+.no-word { position: relative; font: italic 700 calc(var(--u) * 3.4)/1 "Barlow Condensed", sans-serif; letter-spacing: .08em; white-space: nowrap;
+  filter: drop-shadow(0 2px 0 rgba(60,38,6,.55)) drop-shadow(0 6px 14px rgba(0,0,0,.35)); overflow: hidden; padding: 0 .2em; }
+.no-word span { display: inline-block; background: linear-gradient(180deg, #fffbe6 0%, #f6dd8a 38%, #d9a636 62%, #9a6a14 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  transform: translateY(40%) scale(.6); opacity: 0; }
+.nice-on.show .no-word span { animation: no-pop .38s cubic-bezier(.2,1.6,.4,1) forwards; }
+.no-word::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.85) 50%, transparent 65%); transform: translateX(-120%); mix-blend-mode: overlay; }
+.nice-on.show .no-word::after { animation: no-shine .7s .3s ease-out forwards; }
+.no-line { display: block; height: 2px; margin: 6px auto 0; width: 0; background: linear-gradient(90deg, transparent, #f2d27a, transparent); }
+.nice-on.show .no-line { animation: no-line .55s .2s ease-out forwards; }
+.no-sub { margin-top: 5px; font: 600 calc(var(--u) * .95) "Barlow Condensed", "Noto Sans TC", sans-serif; letter-spacing: .12em; color: #fff7dc; text-shadow: 0 1px 3px rgba(0,0,0,.6); opacity: 0; }
+.nice-on.show .no-sub { animation: no-sub .4s .35s ease forwards; }
+@keyframes no-pop { to { transform: none; opacity: 1; } }
+@keyframes no-shine { to { transform: translateX(120%); } }
+@keyframes no-line { to { width: 100%; } }
+@keyframes no-sub { to { opacity: .95; } }
+@keyframes no-fade { 0% { opacity: 1; } 78% { opacity: 1; transform: translateX(-50%); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+/* NICE ON 後面淡淡的深色光暈：任何背景（天空、草地、旗桿標籤）上都讀得清楚 */
+.nice-on::before { content: ""; position: absolute; inset: -18px -70px -14px; z-index: -1; background: radial-gradient(ellipse at center, rgba(12,18,10,.55) 0%, rgba(12,18,10,.32) 45%, transparent 72%); }
