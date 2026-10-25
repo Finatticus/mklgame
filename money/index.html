@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F6F6F4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Ledger">
+  <title>Ledger 帳簿</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth" id="auth" hidden>
+    <div class="auth-card">
+      <div class="auth-brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#141414"/><path d="M9 11h14M9 16h14M9 21h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        <div><strong>Ledger</strong><small>帳簿</small></div>
+      </div>
+      <h1>歡迎使用</h1>
+      <p class="auth-desc">輸入帳號密碼登入，首次使用請按「註冊」。</p>
+      <form id="auth-form" autocomplete="on" novalidate>
+        <label class="field" id="auth-url-field" hidden><span class="field-label">伺服器網址（GAS）</span>
+          <input id="auth-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></label>
+        <label class="field"><span class="field-label">帳號</span>
+          <input id="auth-user" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" placeholder="2–20 字"></label>
+        <label class="field"><span class="field-label">密碼</span>
+          <input id="auth-pass" name="password" type="password" autocomplete="current-password" placeholder="至少 6 個字元"></label>
+        <div class="auth-error" id="auth-error" role="alert"></div>
+        <div class="auth-actions">
+          <button type="button" class="btn btn-ghost" data-auth="register">註冊</button>
+          <button type="submit" class="btn btn-primary" data-auth="login">登入</button>
+        </div>
+      </form>
+    </div>
+    <p class="auth-foot">資料儲存於 Google 試算表，每個帳號獨立分頁</p>
+  </div>
+
+  <div class="app" id="app" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#141414"/><path d="M9 11h14M9 16h14M9 21h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        <div><strong>Ledger</strong><small>帳簿</small></div>
+      </div>
+      <nav class="side-nav">
+        <button data-nav="overview"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>總覽</button>
+        <button data-nav="list"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>明細</button>
+        <button data-nav="stats"><svg viewBox="0 0 24 24"><path d="M6 19V11M12 19V5M18 19v-6M3 19.5h18"/></svg>統計</button>
+        <button data-nav="city"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20v-8l4-2.5V20M9 20V7l7-3v16M16 20v-9l3 1.5V20M11.5 9.5h2M11.5 13h2M11.5 16.5h2"/></svg>小城市</button>
+        <button data-nav="settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h3M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></svg>設定</button>
+      </nav>
+      <button class="btn btn-primary btn-block" data-act="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新增紀錄</button>
+      <div class="side-foot">資料儲存於 Google 試算表</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="title">總覽</h1>
+          <div class="monthbar" id="monthbar">
+            <button class="icon-btn" data-act="prev" aria-label="上個月"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <span id="month-label"></span>
+            <button class="icon-btn" data-act="next" aria-label="下個月"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+        <button class="status" id="status" data-act="sync"></button>
+      </header>
+      <div class="content" id="view"></div>
+    </main>
+
+    <nav class="tabbar">
+      <button data-nav="overview"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span>總覽</span></button>
+      <button data-nav="list"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg><span>明細</span></button>
+      <button class="tab-add" data-act="add" aria-label="新增紀錄"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button data-nav="stats"><svg viewBox="0 0 24 24"><path d="M6 19V11M12 19V5M18 19v-6M3 19.5h18"/></svg><span>統計</span></button>
+      <button data-nav="city"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20v-8l4-2.5V20M9 20V7l7-3v16M16 20v-9l3 1.5V20M11.5 9.5h2M11.5 13h2M11.5 16.5h2"/></svg><span>小城市</span></button>
+      <button data-nav="settings"><svg viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h3M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></svg><span>設定</span></button>
+    </nav>
+  </div>
+
+  <div class="sheet" id="sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-act="close"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true">
+      <form id="tx-form" autocomplete="off"></form>
+    </div>
+  </div>
+
+  <div class="sheet" id="import-sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-act="close-import"></div>
+    <div class="sheet-panel wide" role="dialog" aria-modal="true">
+      <div id="import-body"></div>
+    </div>
+  </div>
+  <input type="file" id="import-file" accept=".csv,text/csv" hidden>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="config.js"></script>
+  <script src="city.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
