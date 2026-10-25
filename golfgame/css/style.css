@@ -942,3 +942,6 @@ body.putt-cine #hud { opacity: 0; }
 @keyframes no-fade { 0% { opacity: 1; } 78% { opacity: 1; transform: translateX(-50%); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 /* NICE ON 後面淡淡的深色光暈：任何背景（天空、草地、旗桿標籤）上都讀得清楚 */
 .nice-on::before { content: ""; position: absolute; inset: -18px -70px -14px; z-index: -1; background: radial-gradient(ellipse at center, rgba(12,18,10,.55) 0%, rgba(12,18,10,.32) 45%, transparent 72%); }
+
+/* 台灣球場名稱後面的縣市鄉鎮（例如 東方（桃園龜山）） */
+.cp-area, .ci-area { font-size: .78em; font-weight: 500; color: var(--muted); margin-left: 2px; }

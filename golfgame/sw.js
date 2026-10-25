@@ -1,5 +1,5 @@
 // 離線快取：程式與材質快取在手機裡，第二次開啟不用重新下載。更新版本時把 VERSION 加 1。
-const VERSION = 'dixen-v39';
+const VERSION = 'dixen-v48';
 // 角色與材質另外一個快取：程式更新時不會被清掉，玩家不用重新下載大檔案
 const ASSET_CACHE = 'dixen-assets-v1';
 const CORE = [
@@ -24,6 +24,14 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   // GAS 請求一律走網路
   if (e.request.method !== 'GET' || url.hostname.includes('script.google')) return;
+  // 球場地圖（assets/courses/）會隨球場修正更新：網路優先（拿到新版），離線時用快取；舊版本快取裡的地圖一併清掉
+  if (url.origin === location.origin && url.pathname.includes('/assets/courses/')) {
+    e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(r => {
+      if (r.ok) { const copy = r.clone(); caches.open(ASSET_CACHE).then(c => c.put(e.request, copy)); }
+      return r;
+    }).catch(() => caches.match(e.request)));
+    return;
+  }
   // 角色、材質等大檔案（assets/）：快取優先，下載一次之後都從手機讀取，不再重複下載
   if (url.origin === location.origin && url.pathname.includes('/assets/')) {
     e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(r => {

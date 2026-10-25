@@ -34,12 +34,35 @@ const LANDMARKS = {
   tashee: { hills: 12, hotel: [70, 900], egrets: 4, eagles: 3, magpies: 1 },
   // 桃園龍潭：平坦、遠處有龍潭的社區大樓，旁邊是悅華大酒店
   taoyuan: { towers: [[60, 1600, 14, 50, 100]], hotel: [200, 800], hills: 4, egrets: 5, eagles: 2 },
-  // 新竹湖口：丘陵林地，冬天東北季風強；遠方是湖口、新豐的風力發電機與海
-  yunghan: { hills: 8, turbines: [300, 1900, 5], egrets: 3, eagles: 2, magpies: 1 },
+  // 桃園蘆竹：林口台地邊緣的丘陵林地，緊鄰桃園機場，客機低空起降；遠方是林口台地的大樓
+  yunghan: { hills: 8, towers: [[60, 1700, 12, 60, 110]], planes: 250, egrets: 3, eagles: 2, magpies: 1 },
   // 桃園楊梅：高台上的球場，看得到遠方的高壓電塔與社區；會館旁是飯店
   sunrise: { hills: 6, pylons: [[80, 700, 4]], hotel: [180, 700], towers: [[40, 1800, 10, 50, 100]], egrets: 4, eagles: 3 },
   // 桃園龍潭：平坦地形加大水池，遠方是龍潭的社區
   lungtan: { towers: [[30, 1700, 12, 50, 100]], hills: 5, egrets: 7, eagles: 2 },
+  // 新竹關西：赤柯山、東山里的山谷，四周是層層的山林（新竹的東北季風強），常見白鷺鷥與大冠鷲
+  royalkh: { hills: 14, egrets: 5, eagles: 3, magpies: 1 },
+  lilygolf: { hills: 12, egrets: 4, eagles: 3, magpies: 1 },
+  // 新竹湖口：湖口台地邊緣的丘陵，南邊是高速公路與湖口的社區，北邊遠處是新豐的海岸風車
+  zaixing: { hills: 8, towers: [[200, 1600, 10, 40, 90]], turbines: [320, 6000, 4], egrets: 5, eagles: 2, magpies: 1 },
+  // 新竹寶山：丘陵上的球場，西北邊緊鄰中山高速公路與寶山的社區，四周是山林與果園
+  paoshan: { hills: 10, towers: [[300, 1400, 8, 30, 70]], egrets: 4, eagles: 3, magpies: 1 },
+  // 新竹關西旭陽：山林裡的球場，四周層層山巒、杉木林，常見白鷺鷥
+  sunvalley: { hills: 14, egrets: 6, eagles: 3, magpies: 1 },
+  // 台中大坑：群山環抱的山谷，遠方是台中市區的大樓
+  ticc: { hills: 14, towers: [[250, 2500, 14, 60, 120]], egrets: 4, eagles: 3, magpies: 1 },
+  // 台中太平頭汴坑：山區的球場，四周是層層的山
+  hunghsi: { hills: 16, egrets: 3, eagles: 3, magpies: 1 },
+  // 彰化大村：八卦山台地西側，往西看得到彰化平原與遠方的社區
+  taifong: { hills: 8, towers: [[260, 3000, 10, 40, 80]], egrets: 6, eagles: 2 },
+  // 南投鳳山：八卦山南側的丘陵，遠方是中央山脈
+  nanfeng: { hills: 14, egrets: 4, eagles: 3, magpies: 1 },
+  // 嘉義番路：阿里山腳下的湖泊與椰林
+  palmlakes: { hills: 16, egrets: 6, eagles: 2 },
+  // 台南：平地上的湖泊與水道，遠方是社區
+  chianan: { hills: 3, towers: [[200, 2500, 10, 40, 80]], egrets: 8, eagles: 1 },
+  // 新竹新豐：靠海的平緩台地，北邊是工業區與社區大樓，遠方海岸有風力發電機
+  hsinchu: { hills: 4, towers: [[10, 1200, 10, 30, 70]], turbines: [290, 2600, 6], egrets: 6, eagles: 1 },
   // 美國密蘇里州 Ozark 山區：俯瞰 Table Rock 湖，四周是長滿橡樹的山丘與灰白色的石灰岩峭壁，天上有白頭海鵰盤旋
   cliffhangers: { sea: [20, 650], hills: 14, bluffs: 9, eagles: 2 },
 };

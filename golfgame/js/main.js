@@ -276,7 +276,7 @@ function renderSetup() {
   const g = COURSE_GROUPS.find(x => x.id === cur.group);
   $('st-courses').innerHTML = `
     <div class="course-info">
-      <div class="ci-top"><div><small>${g ? g.name : ''}</small><b>${cur.name}</b><em>${cur.en}</em></div>
+      <div class="ci-top"><div><small>${g ? g.name : ''}</small><b>${cur.name}${cur.area ? `<span class="ci-area">（${cur.area}）</span>` : ''}</b><em>${cur.en}</em></div>
         <button class="btn-chip" id="st-change">更換球場 ▾</button></div>
       <div class="ci-stats">
         <span>Par <b>${cur.holes.reduce((a, h) => a + h[0], 0)}</b></span><span>黑梯 <b>${courseYards(cur, 'black').toLocaleString()} Y</b></span>
@@ -405,7 +405,7 @@ function openCoursePicker(kind) {
     const gnote = g.id === 'fantasy' ? '<p class="small cp-note">奇幻球場不列入總桿排行與大廳的最佳 18 洞，每座球場仍有自己的球場排行。</p>' : '';
     return `<h4>${g.name}</h4>${gnote}` + (list.length ? list.map(c => `
       <button class="cp-row ${c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':') ? 'on' : ''}" data-c="${c.id}">
-        <div><b>${c.name}</b><em>${c.en}</em>${c.country ? `<i class="cp-country">${c.country}・${c.tagline}</i>` : ''}${c.feature ? `<i class="cp-feat">特色玩法：${c.feature.name}</i>` : ''}</div>
+        <div><b>${c.name}${c.area ? `<span class="cp-area">（${c.area}）</span>` : ''}</b><em>${c.en}</em>${c.country ? `<i class="cp-country">${c.country}・${c.tagline}</i>` : ''}${c.feature ? `<i class="cp-feat">特色玩法：${c.feature.name}</i>` : ''}</div>
         <span>${c.nines ? `${c.nines.length * 9} 洞（${c.nines.map(n => n.name).join(' / ')}，前後九自選）` : `Par ${c.holes.reduce((a, h) => a + h[0], 0)} · ${courseYards(c, 'black').toLocaleString()} Y`} · Stimp(果嶺速度) ${c.stimp}</span>
       </button>`).join('') : '<p class="small cp-empty">即將加入</p>');
   }).join('');
@@ -433,14 +433,14 @@ function renderPreview(id) {
     <div class="hole-card"><canvas data-h="${i}" width="124" height="200"></canvas>
       <div class="hc"><b>${i + 1}<em>PAR ${h[0]}</em></b>${teeYards(c, i, setup.tee)} Y · HCP ${h[4]}<br><i>${holeFeatures(c, h)}</i></div></div>`).join('');
   // 縮圖一洞一洞慢慢畫，不卡畫面
-  Promise.all([import('./terrain.js'), loadCourseMaps(c)]).then(([{ buildHole, paintMaps }]) => {
+  Promise.all([import('./terrain.js'), loadCourseMaps(c)]).then(([{ buildHole }]) => {
     let i = 0;
     const next = () => {
       if (token !== previewToken || i >= 18) return;
       const key = c.id + i;
       if (!holeThumbs[key]) {
         const hole = buildHole(c, i, { pinSeed: 1 });
-        holeThumbs[key] = { hole, map: paintMaps(hole, { px: 2.5 }) };
+        holeThumbs[key] = { hole };
       }
       const cv = document.querySelector(`#st-preview canvas[data-h="${i}"]`);
       if (cv) drawHoleThumb(cv, holeThumbs[key]);
@@ -451,27 +451,59 @@ function renderPreview(id) {
   });
 }
 
-function drawHoleThumb(cv, { hole, map }) {
+// 縮圖專用的配色（球場導覽圖的風格：樹林深、長草中間、球道亮帶割草條紋、果嶺更亮、沙坑米白、水藍），各區之間描一條細邊
+//   索引 = physics.js 的 SURF：TEE, FAIRWAY, FRINGE, GREEN, ROUGH, DEEP, SAND, WATER, OB, CHASM, WASTE
+//   樹林（DEEP）與地圖範圍外（OB）同色：轉過角度的縮圖邊角不會出現一塊顏色不同的三角形
+const THUMB_COL = [[156, 204, 106], [134, 182, 90], [150, 198, 104], [170, 220, 122], [80, 124, 58], [40, 70, 35], [236, 226, 194], [62, 144, 204], [40, 70, 35], [24, 26, 40], [200, 180, 136]];
+function drawHoleThumb(cv, { hole }) {
+  // 轉成「梯台在下、果嶺在上」，框住整洞（梯台後 15 公尺到果嶺後 45 公尺、左右含球道邊的障礙），不會把果嶺或沙坑裁掉
   const x = cv.getContext('2d'), W = cv.width, H = cv.height;
-  const b = hole.bbox;
-  let minU = Infinity, maxU = -Infinity, minV = Infinity, maxV = -Infinity;
-  for (const [u, v] of hole.path) { minU = Math.min(minU, u); maxU = Math.max(maxU, u); minV = Math.min(minV, v); maxV = Math.max(maxV, v); }
-  const pad = 35;
-  minU -= pad; maxU += pad; minV -= 20; maxV += 25;
-  const sc = Math.min(W / (maxU - minU), H / (maxV - minV));
-  const cu = (minU + maxU) / 2, cvv = (minV + maxV) / 2;
-  const toPx = (u, v) => [W / 2 + (u - cu) * sc, H / 2 - (v - cvv) * sc];
-  x.fillStyle = '#2c4426'; x.fillRect(0, 0, W, H);
-  const [x0, y0] = toPx(b.minU, b.maxV);
-  x.drawImage(map.color, x0, y0, (b.maxU - b.minU) * sc, (b.maxV - b.minV) * sc);
-  const [px, py] = toPx(hole.pin[0], -hole.pin[1]);
-  x.strokeStyle = '#f2ead0'; x.lineWidth = 2;
-  x.beginPath(); x.moveTo(px, py); x.lineTo(px, py - 14); x.stroke();
-  x.fillStyle = '#b73a31'; x.beginPath(); x.moveTo(px, py - 14); x.lineTo(px + 9, py - 11); x.lineTo(px, py - 8); x.fill();
   const t = hole.tees.find(q => q.id === setup.tee) || hole.tees[1];
+  const P0 = hole.tees.reduce((a, q) => (q.s < a.s ? q : a), hole.tees[0]);      // 最後面的梯台
+  const gu = hole.green.u, gv = hole.green.v;
+  const ang = Math.atan2(gu - P0.u, gv - P0.v);           // 從梯台看果嶺的方位（北 = 0）
+  const ca = Math.cos(ang), sa = Math.sin(ang);
+  const along = (u, v) => (u - P0.u) * sa + (v - P0.v) * ca, side = (u, v) => (u - P0.u) * ca - (v - P0.v) * sa;
+  let a0 = -15, a1 = along(gu, gv) + 45, s0 = -40, s1 = 40;
+  for (const [u, v] of hole.path) { const q = side(u, v); s0 = Math.min(s0, q - 40); s1 = Math.max(s1, q + 40); a1 = Math.max(a1, along(u, v) + 30); }
+  const sc = Math.min(W / (s1 - s0), H / (a1 - a0));
+  const ox = W / 2 - (s0 + s1) / 2 * sc, oy = H / 2 + (a0 + a1) / 2 * sc;
+  const toPx = (u, v) => [ox + side(u, v) * sc, oy - along(u, v) * sc];
+  // 畫面像素 → 世界座標（每格取 2×2 個點平均，邊緣比較平滑）
+  const SS = 2, GW = W * SS, GH = H * SS, sf = new Uint8Array(GW * GH);
+  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
+    const sd = ((i + 0.5) / SS - ox) / sc, al = (oy - (j + 0.5) / SS) / sc;
+    sf[j * GW + i] = hole.surfaceUV(P0.u + sd * ca + al * sa, P0.v - sd * sa + al * ca);
+  }
+  const img = x.createImageData(W, H), d = img.data;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    let r = 0, g = 0, b = 0;
+    for (let dj = 0; dj < SS; dj++) for (let di = 0; di < SS; di++) {
+      const gi = (j * SS + dj) * GW + i * SS + di, k = sf[gi]; let c = THUMB_COL[k] || THUMB_COL[8], f = 1;
+      if (k === 1) {
+        // 球道割草條紋：沿打球方向每 9 公尺換一次深淺
+        const al = (oy - (j + (dj + 0.5) / SS)) / sc; f = Math.floor(al / 9) % 2 ? 1.06 : 0.95;
+      }
+      if (k === 5 || k === 8) { const h = Math.sin(i * 12.9898 + j * 78.233) * 43758.5453; f = 0.88 + (h - Math.floor(h)) * 0.2; }      // 樹林點點
+      // 跟右邊 / 下面不同類：描一條暗邊（沙坑、水、果嶺的輪廓比較清楚）
+      const kr = i * SS + di + 1 < GW ? sf[gi + 1] : k, kd = j * SS + dj + 1 < GH ? sf[gi + GW] : k;
+      if ((kr !== k || kd !== k) && k !== 5 && k !== 8) f *= 0.78;
+      r += c[0] * f; g += c[1] * f; b += c[2] * f;
+    }
+    const o = (j * W + i) * 4, n = SS * SS;
+    d[o] = r / n; d[o + 1] = g / n; d[o + 2] = b / n; d[o + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  // 四邊淡淡的暗角
+  const vg = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.4, W / 2, H / 2, Math.max(W, H) * 0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.3)'); x.fillStyle = vg; x.fillRect(0, 0, W, H);
+  const [px, py] = toPx(hole.pin[0], -hole.pin[1]);
+  x.strokeStyle = '#f7f1dc'; x.lineWidth = 1.6;
+  x.beginPath(); x.moveTo(px, py); x.lineTo(px, py - 14); x.stroke();
+  x.fillStyle = '#d0392b'; x.beginPath(); x.moveTo(px, py - 14); x.lineTo(px + 8, py - 11.5); x.lineTo(px, py - 9); x.fill();
   const [tx, ty] = toPx(t.u, t.v);
-  x.fillStyle = '#fff'; x.strokeStyle = '#111'; x.lineWidth = 1.5;
-  x.beginPath(); x.arc(tx, ty, 4, 0, Math.PI * 2); x.fill(); x.stroke();
+  x.fillStyle = '#fff'; x.strokeStyle = 'rgba(0,0,0,0.7)'; x.lineWidth = 1.2;
+  x.beginPath(); x.arc(tx, ty, 3.5, 0, Math.PI * 2); x.fill(); x.stroke();
 }
 
 function roundCfg() {

@@ -422,6 +422,21 @@ export function buildHole(course, holeIdx, opts = {}) {
   // nw = 窄球道、wd = 寬球道（浮島的 nw 是窄島，另外處理）
   const fwBase = course.fairwayW * (F.has('tr') ? 0.85 : 1) * (F.has('nw') && !isVoid ? 0.72 : 1) * (F.has('wd') ? 1.3 : 1);
   const fwHalf = (s, side) => fwBase / 2 * (1 + 0.14 * nz(s * 0.018, side * 3.1) + 0.06 * nz(s * 0.07, side * 7.7));
+  // 描圖地圖漏畫球道的洞（中心線上一半以上是長草）：沿中心線補一條 24 公尺寬的球道（梯台前 45 公尺、果嶺前 25 公尺以內不補），只蓋掉長草
+  if (MG && par > 3) {
+    let n = 0, fwc = 0;
+    for (let s = 45; s < Lp - 30; s += 4) { const p = pointAt(s), ci = cellAt(p[0], p[1]); n++; if (ci >= 0 && MG.g[ci] === 2) fwc++; }
+    if (n && fwc / n < 0.45) {
+      const r = 12 / MG.mpp;
+      for (let s = 45; s < Lp - 25; s += 1.5) {
+        const p = pointAt(s), ci0 = (p[0] - MG.u0) / MG.mpp, cj0 = (MG.v0 - p[1]) / MG.mpp;
+        for (let j = Math.floor(cj0 - r); j <= cj0 + r; j++) for (let i = Math.floor(ci0 - r); i <= ci0 + r; i++) {
+          if (i < 0 || j < 0 || i >= MG.W || j >= MG.H || (i - ci0) ** 2 + (j - cj0) ** 2 > r * r) continue;
+          if (MG.g[j * MG.W + i] === 1) MG.g[j * MG.W + i] = 2;
+        }
+      }
+    }
+  }
   const elevTotal = F.has('UP') ? 14 : F.has('DN') ? -14 : F.has('up') ? 6 : F.has('dn') ? -6 : (rng() - 0.5) * 3;
   // spec.elev = [[距白梯碼數, 相對發球台高度(公尺)], …]，中間平滑內插（例如開球下坡、第二桿上坡）
   // 起伏來源：逐洞描述（spec.elev）優先，沒有的話用描圖地圖附的實際地形高程（map.elev）
@@ -601,13 +616,15 @@ export function buildHole(course, holeIdx, opts = {}) {
   const tees = TEE_SETS.map(t => {
     if (map && map.tees[t.id]) {
       let [u, v] = map.tees[t.id];
-      // 描圖算出來的梯台落在水、沙坑、樹林或圖外 → 往最後面的梯台方向退，退到乾的草地上再多退 4 公尺
+      // 描圖算出來的梯台落在水、沙坑、樹林或圖外
+      //   （發球台四周 5 公尺都要是乾的地面）→ 沿洞線前後找最近的乾地（優先往果嶺方向，最多前 90、後 40 公尺），梯台放在洞線上
       const dryAt = (uu, vv) => { const i = cellAt(uu, vv); return i >= 0 && [1, 2, 4, 9].includes(MG.g[i]); };
-      if (!dryAt(u, v) && map.tees.black) {
-        const [bu, bv] = map.tees.black, L0 = Math.hypot(bu - u, bv - v);
-        for (let k = 1; k <= Math.ceil(L0); k++) {
-          const f = Math.min(1, (k + 4) / (L0 || 1)), uu = lerp(u, bu, k / (L0 || 1)), vv = lerp(v, bv, k / (L0 || 1));
-          if (dryAt(uu, vv) && dryAt(lerp(u, bu, f), lerp(v, bv, f))) { u = lerp(u, bu, f); v = lerp(v, bv, f); break; }
+      const padOk = (uu, vv) => dryAt(uu, vv) && dryAt(uu + 5, vv) && dryAt(uu - 5, vv) && dryAt(uu, vv + 5) && dryAt(uu, vv - 5);
+      if (!padOk(u, v)) {
+        const s0 = near(u, v).s;
+        for (let k = 2; k <= 90; k += 2) {
+          const f = pointAt(s0 + k); if (padOk(f[0], f[1])) { [u, v] = f; break; }
+          if (k <= 40) { const b = pointAt(s0 - k); if (s0 - k >= 0 && padOk(b[0], b[1])) { [u, v] = b; break; } }
         }
       }
       const sT = near(u, v).s;
@@ -728,9 +745,22 @@ export function buildHole(course, holeIdx, opts = {}) {
   const macroTab = [];
   for (let s = 0; s <= Lp + 2; s += 2) { const p = pointAt(s); macroTab.push(macro(p[0], p[1])); }
   const macroC = s => { const f = clamp(s, 0, Lp) / 2, i = Math.floor(f); return lerp(macroTab[i], macroTab[Math.min(i + 1, macroTab.length - 1)], f - i); };
+  // 真實地形的球道整地：沿中心線取 DEM 高度、前後 16 公尺平滑，球道上只留前後起伏、左右是平的
+  //   （DEM 網格 30 公尺左右，山坡上的球道直接用會整條斜向一邊，開球停不住、都滾進樹林）；離開球道 4~30 公尺再慢慢回到真正的地形
+  let profC = null;
+  if (demH) {
+    const raw = [];
+    for (let s = 0; s <= Lp + 2; s += 2) { const p = pointAt(s); raw.push(demH(p[0], p[1])); }
+    const n = raw.length, sm = raw.map((_, i) => { let a = 0, c = 0; for (let k = Math.max(0, i - 8); k <= Math.min(n - 1, i + 8); k++) { a += raw[k]; c++; } return a / c; });
+    // 兩端接回梯台與果嶺的實際高度（果嶺前 30 公尺、梯台後 20 公尺內漸變），果嶺邊不會出現台階
+    const gEnd = gCenterBase - 0.55, tEnd = raw[0];
+    for (let i = 0; i < n; i++) { const s = i * 2; sm[i] = lerp(sm[i], gEnd, ss(Lp - 30, Lp, s)); sm[i] = lerp(tEnd, sm[i], ss(0, 20, s)); }
+    profC = s => { const f = clamp(s, 0, Lp) / 2, i = Math.floor(f); return lerp(sm[i], sm[Math.min(i + 1, n - 1)], f - i); };
+  }
   const rawH = (u, v, s, ad) => {
     if (demH) {
-      let hh = demH(u, v) + st.microA * 0.7 * nz2.fbm(u / st.microL, v / st.microL, 3);
+      const w = ss(fwBase / 2 + 4, fwBase / 2 + 30, ad);
+      let hh = lerp(profC(s), demH(u, v), w) + st.microA * 0.7 * nz2.fbm(u / st.microL, v / st.microL, 3) * (0.12 + 0.88 * ss(fwBase / 2, fwBase / 2 + 20, ad));
       if (links) hh += 1.4 * Math.max(0, nz3.fbm(u / 18, v / 18, 2)) * ss(fwBase / 2 + 5, fwBase / 2 + 30, ad);
       return hh;
     }
@@ -745,7 +775,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   // 梯台要看得到前方：從梯台用 8° 仰角往打球方向看，前方 60 公尺內的地面都要在這條線下面；
   //   擋住的話把梯台墊高（最多 12 公尺，周圍做成緩坡土台）。海崖、山坡邊的梯台，DEM 查到的高度常常被崖下拉低，梯台變成陷在坑裡、前面一面牆
   const teeLift = {};
-  const groundAt = demH || (map ? (u, v) => rawH(u, v, near(u, v).s, 0) : null);      // 描圖球場（沒有 DEM）也檢查
+  const groundAt = demH ? (u, v) => { const q = near(u, v); return rawH(u, v, q.s, Math.abs(q.d)); }      // 整地後的地面
+    : map ? (u, v) => rawH(u, v, near(u, v).s, 0) : null;      // 描圖球場（沒有 DEM）也檢查
   if (groundAt) tees.forEach(t => {
     let tu = G[0], tv = G[1];
     if (Math.hypot(G[0] - t.u, G[1] - t.v) > 160) for (const p of path) if (Math.hypot(p[0] - t.u, p[1] - t.v) >= 150) { tu = p[0]; tv = p[1]; break; }
@@ -1460,6 +1491,9 @@ export function paintMaps(hole, opts = {}) {
   // 小地圖用的版本：水改成水藍色（3D 畫面的地面是水池底的顏色，上面還有一層水面；小地圖沒有水面，要直接塗成水的顏色才看得出來）
   //   熔岩主題的「水」是熔岩，不改
   const wet = new Uint8Array(W * Hh), recolorWater = hole.course.theme !== 'lava';
+  // 小地圖 / 18 洞預覽只畫這一洞：真實球場的地圖常常連隔壁的球道、果嶺都在範圍裡，離這一洞球道邊 30 公尺外、梯台後 / 果嶺後 35 公尺外的都塗成樹林色
+  //   一洞一張的描圖地圖本來就只有這一洞，不用遮；整座球場共用的地圖（OSM）才遮，而且 20 公尺內慢慢淡成樹林色，不會切出一條直邊
+  const ownOnly = !!hole.course.sceneUrl, away = ownOnly ? new Float32Array(W * Hh) : null;
   const seaBlock = new Map();
   for (let j = 0; j < Hh; j++) {
     // 畫布第 0 列 = 最遠處（v 最大），對應世界 z 最小
@@ -1510,6 +1544,11 @@ export function paintMaps(hole, opts = {}) {
       }
       // 鹽湖：鹽殼上的多邊形龜裂紋
       if (salt && (sf === SURF.WASTE || sf === SURF.OB)) { const k = Math.abs(nz(u * 0.11, v * 0.11)) + Math.abs(nz(u * 0.23 + 7, v * 0.23)) * 0.5; if (k < 0.05) c = [196, 184, 160]; }
+      if (ownOnly && hole.greenR(u, v) > 3) {
+        const q = hole.near(u, v);
+        const ex = Math.max(-35 - q.s, q.s - hole.L - 40, Math.abs(q.d) - hole.fwHalf(q.s, q.d > 0 ? 1 : -1) - 38);
+        if (ex > 0) away[j * W + i] = ss(0, 20, ex);
+      }
       if (recolorWater && sf === SURF.WATER) wet[j * W + i] = 1;
       else if (recolorWater && hole.mapSea && sf === SURF.OB) {
         // 國外球場地圖範圍外的海：每 4×4 格查一次地面是不是在海面下
@@ -1531,6 +1570,11 @@ export function paintMaps(hole, opts = {}) {
     if (!wet[k]) continue;
     const o = k * 4, f = 0.92 + ((k * 2654435761) >>> 28) / 15 * 0.12;
     cd[o] = 64 * f; cd[o + 1] = 168 * f; cd[o + 2] = 222 * f;
+  }
+  if (away) for (let k = 0; k < W * Hh; k++) {
+    const w = away[k]; if (!w) continue;
+    const o = k * 4, f = 0.94 + ((k * 2654435761) >>> 28) / 15 * 0.1;
+    cd[o] = lerp(cd[o], pal.deep[0] * 0.8 * f, w); cd[o + 1] = lerp(cd[o + 1], pal.deep[1] * 0.8 * f, w); cd[o + 2] = lerp(cd[o + 2], pal.deep[2] * 0.8 * f, w);
   }
   mini.getContext('2d').putImageData(cimg, 0, 0);
   return { color, mask, px, mini };

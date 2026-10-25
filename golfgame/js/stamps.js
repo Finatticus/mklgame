@@ -24,6 +24,30 @@ const M = {
   taoyuan: () => `<path d="M50 68 L42 30 Q50 26 58 30z" fill="none" stroke-width="2"/>` + flag(50, 32, 12) + `<text x="68" y="60" font-size="16" font-weight="700" font-family="Barlow Condensed, sans-serif" text-anchor="middle">6</text><text x="68" y="68" font-size="5.5" text-anchor="middle">PAR</text>` + tree(32, 56, 0.8),
   yunghan: () => tree(30, 54, 0.9) + tree(70, 54, 0.9) + `<path d="M38 36 q10 -6 20 0 q-10 2 -20 0z M36 44 q12 -6 26 0 q-12 2 -26 0z" />` + `<path d="M50 64 L46 50 h8z" fill="none" stroke-width="1.8"/>` + ground(),
   sunrise: () => `<path d="M26 58 a24 24 0 0 1 48 0z" fill="none" stroke-width="2"/>` + `<path d="M34 58 a16 16 0 0 1 32 0z"/>` + [0, 1, 2, 3, 4, 5, 6].map(i => { const a = Math.PI + i / 6 * Math.PI; return `<path d="M${50 + Math.cos(a) * 28} ${58 + Math.sin(a) * 28}L${50 + Math.cos(a) * 34} ${58 + Math.sin(a) * 34}" stroke-width="1.8"/>`; }).join('') + wave(64, 28, 72, 1.6),
+  // 老爺關西：山谷裡的會館與層層山稜
+  royalkh: () => `<path d="M22 60 L36 40 L46 50 L58 34 L78 60z" fill="none" stroke-width="2"/>` + `<rect x="40" y="52" width="20" height="10"/><path d="M38 52 L50 45 L62 52z"/>` + ground(64) + flag(68, 62, 12),
+  // 立益：跨過山谷的紅色吊橋
+  lilygolf: () => `<path d="M22 58 Q50 72 78 58" fill="none" stroke-width="2.4"/><path d="M28 46 V60 M72 46 V60" stroke-width="2.4"/><path d="M28 46 Q50 66 72 46" fill="none" stroke-width="1.4"/>` + [34, 40, 46, 52, 58, 64].map(x => `<path d="M${x} ${58 + (x - 50) * (x - 50) / 140 * -0.5 + 4} V${52 + Math.abs(x - 50) * 0.3}" stroke-width="1"/>`).join('') + wave(70, 30, 70, 1.6),
+  // 再興：潘冀設計的平頂玻璃會館、前面一叢芒草
+  zaixing: () => `<path d="M24 46 H76 L72 50 H28z"/><rect x="32" y="50" width="36" height="12" fill="none" stroke-width="1.6"/><path d="M41 50 V62 M50 50 V62 M59 50 V62" stroke-width="1"/>` + [24, 28, 32].map((x, i) => `<path d="M${x} 66 Q${x - 4 + i * 2} 56 ${x - 6 + i * 4} 48" fill="none" stroke-width="1.2"/>`).join('') + ground(66) + flag(72, 66, 12),
+  // 寶山：山丘間的水池與果嶺
+  paoshan: () => `<path d="M20 60 L34 42 L44 50 L58 36 L80 60z" fill="none" stroke-width="2"/>` + `<ellipse cx="40" cy="64" rx="12" ry="3.5"/>` + wave(66, 52, 74, 1.4) + flag(62, 62, 14),
+  // 旭陽：山谷升起的太陽與西班牙風格的會館鐘樓
+  sunvalley: () => sun(50, 34, 9) + `<path d="M20 62 L34 46 L44 54 L56 42 L80 62z" fill="none" stroke-width="2"/>` + `<rect x="58" y="48" width="8" height="14"/><path d="M56 48 L62 42 L68 48z"/>` + ground(64),
+  // 台中國際：大坑的群山與三區的旗
+  ticc: () => `<path d="M18 62 L32 40 L42 50 L54 32 L66 48 L82 62z" fill="none" stroke-width="2"/>` + flag(36, 62, 12) + flag(50, 62, 15) + flag(64, 62, 12) + ground(64),
+  // 鴻禧太平：山上的果嶺台地與高低差 45 公尺的第 9 洞
+  hunghsi: () => `<path d="M24 66 L24 54 L40 54 L40 66z M56 44 L56 30 L76 30 L76 44z" fill="none" stroke-width="2"/>` + `<path d="M40 56 Q50 30 62 31" fill="none" stroke-width="1.4" stroke-dasharray="2 2"/>` + flag(68, 31, 12) + ground(66),
+  // 台豐：斜向平行的球道與生態水池
+  taifong: () => `<path d="M22 60 L70 34 M30 66 L78 40" fill="none" stroke-width="5" stroke-linecap="round"/>` + `<ellipse cx="34" cy="40" rx="9" ry="4"/>` + flag(70, 34, 13) + ground(68),
+  // 南峰：南投的山峰與果嶺旗
+  nanfeng: () => `<path d="M18 62 L38 34 L50 48 L62 30 L82 62z" fill="none" stroke-width="2"/>` + flag(50, 62, 14) + ground(64),
+  // 棕梠湖：湖邊的椰子樹
+  palmlakes: () => `<path d="M40 64 Q42 46 46 32" fill="none" stroke-width="2"/><path d="M46 32 q-12 -2 -16 6 M46 32 q12 -4 16 4 M46 32 q-6 -10 -14 -10 M46 32 q6 -10 14 -8" fill="none" stroke-width="1.8"/>` + wave(64, 50, 76, 1.6) + flag(68, 58, 10),
+  // 嘉南：平地的水道與果嶺
+  chianan: () => wave(48, 22, 78, 1.8) + wave(56, 22, 78, 1.8) + `<ellipse cx="50" cy="38" rx="12" ry="4"/>` + flag(50, 38, 14) + ground(66),
+  // 新豐：平行的林間球道與海邊的風車
+  hsinchu: () => tree(30, 52, 0.9) + tree(42, 50, 1.1) + `<path d="M50 64 L58 36 M60 64 L66 40" fill="none" stroke-width="2"/>` + turbine(72, 56, 20) + ground(),
   // 聖安德魯斯：18 洞的 Swilcan 石拱橋與溪水、遠方的旗
   standrews: () => `<path fill-rule="evenodd" d="M20 64 Q50 40 80 64 L80 69 L20 69z M38 69 Q50 53 62 69z"/>` + `<path d="M24 74 q6 -3 12 0 t12 0 t12 0 t12 0" fill="none" stroke-width="1.8"/>` + flag(66, 46, 16) + bird(34, 30, 0.8),
   // 圓石灘：海崖上一棵平頂的蒙特利柏樹、下方的浪
