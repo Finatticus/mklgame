@@ -175,6 +175,22 @@ export class Hud {
     els.forEach(e => (e.style.transform = tf));
   }
 
+  // 旗桿距離紅卡一定要看得到：永遠畫在最上層；跟它重疊的面板、訊息、力道條在重疊期間變半透明（不重疊就恢復）
+  guardPinTag() {
+    const pin = $('tag-pin');
+    const list = this._guard || (this._guard = [...document.querySelectorAll('#chal-goals, #hud .hud-panel, #toast, #shot-data, .pv-track, #tag-ball, #nice-on')]);
+    const visible = pin.style.display !== 'none' && pin.offsetParent;
+    const b = visible ? pin.getBoundingClientRect() : null, pad = 4;
+    for (const e of list) {
+      let hit = false;
+      if (b && e.offsetParent) {
+        const r = e.getBoundingClientRect();
+        hit = r.width > 0 && !(r.right < b.left - pad || r.left > b.right + pad || r.bottom < b.top - pad || r.top > b.bottom + pad);
+      }
+      if (e.classList.contains('under-pin') !== hit) e.classList.toggle('under-pin', hit);
+    }
+  }
+
   swingHint(text) { $('swing-hint').textContent = text; }
 
   enableControls(v) {
@@ -413,6 +429,7 @@ export class Hud {
       const h = this.heat, [hx, hy] = toPx(h.minU, h.maxV);
       x.drawImage(h.canvas, hx, hy, (h.maxU - h.minU) * sc, (h.maxV - h.minV) * sc);
     }
+    this.drawSpecials(x, hole, toPx, sc, W);
     const [bx, by] = toPx(ball[0], -ball[2]);
     if (target) {
       const [tx, ty] = toPx(target[0], -target[1]);
@@ -434,6 +451,48 @@ export class Hud {
       x.beginPath(); x.arc(qx, qy, Math.max(5, W / 110), 0, Math.PI * 2); x.fill(); x.stroke();
     }
     return { minU, maxV, sc, ox, oy };
+  }
+
+  // 機關畫在小地圖 / 大地圖上（跟 3D 畫面同一套顏色；主題換色的也跟著換）
+  drawSpecials(x, hole, toPx, sc, W) {
+    const sps = hole.specials;
+    if (!sps || !sps.length) return;
+    const th = hole.theme, lw = Math.max(2, W / 160), min = Math.max(5, W / 70);
+    const circle = (u, v, r, fill, stroke, dash) => {
+      const [px, py] = toPx(u, v); x.beginPath(); x.arc(px, py, Math.max(min, r * sc), 0, Math.PI * 2);
+      if (fill) { x.fillStyle = fill; x.fill(); }
+      if (stroke) { x.strokeStyle = stroke; x.lineWidth = lw; if (dash) x.setLineDash(dash); x.stroke(); x.setLineDash([]); }
+      return [px, py];
+    };
+    for (const sp of sps) {
+      const k = sp.kind;
+      if (k === 'orb') { if (!(this.orbGot && this.orbGot.has(sp.idx))) circle(sp.u, sp.v, sp.r * 0.6, '#ffd04a', '#7a5a10'); continue; }
+      if (k === 'ring') circle(sp.u, sp.v, sp.r, null, th === 'reef' ? '#9ae8ff' : '#d8ff6a');
+      else if (k === 'portal') {
+        const a = circle(sp.u, sp.v, sp.r, 'rgba(122,216,255,.35)', th === 'egypt' ? '#ffd070' : '#7ad8ff');
+        const e = circle(sp.exit.u, sp.exit.v, sp.r, 'rgba(208,122,255,.35)', th === 'egypt' ? '#ffa040' : '#d07aff');
+        x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = lw * 0.7; x.setLineDash([lw * 3, lw * 3]); x.beginPath(); x.moveTo(...a); x.lineTo(...e); x.stroke(); x.setLineDash([]);
+      } else if (k === 'vent') circle(sp.u, sp.v, sp.r, '#ff6a1a', '#3a1a10');
+      else if (k === 'shroom') circle(sp.u, sp.v, sp.r, '#e07ae0', '#fff');
+      else if (k === 'tramp') circle(sp.u, sp.v, sp.r, '#ff5ab0', '#2a2a3a');
+      else if (k === 'honey') circle(sp.u, sp.v, sp.r, th === 'swamp' ? '#5a4a22' : '#e8a020', th === 'swamp' ? '#2a2412' : '#8a4a06');
+      else if (k === 'gear') circle(sp.u, sp.v, sp.r, '#c89a50', '#5a3a10', [lw, lw]);
+      else if (k === 'wisp') circle(sp.u, sp.v, sp.r, 'rgba(154,255,200,.25)', th === 'moon' ? '#b8d4ff' : '#9affc8', [lw * 2, lw * 2]);
+      else if (k === 'bumper') circle(sp.u, sp.v, sp.r, '#e83030', '#ffe04a');
+      else if (k === 'cloud') circle(sp.u, sp.v, sp.r, th === 'sky' ? 'rgba(255,255,255,.75)' : 'rgba(90,96,112,.75)', th === 'sky' ? '#fff' : '#c8d8f0');
+      else if (k === 'boost') {
+        const [px, py] = toPx(sp.u, sp.v), L = Math.max(min * 1.6, sp.r * sc), d = sp.dir || [0, 1];
+        const ang = Math.atan2(-d[1], d[0]);       // 畫面上 v 往上
+        x.save(); x.translate(px, py); x.rotate(ang); x.fillStyle = '#4ae8ff'; x.strokeStyle = '#0a2a3a'; x.lineWidth = lw * 0.6;
+        x.beginPath(); x.moveTo(L, 0); x.lineTo(-L * 0.4, -L * 0.6); x.lineTo(-L * 0.1, 0); x.lineTo(-L * 0.4, L * 0.6); x.closePath(); x.fill(); x.stroke(); x.restore();
+      } else if (k === 'cannon') {
+        const a = circle(sp.u, sp.v, sp.r, '#6a4a2a', '#ffb04a');
+        if (sp.target) { const t = toPx(sp.target[0], sp.target[1]); x.strokeStyle = 'rgba(255,176,74,.85)'; x.lineWidth = lw * 0.7; x.setLineDash([lw * 3, lw * 2]); x.beginPath(); x.moveTo(...a); x.lineTo(...t); x.stroke(); x.setLineDash([]); }
+      } else if (k === 'wall') {
+        const a = toPx(sp.a[0], sp.a[1]), b = toPx(sp.b[0], sp.b[1]);
+        x.strokeStyle = th === 'crystal' ? '#d8b8ff' : '#bfe6ff'; x.lineWidth = lw * 2; x.lineCap = 'round'; x.beginPath(); x.moveTo(...a); x.lineTo(...b); x.stroke(); x.lineCap = 'butt';
+      }
+    }
   }
 
   // 畫面座標（CSS px）→ 世界座標

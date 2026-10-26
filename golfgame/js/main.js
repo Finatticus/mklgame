@@ -424,7 +424,7 @@ function openCoursePicker(kind) {
     return `<h4>${g.name}</h4>${gnote}` + (list.length ? `<div class="cp-group">${list.map(c => {
       const on = c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':');
       return `<div class="cp-item ${on ? 'on' : ''}">
-        <button class="cp-row" data-open="${c.id}"><span class="cp-name"><b>${c.name}</b>${c.area || c.country ? `<small>${c.area || c.country}</small>` : ''}</span>
+        <button class="cp-row" data-open="${c.id}"><span class="cp-name"><b>${c.name}</b>${c.area || c.country ? `<small>${c.area || c.country}</small>` : ''}${playedTag(c.id)}</span>
           <span class="cp-sum">${courseSummary(c)}</span><i class="cp-arrow"></i></button>
         <div class="cp-more"><em class="cp-en">${c.en}</em>${c.country && c.tagline ? `<i class="cp-country">${c.country}・${c.tagline}</i>` : ''}
           <div class="cp-stats"><span>Stimp(果嶺速度) <b>${c.stimp}</b></span><span>風 <b>${c.wind[0]}~${Math.min(15, c.wind[1])} mph</b></span><span>海拔 <b>${c.altitude} m</b></span>${c.nines ? `<span>分區 <b>${c.nines.map(n => n.name).join(' / ')}</b></span>` : ''}</div>
@@ -444,6 +444,11 @@ function openCoursePicker(kind) {
     renderSetup();
   });
   $('dlg-courses').classList.add('open');
+}
+// 打完過幾次 18 洞（球場護照的紀錄），還有最佳成績
+function playedTag(id) {
+  const st = prog().stamps[id];
+  return st && st.n ? `<i class="cp-done">已完成 ${st.n} 次${st.best ? ` · 最佳 ${st.best}` : ''}</i>` : '';
 }
 // 球場清單一列的重點：幾洞（分區球場寫幾區）、Par、黑梯總碼數
 function courseSummary(c) {
@@ -824,6 +829,7 @@ function openChar() {
   const p = session.profile;
   setCharTab('stats');
   draft = { stats: normalizeStats(p.stats), base: normalizeStats(p.stats), look: { ...DEFAULT_LOOK, ...p.look }, points: p.points, respecs: p.respecs ?? START_RESPECS, respecUsed: false };
+  previewPick = null;
   renderChar();
   show('scr-char');
 }
@@ -849,20 +855,35 @@ function gearSwatch(sk) {
   return `<i class="gs club ${sk.slot}" style="--h:${sk.slot === 'chipper' && sk.std ? '#b8bcc0' : h};--g:${gl || 'transparent'};${band}${gl ? `box-shadow:0 0 10px ${gl}` : ''}"></i>`;
 }
 
-// 球具與高爾夫球：解鎖的可以裝備，沒解鎖的顯示達成條件
+// 球具與高爾夫球：清單模式，分五類（平常收起，點類別才展開）；點一項就在上面的 3D 預覽看外觀與特效，已擁有的可以直接裝備
+const GEAR_CAT = { driver: '木桿', iron: '鐵桿', putter: '推桿', chipper: '寶刀', ball: '高爾夫球' };
+const gearOpen = new Set();
+let previewPick = null;          // 預覽中的外觀 { slot, id }（還沒裝備也可以看）
 function gearHtml() {
-  const swatch = gearSwatch;
   return `<h4 class="gear-h">球具與高爾夫球</h4><div class="gear-bal">可用星星 <b class="num">${starBalance()}</b> 顆</div>
-    <div class="gear-legend"><span><em class="gtag ach">成就解鎖</em>達成指定成就才會取得</span><span><em class="gtag star">星星 N 顆</em>用挑戰模式的星星購買</span><span><em class="gtag fx">特效</em>裝備後有小特效（不影響打球）</span></div>` + ['driver', 'iron', 'putter', 'chipper', 'ball'].map(slot => {
-    const cur = skinById(slot, draft.look[LOOK_KEY[slot]]).id;
-    return `<div class="gear-slot"><h5>${SLOT_NAME[slot]}</h5><div class="gear-list">${SKINS.filter(x => x.slot === slot).map(sk => {
-      const got = skinUnlocked(sk);
-      const sub = cur === sk.id ? '裝備中' : got ? '已擁有' : '尚未取得';
-      const tags = (sk.std ? '' : sk.price ? `<em class="gtag star">星星 ${sk.price} 顆</em>` : '<em class="gtag ach">成就解鎖</em>') + (sk.fx ? '<em class="gtag fx">特效</em>' : '');
-      return `<button class="gear ${cur === sk.id ? 'on' : ''} ${got ? '' : 'locked'}" data-slot="${slot}" data-skin="${sk.id}">${swatch(sk)}<span><b>${sk.name}</b><span class="gtags">${tags}</span><small>${sub}</small></span></button>`;
-    }).join('')}</div></div>`;
+    <p class="small gear-tip">點一項可以在上面的預覽看外觀與特效；已擁有的按「裝備」換上。</p>` + Object.keys(GEAR_CAT).map(slot => {
+    const list = SKINS.filter(x => x.slot === slot), cur = skinById(slot, draft.look[LOOK_KEY[slot]]);
+    const open = gearOpen.has(slot), owned = list.filter(skinUnlocked).length;
+    return `<div class="gx ${open ? 'open' : ''}">
+      <button class="gx-head" data-gx="${slot}">${gearSwatch(cur)}<span class="gx-t"><b>${GEAR_CAT[slot]}</b><small>裝備中：${escapeHtml(cur.name)}</small></span><span class="gx-cnt num">${owned} / ${list.length}</span><i class="cp-arrow"></i></button>
+      <div class="gx-list">${open ? list.map(sk => {
+        const got = skinUnlocked(sk), on = cur.id === sk.id, sel = previewPick && previewPick.slot === slot && previewPick.id === sk.id;
+        const how = sk.std ? '' : sk.price ? `<em class="gtag star">星星 ${sk.price}</em>` : '<em class="gtag ach">成就</em>';
+        return `<div class="gx-row ${on ? 'on' : ''} ${got ? '' : 'locked'} ${sel ? 'sel' : ''}">
+          <button class="gx-main" data-slot="${slot}" data-skin="${sk.id}">${gearSwatch(sk)}<span class="gx-t"><b>${escapeHtml(sk.name)}${sk.fx ? `<i class="sh-fx">${FX_NAME[sk.fx]}</i>` : ''}</b><small>${on ? '裝備中' : got ? '已擁有' : '尚未取得'}</small></span>${how}</button>
+          ${sel ? `<div class="gx-act">${got && !on ? `<button class="btn brass" data-eq="1">裝備</button>` : on ? '<span class="gx-on">目前裝備中</span>' : ''}<button class="btn ghost-dark" data-info="1">${got ? '詳細' : sk.price ? '詳細 / 購買' : '取得方式'}</button></div>` : ''}
+        </div>`;
+      }).join('') : ''}</div></div>`;
   }).join('');
 }
+function bindGear() {
+  $('ch-gear').querySelectorAll('[data-gx]').forEach(b => b.onclick = () => { const k = b.dataset.gx; gearOpen.has(k) ? gearOpen.delete(k) : gearOpen.add(k); renderGear(); });
+  $('ch-gear').querySelectorAll('[data-skin]').forEach(b => b.onclick = () => { previewPick = { slot: b.dataset.slot, id: b.dataset.skin }; renderGear(); applyPreviewPick(); });
+  const sel = previewPick && SKINS.find(x => x.slot === previewPick.slot && x.id === previewPick.id);
+  $('ch-gear').querySelector('[data-eq]')?.addEventListener('click', () => skinAct('equip', sel));
+  $('ch-gear').querySelector('[data-info]')?.addEventListener('click', () => openSkin(sel.slot, sel.id));
+}
+function renderGear() { $('ch-gear').innerHTML = gearHtml(); bindGear(); }
 
 // ---------------- 星星商店 ----------------
 // 挑戰模式拿到的星星可以買球桿與球的外觀；買了在這裡就能直接裝備
@@ -979,8 +1000,7 @@ function renderChar() {
     stopPreview(); startPreview();
   });
   $('ch-look').querySelectorAll('[data-lk]').forEach(b => b.onclick = () => { draft.look[b.dataset.lk] = b.dataset.lv; renderChar(); if (preview) preview.golfer.setLook(draft.look); });
-  $('ch-gear').innerHTML = gearHtml();
-  $('ch-gear').querySelectorAll('[data-skin]').forEach(b => b.onclick = () => openSkin(b.dataset.slot, b.dataset.skin));
+  renderGear();
 }
 
 // 素質詳細說明：影響什麼、公式、你目前的數值實際等於多少
@@ -1050,9 +1070,10 @@ function startPreview() {
   scene.add(ground);
   const def = characterDef(draft.look.model);
   const ballPos = new THREE.Vector3(0, 0.021, 0);
-  const me = { golfer: new ProceduralGolfer(draft.look), alive: true, scene };
+  const me = { golfer: new ProceduralGolfer(draft.look), alive: true, scene, icon: previewIcon() };
   preview = me;
-  me.golfer.setup(ballPos, 0, 'iron');
+  me.golfer.setClubSkins(previewSkins());
+  me.golfer.setup(ballPos, 0, me.icon === 'ball' ? 'iron' : me.icon);
   scene.add(me.golfer.object);
   if (def.file) {
     // 寫實角色：先顯示「載入中」，下載完換上去
@@ -1065,13 +1086,21 @@ function startPreview() {
       scene.remove(me.golfer.object);
       me.golfer = mg;
       scene.add(mg.object);
-      mg.setup(ballPos, 0, 'iron'); mg.skipPre();
+      mg.setClubSkins(previewSkins());
+      mg.setup(ballPos, 0, me.icon === 'ball' ? 'iron' : me.icon); mg.skipPre();
       $('ch-loading').classList.add('hidden');
     }).catch(() => { if (preview === me) $('ch-loading').textContent = '角色載入失敗'; });
   } else $('ch-loading').classList.add('hidden');
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.0213, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.0213, 24, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 }));
   ball.position.set(0, 0.021, 0);
   scene.add(ball);
+  // 特效粒子：在桿頭（選球時在球）旁邊往上飄
+  const FN = 60, fpos = new Float32Array(FN * 3), fdat = Array.from({ length: FN }, () => ({ life: Math.random(), dx: 0, dy: 0, dz: 0, ox: 0, oy: 0, oz: 0 }));
+  const fgeo = new THREE.BufferGeometry(); fgeo.setAttribute('position', new THREE.BufferAttribute(fpos, 3));
+  const fmat = new THREE.PointsMaterial({ size: 0.035, color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+  const fx = new THREE.Points(fgeo, fmat); fx.frustumCulled = false; scene.add(fx);
+  me.ball = ball; me.fx = fx; me.ballPos = ballPos;
+  applyPreviewLook(me);
   let t = 0, last = performance.now(), swingT = 0, lastW = 0, lastH = 0;
   const height = def.height || 1.78;
   const loop = now => {
@@ -1088,17 +1117,66 @@ function startPreview() {
     const c = golfer.object.position.clone().lerp(ballPos, 0.25);
     c.y = height * 0.5;
     const a = t * 0.35;
-    cam.position.set(c.x + Math.sin(a) * dist, c.y + dist * 0.12, c.z + Math.cos(a) * dist);
-    cam.lookAt(c);
+    golfer.object.visible = me.icon !== 'ball';      // 選球時角色和球桿先藏起來，只看球
+    if (me.icon === 'ball') {
+      // 選球：鏡頭貼近球、慢慢繞一圈
+      cam.position.set(ballPos.x + Math.sin(a) * 0.42, 0.16, ballPos.z + Math.cos(a) * 0.42); cam.lookAt(ballPos.x, 0.03, ballPos.z);
+      ball.rotation.y = t * 1.5;
+    } else {
+      cam.position.set(c.x + Math.sin(a) * dist, c.y + dist * 0.12, c.z + Math.cos(a) * dist);
+      cam.lookAt(c);
+    }
+    // 特效粒子
+    if (fx.visible) {
+      const head = me.icon === 'ball' ? ball.position : (golfer.clubHead && golfer.clubHead() ? golfer.clubHead().getWorldPosition(new THREE.Vector3()) : ballPos);
+      for (let i = 0; i < FN; i++) {
+        const d = fdat[i]; d.life += dt * (0.6 + (i % 5) * 0.12);
+        if (d.life >= 1) { d.life = 0; d.ox = head.x; d.oy = head.y; d.oz = head.z; d.dx = (Math.random() - 0.5) * 0.12; d.dy = 0.05 + Math.random() * 0.12; d.dz = (Math.random() - 0.5) * 0.12; }
+        fpos[i * 3] = d.ox + d.dx * d.life * 3; fpos[i * 3 + 1] = d.oy + d.dy * d.life * 3; fpos[i * 3 + 2] = d.oz + d.dz * d.life * 3;
+      }
+      fgeo.attributes.position.needsUpdate = true;
+      if (me.fxKind === 'rainbow') fmat.color.setHSL((t * 0.3) % 1, 0.9, 0.65);
+      fmat.size = me.icon === 'ball' ? 0.012 : 0.035;
+    }
     // 每 7 秒示範一次揮桿（寫實角色也一樣：停在準備姿勢 → 上桿 → 揮桿）
     swingT += dt;
-    if (swingT > 7) { swingT = 0; golfer.finished = false; golfer.setup(ballPos, 0, 'iron'); if (golfer.skipPre) golfer.skipPre(); }
+    if (swingT > 7) { swingT = 0; golfer.finished = false; golfer.setup(ballPos, 0, me.icon === 'ball' ? 'iron' : me.icon); if (golfer.skipPre) golfer.skipPre(); }
     else if (swingT > 2 && swingT < 3) golfer.setBackswing((swingT - 2) / 1);
     else if (swingT >= 3 && !golfer.anim && !golfer.swinging && !golfer.finished) golfer.swing(() => {});
     golfer.update(dt);
     r.render(scene, cam);
   };
   requestAnimationFrame(loop);
+}
+
+// 預覽用的外觀：裝備中的，加上清單裡點選的那一項
+function previewSkins() {
+  const sk = equippedSkins(draft.look);
+  if (previewPick) { const s = SKINS.find(x => x.slot === previewPick.slot && x.id === previewPick.id); if (s) sk[previewPick.slot] = s; }
+  return sk;
+}
+// 預覽角色手上拿哪一種桿（推桿、寶刀用推桿站姿）；選球時鏡頭改拍球
+const previewIcon = () => !previewPick ? 'iron' : { driver: 'driver', iron: 'iron', putter: 'putter', chipper: 'chipper', ball: 'ball' }[previewPick.slot];
+const FX_COLOR = { gold: 0xffd060, frost: 0x9ad8ff, galaxy: 0xb07aff, ember: 0xff7a2a, void: 0x9a4aff, moon: 0xe0e8ff, petal: 0xffb8d0, firefly: 0xc8ff6a, spore: 0xff8ae0,
+  portal: 0xb87aff, star: 0xfff0a0, rainbow: 0xff6ae0, neon: 0x4ae8ff, aurora: 0x6affb0, sun: 0xffc040 };
+function applyPreviewLook(me) {
+  const sk = previewSkins(), b = sk.ball;
+  me.ball.material.color.set(b.std ? 0xffffff : b.color);
+  me.ball.material.emissive.set(b.glow || 0x000000); me.ball.material.emissiveIntensity = b.glow ? 0.6 : 0;
+  // 特效：選了哪一項就看那一項的特效；沒選就看手上這支桿
+  const slot = previewPick ? previewPick.slot : 'iron', fxk = sk[slot] && sk[slot].fx;
+  me.fxKind = fxk; me.fx.visible = !!fxk;
+  if (fxk) me.fx.material.color.set(FX_COLOR[fxk] || 0xffffff);
+}
+function applyPreviewPick() {
+  const me = preview;
+  if (!me) return;
+  me.icon = previewIcon();
+  me.golfer.setClubSkins(previewSkins());
+  me.golfer.finished = false;
+  me.golfer.setup(me.ballPos, 0, me.icon === 'ball' ? 'iron' : me.icon);
+  if (me.golfer.skipPre) me.golfer.skipPre();
+  applyPreviewLook(me);
 }
 
 function stopPreview() {
@@ -1189,19 +1267,30 @@ function openChallenge() {
   show('scr-chal');
   renderChallenge();
 }
+// 章節收合：預設只打開「最新關卡」那一章；使用者點開 / 收起的記在這裡（這次開啟 APP 有效）
+let cgOpen = null;
+const latestLevel = () => LEVELS.find(l => levelOpen(l) && !(chal().stars[l.id] || 0)) || [...LEVELS].reverse().find(levelOpen) || LEVELS[0];
 function renderChallenge() {
-  const c = chal();
+  const c = chal(), latest = latestLevel(), lk = chapterOf(latest.n);
+  if (!cgOpen) cgOpen = new Set([lk]);
   $('cg-stars').innerHTML = `已拿 <b>${c.total}</b> / ${LEVELS.length * 3} 顆星`;
-  // 一關一列，照關卡往下排；章標題寫這一章拿了幾顆星（前 100 關每章 10 關，之後每章 20 關）
-  $('cg-grid').innerHTML = LEVELS.map(lv => {
-    const open = levelOpen(lv), n = c.stars[lv.id] || 0;
-    const tag = THEME_NAME[lv.theme] || '';
-    const k = chapterOf(lv.n), C = CHAPTERS[k], chap = LEVELS.slice(C.from - 1, C.to);
-    const head = lv.n === C.from ? `<h4 class="cg-ch">第 ${k + 1} 章・${C.name}<span>${chap.reduce((a, l) => a + (c.stars[l.id] || 0), 0)} / ${chap.length * 3}</span></h4>` : '';
-    return head + `<button class="cg-card ${open ? '' : 'locked'} ${n === 3 ? 'full' : ''}" data-lv="${lv.id}" ${open ? '' : 'disabled'}>
-      <span class="cg-n num">${lv.n}</span><span class="cg-t"><b>${escapeHtml(lv.title)}</b><small>${tag} · PAR ${lv.par} · ${lv.yards} Y</small></span>
-      ${open ? starsHtml(n) : `<em>通過第 ${lv.n - 1} 關後開放</em>`}</button>`;
+  // 最上面：馬上玩最新的關卡
+  $('cg-next').innerHTML = `<span class="cg-n num">${latest.n}</span><span class="cg-t"><small>${c.stars[latest.id] ? '全部通過了！再挑戰一次' : '繼續挑戰'}</small><b>第 ${latest.n} 關・${escapeHtml(latest.title)}</b></span><em>開始</em>`;
+  $('cg-next').onclick = () => openLevel(latest);
+  // 一關一列，照關卡往下排；章標題寫這一章拿了幾顆星（前 100 關每章 10 關，之後每章 20 關），點標題收合 / 展開
+  $('cg-grid').innerHTML = CHAPTERS.map((C, k) => {
+    const chap = LEVELS.slice(C.from - 1, C.to), got = chap.reduce((a, l) => a + (c.stars[l.id] || 0), 0), open = cgOpen.has(k);
+    const unlocked = levelOpen(chap[0]);
+    return `<div class="cg-chap ${open ? 'open' : ''} ${unlocked ? '' : 'locked'}">
+      <button class="cg-ch" data-ch="${k}"><span>第 ${k + 1} 章・${C.name}${k === lk ? '<i class="cg-now">進行中</i>' : ''}</span><span>${got} / ${chap.length * 3}<i class="cg-arrow"></i></span></button>
+      <div class="cg-list">${open ? chap.map(lv => {
+        const lo = levelOpen(lv), n = c.stars[lv.id] || 0;
+        return `<button class="cg-card ${lo ? '' : 'locked'} ${n === 3 ? 'full' : ''} ${lv === latest ? 'now' : ''}" data-lv="${lv.id}" ${lo ? '' : 'disabled'}>
+          <span class="cg-n num">${lv.n}</span><span class="cg-t"><b>${escapeHtml(lv.title)}</b><small>${THEME_NAME[lv.theme] || ''} · PAR ${lv.par} · ${lv.yards} Y</small></span>
+          ${lo ? starsHtml(n) : `<em>通過第 ${lv.n - 1} 關後開放</em>`}</button>`;
+      }).join('') : ''}</div></div>`;
   }).join('');
+  $('cg-grid').querySelectorAll('[data-ch]').forEach(b => b.onclick = () => { const k = +b.dataset.ch; cgOpen.has(k) ? cgOpen.delete(k) : cgOpen.add(k); renderChallenge(); });
   $('cg-grid').querySelectorAll('[data-lv]').forEach(b => b.onclick = () => openLevel(levelById(b.dataset.lv)));
 }
 function openLevel(lv) {
@@ -1230,10 +1319,17 @@ async function openRanking() {
   show('scr-rank');
   if (!rank.course) rank.course = 'orient';
   // 球場按分類排（台灣球場在最前面）
-  $('rk-courses').innerHTML = COURSE_GROUPS.flatMap(g => COURSES.filter(c => c.group === g.id)).map(c => `<button data-c="${c.id}" class="${c.id === rank.course ? 'on' : ''}">${escapeHtml(c.name)}</button>`).join('');
+  // 球場排行：先選類別、再選球場（兩個下拉選單；球場太多，按鈕會排滿整個畫面）
+  const groups = COURSE_GROUPS.filter(g => COURSES.some(c => c.group === g.id));
+  const curGroup = (COURSES.find(c => c.id === rank.course) || {}).group || groups[0].id;
+  $('rk-courses').innerHTML = `<label class="rk-pick"><span>類別</span><select id="rk-group" class="select">${groups.map(g => `<option value="${g.id}" ${g.id === curGroup ? 'selected' : ''}>${escapeHtml(g.name)}</option>`).join('')}</select></label>
+    <label class="rk-pick"><span>球場</span><select id="rk-course" class="select"></select></label>`;
+  const fillCourses = gid => { $('rk-course').innerHTML = COURSES.filter(c => c.group === gid).map(c => `<option value="${c.id}" ${c.id === rank.course ? 'selected' : ''}>${escapeHtml(c.name)}${c.area ? `（${escapeHtml(c.area)}）` : ''}</option>`).join(''); };
+  fillCourses(curGroup);
   $('rk-tabs').querySelectorAll('button').forEach(b => b.onclick = () => { rank.tab = b.dataset.rk; rank.open = null; renderRanking(); });
   $('rk-holes').querySelectorAll('button').forEach(b => b.onclick = () => { rank.holes = Number(b.dataset.h); renderRanking(); });
-  $('rk-courses').querySelectorAll('button').forEach(b => b.onclick = () => { rank.course = b.dataset.c; renderRanking(); });
+  $('rk-group').onchange = e => { fillCourses(e.target.value); rank.course = $('rk-course').value; renderRanking(); };
+  $('rk-course').onchange = e => { rank.course = e.target.value; renderRanking(); };
   // 先顯示上次讀到的排行，背景再向伺服器要新的；回來了就直接換上（還停在排行頁才重畫）
   const rows0 = peek('getRankings'), stars0 = peek('getStarRanking');
   if (rows0) { rank.rows = rows0; rank.stars = stars0 || []; renderRanking(); rkUpdating(true); }
@@ -1257,7 +1353,7 @@ function starRankHtml() {
 function rkUpdating(on) { const el = $('rk-sync'); if (el) el.classList.toggle('hidden', !on); }
 function renderRanking() {
   const sel = (id, attr, v) => $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset[attr] === String(v)));
-  sel('rk-tabs', 'rk', rank.tab); sel('rk-holes', 'h', rank.holes); sel('rk-courses', 'c', rank.course);
+  sel('rk-tabs', 'rk', rank.tab); sel('rk-holes', 'h', rank.holes);
   $('rk-holes').classList.toggle('hidden', rank.tab === 'special' || rank.tab === 'stars');
   $('rk-courses').classList.toggle('hidden', rank.tab !== 'course');
   $('rk-list').innerHTML = rank.tab === 'stars' ? starRankHtml() : rank.tab === 'special' ? specialHtml() : strokeHtml();

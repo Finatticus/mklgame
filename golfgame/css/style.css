@@ -1354,3 +1354,64 @@ button.sp:active { transform: scale(.96); }
   .sc-n { width: 21px; height: 21px; font-size: 12.5px; }
 }
 .rk-sync { margin: 2px 2px 6px; color: var(--brass); }
+
+/* 選球場：打完過幾次 */
+.cp-done { flex: none; font-style: normal; font-size: 10.5px; font-weight: 600; color: #2a6a3a; background: #e6f1e2; border: 1px solid #c8dfc0; border-radius: 9px; padding: 0 6px; white-space: nowrap; }
+
+/* 挑戰：繼續最新關卡、章節收合 */
+.cg-next { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; margin: 0 0 10px; padding: 12px 14px; border-radius: 14px; border: 0; background: linear-gradient(135deg, #1d3a2a, #2b5236); color: var(--cream); box-shadow: 0 8px 18px -12px rgba(29,58,42,.7); }
+.cg-next .cg-n { flex: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--brass); color: #1d1a10; font-size: 17px; font-weight: 700; }
+.cg-next .cg-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cg-next small { font-size: 11px; letter-spacing: .1em; color: var(--brass2); }
+.cg-next b { font: 700 16px "Noto Serif TC"; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cg-next em { flex: none; font-style: normal; font-size: 13px; font-weight: 700; color: #1d1a10; background: linear-gradient(180deg, #e8cf94, #c9a35a); border-radius: 16px; padding: 6px 16px; }
+.cg-chap { border-top: 1px solid #ece4d0; }
+.cg-chap:first-child { border-top: 0; }
+button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border-top: 0 !important; }
+.cg-chap.locked .cg-ch { color: #9a947f; }
+.cg-ch > span:last-child { display: inline-flex; align-items: center; gap: 8px; }
+.cg-arrow { width: 7px; height: 7px; border-right: 1.5px solid #9a8a5a; border-bottom: 1.5px solid #9a8a5a; transform: rotate(45deg); margin-top: -3px; transition: transform .2s; }
+.cg-chap.open .cg-arrow { transform: rotate(-135deg); margin-top: 3px; }
+.cg-now { font-style: normal; font-size: 10.5px; font-weight: 700; color: #fff; background: #a9864a; border-radius: 8px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; }
+.cg-card.now { background: #fbf4e0; box-shadow: inset 3px 0 0 var(--brass); }
+
+/* 球場排行：類別 + 球場兩個下拉選單 */
+#rk-courses { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
+#rk-courses.hidden { display: none; }
+.rk-pick { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--muted); }
+.rk-pick .select { width: 100%; font-size: 14px; padding: 8px 10px; }
+
+/* 旗桿距離紅卡：永遠在最上層，跟它重疊的東西變半透明 */
+#tag-pin { z-index: 40; }
+.under-pin { opacity: .18 !important; transition: opacity .15s; }
+
+/* 角色外觀：球具清單（五類，點類別展開；點一項在上面預覽） */
+.gear-tip { margin: 2px 0 10px; }
+.gx { background: #fff; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.gx-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 0; background: transparent; text-align: left; color: var(--ink); }
+.gx.open .gx-head { background: #f8f3e6; border-bottom: 1px solid #efe9da; }
+.gx-head .gs, .gx-main .gs { flex: none; transform: scale(.72); transform-origin: center; margin: -4px -2px; }
+.gx-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.gx-t b { font-size: 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gx-head .gx-t b { font: 700 15px "Noto Serif TC"; color: var(--forest); }
+.gx-t small { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gx-cnt { flex: none; font-size: 12px; color: #6a6454; }
+.gx.open .cp-arrow { transform: rotate(-135deg); margin-top: 3px; }
+.gx-row { border-top: 1px solid #f2ede0; }
+.gx-row:first-child { border-top: 0; }
+.gx-main { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 12px; border: 0; background: transparent; text-align: left; color: var(--ink); }
+.gx-main .gtag { flex: none; }
+.gx-row.on .gx-main { background: #fbf6e8; }
+.gx-row.on .gx-t small { color: #2a6a3a; font-weight: 600; }
+.gx-row.locked .gx-main .gs { opacity: .5; }
+.gx-row.locked .gx-t b { color: #8a8474; }
+.gx-row.sel { background: #f4efe0; box-shadow: inset 3px 0 0 var(--brass); }
+.gx-row.sel .gx-main { background: transparent; }
+.gx-act { display: flex; gap: 8px; padding: 0 12px 10px 52px; align-items: center; }
+.gx-act .btn { flex: 1; padding: 7px 10px; font-size: 13px; }
+.gx-on { flex: 1; font-size: 12.5px; font-weight: 600; color: #2a6a3a; }
+/* 手機：外觀頁的 3D 預覽固定在上面，往下捲清單時也看得到 */
+@media (max-width: 720px) {
+  .char-body[data-ct="look"] .ch-stage { position: sticky; top: -16px; z-index: 3; background: var(--paper); padding: 16px 0 6px; margin-top: -16px; box-shadow: 0 6px 8px -6px rgba(0,0,0,.15); }
+  .char-body[data-ct="look"] .char-left canvas { height: 230px; }
+}

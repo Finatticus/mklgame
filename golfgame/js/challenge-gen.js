@@ -163,10 +163,11 @@ function build(kind, t, n, d, r, pick, ci) {
     case 'bounce': {
       par = 4; yards = rnd(340, 410); const sh = t === 'mushroom' || t === 'haunt' || t === 'jungle' || r() < 0.4, k = Math.round(lerp(1.5, 3));
       const kd = sh ? 'shroom' : 'tramp';
-      spec = { specials: Array.from({ length: k }, (_, j) => ({ kind: kd, at: 190 + j * 45, lat: rnd(-4, 4), h: 5 + j })), bunkers: [{ g: 'FL' }] };
+      // 落點區幾個，再加一個在果嶺前（打短的第二桿落上去就能彈上果嶺，「彈起的那一桿上果嶺」才做得到）
+      spec = { specials: [...Array.from({ length: k }, (_, j) => ({ kind: kd, at: 190 + j * 45, lat: rnd(-4, 4), h: 5 + j })), { kind: kd, at: yards - 26, lat: 0, h: 3, r: 5 }], bunkers: [{ g: 'FL' }] };
       goals = [k >= 2 && d > 0.4 ? { t: 'fxOne', kind: kd, v: 2, text: `同一桿${sh ? '被巨菇' : '在彈跳床上'}彈 2 次以上` } : { t: 'fx', kind: kd, v: 1, text: sh ? '被巨菇彈起來' : '落上彈跳床' },
         { t: 'fxGreen', kind: kd, text: `${sh ? '被巨菇' : '彈跳床'}彈起的那一桿直接上果嶺` }];
-      intro = `${M}，落點區排著 ${k} ${sh ? '朵彈跳巨菇' : '張彈跳床'}，落上去會被彈得老高。`;
+      intro = `${M}，落點區排著 ${k} ${sh ? '朵彈跳巨菇' : '張彈跳床'}，果嶺前還有一${sh ? '朵' : '張'}，落上去會被彈得老高。`;
       break;
     }
     case 'walls': {
@@ -196,7 +197,8 @@ function build(kind, t, n, d, r, pick, ci) {
     }
     case 'drive': {
       par = r() < 0.5 ? 4 : 5; yards = par === 4 ? rnd(440, 480) : rnd(590, 660);
-      const v = Math.round((lerp(240, 300) + (t === 'moon' ? 40 : t === 'mars' ? 20 : 0)) / 5) * 5;
+      // 開球門檻跟著關卡進度：一般素質的一號木平均約 200 碼、能力點加滿約 300 碼（月面空氣稀薄約多 20%）
+      const v = Math.round((lerp(225, 275) + (t === 'moon' ? 25 : t === 'mars' ? 12 : 0)) / 5) * 5;
       spec = { bunkers: [{ at: v - 20, side: 'L' }, { at: v + 10, side: 'R' }, { g: 'F' }] }; if (r() < 0.4) feat = 'tr';
       goals = [{ t: 'drive', v, text: `開球 ${v} 碼以上` }, { t: 'greenIn', v: par - 2, text: `${par - 2} 桿內上果嶺` }];
       intro = `${M}。${yards} 碼的${par === 4 ? '長四桿' : '五桿'}洞，開球不夠遠就上不了果嶺。`;

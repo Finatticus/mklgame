@@ -581,6 +581,7 @@ export class Game {
       this.world.setTarget(tx, tz, clamp(c / 60, 0.6, 3.5), true);
       this.targetPt = [tx, tz];
     }
+    this.hud.orbGot = this.orbGot;
     this.hud.drawMini(this.hole, this.world.miniCanvas || this.world.colorCanvas, p.ball, this.targetPt, this.players.map(q => ({ ball: q.ball, holed: q.holed, current: q.idx === this.cur })));
   }
 
@@ -1736,6 +1737,7 @@ export class Game {
     const b = this.world.ball.position;
     this.hud.placeSwingUI(atBall ? this.world.project(b.x, b.y, b.z) : null);
     this.hud.avoidPinTag();
+    this.hud.guardPinTag();
     // 紅色小箭頭指著預估落點
     if (atBall && this.canControl() && !this.club.putter && this.targetPt) {
       const [tx, tz] = this.targetPt;
