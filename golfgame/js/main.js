@@ -2,8 +2,8 @@
 import * as THREE from 'three';
 import { session, call, isLocalMode, peek, refresh, prefetch } from './api.js';
 import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
-import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS } from './stats.js';
-import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel } from './courses.js';
+import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS, levelOf } from './stats.js';
+import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel, teeKey, teeList } from './courses.js';
 import { World } from './render.js';
 import { Hud } from './hud.js';
 import { Game } from './game.js';
@@ -164,11 +164,8 @@ function initSettings() {
 // 最佳 18 洞：從排行紀錄重新算（排除三桿洞球場與奇幻球場）；伺服器存的數字以前可能已經算進 Par 54 的回合
 const myBest = { user: null, v: null, at: 0 };
 function bestFrom(rows) {
-  const mine = rows.filter(r => r.user === session.user && r.holes === 18);
-  const ok = mine.filter(countsForTotal).map(r => r.strokes);
-  // 伺服器存的數字：排行功能加入前打的成績不在排行裡，所以照樣採用；只有剛好等於某一場三桿洞 / 奇幻球場的桿數時才當作算錯的捨棄
-  const sv = session.profile.best;
-  if (sv && !mine.some(r => !countsForTotal(r) && r.strokes === sv)) ok.push(sv);
+  // 只看黑梯（最遠的梯台）、算總桿排行的球場；排行紀錄才知道打哪個梯台，所以不再採用伺服器存的舊數字
+  const ok = rows.filter(r => r.user === session.user && r.holes === 18 && countsForTotal(r)).map(r => r.strokes);
   return ok.length ? Math.min(...ok) : null;
 }
 async function refreshMyBest() {
@@ -182,10 +179,10 @@ const prefetched = new Set();
 function enterLobby() {
   const h = new Date().getHours();
   $('lb-greet').textContent = h < 11 ? 'GOOD MORNING' : h < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
-  $('lb-name').innerHTML = escapeHtml(session.user) + (session.isAdmin ? '<span class="badge">管理員</span>' : '');
+  $('lb-name').innerHTML = escapeHtml(session.user) + `<span class="lv-tag">Lv.${levelOf(session.profile.stats)}</span>` + (session.isAdmin ? '<span class="badge">管理員</span>' : '');
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !session.isAdmin));
   const p = session.profile;
-  const lbStats = best => ($('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞 <b>${best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`);
+  const lbStats = best => ($('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞（黑梯）<b>${best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`);
   const cachedRows = peek('getRankings');
   lbStats(myBest.user === session.user ? myBest.v : cachedRows ? bestFrom(cachedRows) : null);
   refreshMyBest().then(lbStats).catch(() => lbStats(p.best));
@@ -196,7 +193,7 @@ function enterLobby() {
       if (session.user === who) backfillStamps([...(rk || []), ...(rd || [])], who);
     });
   }
-  $('mode-chal-sub').textContent = `${LEVELS.length} 個特別設計的關卡 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
+  $('mode-chal-sub').textContent = `特殊關卡挑戰 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
   show('scr-lobby');
   refreshCustom().catch(() => {});        // 自製球場清單（發布的球場、修改過的球洞）
   checkChallenge(LEVELS);
@@ -246,7 +243,7 @@ function initLobby() {
 }
 
 // ---------------- 回合設定 ----------------
-const setup = { kind: 'single', courseId: 'orient', holes: 'all', tee: 'white', mode: 'stroke', wind: 'course', stimp: null, gimme: 1, mulligans: 2, startHole: 0, pkind: 'range', hpHole: 0 };
+const setup = { kind: 'single', courseId: 'orient', holes: 'all', tee: 'black', mode: 'stroke', wind: 'course', stimp: null, gimme: 1, mulligans: 2, startHole: 0, pkind: 'range', hpHole: 0 };
 function openSetup(kind) {
   setup.kind = kind;
   $('st-title').textContent = { single: '單人回合', host: '建立遊戲間', practice: '練習場' }[kind];
@@ -339,7 +336,8 @@ function renderSetup() {
     });
   }
   seg('st-holes', 'holes', base ? [['all', '18 洞'], ['front', '9 洞']] : [['all', '18 洞'], ['front', '前 9'], ['back', '後 9']]);
-  seg('st-tee', 'tee', TEE_SETS.map(t => [t.id, `${t.name} ${courseYards(c, t.id).toLocaleString()}`]));
+  setup.tee = teeKey(c, setup.tee);      // 藍黑共用的球場：藍梯 = 黑梯
+  seg('st-tee', 'tee', teeList(c).map(t => [t.id, `${t.name} ${courseYards(c, t.id).toLocaleString()}`]));
   seg('st-mode', 'mode', [['stroke', '比桿賽'], ['match', '比洞賽']]);
   seg('st-wind', 'wind', [['course', '球場預設'], ['calm', '無風'], ['light', '微風'], ['normal', '一般'], ['strong', '強風']]);
   // 果嶺速度：數字可調（Stimp 6.0~13.0，每次 0.5），預設為球場標準
@@ -479,7 +477,7 @@ function openPreview(id) {
 
 function renderPreview(id) {
   const c = courseById(id);
-  const tee = TEE_SETS.find(t => t.id === setup.tee);
+  const tee = teeList(c).find(t => t.id === setup.tee) || TEE_SETS[0];
   const token = ++previewToken;
   const front = c.holes.slice(0, 9).reduce((a, h) => a + h[0], 0);
   $('st-prev-sum').textContent = `${tee.name} ${courseYards(c, setup.tee).toLocaleString()} Y · 前九 Par ${front} · 後九 Par ${c.holes.slice(9).reduce((a, h) => a + h[0], 0)}`;
@@ -987,6 +985,7 @@ async function skinAct(act, sk) {
 
 function renderChar() {
   $('ch-points').textContent = draft.points;
+  $('ch-level').textContent = levelOf(draft.stats);
   $('ch-respecs').textContent = draft.respecs;
   let html = '', group = '';
   for (const s of STATS) {
@@ -998,7 +997,7 @@ function renderChar() {
       <div class="sbar"><i style="width:${(v - 0) / MAX * 100}%"></i><em style="left:${BASE / MAX * 100}%"></em></div>
       <b class="sv num">${v}</b>
       <button class="sb" data-k="${s.key}" data-d="-1" ${v <= draft.base[s.key] ? 'disabled' : ''}>−</button>
-      <button class="sb" data-k="${s.key}" data-d="1" ${v >= MAX || cost > draft.points ? 'disabled' : ''}>＋<small>${cost || ''}</small></button>
+      <button class="sb sb-up" data-k="${s.key}" data-d="1" ${v >= MAX || cost > draft.points ? 'disabled' : ''}>＋${cost ? `<span class="sb-cost c${cost}">${cost} 點</span>` : ''}</button>
       <p>${s.desc}</p>${draft.open === s.key ? statDetailHtml(s, v) : ''}</div>`;
   }
   $('ch-stats').innerHTML = html;
@@ -1214,7 +1213,8 @@ function stopPreview() {
 }
 
 // ---------------- 紀錄 ----------------
-let rcTab = 'rounds';
+let rcTab = 'rounds', rcOpen = null;
+const fmtDay = d => { const t = new Date(d); return `${t.getMonth() + 1}/${t.getDate()}`; };
 async function openRecords() {
   show('scr-records');
   $('rc-tabs').querySelectorAll('button').forEach(b => b.onclick = () => { rcTab = b.dataset.rc; renderRecords(); });
@@ -1226,10 +1226,17 @@ async function renderRecords() {
   if (rcTab === 'ach') { $('rc-list').innerHTML = achHtml(); return; }
   if (rcTab === 'real') { renderRealTab($('rc-list'), () => rcTab === 'real' && document.body.dataset.screen === 'scr-records'); return; }
   if (rcTab === 'pass') { $('rc-list').innerHTML = passportHtml(); $('rc-list').querySelectorAll('[data-sp]').forEach(b => b.onclick = () => openStamp(b)); return; }
-  const draw = list => { $('rc-list').innerHTML = list.length ? list.map(r => `
-      <div class="rec"><div><b>${escapeHtml(r.course)}</b><span>${new Date(r.date).toLocaleDateString()} · ${r.holes} 洞 · ${escapeHtml(r.mode)}${r.partners ? ' · 與 ' + escapeHtml(r.partners) : ''}</span></div>
-      <div class="rs"><b class="num">${r.strokes}</b><span class="num">${fmtToPar(Number(r.toPar))}</span></div>
-      <div class="rx">推桿 ${r.putts} · 上球道 ${r.fairways} · GIR ${r.gir}</div></div>`).join('') : '<p class="small">還沒有紀錄，去打一場吧！</p>'; };
+  // 一場一列（日期、球場、桿數），點一下展開：梯台、模式、同組、推桿、上球道、GIR、每洞桿數
+  const teeName = r => { const c = COURSES.find(x => x.name === String(r.course).split('（')[0] || x.oldName === String(r.course).split('（')[0]); return (teeList(c).find(t => t.id === teeKey(c, r.tee)) || {}).name || '—'; };
+  const holesHtml = r => { const sc = Array.isArray(r.scores) ? r.scores : []; return sc.length ? `<div class="rec-holes">${sc.map((v, i) => `<span><small>${i + 1}</small><b class="num">${v || '—'}</b></span>`).join('')}</div>` : ''; };
+  const draw = list => {
+    $('rc-list').innerHTML = list.length ? list.map((r, i) => `
+      <div class="rec ${rcOpen === i ? 'open' : ''}" data-rec="${i}">
+        <div class="rec-head"><span class="rec-date num">${fmtDay(r.date)}</span><b>${escapeHtml(r.course)}</b><span class="rec-h">${r.holes} 洞</span><b class="num rec-s">${r.strokes}</b><span class="num rec-p ${Number(r.toPar) < 0 ? 'under' : ''}">${fmtToPar(Number(r.toPar))}</span><i class="rec-chev">${rcOpen === i ? '▾' : '▸'}</i></div>
+        ${rcOpen === i ? `<div class="rec-body"><div class="rec-kv"><span>梯台<b>${escapeHtml(teeName(r))}</b></span><span>模式<b>${escapeHtml(r.mode || '—')}</b></span>${r.partners ? `<span>同組<b>${escapeHtml(r.partners)}</b></span>` : ''}<span>推桿<b class="num">${r.putts}</b></span><span>上球道<b class="num">${r.fairways}</b></span><span>標準桿上果嶺<b class="num">${r.gir}</b></span><span>時間<b class="num">${new Date(r.date).toLocaleString()}</b></span></div>${holesHtml(r)}</div>` : ''}
+      </div>`).join('') : '<p class="small">還沒有紀錄，去打一場吧！</p>';
+    $('rc-list').querySelectorAll('[data-rec]').forEach(el => el.onclick = () => { const i = Number(el.dataset.rec); rcOpen = rcOpen === i ? null : i; draw(list); });
+  };
   // 先畫上次讀到的，背景更新回來再換上（還停在回合紀錄分頁才重畫）
   const old = peek('getRounds');
   if (old) draw(old); else $('rc-list').innerHTML = '<p class="small">讀取中…</p>';
@@ -1339,7 +1346,7 @@ function startChallenge(lv) {
 
 // ---------------- 排行 ----------------
 // 「排行」工作頁的每一場都單獨排名；分類與排序都在這裡做
-const rank = { tab: 'total', holes: 18, course: null, rows: [], open: null };
+const rank = { tab: 'total', holes: 18, course: null, tee: 'black', rows: [], open: null };
 const RK_TYPE = { hio: '一桿進洞', albatross: '信天翁', eagle: '老鷹' };
 const fmtWhen = iso => { const d = new Date(iso); const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
 
@@ -1351,13 +1358,17 @@ async function openRanking() {
   const groups = COURSE_GROUPS.filter(g => COURSES.some(c => c.group === g.id));
   const curGroup = (COURSES.find(c => c.id === rank.course) || {}).group || groups[0].id;
   $('rk-courses').innerHTML = `<label class="rk-pick"><span>類別</span><select id="rk-group" class="select">${groups.map(g => `<option value="${g.id}" ${g.id === curGroup ? 'selected' : ''}>${escapeHtml(g.name)}</option>`).join('')}</select></label>
-    <label class="rk-pick"><span>球場</span><select id="rk-course" class="select"></select></label>`;
+    <label class="rk-pick"><span>球場</span><select id="rk-course" class="select"></select></label>
+    <label class="rk-pick"><span>梯台</span><select id="rk-tee" class="select"></select></label>`;
+  // 梯台選單：藍黑共用的球場只有「藍梯（黑）」
+  const fillTees = () => { const c = COURSES.find(x => x.id === rank.course); rank.tee = teeKey(c, rank.tee); $('rk-tee').innerHTML = teeList(c).map(t => `<option value="${t.id}" ${t.id === rank.tee ? 'selected' : ''}>${t.name}</option>`).join(''); };
   const fillCourses = gid => { $('rk-course').innerHTML = COURSES.filter(c => c.group === gid).map(c => `<option value="${c.id}" ${c.id === rank.course ? 'selected' : ''}>${escapeHtml(c.name)}${c.area ? `（${escapeHtml(c.area)}）` : ''}</option>`).join(''); };
-  fillCourses(curGroup);
+  fillCourses(curGroup); fillTees();
   $('rk-tabs').querySelectorAll('button').forEach(b => b.onclick = () => { rank.tab = b.dataset.rk; rank.open = null; renderRanking(); });
   $('rk-holes').querySelectorAll('button').forEach(b => b.onclick = () => { rank.holes = Number(b.dataset.h); renderRanking(); });
-  $('rk-group').onchange = e => { fillCourses(e.target.value); rank.course = $('rk-course').value; renderRanking(); };
-  $('rk-course').onchange = e => { rank.course = e.target.value; renderRanking(); };
+  $('rk-group').onchange = e => { fillCourses(e.target.value); rank.course = $('rk-course').value; fillTees(); renderRanking(); };
+  $('rk-course').onchange = e => { rank.course = e.target.value; fillTees(); renderRanking(); };
+  $('rk-tee').onchange = e => { rank.tee = e.target.value; renderRanking(); };
   // 先顯示上次讀到的排行，背景再向伺服器要新的；回來了就直接換上（還停在排行頁才重畫）
   const rows0 = peek('getRankings'), stars0 = peek('getStarRanking');
   if (rows0) { rank.rows = rows0; rank.stars = stars0 || []; renderRanking(); rkUpdating(true); }
@@ -1392,14 +1403,20 @@ function renderRanking() {
 // 三桿洞球場（例如 Cliffhangers，18 洞 Par 54）桿數本來就少很多、奇幻球場有機關幫忙，都不列入總桿排行與最佳 18 洞，只在自己的球場排行裡比
 const fullPar = r => !r.par || r.par >= (r.holes === 18 ? 66 : 33);
 const rowCourse = r => { const id = String(r.courseId || '').split(':')[0]; return COURSES.find(c => c.id === id) || COURSES.find(c => c.name === r.course || (c.oldName && c.oldName === r.course)); };
-const countsForTotal = r => r.rankable !== false && fullPar(r) && !['fantasy', 'custom'].includes((rowCourse(r) || {}).group) && !String(r.courseId || '').startsWith('custom_');
+// 這一場打的梯台（藍黑共用的球場，藍梯算黑梯）
+const rowTee = r => teeKey(rowCourse(r), r.tee);
+// 總桿排行 / 最佳 18 洞：只比黑梯（最遠的梯台）
+const countsForTotal = r => r.rankable !== false && fullPar(r) && rowTee(r) === 'black' && !['fantasy', 'custom'].includes((rowCourse(r) || {}).group) && !String(r.courseId || '').startsWith('custom_');
 function strokeHtml() {
   const course = COURSES.find(c => c.id === rank.course);
   const list = rank.rows
-    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && (r.course === course.name || r.course === course.oldName))))
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : rowTee(r) === rank.tee && (r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && (r.course === course.name || r.course === course.oldName)))))
     .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
     .slice(0, 100);
-  const note = rank.tab === 'total' ? '<p class="small rk-note">三桿洞球場（例如 Cliffhangers，Par 54）與奇幻球場不列入總桿排行，請到「球場」分頁看各球場的排行。</p>' : '';
+  const teeName = (teeList(course).find(t => t.id === rank.tee) || {}).name || '';
+  const note = rank.tab === 'total'
+    ? '<p class="small rk-note"><b>總桿排行只比黑梯</b>（最遠的梯台；官網沒有黑梯的球場，藍梯就是黑梯）。藍、白、紅梯的成績請到「球場排行」選梯台查看。三桿洞球場（例如 Cliffhangers，Par 54）與奇幻球場也不列入總桿排行。</p>'
+    : `<p class="small rk-note">只和打<b>${escapeHtml(teeName)}</b>的成績一起排名，換梯台請用上面的「梯台」選單。</p>`;
   if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>' + note;
   return note + list.map((r, i) => `
     <div class="rk-row ${r.user === session.user ? 'me' : ''}">

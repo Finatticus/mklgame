@@ -1438,3 +1438,33 @@ button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border
 @media (orientation: portrait) {
   .env-grid { grid-template-columns: 1fr; }
 }
+
+/* 大廳名字後面的等級、角色頁的等級 */
+.lv-tag { display: inline-block; font: 700 12px "Barlow Condensed"; letter-spacing: .04em; color: var(--brass2); border: 1px solid rgba(214,187,130,.5); border-radius: 8px; padding: 0 6px; margin-left: 8px; vertical-align: middle; line-height: 1.5; }
+.lv-big { color: var(--forest); }
+/* 加能力值：＋ 下面標清楚要花幾點能力點 */
+.stat { grid-template-columns: 98px 1fr 34px 34px 56px; }
+.sb-up { height: 46px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 2px 0; }
+.sb-cost { font: 700 12.5px/1.35 "Noto Sans TC"; color: #fff; border-radius: 6px; padding: 0 6px; white-space: nowrap; }
+.sb-cost.c1 { background: #3f7a4a; }
+.sb-cost.c2 { background: #b08a3e; }
+.sb-cost.c3 { background: #b0483c; }
+/* 回合紀錄：一場一列，點一下展開 */
+#rc-list .rec { display: block; padding: 0; cursor: pointer; }
+.rec-head { display: grid; grid-template-columns: 38px 1fr auto auto auto 14px; align-items: center; gap: 8px; padding: 10px 12px; }
+.rec-head b { font: 700 14px "Noto Serif TC"; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-date { font-size: 12px; color: var(--muted); }
+.rec-h { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.rec-head .rec-s { font: 700 20px "Barlow Condensed"; color: var(--forest); }
+.rec-p { font-size: 12px; color: var(--muted); min-width: 26px; text-align: right; }
+.rec-p.under { color: #b0483c; }
+.rec-chev { font-style: normal; font-size: 11px; color: var(--muted); }
+.rec.open { border-color: var(--brass); }
+.rec-body { border-top: 1px solid var(--line); padding: 10px 12px 12px; cursor: default; }
+.rec-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px 12px; }
+.rec-kv span { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+.rec-kv b { font: 600 13px "Noto Sans TC"; color: #1c1a16; display: inline; }
+.rec-holes { display: grid; grid-template-columns: repeat(9, 1fr); gap: 3px; margin-top: 10px; }
+.rec-holes span { display: flex; flex-direction: column; align-items: center; background: #f6f1e4; border-radius: 6px; padding: 2px 0; }
+.rec-holes small { font-size: 9.5px; color: var(--muted); }
+.rec-holes b { font: 700 14px "Barlow Condensed"; color: var(--forest); display: block; }

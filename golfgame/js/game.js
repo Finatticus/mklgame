@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { buildHole } from './terrain.js';
 import { simulate, makeLaunch, distanceTable, carryAt, airDensity, SURF, ADJ_SEEDS } from './physics.js';
 import { CLUBS, clubById, clubIndex, puttLike } from './clubs.js';
-import { courseById, teeYards, loadCourseMaps, holeLabel } from './courses.js';
+import { courseById, teeYards, loadCourseMaps, holeLabel, teeKey } from './courses.js';
 import { makeRng, hashStr, toYd, YD, MPH, FT, clamp, lerp, rad, smooth, fmtToPar, escapeHtml } from './util.js';
 import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
@@ -1406,7 +1406,8 @@ export class Game {
     // 分區球場打 9 洞時，名稱與代號只標打的那一區
     const nine9 = this.course.nineNames && holes === 9;
     return {
-      course: nine9 ? `${this.course.name.split('（')[0]}（${this.course.nineNames[0]}）` : this.course.name, holes, tee: this.cfg.tee, strokes, toPar: strokes - par,
+      course: nine9 ? `${this.course.name.split('（')[0]}（${this.course.nineNames[0]}）` : this.course.name, holes, tee: teeKey(this.course, this.cfg.tee), strokes, toPar: strokes - par,
+      blackTee: teeKey(this.course, this.cfg.tee) === 'black',      // 最佳 18 洞只算黑梯
       putts: p.putts.reduce((s, v) => s + (v || 0), 0), fairways: `${p.fwHit}/${p.fwTotal}`, gir: `${p.gir}/${holes}`,
       mode: this.players.length > 1 ? (this.cfg.mode === 'match' ? '比洞賽' : '比桿賽') : '單人',
       partners: this.players.filter(q => q !== p).map(q => q.user).join(','), scores: p.scores,
@@ -1736,6 +1737,7 @@ export class Game {
     const atBall = !this.flight && !this.swingAnim && !this.intro && !this.holeDone && this.cam.mode !== 'overview' && this.cam.mode !== 'free';
     const b = this.world.ball.position;
     this.hud.placeSwingUI(atBall ? this.world.project(b.x, b.y, b.z) : null);
+    this.hud.dodgePowerBar();
     this.hud.avoidPinTag();
     this.hud.guardPinTag();
     // 紅色小箭頭指著預估落點

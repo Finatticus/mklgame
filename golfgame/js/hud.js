@@ -182,10 +182,25 @@ export class Hud {
     els.forEach(e => (e.style.transform = tf));
   }
 
-  // 旗桿距離紅卡一定要看得到：永遠畫在最上層；跟它重疊的面板、訊息、力道條在重疊期間變半透明（不重疊就恢復）
+  // 旗桿距離紅卡碰到力道條：紅卡往左或右移到力道條旁邊（選移動少、又不會出畫面的那邊），兩個都看得到
+  dodgePowerBar() {
+    const pin = $('tag-pin'), tr = this._pvTrack || (this._pvTrack = document.querySelector('#swing-ui .pv-track'));
+    if (pin.style.display === 'none' || $('swing-ui').classList.contains('off')) return;
+    // 力道條本體加上旁邊的刻度數字（0 / 50 / 100 / 110）
+    const a = pin.getBoundingClientRect(), t = tr.getBoundingClientRect(), pad = 6;
+    const rs = [t, ...[...tr.querySelectorAll('.pv-tick')].map(e => e.getBoundingClientRect()).filter(r => r.width)];
+    const b = { left: Math.min(...rs.map(r => r.left)), right: Math.max(...rs.map(r => r.right)), top: t.top, bottom: t.bottom };
+    if (!t.width || a.right < b.left - pad || a.left > b.right + pad || a.bottom < b.top - pad || a.top > b.bottom + pad) return;
+    const toL = -(a.right - b.left + pad), toR = b.right - a.left + pad;
+    let dx = -toL <= toR ? toL : toR;
+    if (a.left + dx < 4) dx = toR; else if (a.right + dx > innerWidth - 4) dx = toL;
+    pin.style.transform += ` translateX(${dx.toFixed(1)}px)`;
+  }
+
+  // 旗桿距離紅卡一定要看得到：永遠畫在最上層；跟它重疊的面板、訊息在重疊期間變半透明（不重疊就恢復）；力道條不變透明，改由紅卡移到旁邊（dodgePowerBar）
   guardPinTag() {
     const pin = $('tag-pin');
-    const list = this._guard || (this._guard = [...document.querySelectorAll('#chal-goals, #hud .hud-panel:not(#shot-data), #toast, .pv-track, #tag-ball, #nice-on')]);
+    const list = this._guard || (this._guard = [...document.querySelectorAll('#chal-goals, #hud .hud-panel:not(#shot-data), #toast, #tag-ball, #nice-on')]);
     const visible = pin.style.display !== 'none' && pin.offsetParent;
     const b = visible ? pin.getBoundingClientRect() : null, pad = 4;
     for (const e of list) {

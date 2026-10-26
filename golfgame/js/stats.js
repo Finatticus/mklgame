@@ -153,3 +153,9 @@ export const LOOK_OPTIONS = {
   pants: ['#2a3442', '#e8e1d0', '#6b6255', '#1c1c1c', '#3d4a35'],
   cap: ['#1d3a2a', '#ffffff', '#20324f', '#a3302a', '#1c1c1c', '#d8c08a'],
 };
+
+// 角色等級：所有能力值的平均，平均 50 = 1 等，每多 0.5 再升 1 等（平均 50.5 = 2 等、99 = 99 等），最高 100 等
+export function levelOf(stats = {}) {
+  const avg = STATS.reduce((s, st) => s + (Number(stats[st.key]) || BASE), 0) / STATS.length;
+  return Math.max(1, Math.min(100, Math.floor((avg - BASE) * 2 + 1e-9) + 1));
+}

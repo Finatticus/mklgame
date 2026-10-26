@@ -2857,6 +2857,14 @@ export const COURSES = [
 
 // 分區球場（例如長庚北 / 中 / 南）：base.holes 先放全部 27 洞，選區後用「代號:前九後九」組成 18 洞（例如 cggc:NM）
 for (const c of COURSES) if (c.nines) c.holes = c.nines.flatMap(n => n.holes);
+// 官網沒有黑梯的球場（每洞黑梯都等於藍梯）：藍黑共用一組梯台，選單寫「藍梯（黑）」，成績算黑梯
+for (const c of COURSES) if (c.real) c.blackIsBlue = c.holes.every(h => h[5] && h[5].tees && h[5].tees.black && h[5].tees.black === h[5].tees.blue);
+// 成績用的梯台：藍黑共用的球場，藍梯算黑梯
+export const teeKey = (course, tee) => (course && course.blackIsBlue && tee === 'blue' ? 'black' : tee);
+// 這座球場可以選的梯台
+export function teeList(course) {
+  return course && course.blackIsBlue ? TEE_SETS.filter(t => t.id !== 'blue').map(t => (t.id === 'black' ? { ...t, name: '藍梯（黑）' } : t)) : TEE_SETS;
+}
 const combos = new Map();
 export function nineCombo(base, f, b) { return `${base.id}:${f}${b || ''}`; }
 // 挑戰模式的關卡（不列在球場選單裡）

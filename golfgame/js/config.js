@@ -2,7 +2,7 @@
 export const CONFIG = {
   // GAS 網頁應用程式的網址（內建，玩家不用自己填；重新部署時用「管理部署作業 → 編輯 → 新版本」，網址不變）
   // 留空 = 本機模式：帳號存在這台裝置的瀏覽器，方便測試，但不能跨裝置連線。
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbx-8wkc-08Gm7p7HD3_V4w9w3QdGL4eneuDfOjgu6G6_aXFfjpk7b6TUmd6Cqae0_aK/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxFogIOSe05E9SBUC8e5fzWygeLN6zKk7GiLZS4iojOTiJAXwT7uQ4TxgNR4JHwdUAW/exec',
 
   // WebRTC 連線用的公開 STUN 伺服器
   ICE: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }],

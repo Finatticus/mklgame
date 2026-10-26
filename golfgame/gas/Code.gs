@@ -145,7 +145,7 @@ const ACTIONS = {
       const earned = Math.floor(r.holes / 9);
       const upd = { '總回合數': cur.rounds + 1, '能力點': cur.points + earned, '累計獲得點數': cur.earned + earned };
       // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
-      if (r.holes === 18 && r.rankable !== false && !(Number(r.par) < 66) && (!cur.best || r.strokes < cur.best)) upd['最佳18洞'] = r.strokes;
+      if (r.holes === 18 && r.blackTee === true && r.rankable !== false && !(Number(r.par) < 66) && (!cur.best || r.strokes < cur.best)) upd['最佳18洞'] = r.strokes;      // 只算黑梯（最遠的梯台）
       writeProfile_(acc.user, upd);
       return { earned: earned, profile: readProfile_(acc.user) };
     });

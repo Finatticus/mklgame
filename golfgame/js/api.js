@@ -113,7 +113,7 @@ async function local(b) {
         const earned = Math.floor(r.holes / 9);
         cur.rounds++; cur.points += earned; cur.earned += earned;
         // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
-        if (r.holes === 18 && r.rankable !== false && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;
+        if (r.holes === 18 && r.blackTee === true && r.rankable !== false && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;      // 只算黑梯
         return { earned, profile: cur };
       }
       case 'saveProgress': {
