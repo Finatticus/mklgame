@@ -61,6 +61,14 @@ const LANDMARKS = {
   palmlakes: { hills: 16, egrets: 6, eagles: 2 },
   // 台南：平地上的湖泊與水道，遠方是社區
   chianan: { hills: 3, towers: [[200, 2500, 10, 40, 80]], egrets: 8, eagles: 1 },
+  // 台南大內：曾文溪畔的丘陵，四周是低矮的山林與果園，會館旁有度假住宿
+  nanpao: { hills: 14, hotel: [80, 900], egrets: 5, eagles: 3, magpies: 1 },
+  // 台南：平地上的老球場，椰林夾道，遠方是台南市區的社區大樓
+  tainan: { hills: 2, towers: [[100, 2600, 14, 40, 90]], egrets: 8, eagles: 1 },
+  // 高雄鳥松：澄清湖旁的丘陵林地，西南方看得到高雄市區的大樓與 85 大樓
+  kaohsiung: { hills: 6, towers: [[225, 2600, 26, 60, 150], [230, 3200, 1, 330, 345]], egrets: 4, eagles: 2, magpies: 1 },
+  // 高雄大樹：高屏溪西岸的丘陵，球道起伏大，四周是山林與鳳梨田
+  hsinyi: { hills: 14, egrets: 4, eagles: 3, magpies: 1 },
   // 新竹新豐：靠海的平緩台地，北邊是工業區與社區大樓，遠方海岸有風力發電機
   hsinchu: { hills: 4, towers: [[10, 1200, 10, 30, 70]], turbines: [290, 2600, 6], egrets: 6, eagles: 1 },
   // 美國密蘇里州 Ozark 山區：俯瞰 Table Rock 湖，四周是長滿橡樹的山丘與灰白色的石灰岩峭壁，天上有白頭海鵰盤旋
@@ -101,7 +109,7 @@ const THEMES = {
   // 挑戰模式專用（voidLike = 島外是虛空；under = 島下岩座顏色）
   candy: { fog: 0xffd8ec, fogNear: 380, fogFar: 3000, sun: 0xfff4f0, sunI: 2.8, hemi: [0xffe8f4, 0xc8f0dc, 0.6], exposure: 1.0, rock: 0.3, rockTint: [1.1, 0.9, 1.0], skirt: [0.92, 0.7, 0.8], water: 0x6e3e22, rockCol: 0xf0b8d0 },
   city: { fog: 0x1a2240, fogNear: 300, fogFar: 2600, sun: 0xc8d4ff, sunI: 1.4, hemi: [0x7a8cc8, 0x202838, 0.75], exposure: 1.15, rock: 1, rockTint: [0.55, 0.56, 0.62], skirt: null, water: 0x2a7ab0, rockCol: 0x6a6c74, voidLike: true, under: [0.36, 0.37, 0.42] },
-  sky: { fog: 0xa8cdf0, fogNear: 650, fogFar: 4600, sun: 0xfff6e8, sunI: 3.0, hemi: [0xe0f0ff, 0xf0f0f0, 0.6], exposure: 0.98, rock: 0.9, rockTint: [0.9, 0.82, 0.7], skirt: null, water: 0x4ab4e8, rockCol: 0xc8c0b0, voidLike: true, under: [0.5, 0.42, 0.32] },
+  sky: { fog: 0x9cc2ea, fogNear: 900, fogFar: 5200, sun: 0xfff6e8, sunI: 3.0, hemi: [0xe0f0ff, 0xf0f0f0, 0.6], exposure: 0.98, rock: 0.9, rockTint: [0.9, 0.82, 0.7], skirt: null, water: 0x4ab4e8, rockCol: 0xc8c0b0, voidLike: true, under: [0.5, 0.42, 0.32] },
   moon: { fog: 0x0a0a12, fogNear: 900, fogFar: 4200, sun: 0xffffff, sunI: 3.2, hemi: [0x8890a8, 0x202024, 0.35], exposure: 1.0, rock: 0.9, rockTint: [0.7, 0.7, 0.74], skirt: [0.42, 0.42, 0.45], water: 0x1a1a2a, rockCol: 0x7a7a80 },
   mars: { fog: 0xd8956a, fogNear: 300, fogFar: 2600, sun: 0xfff0e0, sunI: 2.6, hemi: [0xf0b890, 0x6a2a18, 0.5], exposure: 1.0, rock: 1, rockTint: [1.1, 0.62, 0.45], skirt: [0.66, 0.32, 0.2], water: 0x5a3020, rockCol: 0x9a4a30 },
   reef: { fog: 0x0e5a7a, fogNear: 60, fogFar: 900, sun: 0xc8f0ff, sunI: 2.2, hemi: [0x8ae0ff, 0x1a3a40, 0.8], exposure: 1.05, rock: 0.6, rockTint: [0.7, 0.85, 0.9], skirt: [0.72, 0.68, 0.52], water: 0x0a2a50, rockCol: 0x8a9aa0 },
@@ -472,6 +480,7 @@ export class World {
     this.ensureSpark();
     const glowBasic = (color, opacity = 1) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false });
     this.orbMeshes = {};
+    const th = hole.theme;      // 第三批奇幻球場：機關換成當地的顏色（海底氣泡環、金色聖甲蟲門、紫水晶壁、泥沼、月面信標、白色棉花雲）
     for (const sp of hole.specials || []) {
       if (sp.kind === 'orb') {
         // 金球：發光的金色球、外面一圈光暈，上下浮動、慢慢轉
@@ -493,7 +502,7 @@ export class World {
           const grp = new THREE.Group();
           grp.position.set(u, y, -v);
           grp.lookAt(u + dir[0], y, -(v + dir[1]));
-          const col = fire ? 0xd8ff6a : k === 0 ? 0x7ad8ff : 0xd07aff;
+          const col = fire ? (th === 'reef' ? 0x9ae8ff : 0xd8ff6a) : th === 'egypt' ? (k === 0 ? 0xffd070 : 0xffa040) : k === 0 ? 0x7ad8ff : 0xd07aff;
           const torus = new THREE.Mesh(new THREE.TorusGeometry(sp.r, fire ? 0.12 : 0.32, 10, 64), glowBasic(col, fire ? 0.55 : 0.9));
           grp.add(torus);
           if (!fire) {
@@ -502,7 +511,7 @@ export class World {
             grp.add(disc);
             // 底座：兩根石柱
             for (const sd of [-1, 1]) {
-              const col2 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, y - hole.heightUV(u, v) + 1.5, 6), new THREE.MeshStandardMaterial({ color: 0x5a4f80, roughness: 0.6, flatShading: true }));
+              const col2 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, y - hole.heightUV(u, v) + 1.5, 6), new THREE.MeshStandardMaterial({ color: th === 'egypt' ? 0xc8a060 : 0x5a4f80, roughness: 0.6, flatShading: true }));
               col2.position.set(sd * (sp.r + 0.5), -(y - hole.heightUV(u, v)) / 2 + 0.25, 0); grp.add(col2);
             }
             this.specialAnims.push(t => { disc.rotation.z = -t * (k ? -1.4 : 1.4); torus.material.opacity = 0.75 + 0.25 * Math.sin(t * 3 + k); });
@@ -510,7 +519,7 @@ export class World {
           // 繞著圓環飛的螢火蟲 / 光點
           const N = fire ? 70 : 40, pos = new Float32Array(N * 3), seeds = Array.from({ length: N }, () => [Math.random() * 6.28, 0.6 + Math.random() * 1.2, (Math.random() - 0.5) * 1.6, Math.random() * 6.28]);
           const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-          const pts = new THREE.Points(pg, new THREE.PointsMaterial({ map: this.sparkTex, color: fire ? 0xeaff8a : col, size: fire ? 0.55 : 0.45, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+          const pts = new THREE.Points(pg, new THREE.PointsMaterial({ map: this.sparkTex, color: fire ? (th === 'reef' ? 0xe0faff : 0xeaff8a) : col, size: fire ? 0.55 : 0.45, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
           pts.frustumCulled = false; grp.add(pts);
           this.specialAnims.push(t => {
             for (let i = 0; i < N; i++) { const [a0, sp0, off, ph] = seeds[i]; const a = a0 + t * sp0 * (fire ? 0.6 : 1.5); const rr = sp.r + off * (fire ? 1 : 0.4) + 0.3 * Math.sin(t * 2 + ph); pos[i * 3] = Math.cos(a) * rr; pos[i * 3 + 1] = Math.sin(a) * rr; pos[i * 3 + 2] = Math.sin(t * 1.3 + ph) * (fire ? 0.8 : 0.3); }
@@ -521,7 +530,7 @@ export class World {
           });
           g.add(grp);
         });
-        if (fire) g.add(glowSprite(this, new THREE.Vector3(sp.u, sp.y, -sp.v), sp.r * 3.2, 0xb8ff5a, 0.25));
+        if (fire) g.add(glowSprite(this, new THREE.Vector3(sp.u, sp.y, -sp.v), sp.r * 3.2, th === 'reef' ? 0x7ad8ff : 0xb8ff5a, 0.25));
       } else if (sp.kind === 'vent') {
         // 噴發口：黑色小火山丘 + 發光的口 + 一直往上冒的火星與煙，每隔幾秒大噴發一次
         const gy = sp.y;
@@ -608,10 +617,11 @@ export class World {
       } else if (sp.kind === 'honey') {
         // 蜂蜜池：六角形、亮晶晶的金色蜂蜜，外圈蜂巢色的邊
         const grp = new THREE.Group(); grp.position.set(sp.u, sp.y + 0.08, -sp.v); g.add(grp);
-        const mat = glowMaterial({ color: 0xd87800, roughness: 0.06, metalness: 0.2 }, 0.22);
-        const disc = new THREE.Mesh(new THREE.CircleGeometry(sp.r, 6), mat); disc.rotation.x = -Math.PI / 2; disc.receiveShadow = true;
-        const rim = new THREE.Mesh(new THREE.RingGeometry(sp.r, sp.r + 0.45, 6), new THREE.MeshStandardMaterial({ color: 0x8a4a06, roughness: 0.6 })); rim.rotation.x = -Math.PI / 2; rim.position.y = 0.01;
-        const shine = new THREE.Mesh(new THREE.CircleGeometry(sp.r * 0.35, 6), glowBasic(0xfff2b0, 0.35)); shine.rotation.x = -Math.PI / 2; shine.position.set(-sp.r * 0.3, 0.02, -sp.r * 0.25);
+        const mud = th === 'swamp';
+        const mat = mud ? new THREE.MeshStandardMaterial({ color: 0x3e3418, roughness: 0.35, metalness: 0.1 }) : glowMaterial({ color: 0xd87800, roughness: 0.06, metalness: 0.2 }, 0.22);
+        const disc = new THREE.Mesh(new THREE.CircleGeometry(sp.r, mud ? 20 : 6), mat); disc.rotation.x = -Math.PI / 2; disc.receiveShadow = true;
+        const rim = new THREE.Mesh(new THREE.RingGeometry(sp.r, sp.r + 0.45, mud ? 20 : 6), new THREE.MeshStandardMaterial({ color: mud ? 0x2a2a12 : 0x8a4a06, roughness: 0.9 })); rim.rotation.x = -Math.PI / 2; rim.position.y = 0.01;
+        const shine = new THREE.Mesh(new THREE.CircleGeometry(sp.r * 0.35, mud ? 16 : 6), glowBasic(mud ? 0x8aa060 : 0xfff2b0, 0.35)); shine.rotation.x = -Math.PI / 2; shine.position.set(-sp.r * 0.3, 0.02, -sp.r * 0.25);
         grp.add(disc, rim, shine);
         this.specialAnims.push(t => { const pu = this.specialPulses.honey || 0; shine.material.opacity = 0.25 + 0.15 * Math.sin(t * 1.3 + sp.u) + pu; grp.scale.setScalar(1 + pu * 0.08); });
       } else if (sp.kind === 'gear') {
@@ -636,20 +646,21 @@ export class World {
       } else if (sp.kind === 'wisp') {
         // 引魂燈：飄在空中的綠色鬼火，周圍一圈淡淡的光環（觸發範圍）
         const grp = new THREE.Group(); grp.position.set(sp.u, sp.y, -sp.v); g.add(grp);
-        const core = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12), glowBasic(0xc8ffe0, 0.95));
-        const halo = glowSprite(this, new THREE.Vector3(0, 0, 0), 7, 0x7affb8, 0.55);
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(sp.r, 0.05, 6, 64), glowBasic(0x9affc8, 0.28));
+        const wc = th === 'moon' ? [0xe8f2ff, 0x8ab8ff, 0xb8d4ff] : [0xc8ffe0, 0x7affb8, 0x9affc8];
+        const core = new THREE.Mesh(th === 'moon' ? new THREE.OctahedronGeometry(0.85, 0) : new THREE.SphereGeometry(0.7, 16, 12), glowBasic(wc[0], 0.95));
+        const halo = glowSprite(this, new THREE.Vector3(0, 0, 0), 7, wc[1], 0.55);
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(sp.r, 0.05, 6, 64), glowBasic(wc[2], 0.28));
         grp.add(core, halo, ring);
         const N = 26, pos = new Float32Array(N * 3), seeds = Array.from({ length: N }, () => [Math.random() * 6.28, 0.5 + Math.random(), Math.random() * 6.28]);
         const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const pts = new THREE.Points(pg, new THREE.PointsMaterial({ map: this.sparkTex, color: 0x9affc8, size: 0.6, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+        const pts = new THREE.Points(pg, new THREE.PointsMaterial({ map: this.sparkTex, color: wc[2], size: 0.6, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
         pts.frustumCulled = false; grp.add(pts);
         // 地上的燈影：讓人看得出燈在哪裡
         const gy = hole.heightUV(sp.u, sp.v);
-        const mark = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.2, 24), glowBasic(0x7affb8, 0.35)); mark.rotation.x = -Math.PI / 2; mark.position.set(sp.u, gy + 0.08, -sp.v); g.add(mark);
+        const mark = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.2, 24), glowBasic(wc[1], 0.35)); mark.rotation.x = -Math.PI / 2; mark.position.set(sp.u, gy + 0.08, -sp.v); g.add(mark);
         const ph0 = Math.random() * 6;
         this.specialAnims.push(t => {
-          core.position.y = Math.sin(t * 1.4 + ph0) * 0.5; halo.position.y = core.position.y;
+          core.position.y = Math.sin(t * 1.4 + ph0) * 0.5; halo.position.y = core.position.y; if (th === 'moon') core.rotation.y = t * 1.2;
           ring.rotation.y = t * 0.4; ring.rotation.x = 0.5 * Math.sin(t * 0.3 + ph0);
           for (let i = 0; i < N; i++) { const [a, s0, ph] = seeds[i]; const aa = a + t * s0; pos[i * 3] = Math.cos(aa) * (1.5 + Math.sin(t + ph)); pos[i * 3 + 1] = Math.sin(t * 2 + ph) * 1.2 + core.position.y; pos[i * 3 + 2] = Math.sin(aa) * (1.5 + Math.sin(t + ph)); }
           pg.attributes.position.needsUpdate = true;
@@ -671,11 +682,12 @@ export class World {
       } else if (sp.kind === 'cloud') {
         // 雷雲：一團灰黑色的雲，裡面不時閃著藍白色的光；地上有雲影
         const grp = new THREE.Group(); grp.position.set(sp.u, sp.y, -sp.v); g.add(grp);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x5a6070, roughness: 1, flatShading: true, transparent: true, opacity: 0.93 });
+        const soft = th === 'sky';
+        const mat = new THREE.MeshStandardMaterial({ color: soft ? 0xffffff : 0x5a6070, emissive: soft ? 0x8a96a8 : 0x000000, roughness: 1, flatShading: !soft, transparent: true, opacity: soft ? 0.96 : 0.93 });
         const crng = makeRng(Math.round(sp.u * 7 + sp.v * 13));
         for (let i = 0; i < 9; i++) {
           const a = crng() * Math.PI * 2, rr = crng() * sp.r * 0.65, s = 2.6 + crng() * 2.2;
-          const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 1), mat); m.position.set(Math.cos(a) * rr, (crng() - 0.4) * sp.th * 0.6, Math.sin(a) * rr); m.scale.y = 0.65; m.castShadow = true; grp.add(m);
+          const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, soft ? 2 : 1), mat); m.position.set(Math.cos(a) * rr, (crng() - 0.4) * sp.th * 0.6, Math.sin(a) * rr); m.scale.y = 0.65; m.castShadow = true; grp.add(m);
         }
         const flash = glowSprite(this, new THREE.Vector3(0, 0, 0), sp.r * 2.6, 0xa8c8ff, 0); grp.add(flash);
         let next = 1 + Math.random() * 4;
@@ -683,18 +695,19 @@ export class World {
           grp.position.x = sp.u + Math.sin(t * 0.2 + sp.v) * 0.6;
           if (t > next) next = t + 2.5 + Math.random() * 5;
           const k = next - t > 2.3 ? 1 : 0;
-          flash.material.opacity = Math.max(k * 0.8, this.specialPulses.cloud || 0);
+          flash.material.opacity = Math.max(soft ? 0 : k * 0.8, (this.specialPulses.cloud || 0) * (soft ? 0.4 : 1));
         });
       } else if (sp.kind === 'wall') {
         // 冰鏡牆：半透明的冰板 + 發光的邊
         const ax = sp.a[0], az = -sp.a[1], bx = sp.b[0], bz = -sp.b[1], L = Math.hypot(bx - ax, bz - az);
         const geo = new THREE.BoxGeometry(L, sp.h + 1.2, 0.5);
-        const mat = new THREE.MeshStandardMaterial({ color: 0xbfe6ff, emissive: 0x2a7acc, emissiveIntensity: 0.35, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.55 });
+        const cry = th === 'crystal';
+        const mat = new THREE.MeshStandardMaterial({ color: cry ? 0xd8b8ff : 0xbfe6ff, emissive: cry ? 0x7a3aff : 0x2a7acc, emissiveIntensity: 0.35, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.55 });
         const m = new THREE.Mesh(geo, mat);
         m.position.set((ax + bx) / 2, sp.y0 + (sp.h + 1.2) / 2 - 0.9, (az + bz) / 2);
         m.rotation.y = -Math.atan2(bz - az, bx - ax);
         g.add(m);
-        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0xc8f2ff, transparent: true, opacity: 0.9 }));
+        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: cry ? 0xf0d8ff : 0xc8f2ff, transparent: true, opacity: 0.9 }));
         edges.position.copy(m.position); edges.rotation.copy(m.rotation); g.add(edges);
         this.specialAnims.push(t => { const pu = this.specialPulses.wall || 0; mat.emissiveIntensity = 0.3 + 0.12 * Math.sin(t * 1.4 + ax) + pu * 1.5; });
       }
@@ -707,6 +720,35 @@ export class World {
     if (!m || !m.visible) return;
     m.visible = false;
     this.cupBurst(m.position.x, m.position.y, m.position.z, 0.12, 2.4);
+  }
+
+  // 各主題的「活的」氛圍（只動霧、光、曝光，不影響打球）：
+  //   海底：陽光穿過水面一明一暗；沼澤：濃霧時聚時散；法老神殿：不時颳起一陣沙塵暴；
+  //   恐龍谷：遠方火山偶爾噴發、天邊一亮；霓虹夜城：霓虹燈輕微閃爍；水晶洞窟：水晶一起慢慢呼吸發光；
+  //   火星：沙塵暴一陣一陣；天空之城：雲海的陽光慢慢變化
+  themeAtmos() {
+    const th = THEMES[this.curTheme], fog = this.scene.fog, t = this.time;
+    if (!th || !fog || !fog.isFog) return;
+    let near = th.fogNear, far = th.fogFar, sunK = 1;
+    switch (this.curTheme) {
+      case 'reef': sunK = 1 + 0.14 * Math.sin(t * 1.7) + 0.07 * Math.sin(t * 3.3 + 1); break;
+      case 'swamp': { const k = 0.5 + 0.5 * Math.sin(t * 0.13) * Math.sin(t * 0.07 + 2); near *= 0.55 + k * 0.9; far *= 0.6 + k * 0.8; break; }
+      case 'egypt': case 'mars': {
+        // 沙塵暴：每 25~40 秒一陣，約 8 秒，霧拉近、陽光變暗
+        if (t > (this.dustNext || 0)) { this.dustAt = this.dustNext ? t : -99; this.dustNext = t + 25 + Math.random() * 15; }
+        const e = t - (this.dustAt ?? -99), k = e >= 0 && e < 8 ? Math.sin(e / 8 * Math.PI) : 0;
+        near *= 1 - k * 0.8; far *= 1 - k * (this.curTheme === 'mars' ? 0.7 : 0.6); sunK = 1 - k * 0.35; break;
+      }
+      case 'dino':
+        if (t > (this.eruptNext || 0)) { if (this.eruptNext) this.flashT = Math.max(this.flashT || 0, 0.1); this.eruptNext = t + 18 + Math.random() * 14; }
+        break;
+      case 'neon': sunK = 1 + 0.06 * Math.sin(t * 9) * (Math.sin(t * 0.7) > 0.6 ? 1 : 0.2); break;
+      case 'crystal': sunK = 1 + 0.18 * Math.sin(t * 0.9); break;
+      case 'sky': sunK = 1 + 0.08 * Math.sin(t * 0.25); break;
+      default: return;
+    }
+    fog.near = near; fog.far = far;
+    this.sun.intensity = th.sunI * sunK;
   }
 
   // 機關觸發時，同一種機關一起閃一下
@@ -731,12 +773,26 @@ export class World {
   // 天空的動態效果：極光（冰原、蘑菇森林）、雲海（天空城）
   buildSkyFx(hole, g) {
     this.aurora = null;
+    this.skyAnims = [];
     const th = hole.course.theme;
     if (th === 'sky') {
       const b = hole.bbox, cu = (b.minU + b.maxU) / 2, cv = (b.minV + b.maxV) / 2;
       this.ensureSpark();
+      // 飛艇：白色氣囊、木頭吊艙、紅色尾翼，在島的周圍慢慢繞圈
+      const env = new THREE.MeshStandardMaterial({ color: 0xf4f0e8, roughness: 0.7 }), wood = new THREE.MeshStandardMaterial({ color: 0x7a5232, roughness: 0.8 }), fin = new THREE.MeshStandardMaterial({ color: 0xb8302a, roughness: 0.6 });
+      const baseY = hole.heightUV(hole.green.u, hole.green.v);
+      for (let i = 0; i < 5; i++) {
+        const ship = new THREE.Group(), L = 26 + Math.random() * 18;
+        const bag = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), env); bag.scale.set(L / 2, L / 6.5, L / 6.5); ship.add(bag);
+        const gon = new THREE.Mesh(new THREE.BoxGeometry(L * 0.28, L * 0.07, L * 0.1), wood); gon.position.y = -L / 6.5 - L * 0.06; ship.add(gon);
+        for (const sd of [-1, 1]) { const f = new THREE.Mesh(new THREE.BoxGeometry(L * 0.14, L * 0.02, L * 0.18), fin); f.position.set(-L * 0.44, 0, sd * L * 0.08); ship.add(f); }
+        const vf = new THREE.Mesh(new THREE.BoxGeometry(L * 0.14, L * 0.18, L * 0.02), fin); vf.position.set(-L * 0.44, L * 0.08, 0); ship.add(vf);
+        g.add(ship);
+        const R = 380 + Math.random() * 600, a0 = Math.random() * Math.PI * 2, h = baseY + 50 + Math.random() * 90, sp0 = (Math.random() < 0.5 ? -1 : 1) * (0.006 + Math.random() * 0.006);
+        this.skyAnims.push(t => { const a = a0 + t * sp0; ship.position.set(cu + Math.cos(a) * R, h + Math.sin(t * 0.3 + a0) * 2, -cv + Math.sin(a) * R); ship.rotation.y = -a + (sp0 > 0 ? -Math.PI / 2 : Math.PI / 2); });
+      }
       for (let i = 0; i < 160; i++) {
-        const sp = glowSprite(this, new THREE.Vector3(cu + (Math.random() - 0.5) * 2400, this.voidY - 70 - Math.random() * 60, -cv + (Math.random() - 0.5) * 2400), 260 + Math.random() * 300, 0xffffff, 0.55, true);
+        const sp = glowSprite(this, new THREE.Vector3(cu + (Math.random() - 0.5) * 2400, this.voidY - 130 - Math.random() * 90, -cv + (Math.random() - 0.5) * 2400), 260 + Math.random() * 300, [0xffffff, 0xe8f0ff, 0xfff0f4][i % 3], 0.4, true);
         sp.material.fog = true; g.add(sp);
       }
     }
@@ -1506,8 +1562,13 @@ export class World {
     for (const t of groups.chimney || []) if (t.h > 40) for (let k = 0; k < 4; k++) g.add(glowSprite(this, new THREE.Vector3(t.x + k * 6, t.y + t.h * (1.05 + k * 0.12), t.z + k * 3), t.r * (2.5 + k * 1.2), 0x4a4440, 0.5, true));
     make(G.grave, vcolMat, groups.grave, (t, P, S) => { P.set(t.x, t.y - 0.15, t.z); S.set(t.r, t.h / 1.2, t.r); return null; }, true);
     make(G.pumpkin, pumpkinMat, groups.pumpkin, (t, P, S) => { P.set(t.x, t.y - 0.1, t.z); S.set(t.r, t.h / 1.45, t.r); return null; }, true);
-    make(G.castle, vcolMat, groups.castle, (t, P, S) => { P.set(t.x, t.y - 4, t.z); S.set(t.r, t.h, t.r); return null; }, false);
-    for (const t of groups.castle || []) for (let k = 0; k < 6; k++) g.add(glowSprite(this, new THREE.Vector3(t.x + (k - 2.5) * t.r * 0.25, t.y - 4 + t.h * (0.35 + (k % 3) * 0.12), t.z), 3.5, 0xffc860, 0.9));
+    // 古堡：幽光古堡是黑色剪影 + 窗戶燈光；天空之城是白色城堡，坐在浮空岩島上（fy = 浮空高度）
+    make(G.castle, vcolMat, groups.castle, (t, P, S) => { P.set(t.x, (t.fy ?? t.y) - 4, t.z); S.set(t.r, t.h, t.r); return t.white ? c.setRGB(2.6, 2.6, 2.75) : null; }, false);
+    const isleRock = new THREE.MeshStandardMaterial({ color: 0x9a8a72, roughness: 0.95, flatShading: true });
+    for (const t of groups.castle || []) {
+      if (t.white) { const base = new THREE.Mesh(new THREE.ConeGeometry(t.r * 0.95, t.h * 0.75, 8), isleRock); base.rotation.x = Math.PI; base.position.set(t.x, (t.fy ?? t.y) - 4 - t.h * 0.37, t.z); g.add(base); continue; }
+      for (let k = 0; k < 6; k++) g.add(glowSprite(this, new THREE.Vector3(t.x + (k - 2.5) * t.r * 0.25, t.y - 4 + t.h * (0.35 + (k % 3) * 0.12), t.z), 3.5, 0xffc860, 0.9));
+    }
     make(G.block, vcolMat, groups.block, (t, P, S) => { P.set(t.x, t.y - 0.05, t.z); S.set(t.r, t.h / 1.8, t.r); return null; }, true);
     make(G.pyramid, vcolMat, groups.pyramid, (t, P, S) => { P.set(t.x, t.y - 10, t.z); S.set(t.r, t.h, t.r); return null; }, false);
     make(G.obelisk, vcolMat, groups.obelisk, (t, P, S) => { P.set(t.x, t.y - 0.3, t.z); S.set(t.r, t.h, t.r); return t.marble ? c.setRGB(1.25, 1.25, 1.3) : null; }, true);
@@ -2001,11 +2062,13 @@ export class World {
     if (this.lavaTex) { this.lavaTex.offset.x = this.time * 0.006; this.lavaTex.offset.y = Math.sin(this.time * 0.1) * 0.03; }
     this.updateAmbient(dt);
     if (this.specialAnims) for (const f of this.specialAnims) f(this.time);
+    if (this.skyAnims) for (const f of this.skyAnims) f(this.time);
     if (this.specialPulses) for (const k in this.specialPulses) this.specialPulses[k] = Math.max(0, this.specialPulses[k] - dt * 1.5);
     if (this.aurora) this.aurora.uniforms.uTime.value = this.time;
     if (this.fxFades) this.fxFades = this.fxFades.filter(f => f(dt));
     // 雷鳴高原：天空偶爾閃一下；閃電打中球時畫面也亮一下
     if (this.curTheme === 'storm' && this.time > (this.stormNext || 0)) { if (this.stormNext) this.flashT = Math.max(this.flashT || 0, 0.18); this.stormNext = this.time + 6 + Math.random() * 9; }
+    this.themeAtmos();
     if (THEMES[this.curTheme]) {
       const base = THEMES[this.curTheme].exposure;
       this.flashT = Math.max(0, (this.flashT || 0) - dt);

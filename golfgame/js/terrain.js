@@ -18,7 +18,7 @@ export const TDEF = {
   city: { void: true, dens: 0.18, trees: [['lantern', 70, 4, 6, 0.4, 0.5], ['rock', 30, 0.8, 1.6, 1, 1.6]], scen: [0, []],
     marks: [['tower', 150, 140, 1500, 280, 520, 14, 42, { fy: -320 }]] },
   sky: { void: true, dens: 0.4, trees: [['broad', 45, 8, 13, 3.5, 5], ['pine', 25, 10, 15, 2.6, 3.4], ['obelisk', 30, 7, 12, 0.9, 1.3, { marble: 1 }]], scen: [0, []],
-    marks: [['isle', 60, 180, 1300, 30, 120, 10, 70, { fyR: [-120, 160] }]] },
+    marks: [['isle', 60, 180, 1300, 30, 120, 10, 70, { fyR: [-120, 160] }], ['castle', 7, 320, 1100, 60, 110, 24, 40, { white: 1, fyR: [-30, 70] }]] },
   moon: { waste: true, dens: 0.35, trees: [['rock', 70, 0.8, 2.6, 1, 2.6], ['crystal', 30, 2, 4, 0.8, 1.4]], scen: [300, [['rock', 100, 1, 3, 1.5, 3]]],
     marks: [['dome', 9, 220, 900, 18, 40, 18, 40], ['mesa', 18, 1300, 2300, 120, 260, 260, 420, { tint3: [0.62, 0.62, 0.68] }]] },
   mars: { waste: true, dens: 0.4, trees: [['rock', 60, 0.8, 2.8, 1, 2.8], ['basalt', 30, 2, 6, 1.2, 2.2], ['dome', 10, 3, 5, 3, 5]], scen: [400, [['rock', 70, 1, 3, 1.5, 3], ['basalt', 30, 3, 8, 1.5, 3]]],
@@ -228,6 +228,14 @@ export function buildHole(course, holeIdx, opts = {}) {
   // 有描圖地圖的洞：路線、地面、沙坑、水、果嶺、發球台、樹都照地圖
   const map = course.maps && course.maps[holeIdx] ? course.maps[holeIdx] : null;
   const MG = map ? decodeMap(map) : null;
+  // 編輯器畫的地形高低（map.hg）：粗網格（每格 cell 公尺，左上角 x0, y0），值是公寸，雙線性內插
+  const HG = map && map.hg && map.hg.d ? map.hg : null;
+  const hgAt = (u, v) => {
+    const x = (u - HG.x0) / HG.cell, y = (HG.y0 - v) / HG.cell;
+    const i = clamp(Math.floor(x), 0, HG.w - 2), j = clamp(Math.floor(y), 0, HG.h - 2);
+    const fx = clamp(x - i, 0, 1), fy = clamp(y - j, 0, 1), d = HG.d, k = j * HG.w + i;
+    return ((d[k] * (1 - fx) + d[k + 1] * fx) * (1 - fy) + (d[k + HG.w] * (1 - fx) + d[k + HG.w + 1] * fx) * fy) / 10;
+  };
   // 左右兩個果嶺：每回合依旗桿種子選一個（另一個當果嶺邊短草）
   const mapGreens = map ? (map.greens && map.greens.length ? map.greens : [map.green]) : null;
   const gIdx = mapGreens && mapGreens.length > 1 ? (((opts.pinSeed || 0) % mapGreens.length) + mapGreens.length) % mapGreens.length : 0;
@@ -423,7 +431,9 @@ export function buildHole(course, holeIdx, opts = {}) {
   const fwBase = course.fairwayW * (F.has('tr') ? 0.85 : 1) * (F.has('nw') && !isVoid ? 0.72 : 1) * (F.has('wd') ? 1.3 : 1);
   const fwHalf = (s, side) => fwBase / 2 * (1 + 0.14 * nz(s * 0.018, side * 3.1) + 0.06 * nz(s * 0.07, side * 7.7));
   // 描圖地圖漏畫球道的洞（中心線上一半以上是長草）：沿中心線補一條 24 公尺寬的球道（梯台前 45 公尺、果嶺前 25 公尺以內不補），只蓋掉長草
-  if (MG && par > 3) {
+  //   編輯器畫的球洞（drawn / 有固定旗位 pin）照畫的樣子，不補
+  const drawn = !!(map && (map.drawn || map.pin));
+  if (MG && par > 3 && !drawn) {
     let n = 0, fwc = 0;
     for (let s = 45; s < Lp - 30; s += 4) { const p = pointAt(s), ci = cellAt(p[0], p[1]); n++; if (ci >= 0 && MG.g[ci] === 2) fwc++; }
     if (n && fwc / n < 0.45) {
@@ -478,6 +488,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   const nb = 1 + (rng() < 0.5 ? 1 : 0);
   for (let i = 0; i < nb; i++) bumps.push({ lu: (rng() - 0.5) * grx * 1.2, lv: (rng() - 0.5) * gry * 1.2, a: (rng() < 0.5 ? -1 : 1) * (0.05 + rng() * 0.07), s: 4 + rng() * 2.5 });
   const greenShape = (u, v) => {
+    // 編輯器畫了地形的球洞：果嶺的起伏就照畫的（相對果嶺中心），不另外加隨機的坡度與起伏
+    if (HG) return hgAt(u, v) - hgAt(G[0], G[1]);
     const [lu, lv] = gLocal(u, v);
     let hh = lv * slopeBack + lu * slopeSide;
     if (sg.tier) hh += 0.24 * ss(-3.5, 3.5, lv - (sg.tierAt || 0) * gry);      // 雙層果嶺：中間一道約 24 公分的階
@@ -733,10 +745,10 @@ export function buildHole(course, holeIdx, opts = {}) {
   // ---------- 8. 高度 ----------
   // 林克斯陸地的平滑地板：高度不低於約 1.3m（海面 -0.9m），下坡洞也不會低到被海面穿透
   const floorL = x => links ? 0.5 * (x + 0.8 + Math.sqrt((x - 0.8) ** 2 + 1)) : x;
-  const gCenterBase = demH ? demH(G[0], G[1]) + 0.55 : baseElev(Lp) + st.macroA * nz.fbm(G[0] / st.macroL, G[1] / st.macroL, 3) + 0.55 + lift;
+  const gCenterBase = demH ? demH(G[0], G[1]) + 0.55 : baseElev(Lp) + st.macroA * nz.fbm(G[0] / st.macroL, G[1] / st.macroL, 3) * (HG ? 0.15 : 1) + 0.55 + lift + (HG ? hgAt(G[0], G[1]) : 0);
   const gCenterBaseF = demH ? gCenterBase : floorL(gCenterBase - 0.55) + 0.55;
   const teeBase = {};
-  tees.forEach(t => (teeBase[t.id] = baseElev(t.s) + st.macroA * nz.fbm(t.u / st.macroL, t.v / st.macroL, 3) + 0.7 + lift));
+  tees.forEach(t => (teeBase[t.id] = baseElev(t.s) + st.macroA * nz.fbm(t.u / st.macroL, t.v / st.macroL, 3) * (HG ? 0.15 : 1) + 0.7 + lift + (HG ? hgAt(t.u, t.v) : 0)));
   if (links && !demH) tees.forEach(t => (teeBase[t.id] = floorL(teeBase[t.id] - 0.7) + 0.7));
   if (demH) tees.forEach(t => (teeBase[t.id] = demH(t.u, t.v) + 0.45));          // 真實地形：梯台比旁邊略高一點
   // 大尺度起伏沿中心線取值：球道上只有前後起伏、左右是平的（避免球落地後往側邊滾進樹林），
@@ -766,7 +778,8 @@ export function buildHole(course, holeIdx, opts = {}) {
     }
     const w = ss(fwBase / 2 + 4, fwBase / 2 + 30, ad);
     // 林克斯球場整體墊高 3.5m，陸地一定高於海面（-0.9m），海面不會從球道透出來閃爍
-    let hh = baseElev(clamp(s, 0, Lp)) + lerp(macroC(s), macro(u, v), w) + lift;
+    //   自製 / 修改過的球洞有自己畫的地形（map.hg）：照畫的高低，隨機起伏只留一點點
+    let hh = baseElev(clamp(s, 0, Lp)) + lerp(macroC(s), macro(u, v), w) * (HG ? 0.15 : 1) + lift + (HG ? hgAt(u, v) : 0);
     const k = 0.12 + 0.88 * ss(fwBase / 2, fwBase / 2 + 20, ad);
     hh += st.microA * nz2.fbm(u / st.microL, v / st.microL, 3) * k;
     if (links) hh += 2.2 * Math.max(0, nz3.fbm(u / 22, v / 22, 2)) * ss(fwBase / 2 + 5, fwBase / 2 + 30, ad);
@@ -929,7 +942,9 @@ export function buildHole(course, holeIdx, opts = {}) {
   // ---------- 9. 旗桿位置 ----------
   const prng = makeRng(seed ^ (opts.pinSeed || 1));
   let pin = null, bestSlope = 1e9;
-  for (let i = 0; i < 10; i++) {
+  // 編輯器指定的旗桿位置（map.pin，在果嶺上才用）；沒有的話每回合在果嶺上挑一個平的地方
+  if (map && map.pin && surface(map.pin[0], map.pin[1]) === SURF.GREEN) pin = [map.pin[0], map.pin[1]];
+  for (let i = 0; i < (pin ? 0 : 10); i++) {
     const a = prng() * Math.PI * 2, r = 0.25 + prng() * 0.45;
     const lu = Math.cos(a) * grx * r, lv = Math.sin(a) * gry * r;
     const c = Math.cos(-gRot), s = Math.sin(-gRot);
@@ -1061,6 +1076,37 @@ export function buildHole(course, holeIdx, opts = {}) {
     for (const [sA, lat] of list) {
       const [u, v] = at(sA, lat);
       specials.push({ kind: 'cloud', u, v, y: Math.max(height(u, v), rawH(u, v, sA, 0)) + 17 + srng() * 6, r: 8, th: 3.6, skipT: 4 });
+    }
+  }
+  // ---- 奇幻球場第三批：挑戰模式的地面機關自動擺位 ----
+  //   tp 彈跳床：開球落點與第二桿落點各幾塊、果嶺前一塊（接打短的球）
+  //   bo 加速帶：球道中間一段段朝向果嶺（沿球道方向）
+  //   cn 大砲：開球落點附近一座，轟向果嶺
+  if (F.has('tp')) {
+    const list = [[Lp - gry - 14 - srng() * 6, (srng() - 0.5) * 6]];
+    const n = par === 3 ? 1 : par === 4 ? 3 : 4;
+    for (let i = 0; i < n; i++) { const sA = par === 3 ? lerp(sW + 40, Lp - gry - 30, srng()) : lerp(sW + 170, Lp - gry - 50, (i + srng()) / n), side = srng() < 0.5 ? -1 : 1; list.push([sA, side * fwAt(sA, side) * srng() * 0.8]); }
+    for (const [sA, lat] of list) {
+      const [u, v] = at(sA, lat), r = 3.8 + srng() * 1.2;
+      if (!okSpot(u, v) || specials.some(q => Math.hypot(q.u - u, q.v - v) < (q.r || 4) + r + 6)) continue;
+      specials.push({ kind: 'tramp', u, v, y: height(u, v), r, avoid: r + 3 });
+    }
+  }
+  if (F.has('bo')) {
+    const n = par === 3 ? 1 : par === 4 ? 2 : 3;
+    for (let i = 0; i < n; i++) {
+      const sA = par === 3 ? lerp(sW + 50, Lp - gry - 30, 0.5 + (srng() - 0.5) * 0.3) : lerp(sW + 200, Lp - gry - 60, (i + 0.3 + srng() * 0.4) / n);
+      const [u, v, d] = at(sA, (srng() - 0.5) * fwBase * 0.4);
+      if (!okSpot(u, v) || specials.some(q => Math.hypot(q.u - u, q.v - v) < 14)) continue;
+      specials.push({ kind: 'boost', u, v, y: height(u, v), r: 4.5, dir: d, avoid: 7 });
+    }
+  }
+  if (F.has('cn') && par >= 4) {
+    for (let tries = 0; tries < 8; tries++) {
+      const sA = sW + 200 + srng() * 50, [u, v] = at(sA, (srng() - 0.5) * fwBase * 0.6);
+      if (!okSpot(u, v)) continue;
+      specials.push({ kind: 'cannon', u, v, y: height(u, v), r: 4.2, target: [G[0], G[1]], ty: gCenterBaseF, avoid: 7 });
+      break;
     }
   }
   // 挑戰關卡指定位置的機關：at = 距發球台碼數、lat = 橫向（公尺，右正）、h = 離地高度；orb = 金球（只收集，不改變飛行）
@@ -1204,9 +1250,28 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (kind === 'tropic') return r0 < 0.35 ? { type: 'palm', h: 9 + trng() * 7, r: 3 + trng() } : r0 < 0.8 ? { type: 'broad', h: 6 + trng() * 5, r: 3 + trng() * 2, jungle: 1 } : { type: 'shrub', h: 1.6 + trng(), r: 1.8 + trng(), jungle: 1 };
     return null;
   };
-  const plantMapTree = (u, v, big, src) => {
+  // 編輯器指定的樹種
+  const kindTree = k => {
+    const R = trng;
+    switch (k) {
+      case 'broad': return { type: 'broad', h: 11 + R() * 6, r: 3.4 + R() * 2.2 };
+      case 'pine': return { type: 'pine', h: 14 + R() * 10, r: 3 + R() };
+      case 'maple': return { type: 'maple', h: 9 + R() * 5, r: 3.4 + R() * 1.8 };
+      case 'autumn': return { type: 'broad', h: 10 + R() * 6, r: 3.6 + R() * 2, autumn: 1 };
+      case 'palm': return { type: 'palm', h: 9 + R() * 7, r: 3 + R() };
+      case 'jungle': return { type: 'broad', h: 7 + R() * 6, r: 3.2 + R() * 2, jungle: 1 };
+      case 'sakura': return { type: 'broad', h: 8 + R() * 5, r: 4 + R() * 2, sakura: 1 };
+      case 'birch': return { type: 'broad', h: 10 + R() * 6, r: 3 + R() * 1.5, birch: 1 };
+      case 'cypress': return { type: 'broad', h: 12 + R() * 8, r: 5 + R() * 2.5, mcyp: 1 };
+      case 'jpine': return { type: 'broad', h: 8 + R() * 6, r: 3.6 + R() * 1.6, jpine: 1 };
+      case 'bamboo': return { type: 'bamboo', h: 10 + R() * 6, r: 2 + R() * 1.5 };
+      case 'shrub': return { type: 'shrub', h: 1.6 + R(), r: 1.8 + R() };
+    }
+    return null;
+  };
+  const plantMapTree = (u, v, big, src, kind) => {
     const pine = trng() < 0.25;
-    const t = (course.treeKind && localTree(course.treeKind, src)) || { type: pine ? 'pine' : (trng() < 0.1 ? 'maple' : 'broad'), h: (pine ? 14 : 11) + trng() * (big ? 9 : 6), r: pine ? 3 + trng() : 3.4 + trng() * 2.2 };
+    const t = (kind && kindTree(kind)) || (course.treeKind && localTree(course.treeKind, src)) || { type: pine ? 'pine' : (trng() < 0.1 ? 'maple' : 'broad'), h: (pine ? 14 : 11) + trng() * (big ? 9 : 6), r: pine ? 3 + trng() : 3.4 + trng() * 2.2 };
     const x = u, z = -v;
     if (tooClose(x, z, t.r * 0.75)) return;
     // 樹位置加了隨機偏移，落到球道、果嶺、梯台、沙坑、水裡就不種
@@ -1216,10 +1281,11 @@ export function buildHole(course, holeIdx, opts = {}) {
     t.cy = t.type === 'pine' ? t.y + t.h * 0.5 : t.type === 'shrub' ? t.y + t.h * 0.45 : t.y + t.h * 0.66;
     t.cr = t.type === 'pine' ? t.r * 0.9 : t.r;
     if (t.mcyp || t.jpine) { t.cy = t.y + t.h * 0.75; t.cr = t.r * 0.9; }
+    if (t.type === 'palm' || t.type === 'bamboo') treeColl(t);
     addTree(t);
   };
   if (map) {
-    for (const [u, v, src] of map.trees) plantMapTree(u + (src === 'n' ? 0 : (trng() - 0.5) * 2), v + (src === 'n' ? 0 : (trng() - 0.5) * 2), false, src);
+    for (const [u, v, src, kind] of map.trees) plantMapTree(u + (src === 'n' ? 0 : (trng() - 0.5) * 2), v + (src === 'n' ? 0 : (trng() - 0.5) * 2), false, src, kind);
     // 畫面外 6 公尺起是樹林（OSM 球場的圖外是海、街道、別的球場，不種）
     for (let i = 0; i < (map.scene ? 0 : attempts * 1.2); i++) {
       const u = lerp(bbox.minU, bbox.maxU, trng()), v = lerp(bbox.minV, bbox.maxV, trng());
@@ -1378,7 +1444,7 @@ export function buildHole(course, holeIdx, opts = {}) {
   // ---------- 世界座標介面（x = u, z = -v） ----------
   const H = (x, z) => height(x, -z);
   const api = {
-    course, holeIdx, par, hcp, yards, feat: F, spec, L: Lp, path, S, bbox, tees, pin: [pin[0], -pin[1]],
+    course, holeIdx, par, hcp, yards, feat: F, spec, L: Lp, path, S, bbox, tees, pin: [pin[0], -pin[1]], drawn,
     greenSide: mapGreens && mapGreens.length > 1 ? (gIdx === 0 ? '左' : '右') : null,      // 有兩個果嶺時今天用哪一個
     green: { u: G[0], v: G[1], rx: grx, ry: gry, rot: gRot }, bunkers, waters: map ? MG.waters.map((w, id) => ({ kind: 'pond', level: w.level, cells: w.cells, grid: MG, sea: seaIds.has(id) })) : waters, mapSea: seaIds.size > 0, scene: map && map.scene, geo: map && map.geo, cross, seaSide, seaEdge, trees, scenery,
     near, pointAt, dirAt, fwHalf, greenR, surfaceUV: surface, heightUV: height, heightVisUV: heightVis, fs, fe, theme,
@@ -1505,6 +1571,7 @@ export function paintMaps(hole, opts = {}) {
       let c, sand = 0;
       switch (sf) {
         case SURF.FAIRWAY: {
+          if (hole.drawn) { c = Math.floor(v / 8) % 2 ? pal.fair : pal.fair2; break; }      // 編輯器畫的球道：跟編輯器一樣每 8 公尺一條（東西向）
           const { s, d } = hole.near(u, v);
           const edge = hole.fwHalf(s, d > 0 ? 1 : -1) - Math.abs(d);
           c = edge < 1.6 ? pal.cut : (Math.floor(s / stripe) % 2 ? pal.fair : pal.fair2);

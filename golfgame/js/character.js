@@ -32,8 +32,41 @@ function sampleKeys(keys, ph) {
 
 const CLUB_GEOM = {
   driver: { len: 1.12, beta: 62 }, wood: { len: 1.04, beta: 62 }, iron: { len: 0.95, beta: 63 },
-  wedge: { len: 0.9, beta: 64 }, putter: { len: 0.86, beta: 72 },
+  wedge: { len: 0.9, beta: 64 }, putter: { len: 0.86, beta: 72 }, chipper: { len: 0.87, beta: 71 },
 };
+// 球桿類型 → 皮膚欄位
+export const skinSlotOf = type => type === 'driver' || type === 'wood' ? 'driver' : type === 'putter' ? 'putter' : type === 'chipper' ? 'chipper' : 'iron';
+
+// 寶刀（切推桿 35°）的桿頭：側面輪廓擠出成厚實的半月形刀身（輪廓座標 x = 擊球方向、y = 上、z = 趾端；
+//   桿頭座標的 x、y 跟輪廓相反，最後整顆繞 z 轉 180°），
+// 桿面後仰 35°、寬底板不容易挖地，背面一條飾帶、桿面嵌一片深色擊球面，跟鐵桿、推桿一眼分得出來
+function chipperHead(bodyMat, accentMat, faceMat) {
+  const T = Math.tan(35 * D2R), H = 0.044, depth = 0.084, F = 1;
+  const s = new THREE.Shape();
+  s.moveTo(F * 0.013, -0.022);                           // 前緣（桿面底）
+  s.lineTo(F * (0.013 - H * T), 0.022);                  // 桿面頂（後仰 35°）
+  s.quadraticCurveTo(F * -0.022, 0.026, F * -0.03, 0.012);   // 頂線往後圓下去
+  s.quadraticCurveTo(F * -0.036, -0.004, F * -0.03, -0.02);  // 厚實的背面
+  s.quadraticCurveTo(F * -0.012, -0.026, F * 0.013, -0.022); // 寬底板
+  const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.0025, bevelSegments: 3, curveSegments: 10 });
+  g.translate(0, 0, -0.006);
+  const head = new THREE.Mesh(g, bodyMat);
+  // 背面飾帶（沿刀身長邊）
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.009, depth * 0.78), accentMat);
+  band.position.set(F * -0.0345, -0.002, depth * 0.5 - 0.006);
+  // 桿面嵌片：貼在後仰 35° 的桿面上
+  const face = new THREE.Mesh(new THREE.BoxGeometry(0.0015, H * 0.72, depth * 0.72), faceMat);
+  face.position.set(F * (0.013 - H * T * 0.5 + 0.0012), 0, depth * 0.5 - 0.004);
+  face.rotation.z = 35 * D2R;
+  // 桿頸：從跟部接到桿身
+  const hosel = new THREE.Mesh(new THREE.CylinderGeometry(0.0062, 0.0075, 0.034, 10), bodyMat);
+  hosel.position.set(F * -0.004, 0.022, -0.004);
+  hosel.rotation.x = 0.35;
+  head.add(band, face, hosel);
+  for (const m of [band, face, hosel]) m.castShadow = true;
+  head.rotation.z = Math.PI;
+  return head;
+}
 
 function twoBoneIK(A, T, l1, l2, pole) {
   const AT = T.clone().sub(A);
@@ -122,7 +155,7 @@ export class ProceduralGolfer {
 
   buildClub(type, lenOverride) {
     // 只有換球桿（或站位角度、長度改變）才重建；舊的模型要釋放，否則每次瞄準都會漏記憶體、越玩越卡
-    const sk = this.skins && this.skins[type === 'driver' || type === 'wood' ? 'driver' : type === 'putter' ? 'putter' : 'iron'];
+    const sk = this.skins && this.skins[skinSlotOf(type)];
     const skin = sk && !sk.std ? sk : null;
     const key = type + ':' + (this.lie || 0.9).toFixed(3) + ':' + (lenOverride || 0).toFixed(3) + ':' + (skin ? skin.id : '');
     if (this._clubKey === key) return;
@@ -151,6 +184,13 @@ export class ProceduralGolfer {
     } else if (type === 'putter') {
       head = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.028, 0.11), skinHead || black);
       head.position.set(0.01, 0, 0.045);
+    } else if (type === 'chipper') {
+      // 標準款：霧銀刀身、金色飾帶、黑色擊球面；皮膚換刀身顏色，飾帶用皮膚的發光色（沒有就用桿身色）
+      const satin = new THREE.MeshStandardMaterial({ color: 0xb8bcc0, roughness: 0.32, metalness: 1 });
+      const acc = skin ? new THREE.MeshStandardMaterial({ color: skin.glow || skin.shaft, roughness: 0.3, metalness: 0.8, emissive: skin.glow || 0x000000, emissiveIntensity: skin.glow ? 1 : 0 })
+        : new THREE.MeshStandardMaterial({ color: 0xd8a838, roughness: 0.25, metalness: 1 });
+      head = chipperHead(skinHead || satin, acc, new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.5, metalness: 0.6 }));
+      head.position.set(0.0, 0.0, 0.0);
     } else {
       head = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.05, 0.078), skinHead || (type === 'wedge' ? new THREE.MeshStandardMaterial({ color: 0xa9a59c, roughness: 0.4, metalness: 1 }) : chrome));
       head.position.set(0.006, 0.006, 0.035);
@@ -186,10 +226,10 @@ export class ProceduralGolfer {
 
   // 依球的位置、瞄準方向與球桿，決定站位與揮桿平面
   setup(ballPos, yaw, clubIcon) {
-    this.isPutt = clubIcon === 'putter';
+    this.isPutt = clubIcon === 'putter' || clubIcon === 'chipper';      // 寶刀用推桿的站姿與動作
     this.clubType = clubIcon;
     const cg = CLUB_GEOM[clubIcon] || CLUB_GEOM.iron;
-    this.stance = { driver: 0.27, wood: 0.25, iron: 0.21, wedge: 0.18, putter: 0.15 }[clubIcon] || 0.21;
+    this.stance = { driver: 0.27, wood: 0.25, iron: 0.21, wedge: 0.18, putter: 0.15, chipper: 0.15 }[clubIcon] || 0.21;
     this.armR = this.isPutt ? 0.5 : 0.53;
     this.betaH = cg.beta * D2R;
     // 在本地座標先擺出準備姿勢，算出手的位置與球的位置

@@ -1,4 +1,4 @@
-// 14 支球桿。數據參考 PGA Tour TrackMan 平均值，並換算成「桿頭速度相對一號木的比例」。
+// 14 支球桿 + 寶刀（切推桿）。數據參考 PGA Tour TrackMan 平均值，並換算成「桿頭速度相對一號木的比例」。
 // ratio: 桿頭速度 / 一號木桿頭速度；smash: 擊球效率；launch: 發射角(度)；spin: 後旋(rpm)
 export const CLUBS = [
   { id: 'D', name: 'DRIVER', short: '1W', zh: '一號木', icon: 'driver', loft: 10.5, ratio: 1.0, smash: 1.48, launch: 13.2, spin: 2700 },
@@ -14,8 +14,12 @@ export const CLUBS = [
   { id: 'GW', name: 'GAP WEDGE 50°', short: 'GW', zh: 'G 挖起桿', icon: 'wedge', loft: 50, ratio: 0.715, smash: 1.20, launch: 27.0, spin: 9800, wedge: true },
   { id: 'SW', name: 'SAND WEDGE 56°', short: 'SW', zh: 'S 挖起桿', icon: 'wedge', loft: 56, ratio: 0.695, smash: 1.16, launch: 30.5, spin: 10200, wedge: true },
   { id: 'LW', name: 'LOB WEDGE 60°', short: 'LW', zh: 'L 挖起桿', icon: 'wedge', loft: 60, ratio: 0.675, smash: 1.12, launch: 33.5, spin: 10500, wedge: true },
+  // 寶刀（切推桿）：35°、推桿長度，用推桿的動作切滾上果嶺；不會自動選，只能在球桿選單手動挑
+  { id: 'CH', name: 'CHIPPER 35°', short: 'CH', zh: '寶刀', icon: 'chipper', loft: 35, ratio: 0, smash: 0, launch: 21, spin: 1700, chipper: true },
   { id: 'PT', name: 'PUTTER', short: 'PT', zh: '推桿', icon: 'putter', loft: 3, ratio: 0, smash: 0, launch: 0, spin: 0, putter: true },
 ];
 
 export const clubById = id => CLUBS.find(c => c.id === id);
 export const clubIndex = id => CLUBS.findIndex(c => c.id === id);
+// 用推桿那套操作（拉桿長度 = 距離、方向用推桿的靈敏度）：推桿與寶刀
+export const puttLike = c => !!(c && (c.putter || c.chipper));

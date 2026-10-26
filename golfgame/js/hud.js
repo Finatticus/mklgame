@@ -4,7 +4,7 @@ import { SURF_NAME } from './physics.js';
 import { CLUBS } from './clubs.js';
 
 const $ = id => document.getElementById(id);
-const ICON = { driver: 'i-driver', wood: 'i-wood', iron: 'i-iron', wedge: 'i-wedge', putter: 'i-putter' };
+const ICON = { driver: 'i-driver', wood: 'i-wood', iron: 'i-iron', wedge: 'i-wedge', putter: 'i-putter', chipper: 'i-chipper' };
 
 export class Hud {
   constructor() {
@@ -101,7 +101,7 @@ export class Hud {
     $('c-icon').setAttribute('href', '#' + ICON[club.icon]);
     $('c-name').textContent = club.name;
     const t = table[club.id];
-    $('c-sub').textContent = club.putter ? '推桿' : `平均 ${Math.round(toYd(t.carry))} Y · Total ${Math.round(toYd(t.total))} Y`;
+    $('c-sub').textContent = club.putter ? '推桿' : club.chipper ? '切推桿 · 推桿動作切滾上果嶺' : `平均 ${Math.round(toYd(t.carry))} Y · Total ${Math.round(toYd(t.total))} Y`;
     $('hud-club').classList.toggle('disabled', !mine);
   }
 
@@ -111,7 +111,7 @@ export class Hud {
     $('cl-note').textContent = '平均距離依你的素質計算（球道、無風）';
     $('cl-list').innerHTML = CLUBS.map(c => {
       const t = table[c.id];
-      const dist = c.putter ? '<span class="cl-d">推桿</span>' : `<span class="cl-d"><b class="num">${Math.round(toYd(t.carry))}</b><small>Carry</small></span><span class="cl-d"><b class="num">${Math.round(toYd(t.total))}</b><small>Total</small></span>`;
+      const dist = c.putter ? '<span class="cl-d">推桿</span>' : c.chipper ? '<span class="cl-d">切推</span>' : `<span class="cl-d"><b class="num">${Math.round(toYd(t.carry))}</b><small>Carry</small></span><span class="cl-d"><b class="num">${Math.round(toYd(t.total))}</b><small>Total</small></span>`;
       return `<button class="cl-row ${c.id === currentId ? 'on' : ''}" data-id="${c.id}">${icon(c)}<span class="cl-n"><b class="num">${c.name}</b><small>${c.zh}${c.putter ? '' : ' · ' + c.loft + '°'}</small></span>${dist}</button>`;
     }).join('');
     $('cl-list').querySelectorAll('[data-id]').forEach(b => b.onclick = () => { $('dlg-clubs').classList.remove('open'); onPick(b.dataset.id); });

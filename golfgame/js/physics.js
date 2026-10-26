@@ -212,6 +212,23 @@ export function simulate(launch, env, terrain) {
 
 const CLUB_NOMINAL_MPH = 113; // TrackMan 一號木平均桿頭速度，用來把 spin 換算到玩家速度
 
+// 寶刀的出球：推桿式的動作、35° 桿面加上手往前壓，起飛約 20°（打得越用力手越往前壓、越低，最低 13°）、後旋很少，
+// 落地後大部分距離是滾的：10 碼約 1/4 飛、3/4 滾，30 碼約 2/5 飛。
+// 「總距離 → 球速」用同一套物理在平坦果嶺上實際模擬一次建表（每種果嶺速度一張），之後內插
+const CHIP_SPIN = 500, chipCal = {};
+const chipLaunch = v => clamp(20 - (v - 5) * 0.5, 13, 20);
+export function chipSpeed(dist, stimp = 8) {
+  const key = stimp.toFixed(1);
+  let t = chipCal[key];
+  if (!t) {
+    const flat = { course: { firm: 1, stimp }, height: () => 0, surface: () => SURF.GREEN, normal: () => [0, 1, 0], inBounds: () => true, treeAt: () => null, distToPin: () => 999 };
+    t = chipCal[key] = [[0, 0]];
+    for (let v = 0.5; v <= 32; v += 0.5) t.push([v, simulate({ speed: v, launchDeg: chipLaunch(v), yaw: 0, spin: CHIP_SPIN, axisDeg: 0, pos: [0, R, 0] }, { rho: 1.2, wind: [0, 0], rng: ZERO_RNG }, flat).total]);
+  }
+  for (let i = 1; i < t.length; i++) if (t[i][1] >= dist) { const [v0, d0] = t[i - 1], [v1, d1] = t[i]; return v0 + (v1 - v0) * (dist - d0) / Math.max(1e-6, d1 - d0); }
+  return t[t.length - 1][0];
+}
+
 /**
  * 揮桿輸入 + 素質 + 球位 → 擊球參數
  * input: { power(0~1.1), curve(-1~1), aimYaw }
@@ -235,6 +252,18 @@ export function makeLaunch(input, ctx) {
     const lineErr = n() * d.lineSigma * pm;
     const yaw = input.aimYaw + rad(input.curve * 1.5 + (input.curve ? lineErr : 0));
     return { speed: v0, launchDeg: 0, yaw, spin: 0, axisDeg: 0, rollOnly: true, info: { clubMph: 0, smash: 0, ballMph: v0 / MPH } };
+  }
+
+  if (club.chipper) {
+    // 寶刀（切推桿）：跟推桿一樣，拉桿長度決定「在平坦果嶺上的總距離」，換算成低飛的切滾球（先小跳一段再滾）。
+    //   距離手感用「推桿手感」素質、方向用「推桿方向」；球位會吃距離：長草少 15%、深草少 40%、沙坑少一半而且很不穩
+    const want = Math.max(0.5, input.power * ctx.puttScale);
+    const keep = lie === SURF.ROUGH ? 0.85 : lie === SURF.DEEP ? 0.6 : lie === SURF.SAND ? 0.5 : lie === SURF.WASTE ? 0.9 : 1;
+    const wild = lie === SURF.ROUGH ? 1.5 : lie === SURF.DEEP ? 2.4 : lie === SURF.SAND ? 3 : lie === SURF.WASTE ? 1.4 : 1;
+    const vn = chipSpeed(want, ctx.stimp);
+    const v0 = vn * keep * (1 + n() * (d.touchSigma * 1.35 + 0.012) * wild * pm);
+    const yaw = input.aimYaw + rad(input.curve * 2 + n() * d.lineSigma * 1.6 * wild * pm);
+    return { speed: v0, launchDeg: chipLaunch(vn) + n() * 1.2, yaw, spin: CHIP_SPIN * (0.85 + rng() * 0.3), axisDeg: n() * 2, info: { clubMph: 0, smash: 0, ballMph: v0 / MPH } };
   }
 
   let pw = clamp(input.power, 0.05, 1.1);
@@ -322,7 +351,7 @@ export function distanceTable(stats, clubs, course, rho = 1.2) {
   };
   const out = {};
   for (const c of clubs) {
-    if (c.putter) continue;
+    if (c.putter || c.chipper) continue;
     let carry = 0, total = 0;
     for (const seed of TABLE_SEEDS) {
       const rng = makeRng(seed);

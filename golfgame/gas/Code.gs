@@ -9,6 +9,8 @@
  *   <帳號名稱>    每位玩家一頁：上半部是個人資料（鍵/值），第 14 列起是回合紀錄
  *   排行          每打完一場（9 或 18 洞）一列，排行榜就是讀這一頁（每一場都單獨列入，不只取最好）
  *   挑戰排行      每位玩家一列：挑戰模式的總星數（有更新就改寫那一列）
+ *   自製球場      管理員的自製球場資料：每一列 = 一個草稿洞 / 一座發布的球場 / 一個修改過的現有球洞
+ *                 A 種類（draft / course / override）B 代號 C 名稱 D 更新時間 E 摘要（JSON）F 起 資料（JSON，每格最多 45000 字，太長就接到後面的格子）
  * 遊戲間（驗證碼、連線資料、訊息）放在 CacheService，6 小時自動清除，不佔工作頁。
  */
 
@@ -16,7 +18,10 @@ const ADMIN = 'Michael';
 const ADMIN_PASS = '1220';
 const START_POINTS = 30;
 const START_RESPECS = 10;
-const RESERVED = ['Account', '排行', '挑戰排行'];
+const RESERVED = ['Account', '排行', '挑戰排行', '自製球場'];
+const CUSTOM_SHEET = '自製球場';
+const CUSTOM_HEADER = ['種類', '代號', '名稱', '更新時間', '摘要', '資料'];
+const CHUNK = 45000;
 const STAR_SHEET = '挑戰排行';
 const STAR_HEADER = ['帳號', '總星數', '最遠關卡', '更新時間'];
 const RANK_SHEET = '排行';
@@ -40,6 +45,7 @@ function setup() {
   ensurePlayerSheet_(ADMIN);
   rankSheet_();
   starSheet_();
+  customSheet_();
 }
 
 // 「排行」工作頁：沒有就建立（第 1 列標題）
@@ -199,6 +205,46 @@ const ACTIONS = {
     }));
   },
 
+  // ---------- 實際下場紀錄（現實世界打的回合）----------
+  // 「實際下場」工作頁：一場一列（帳號、編號、日期、球場、更新時間、資料 JSON），用編號新增 / 更新 / 刪除
+  realList(req) {
+    const acc = auth_(req);
+    const sh = realSheet_(), last = sh.getLastRow();
+    if (last < 2) return [];
+    return sh.getRange(2, 1, last - 1, REAL_HEADER.length).getValues().filter(r => String(r[0]) === acc.user)
+      .map(r => Object.assign(safeParse_(r[5], {}), { id: String(r[1]), updated: r[4] instanceof Date ? r[4].toISOString() : String(r[4]) }))
+      .sort((x, y) => String(y.date).localeCompare(String(x.date)) || String(y.updated).localeCompare(String(x.updated)));
+  },
+
+  realSave(req) {
+    const acc = auth_(req);
+    const rec = Object.assign({}, req.rec || {});
+    rec.id = String(rec.id || Utilities.getUuid().slice(0, 12));
+    const json = JSON.stringify(rec);
+    if (json.length > 40000) throw new Error('紀錄太大');
+    return withLock_(() => {
+      const sh = realSheet_(), last = sh.getLastRow(), now = new Date();
+      const row = [acc.user, rec.id, String(rec.date || ''), String(rec.course || ''), now, json];
+      if (last >= 2) {
+        const keys = sh.getRange(2, 1, last - 1, 2).getValues();
+        for (let i = 0; i < keys.length; i++) if (String(keys[i][0]) === acc.user && String(keys[i][1]) === rec.id) { sh.getRange(i + 2, 1, 1, row.length).setValues([row]); return Object.assign(rec, { updated: now.toISOString() }); }
+      }
+      sh.appendRow(row);
+      return Object.assign(rec, { updated: now.toISOString() });
+    });
+  },
+
+  realDelete(req) {
+    const acc = auth_(req);
+    return withLock_(() => {
+      const sh = realSheet_(), last = sh.getLastRow();
+      if (last < 2) return true;
+      const keys = sh.getRange(2, 1, last - 1, 2).getValues();
+      for (let i = keys.length - 1; i >= 0; i--) if (String(keys[i][0]) === acc.user && String(keys[i][1]) === String(req.id)) sh.deleteRow(i + 2);
+      return true;
+    });
+  },
+
   // ---------- 管理員 ----------
   listAccounts(req) {
     admin_(req);
@@ -307,6 +353,56 @@ const ACTIONS = {
     return list.filter(m => m.seq > since && m.from !== acc.user);
   },
 
+  // ---------- 自製球場 ----------
+  // 清單：發布的球場（含每洞摘要）、修改過的現有球洞（代號 + 更新時間）；管理員另外拿到所有草稿
+  customList(req) {
+    const acc = auth_(req);
+    const rows = customRows_();
+    const pick = k => rows.filter(r => r.kind === k).map(r => ({ id: r.id, name: r.name, updated: r.updated, meta: r.meta }));
+    const out = { courses: pick('course'), overrides: pick('override').map(r => ({ id: r.id, updated: r.updated })) };
+    if (acc.user === ADMIN) out.drafts = pick('draft');
+    return out;
+  },
+
+  // 一筆的完整資料（玩家打自製球場、或載入修改過的球洞時才下載）
+  customGet(req) {
+    auth_(req);
+    const r = customRows_().find(x => x.kind === req.kind && x.id === req.id);
+    if (!r) throw new Error('找不到這筆自製資料');
+    return { id: r.id, name: r.name, updated: r.updated, meta: r.meta, data: customData_(r.row) };
+  },
+
+  customSave(req) {
+    admin_(req);
+    if (['draft', 'course', 'override'].indexOf(req.kind) < 0) throw new Error('種類錯誤');
+    const id = String(req.id || '');
+    if (!id) throw new Error('缺少代號');
+    const data = typeof req.data === 'string' ? req.data : JSON.stringify(req.data || null);
+    return withLock_(() => {
+      const sh = customSheet_();
+      const r = customRows_().find(x => x.kind === req.kind && x.id === id);
+      const row = r ? r.row : sh.getLastRow() + 1;
+      const parts = [];
+      for (let i = 0; i < data.length; i += CHUNK) parts.push(data.slice(i, i + CHUNK));
+      if (!parts.length) parts.push('');
+      const now = new Date().toISOString();
+      const need = 5 + parts.length - sh.getMaxColumns();
+      if (need > 0) sh.insertColumnsAfter(sh.getMaxColumns(), need);           // 資料太長：多開幾欄
+      if (r) sh.getRange(row, 6, 1, Math.max(1, sh.getLastColumn() - 5)).clearContent();
+      sh.getRange(row, 1, 1, 5 + parts.length).setValues([[req.kind, id, String(req.name || ''), now, JSON.stringify(req.meta || {})].concat(parts)]);
+      return { id: id, updated: now };
+    });
+  },
+
+  customDelete(req) {
+    admin_(req);
+    return withLock_(() => {
+      const r = customRows_().find(x => x.kind === req.kind && x.id === String(req.id));
+      if (r) customSheet_().deleteRow(r.row);
+      return true;
+    });
+  },
+
   closeRoom(req) {
     auth_(req);
     const cache = CacheService.getScriptCache();
@@ -317,6 +413,37 @@ const ACTIONS = {
 };
 
 // ---------- 成就 / 挑戰 ----------
+const REAL_HEADER = ['帳號', '編號', '日期', '球場', '更新時間', '資料'];
+function realSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName('實際下場');
+  if (!sh) { sh = ss.insertSheet('實際下場'); sh.appendRow(REAL_HEADER); sh.setFrozenRows(1); sh.getRange('B:C').setNumberFormat('@'); }
+  return sh;
+}
+
+function customSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(CUSTOM_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(CUSTOM_SHEET);
+    sh.getRange(1, 1, 1, CUSTOM_HEADER.length).setValues([CUSTOM_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+// 只讀前五欄（種類、代號、名稱、時間、摘要），資料欄要的時候才讀
+function customRows_() {
+  const sh = customSheet_(), n = sh.getLastRow() - 1;
+  if (n <= 0) return [];
+  return sh.getRange(2, 1, n, 5).getValues().map((v, i) => ({ row: i + 2, kind: String(v[0]), id: String(v[1]), name: String(v[2]), updated: String(v[3]), meta: safeParse_(v[4], {}) }));
+}
+function customData_(row) {
+  const sh = customSheet_(), w = sh.getLastColumn();
+  if (w < 6) return null;
+  const s = sh.getRange(row, 6, 1, w - 5).getValues()[0].map(String).join('');
+  return s ? JSON.parse(s) : null;
+}
+
 function mergeProg_(a, b) {
   const o = { ach: Object.assign({}, a.ach || {}), cnt: Object.assign({}, a.cnt || {}), stamps: Object.assign({}, a.stamps || {}) };
   Object.keys(b.ach || {}).forEach(k => { if (!o.ach[k]) o.ach[k] = b.ach[k]; });

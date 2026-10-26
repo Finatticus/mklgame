@@ -244,6 +244,19 @@
     <ellipse cx="44" cy="78" rx="18" ry="3" fill="#fff" opacity=".1" filter="url(#softer)"/>
   </symbol>
 
+  <!-- 寶刀（切推桿）：桿身直立像推桿，桿頭是厚實的半月形刀身、寬底板，背面金色飾帶 -->
+  <symbol id="i-chipper" viewBox="0 0 120 120">
+    <ellipse cx="60" cy="108" rx="44" ry="4.5" fill="#000" opacity=".22" filter="url(#soft)"/>
+    <path d="M80 4 L83.5 4.8 L76 52 L72.5 51.3Z" fill="url(#gShaft)"/>
+    <path d="M72 49 L77.5 50.3 L76 56 L71 55Z" fill="#111"/>
+    <path d="M71 55 L76.5 56 L74 66 L64 64Z" fill="url(#gSatin)"/>
+    <path d="M64 62 L76 64.5 C88 66 98 72 100 84 C102 97 92 105 78 105 L36 105 C22 105 14 98 15 88 C16 74 30 66 46 64 C52 63.4 58 63 64 62Z" fill="url(#gSatin)"/>
+    <path d="M20 96 C24 102 30 104.5 38 104.5 L78 104.5 C88 104.5 96 100 99 92" fill="none" stroke="#4a4840" stroke-width="2.4" opacity=".55"/>
+    <path d="M24 84 C30 76 40 71 52 70 L82 70 C90 71 95 76 96 82" fill="none" stroke="#d6a838" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M46 65 C54 64 62 63.6 70 63.8" fill="none" stroke="#fff" stroke-width="1.3" opacity=".85"/>
+    <text x="50" y="96" font-family="Barlow Condensed" font-size="8" font-weight="700" fill="#3a3833" opacity=".6">35°</text>
+  </symbol>
+
   <symbol id="i-ball" viewBox="0 0 120 120">
     <ellipse cx="64" cy="101" rx="30" ry="6" fill="#000" opacity=".25" filter="url(#soft)"/>
     <circle cx="60" cy="58" r="37" fill="url(#gBall)"/>
@@ -370,7 +383,18 @@
   <header class="appbar"><small>CHALLENGE</small><h4>挑戰模式</h4><p id="cg-stars" class="appbar-sub"></p><button id="cg-back" class="appbar-act">返回</button></header>
   <div class="body narrow scroll">
     <p class="small cg-note">每一關都是一個特別設計的洞。在桿數上限內進洞得 1 顆星，另外兩個條件各 1 顆星。前一關拿到 1 顆星，就會開放下一關；想拿滿星可以隨時回來重打。</p>
+    <button id="cg-shop" class="cg-shop"><span><b>星星商店</b><small>用星星換球桿與球的外觀</small></span><em>前往</em></button>
     <div id="cg-grid" class="cg-grid"></div>
+  </div>
+</section>
+
+<!-- ============ 星星商店 ============ -->
+<section id="scr-shop" class="screen app-screen">
+  <header class="appbar"><small>STAR SHOP</small><h4>星星商店</h4><p id="sh-bal" class="appbar-sub"></p><button id="sh-back" class="appbar-act">返回</button></header>
+  <div class="body narrow scroll">
+    <div id="sh-tabs" class="seg sh-tabs"><button data-slot="driver" class="on">開球木桿</button><button data-slot="iron">鐵桿</button><button data-slot="putter">推桿</button><button data-slot="chipper">寶刀</button><button data-slot="ball">球</button></div>
+    <p class="small sh-note">星星在挑戰模式取得，買外觀不會減少排行上的總星數。點一下可以看介紹、購買或裝備。</p>
+    <div id="sh-list" class="sh-list"></div>
   </div>
 </section>
 
@@ -454,10 +478,17 @@
 <section id="scr-records" class="screen app-screen">
   <header class="appbar"><small>RECORDS</small><h4>紀錄</h4></header>
   <div class="body narrow scroll">
-    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="rounds" class="on">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button></div>
+    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="rounds" class="on">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button><button data-rc="real">實際下場</button></div>
     <div id="rc-list"></div>
   </div>
   <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records" class="on"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
+</section>
+
+<!-- ============ 實際下場紀錄（新增 / 編輯 / 計分卡）============ -->
+<section id="scr-real" class="screen app-screen">
+  <header class="appbar"><small>ON-COURSE LOG</small><h4 id="rl-title">實際下場紀錄</h4><button id="rl-back" class="appbar-act">返回</button></header>
+  <div class="body narrow scroll" id="rl-scroll"><div id="rl-body"></div></div>
+  <div id="rl-savebar" class="rl-savebar hidden"><button id="rl-save" class="btn brass big">儲存紀錄</button></div>
 </section>
 
 <!-- ============ 排行 ============ -->
@@ -467,6 +498,7 @@
     <div id="rk-tabs" class="seg rk-tabs"><button data-rk="total" class="on">總桿排行</button><button data-rk="course">球場排行</button><button data-rk="special">一桿進洞 / 老鷹 / 信天翁</button><button data-rk="stars">挑戰星數</button></div>
     <div id="rk-holes" class="seg rk-sub"><button data-h="18" class="on">18 洞</button><button data-h="9">9 洞</button></div>
     <div id="rk-courses" class="seg rk-sub hidden"></div>
+    <p id="rk-sync" class="small rk-sync hidden">已顯示上次的排行，正在更新…</p>
     <div id="rk-list"></div>
     <p class="small rk-note">每一場打完的回合都會單獨列入排行（不是只取最好的一場）。同桿數時對標準桿較低、較早打出的排前面。</p>
   </div>
@@ -477,6 +509,7 @@
 <section id="scr-admin" class="screen app-screen">
   <header class="appbar"><small>ADMIN</small><h4>帳號審核</h4></header>
   <div class="body narrow scroll">
+    <button id="ad-editor" class="btn brass ad-editor">自製球場 / 修改球洞</button>
     <div id="ad-pending" class="pending"></div>
     <div id="ad-list" class="acc"></div>
     <p class="small">開關直接寫回 Google 試算表「Account」工作頁的 C 欄。Michael 固定為管理員，無法停用。</p>
@@ -484,11 +517,69 @@
   <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only on"><i></i>管理</button></nav>
 </section>
 
+<!-- ============ 自製球場（管理員）：草稿、發布、修改現有球洞 ============ -->
+<section id="scr-editor" class="screen app-screen">
+  <header class="appbar"><small>COURSE EDITOR</small><h4>自製球場</h4><button id="ed-back" class="appbar-act">返回</button></header>
+  <div class="seg ed-tabs" id="ed-tabs"><button data-t="drafts" class="on">球洞草稿</button><button data-t="courses">已發布</button><button data-t="exist">修改現有球洞</button></div>
+  <div class="body narrow scroll ed-home">
+    <div id="ed-p-drafts">
+      <button id="ed-new" class="btn brass">畫一個新球洞</button>
+      <p class="small ed-hint">畫好的球洞都會存成草稿（數量不限）。勾選 9 洞或 18 洞就能發布成自製球場：9 洞要 Par 3 / 4 / 5 各 3 洞（標準桿 36），18 洞要各 6 洞（標準桿 72），勾選的順序就是球洞順序。自製球場不列入排行，也沒有紀念章。</p>
+      <div id="ed-drafts" class="ed-drafts"></div>
+    </div>
+    <div id="ed-p-courses" class="hidden"><div id="ed-courses"></div></div>
+    <div id="ed-p-exist" class="hidden">
+      <p class="small ed-hint">修改現有球場的某一洞：存檔後所有玩家都會打到修改後的版本，排行和紀念章照舊。隨時可以還原成原本的版本。</p>
+      <select id="ed-ex-course" class="ed-select"></select>
+      <div id="ed-ex-holes"></div>
+    </div>
+  </div>
+  <div id="ed-pub" class="ed-pub hidden">
+    <div class="ed-pub-info" id="ed-pub-info"></div>
+    <div class="ed-pub-row"><input id="ed-pub-name" placeholder="球場名稱" maxlength="20"><button id="ed-pub-go" class="btn brass">發布</button></div>
+  </div>
+</section>
+
+<section id="scr-edcanvas" class="screen ed-screen">
+  <div class="ed-top">
+    <button id="ec-back" class="ec-btn">返回</button>
+    <input id="ec-name" placeholder="球洞名稱" maxlength="16">
+    <select id="ec-par"><option value="3">Par 3</option><option value="4">Par 4</option><option value="5">Par 5</option></select>
+    <button id="ec-save" class="ec-btn ec-save">存檔</button>
+  </div>
+  <div id="ec-wrap" class="ec-wrap"><canvas id="ec-cv"></canvas>
+    <div id="ec-info" class="ec-info"></div>
+    <div class="ec-hint"><span class="ec-touch">兩指拖曳移動・捏合縮放</span><span class="ec-mouse">移動畫面：右鍵拖曳　縮放：滾輪</span></div>
+    <div class="ec-float">
+      <button id="ec-undo" class="ec-round" title="復原（Ctrl+Z）" aria-label="復原"><svg viewBox="0 0 24 24"><path d="M9 7H4V2"/><path d="M4.6 7A8.5 8.5 0 1 1 3.5 13"/></svg></button>
+      <button id="ec-redo" class="ec-round" title="重做（Ctrl+Y）" aria-label="重做"><svg viewBox="0 0 24 24"><path d="M15 7h5V2"/><path d="M19.4 7A8.5 8.5 0 1 0 20.5 13"/></svg></button>
+      <button id="ec-3d" class="ec-real">實景</button>
+    </div>
+  </div>
+  <div class="ec-tools">
+    <div id="ec-opts" class="ec-opts"></div>
+    <div id="ec-main" class="ec-main">
+      <button data-tool="brush" class="on">畫筆</button><button data-tool="terrain">地形</button><button data-tool="place">放置</button><button data-tool="more">更多</button>
+    </div>
+  </div>
+  <input id="ec-file" type="file" accept="image/*" class="hidden">
+</section>
+
 <!-- ============ 遊戲 ============ -->
 <section id="scr-game" class="screen game-screen">
   <canvas id="gl"></canvas>
   <div id="game-layer"></div>
   <canvas id="swing-trail"></canvas>
+  <div id="danmaku" class="danmaku"></div>
+  <form id="chat-bar" class="chat-bar hidden" autocomplete="off"><input id="chat-in" maxlength="40" placeholder="說點什麼…（Enter 送出）" enterkeyhint="send"><button type="submit">送出</button></form>
+  <div id="free-pad" class="free-pad hidden"></div>
+  <div id="pv-bar" class="pv-bar hidden">
+    <button id="pv-back" class="pvb">回編輯器</button>
+    <button id="pv-free" class="pvb pv-main">自由看</button>
+    <button id="pv-reset" class="pvb hidden">看整洞</button>
+    <div id="pv-tees" class="pv-tees"><button data-tee="black">黑</button><button data-tee="blue">藍</button><button data-tee="white">白</button><button data-tee="red">紅</button></div>
+    <p class="pv-tip">自由看：一指拖曳移動、兩指縮放與旋轉、兩指上下拉改角度（電腦：左鍵移動、右鍵旋轉、滾輪縮放）</p>
+  </div>
   <div id="shape-tag" class="shape-tag"></div>
   <div id="hud" class="hidden">
     <div id="tag-pin" class="tag pin num"></div>
@@ -539,6 +630,7 @@
     <div class="hud-tools">
       <button class="hud-btn" id="btn-menu" title="選單">☰</button>
       <button class="hud-btn" id="btn-view" title="俯瞰">⛶</button>
+      <button class="hud-btn hidden" id="btn-chat" title="聊天" aria-label="聊天"><svg viewBox="0 0 24 24"><path d="M4 5h16v10H9l-4 4v-4H4z"/></svg></button>
       <button class="hud-btn hidden" id="btn-mulligan">重打</button>
     </div>
 
@@ -628,6 +720,11 @@
   <div id="sk-btns" class="sk-btns"></div>
 </div></div>
 
+<div id="dlg-stamp" class="dlg"><div class="dlg-box">
+  <div id="sp-body"></div>
+  <div class="dlg-btns"><button class="btn brass" onclick="document.getElementById('dlg-stamp').classList.remove('open')">關閉</button></div>
+</div></div>
+
 <div id="dlg-level" class="dlg"><div class="dlg-box wide">
   <div id="lv-body"></div>
   <div class="dlg-btns"><button id="lv-cancel" class="btn ghost-dark">取消</button><button id="lv-go" class="btn brass">開始挑戰</button></div>
@@ -653,7 +750,7 @@
 
 <div id="dlg-courses" class="dlg"><div class="dlg-box wide">
   <h3>選擇球場</h3>
-  <div id="cp-kind" class="seg cp-kind"><button data-k="real">一般球場</button><button data-k="fantasy">奇幻球場</button></div>
+  <div id="cp-kind" class="seg cp-kind"><button data-k="real">一般球場</button><button data-k="fantasy">奇幻球場</button><button data-k="custom">自製球場</button></div>
   <div id="cp-list" class="cp-list"></div>
   <div class="dlg-btns"><button id="cp-close" class="btn ghost-dark">取消</button></div>
 </div></div>

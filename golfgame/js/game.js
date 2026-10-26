@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { buildHole } from './terrain.js';
 import { simulate, makeLaunch, distanceTable, carryAt, airDensity, SURF, ADJ_SEEDS } from './physics.js';
-import { CLUBS, clubById, clubIndex } from './clubs.js';
+import { CLUBS, clubById, clubIndex, puttLike } from './clubs.js';
 import { courseById, teeYards, loadCourseMaps, holeLabel } from './courses.js';
 import { makeRng, hashStr, toYd, YD, MPH, FT, clamp, lerp, rad, smooth, fmtToPar, escapeHtml } from './util.js';
 import { ProceduralGolfer } from './character.js';
@@ -11,7 +11,7 @@ import { MixamoGolfer } from './mixamo.js';
 import { characterDef, ANIM_BASE, getSetting } from './config.js';
 import { SwingInput } from './input.js';
 import * as sfx from './audio.js';
-import { bump, unlock, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal } from './progress.js';
+import { bump, unlock, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal, fantasyPar } from './progress.js';
 import { LEVELS, levelById, evaluate, goalMet } from './challenge.js';
 
 const WIND = { calm: [0, 0], light: [2, 6], normal: [6, 11], strong: [11, 15] };
@@ -23,6 +23,7 @@ const UPV = new THREE.Vector3(0, 1, 0);
 const $ = id => document.getElementById(id);
 // 推桿刻度（碼）：拉到底 = 平地滾這麼遠。一般最長 15 碼，超過才用 20 / 25 碼
 const PUTT_SCALES = [3, 5, 8, 10, 12, 15, 20, 25].map(y => y * YD);
+const CHIP_SCALES = [5, 8, 10, 15, 20, 25, 30, 40, 50].map(y => y * YD);      // 寶刀：拉滿的距離（切滾的距離比推桿長）
 const SCORE_NAME = { '-4': '信天翁 Condor', '-3': '信天翁 Albatross', '-2': '老鷹 Eagle', '-1': '小鳥 Birdie', '0': '平標準桿 Par', '1': '柏忌 Bogey', '2': '雙柏忌 Double Bogey', '3': '三柏忌 Triple Bogey' };
 
 export class Game {
@@ -72,6 +73,8 @@ export class Game {
     });
     $('cl-close').onclick = () => $('dlg-clubs').classList.remove('open');
     $('btn-view').onclick = () => { if (this.canControl()) this.cam.mode = this.cam.mode === 'overview' ? 'address' : 'overview'; };
+    this.initFree();
+    this.initChat();
     $('btn-mulligan').onclick = () => this.mulligan();
     $('btn-map').addEventListener('click', e => { e.stopPropagation(); this.hud.openBigMap(); });
     $('map-close').onclick = () => $('dlg-map').classList.remove('open');
@@ -99,6 +102,8 @@ export class Game {
   async start(cfg, players, net = null, isHost = true, resume = null) {
     this.cfg = cfg;
     this.net = net;
+    $('btn-chat').classList.toggle('hidden', !net);          // 對話按鈕只有連線時才有
+    $('chat-bar').classList.add('hidden'); $('danmaku').innerHTML = '';
     this.authority = !net || isHost;
     this.isHost = isHost;
     const base = courseById(cfg.courseId);
@@ -125,7 +130,7 @@ export class Game {
       return {
         ...p, idx: i, golfer, table: distanceTable(p.stats, CLUBS, this.course, this.rho),
         scores: [], putts: [], pars: [], fwHit: 0, fwTotal: 0, gir: 0, mulligans: cfg.mulligans || 0, away: false,
-        rtrk: { haz: 0, voidFall: 0, three: false, bogey: false, streak: 0 },      // 成就用：這一場的失誤、三推、連續小鳥
+        rtrk: { haz: 0, voidFall: 0, three: false, bogey: false, streak: 0, birdies: 0 },      // 成就用：這一場的失誤、三推、連續小鳥
       };
     });
     // 裝備的球桿皮膚
@@ -267,8 +272,11 @@ export class Game {
     await this.world.loadHole(this.hole);
     this.hud.setGreenHeat(this.hole);
     const rng = makeRng(this.seed + idx * 977);
-    let dir = this.windBase.dir + (rng() - 0.5) * rad(70);
-    let mph = Math.min(WIND_MAX_MPH, Math.max(0, this.windBase.mph * (0.75 + rng() * 0.5)));
+    // 每洞的風：大多在當天主風向 ±45° 內、風速 0.6~1.4 倍；偶爾整個轉向（地形擋風 / 繞流），也偶爾特別靜或特別大
+    const turn = rng(), gust = rng();
+    let dir = this.windBase.dir + (turn < 0.18 ? (rng() < 0.5 ? -1 : 1) * rad(80 + rng() * 70) : (rng() - 0.5) * rad(90));
+    let mph = this.windBase.mph * (gust < 0.12 ? 0.25 + rng() * 0.3 : gust > 0.88 ? 1.4 + rng() * 0.3 : 0.6 + rng() * 0.8);
+    mph = Math.min(WIND_MAX_MPH, Math.max(0, mph + (rng() - 0.5) * 2 * (this.windBase.mph > 0 ? 1 : 0)));      // 沒有風的球場（月面）維持 0
     // 真實球場：官網說「常吹右風 / 左風」的洞，風向改成從那一邊吹過來（±25°），最受風影響的洞風大一點
     const hs = this.hole.spec;
     if (hs && hs.wind) {
@@ -298,6 +306,8 @@ export class Game {
     this.updateChalHud();
     this.ui.loading(false);
     this.ready = true;
+    // 編輯器的實景：一打開先用自由視角看整洞
+    if (this.cfg.preview) { $('pv-bar').classList.remove('hidden'); this.markPvTee(); if (this.freeFirst !== false) { this.freeFirst = false; this.setFree(true, true); } }
     this.world.clearTracer();
     this.flight = null;
     this.holeDone = false;
@@ -389,10 +399,10 @@ export class Game {
     this.aim = this.defaultAim(p, this.club);
     this.power = 0;
     this.curve = 0;
-    this.puttScale = this.calcPuttScale(p);
+    this.puttScale = this.calcPuttScale(p, this.club);
     this.setupGolfer();
-    this.cam.mode = 'address';
-    this.world.greenGrid.visible = !!this.club.putter;
+    if (this.cam.mode !== 'free') this.cam.mode = 'address';      // 實景的自由視角：輪到打球時不打斷
+    this.world.greenGrid.visible = puttLike(this.club);
     this.updateGimmeRing();
     // 特殊球位：頭頂黃底提醒 5 秒
     const warn = { [SURF.ROUGH]: '長草：球速會變慢、後旋變少，請評估球桿和揮桿力道', [SURF.DEEP]: '深草：距離可能少一半，請評估球桿和揮桿力道',
@@ -402,7 +412,7 @@ export class Game {
     const mine = this.canControl();
     this.input.enabled = mine;
     this.hud.enableControls(mine);
-    this.input.putt = !!this.club.putter;
+    this.input.putt = puttLike(this.club);
     this.updateSkinFx();
     this.hud.swingHint(mine ? '往下拉上桿（決定力道），快速往上滑出桿；左右滑調方向' : `等待 ${p.user} 擊球…`);
     this.updateMulliganBtn();
@@ -437,7 +447,7 @@ export class Game {
     const p = this.players && this.players[this.cur];
     if (!p || !this.club) return;
     const sk = equippedSkins(p.look), ic = this.club.icon;
-    const slot = this.club.putter ? 'putter' : ic === 'driver' || ic === 'wood' ? 'driver' : 'iron';
+    const slot = this.club.putter ? 'putter' : this.club.chipper ? 'chipper' : ic === 'driver' || ic === 'wood' ? 'driver' : 'iron';
     const g = p.golfer;
     this.world.setBallSkin(sk.ball);
     this.world.setSkinFx(sk.ball.fx, sk[slot].fx, () => g.clubHead && g.object.visible !== false ? g.clubHead() : null);
@@ -450,7 +460,7 @@ export class Game {
     if (this.level && this.level.clubs) {
       const onGreen = p.lie === SURF.GREEN || (p.lie === SURF.FRINGE && dist < 20);
       const c = this.level.clubs.map(clubById);
-      return (onGreen && c.find(x => x.putter)) || c.find(x => !x.putter) || c[0];
+      return (onGreen && c.find(x => x.putter)) || c.find(x => !x.putter && !x.chipper) || c[0];
     }
     const lie = p.lie;
     if (lie === SURF.GREEN || (lie === SURF.FRINGE && dist < 20)) return clubById('PT');
@@ -461,7 +471,7 @@ export class Game {
     const keep = lie === SURF.ROUGH ? 0.78 : lie === SURF.DEEP ? 0.45 : lie === SURF.SAND ? 0.5 : lie === SURF.WASTE ? 0.85 : 1;
     const longest = lie === SURF.DEEP || lie === SURF.SAND ? '7I' : lie === SURF.WASTE || lie === SURF.ROUGH ? '4H' : null;
     if (p.strokes === 0 && this.hole.par >= 4 && need > p.table.D.total * 0.85) return clubById('D');
-    let cands = CLUBS.filter(c => !c.putter && (c.id !== 'D' || p.strokes === 0));
+    let cands = CLUBS.filter(c => !c.putter && !c.chipper && (c.id !== 'D' || p.strokes === 0));      // 寶刀不自動選
     if (longest) cands = cands.slice(cands.findIndex(c => c.id === longest));
     for (let i = cands.length - 1; i >= 0; i--) {
       const c = cands[i];
@@ -471,7 +481,7 @@ export class Game {
   }
 
   expectedTotal(p, club) {
-    if (club.putter) return this.distPin(p);
+    if (puttLike(club)) return this.distPin(p);
     const t = p.table[club.id];
     const keep = p.lie === SURF.ROUGH ? 0.88 : p.lie === SURF.DEEP ? 0.65 : p.lie === SURF.SAND ? 0.75 : 1;
     return t.total * keep;
@@ -483,7 +493,7 @@ export class Game {
     const dPin = Math.hypot(px - bx, pz - bz);
     const tot = this.expectedTotal(p, club);
     let tx = px, tz = pz;
-    if (!club.putter && dPin > tot + 12) {
+    if (!puttLike(club) && dPin > tot + 12) {
       // 打不到果嶺時瞄球道中線上、預估總距離的位置
       const s0 = this.hole.near(bx, -bz).s;
       let best = null;
@@ -494,18 +504,20 @@ export class Game {
       }
       if (best) { tx = best[0]; tz = best[1]; }
     }
-    if (club.putter) return this.puttAim(p, tx, tz);
+    if (puttLike(club)) return this.puttAim(p, tx, tz);
     return Math.atan2(tx - bx, -(tz - bz));
   }
 
   // 推桿預設：對準洞口（不幫玩家讀線，讀果嶺是素質的一部分）
   puttAim(p, tx, tz) { return Math.atan2(tx - p.ball[0], -(tz - p.ball[2])); }
 
-  calcPuttScale(p) {
+  // 拉滿力道的距離：依離洞距離挑一檔（只看球的位置與球桿，連線時每台裝置算出來都一樣）
+  calcPuttScale(p, club = this.club) {
     const d = this.distPin(p);
     const elev = this.hole.height(...this.hole.pin) - p.ball[1];
     const eff = d * 1.2 + Math.max(0, elev) * 8;
-    return PUTT_SCALES.find(s => s >= eff) || PUTT_SCALES[PUTT_SCALES.length - 1];
+    const S = club && club.chipper ? CHIP_SCALES : PUTT_SCALES;
+    return S.find(s => s >= eff) || S[S.length - 1];
   }
 
   setupGolfer() {
@@ -542,7 +554,8 @@ export class Game {
 
   // 畫面上的預估落點：一律用球桿本身的平均距離（不管球位），在長草、沙坑時距離要玩家自己判斷
   estCarry(p, power) {
-    if (this.club.putter) return 0;
+    if (this.club.chipper) return this.puttScale * clamp(power, 0.05, 1);      // 寶刀：平坦果嶺上的總距離
+    if (puttLike(this.club)) return 0;
     return carryAt(p.table[this.club.id], clamp(power, 0.05, 1.1));    // 依實際模擬的各力道距離內插
   }
 
@@ -554,6 +567,13 @@ export class Game {
       this.world.setTarget(0, 0, 1, false);
       this.updatePuttLine();
       this.targetPt = [p.ball[0] + d[0] * this.puttScale * Math.max(this.power, 0.5), p.ball[2] + d[1] * this.puttScale * Math.max(this.power, 0.5)];
+    } else if (this.club.chipper) {
+      // 寶刀：目標圈畫在「平坦果嶺上會停下來的地方」（拉桿長度 × 這一檔的距離）
+      this.world.setPuttLine(null);
+      const c = this.puttScale * (this.power > 0.02 ? this.power : clamp(this.distPin(p) / this.puttScale, 0.1, 1));
+      const tx = p.ball[0] + d[0] * c, tz = p.ball[2] + d[1] * c;
+      this.world.setTarget(tx, tz, 0.6, true);
+      this.targetPt = [tx, tz];
     } else {
       this.world.setPuttLine(null);
       const c = this.estCarry(p, this.power > 0.02 ? this.power : 1);
@@ -587,7 +607,7 @@ export class Game {
   // ---------------- 操作 ----------------
   nudgeAim(degDelta) {
     if (!this.canControl()) return;
-    this.aim += rad(degDelta) * (this.club.putter ? 0.4 : 1);
+    this.aim += rad(degDelta) * (puttLike(this.club) ? 0.4 : 1);
     this.afterAimChange();
   }
 
@@ -627,12 +647,13 @@ export class Game {
       if (c.putter && this.pmode !== 'putt') return this.setPracticeMode('putt');
       if (!c.putter) { this.pClub = id; if (this.pmode === 'putt') return this.setPracticeMode('range'); }
     }
-    const prevPutt = this.club.putter;
+    const prevPutt = puttLike(this.club);
     this.club = clubById(id);
-    if (this.club.putter !== prevPutt) this.aim = this.defaultAim(this.players[this.cur], this.club);
-    this.world.greenGrid.visible = !!this.club.putter;
+    if (puttLike(this.club) !== prevPutt) this.aim = this.defaultAim(this.players[this.cur], this.club);
+    this.puttScale = this.calcPuttScale(this.players[this.cur], this.club);
+    this.world.greenGrid.visible = puttLike(this.club);
     this.updateGimmeRing();
-    this.input.putt = !!this.club.putter;
+    this.input.putt = puttLike(this.club);
     this.updateSkinFx();
     this.afterAimChange();
   }
@@ -710,7 +731,7 @@ export class Game {
     const n = this.hole.normal(p.ball[0], p.ball[2]);
     const dist = this.distPin(p);
     const pressure = (lie === SURF.GREEN && p.strokes + 1 <= this.hole.par) || this.holeNo >= 16 || this.cfg.mode === 'match';
-    const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.puttScale });
+    const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.calcPuttScale(p, club) });
     const ws = Math.hypot(this.wind[0], this.wind[1]);
     const gust = ws > 0 ? Math.min(1 + rng.normal() * 0.12, WIND_MAX_MPH * MPH / ws) : 1;
     const env = { rho: this.rho, wind: [this.wind[0] * gust, this.wind[1] * gust], rng };
@@ -987,10 +1008,11 @@ export class Game {
         }
         else if (e.type === 'special') {
           // 機關觸發：光點爆開 + 一句提示
-          const txt = { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！', tramp: '彈跳床！', boost: '加速帶！', cannon: '大砲發射！',
+          const feat = this.course.feature, own = feat && feat.kind === e.kind && feat.say;      // 第三批奇幻球場：機關用當地的名字
+          const txt = own || { ring: '螢火之環　加速！', portal: '穿越星門！', vent: '噴發口把球噴上天！', shroom: '彈跳巨菇！', wall: '冰鏡反彈！', tramp: '彈跳床！', boost: '加速帶！', cannon: '大砲發射！',
             honey: '被蜂蜜黏住了！', gear: '齒輪轉向！', wisp: '引魂燈把球拉向旗桿！', bumper: '彈珠柱！', cloud: '被閃電打中了！' }[e.kind];
           const hue = { ring: 0.2, portal: 0.75, vent: 0.05, shroom: 0.88, wall: 0.55, tramp: 0.92, boost: 0.5, cannon: 0.08, honey: 0.12, gear: 0.09, wisp: 0.38, bumper: 0.0, cloud: 0.6 }[e.kind];
-          if (e.kind === 'cloud') this.world.lightning(e.pos);
+          if (e.kind === 'cloud' && this.course.theme !== 'sky') this.world.lightning(e.pos);      // 天空之城的棉花雲不打雷
           this.world.cupBurst(e.pos[0], e.pos[1], e.pos[2], hue, 2.2);
           this.world.specialPulse(e.kind);
           sfx.playSpecial(e.kind);
@@ -1023,7 +1045,7 @@ export class Game {
     }
     // 連線模式只顯示自己的 SHOT DATA，而且 3 秒後自動關閉，不影響比賽節奏
     const mine = !this.net || (this.players[msg.p] && this.players[msg.p].local);
-    if (mine && !club.putter && msg.res.result !== 'ob') this.hud.shotData(club, msg.launch, msg.res, this.net ? 3000 : 0);
+    if (mine && !puttLike(club) && msg.res.result !== 'ob') this.hud.shotData(club, msg.launch, msg.res, this.net ? 3000 : 0);
     if (this.authority) this.resolve(msg);
     else if (this.pendingState) { const s = this.pendingState; this.pendingState = null; this.applyState(s); }
   }
@@ -1047,8 +1069,9 @@ export class Game {
       p.strokes++;
       p.ball = this.dropPoint(r.frames, prevBall);
       const th = this.course.theme;
-      const fall = { void: '墜入虛空', city: '從屋頂掉下去了', sky: '墜入雲海', cliffs: '掉進海灣' }[th];
-      toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'candy' && r.result === 'water' ? '掉進巧克力河　罰 1 桿' : fall && r.result === 'chasm' ? fall + '　罰 1 桿' : th === 'cliffs' && r.result === 'chasm' ? '掉進海灣　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
+      const fall = this.course.fallName || { void: '墜入虛空', city: '從屋頂掉下去了', sky: '墜入雲海', cliffs: '掉進海灣' }[th];
+      if (this.course.waterName && r.result === 'water') toasts.push(`掉進${this.course.waterName}　罰 1 桿`);
+      else toasts.push(th === 'lava' && r.result === 'water' ? '掉進熔岩　罰 1 桿' : th === 'candy' && r.result === 'water' ? '掉進巧克力河　罰 1 桿' : fall && r.result === 'chasm' ? fall + '　罰 1 桿' : th === 'cliffs' && r.result === 'chasm' ? '掉進海灣　罰 1 桿' : r.result === 'water' ? '水障礙　罰 1 桿' : '掉進峽谷　罰 1 桿');
     } else if (r.result === 'ob') {
       p.strokes++;
       p.ball = prevBall;
@@ -1192,21 +1215,46 @@ export class Game {
       if (club.putter) a.putts++;
     }
     for (const k in fx) bump(k, fx[k]);
+    const fxN = Object.values(fx).reduce((a, b) => a + b, 0);
+    if (fxN) bump('fxAll', fxN);
     if ((fx.ring || 0) >= 2) unlock('ring_two');
     if ((fx.shroom || 0) >= 2) bump('doubleBounce');
     if (fx.vent && onGreen) bump('ventGreen');
     if (fx.wall && onGreen) unlock('wall_green');
+    if (fx.tramp && onGreen) unlock('tramp_green');
+    if ((fx.boost || 0) >= 2) unlock('boost_double');
+    if (fx.cannon && (r.result === 'holed' || (r.result === 'rest' && distAfter <= 3))) unlock('cannon_near');
     if (fx.portal) p.trk.portal = true;
     if (club.id === 'D' && ctx.lie === SURF.TEE && r.result === 'rest') {
       const yd = toYd(r.total);
+      if (yd >= 250) unlock('drive250');
       if (yd >= 300) unlock('drive300');
       if (yd >= 330) unlock('drive330');
     }
-    if (r.result === 'holed') {
-      if (club.putter) { const d = toYd(ctx.dist || 0); if (d >= 15) unlock('putt15'); if (d >= 20) bump('putt20'); }
-      else if (ctx.lie !== SURF.TEE) { unlock('chipin'); if (ctx.lie === SURF.SAND) unlock('sandout'); }
+    // 寶刀：從果嶺外切上果嶺 / 貼旗 / 直接切進
+    if (club.chipper && ctx.lie !== SURF.GREEN) {
+      const d = toYd(ctx.dist || 0);
+      if (onGreen) bump('chipGreen');
+      if (r.result === 'rest' && onGreen && distAfter <= 1) unlock('chip_near');
+      if (r.result === 'holed') {
+        unlock('chip_in1'); bump('chipperIns');
+        p.rtrk.chipIns = (p.rtrk.chipIns || 0) + 1;
+        if (p.rtrk.chipIns >= 3) unlock('chip_round3');
+        if (d >= 20) unlock('chip_in20y');
+        if (d >= 30) unlock('chip_in30y');
+      }
     }
-    if (r.result === 'water' || r.result === 'chasm' || r.result === 'ob') { p.rtrk.haz++; if (r.result === 'chasm' && this.course.theme === 'void') p.rtrk.voidFall++; }
+    if (r.result === 'holed') {
+      const d = toYd(ctx.dist || 0);
+      if (club.putter) { if (d >= 15) unlock('putt15'); if (d >= 20) bump('putt20'); if (d >= 30) unlock('putt30'); }
+      else if (ctx.lie !== SURF.TEE) {
+        unlock('chipin'); bump('chipins');
+        if (ctx.lie === SURF.SAND) unlock('sandout');
+        if (d >= 100) unlock('holeout100');
+        if (d >= 150) unlock('holeout150');
+      }
+    }
+    if (r.result === 'water' || r.result === 'chasm' || r.result === 'ob') { p.rtrk.haz++; if (r.result === 'chasm' && (this.course.theme === 'void' || this.course.theme === 'sky')) p.rtrk.voidFall++; }
     checkCounters();
     this.updateChalHud();
   }
@@ -1223,6 +1271,13 @@ export class Game {
       if (d === -1) bump('birdie'); else if (d === -2) bump('eagle'); else if (d <= -3) bump('albatross');
       p.rtrk.streak = d <= -1 ? p.rtrk.streak + 1 : 0;
       if (p.rtrk.streak >= 3) unlock('streak3');
+      if (p.rtrk.streak >= 5) unlock('streak5');
+      if (d <= -1) {
+        p.rtrk.birdies++;
+        if (p.rtrk.birdies >= 5) unlock('birdies5r');
+        if (Math.hypot(this.wind[0], this.wind[1]) / MPH >= 12) unlock('windbirdie');
+      }
+      if (d === -2 && par === 4) unlock('eagle_par4');
       if (p.trk.portal && d <= -1) bump('portalBirdie');
       if (d >= 1) p.rtrk.bogey = true;
     } else p.rtrk.bogey = true;
@@ -1237,13 +1292,24 @@ export class Game {
     const sum = this.roundSummary(p);
     // 球場護照：分區球場打完 9 洞也記下那一區；一般球場要打完 18 洞
     const nines = this.course.nineIds ? this.course.nineIds.slice(0, sum.holes === 18 ? 2 : 1) : null;
-    if (!p.copied?.some(Boolean) && (sum.holes === 18 || nines)) {
+    if (this.course.group !== 'custom' && !p.copied?.some(Boolean) && (sum.holes === 18 || nines)) {      // 自製球場沒有紀念章
       const done = stamp(this.course.baseId || this.course.id, sum.holes === 18 ? sum.strokes : null, nines);
       if (done) setTimeout(() => this.hud.toast(`<small>球場護照</small><b>蓋下「${escapeHtml(this.course.name.split('（')[0])}」的章</b>`, 3200, 'big'), 600);
     }
+    // 連線、比洞賽
+    if (this.net) bump('multi');
+    if (this.cfg.mode === 'match' && this.players.length === 2 && this.matchStatus && (this.matchStatus > 0) === (p.idx === 0)) bump('matchWin');
     if (sum.holes === 18 && !p.copied?.some(Boolean)) {
       const base = this.course.baseId || this.course.id;
       const r = p.rtrk;
+      if (sum.putts <= 27) unlock('putts27');
+      if (sum.putts <= 25) unlock('putts25');
+      if (p.gir >= 12) unlock('gir12');
+      if (p.gir >= 18) unlock('gir18');
+      if (p.fwTotal > 0 && p.fwHit === p.fwTotal) unlock('fwall');
+      if (sum.toPar <= 0 && this.course.group === 'taiwan') unlock('tw_par');
+      if (sum.toPar <= 0 && this.course.group === 'abroad') unlock('world_par');
+      if (sum.toPar <= -5 && sum.rankable) unlock('under5');
       if (!r.haz) unlock('clean18');
       if (!r.three) unlock('nothree');
       if (!r.bogey) unlock('bogeyfree');
@@ -1252,6 +1318,11 @@ export class Game {
       if (base === 'aurora' && sum.toPar <= 0) unlock('aurora_par');
       if (base === 'sakura' && !r.three) unlock('sakura_no3');
       if (base === 'starfall' && !r.voidFall) unlock('void_clean');
+      // 奇幻球場第三批：各球場 18 洞標準桿以內、天空之城不墜雲海；所有奇幻球場標準桿以內的紀錄
+      const fxPar = { sugar: 'sugar_par', neonlane: 'neon_par', lunar: 'lunar_par', mirefen: 'mirefen_par', redplanet: 'mars_par', coral: 'coral_par', pharaoh: 'pharaoh_par', jurassic: 'jurassic_par', crystalcave: 'crystal_par' }[base];
+      if (fxPar && sum.toPar <= 0) unlock(fxPar);
+      if (base === 'skyreach' && !r.voidFall) unlock('sky_clean');
+      if (this.course.group === 'fantasy' && sum.toPar <= 0) fantasyPar(base);
     }
     checkCounters();
     saveProgress(true);
@@ -1341,7 +1412,7 @@ export class Game {
       // 排行用：球場代號、範圍（全 18 / 前 9 / 後 9）、標準桿、這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞）
       courseId: nine9 ? `${this.course.baseId}:${this.course.nineIds[0]}` : this.course.id, range: this.cfg.holes, par, events: this.specialEvents(p),
       // 能不能算總桿排行 / 最佳 18 洞：奇幻球場（有機關）與三桿洞球場（Par 54）不算
-      rankable: this.course.group !== 'fantasy' && par >= (holes === 18 ? 66 : 33),
+      rankable: this.course.group !== 'fantasy' && this.course.group !== 'custom' && par >= (holes === 18 ? 66 : 33),      // 自製球場也不算
     };
   }
 
@@ -1359,7 +1430,10 @@ export class Game {
   }
 
   quit(opts = {}) {
+    $('chat-bar').classList.add('hidden'); $('btn-chat').classList.add('hidden'); $('danmaku').innerHTML = '';
     document.body.classList.remove('putt-cine');
+    // 實景預覽的介面收起來
+    this.setFree(false); this.free = null; this.freeFirst = true; $('pv-bar').classList.add('hidden');
     this.running = false;
     this.world.setSkinFx(null, null, null);
     this.ready = false;
@@ -1425,6 +1499,9 @@ export class Game {
       case 'toast':
         this.hud.toast(m.text, 2600);
         break;
+      case 'chat':
+        this.danmaku(String(m.user || '').slice(0, 20), String(m.text || '').slice(0, 40));
+        break;
       case 'celebrate':
         this.playCelebration(m);
         break;
@@ -1440,9 +1517,114 @@ export class Game {
     }
   }
 
+  // ---------------- 連線聊天：小小的對話按鈕，打字後所有玩家畫面上出現彈幕 ----------------
+  initChat() {
+    const bar = $('chat-bar'), inp = $('chat-in');
+    const close = () => { bar.classList.add('hidden'); inp.blur(); };
+    $('btn-chat').onclick = e => { e.stopPropagation(); if (bar.classList.contains('hidden')) { bar.classList.remove('hidden'); inp.value = ''; inp.focus(); } else close(); };
+    bar.onsubmit = e => {
+      e.preventDefault();
+      const text = inp.value.trim().slice(0, 40);
+      if (text && this.net) {
+        const me = this.players.find(p => p.local);
+        const msg = { t: 'chat', user: me ? me.user : '', text };
+        this.net.send(msg);
+        this.danmaku(msg.user, text, true);
+      }
+      close();
+    };
+    // 打字時按鍵不要傳到遊戲（例如方向鍵、空白鍵）
+    ['keydown', 'keyup', 'pointerdown'].forEach(ev => bar.addEventListener(ev, e => { e.stopPropagation(); if (e.key === 'Escape') close(); }));
+  }
+  // 彈幕：從右往左飄過畫面上半部，不擋操作（不接收點擊）
+  danmaku(user, text, mine = false) {
+    const layer = $('danmaku'); if (!layer) return;
+    const el = document.createElement('div');
+    el.className = 'dm' + (mine ? ' mine' : '');
+    const b = document.createElement('b'); b.textContent = user; const t = document.createElement('span'); t.textContent = text;
+    el.append(b, t);
+    // 軌道：避開最近用過的那幾條
+    this.dmLane = ((this.dmLane || 0) + 1) % 5;
+    const portrait = innerHeight > innerWidth;          // 直式：上方是洞資訊和風向面板，彈幕改在面板下面飄
+    el.style.top = `${(portrait ? 38 : 16) + this.dmLane * (portrait ? 5 : 7)}%`;
+    el.style.animationDuration = `${7 + Math.min(4, text.length / 10)}s`;
+    layer.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+
+  // ---------------- 自由視角（編輯器的實景）----------------
+  // 一指拖曳 = 前後左右移動、兩指 = 縮放 + 旋轉 + 上下拉改俯角；電腦：左鍵移動、右鍵旋轉 / 俯角、滾輪縮放
+  initFree() {
+    const pad = $('free-pad'), pts = new Map();
+    let last = null;
+    const two = () => { const [a, b] = [...pts.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), ang: Math.atan2(b.y - a.y, b.x - a.x), y: (a.y + b.y) / 2 }; };
+    pad.addEventListener('pointerdown', e => {
+      e.preventDefault(); try { pad.setPointerCapture(e.pointerId); } catch (err) { /* 略過 */ }
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY, btn: e.button });
+      last = pts.size === 2 ? two() : null;
+    });
+    pad.addEventListener('pointermove', e => {
+      const q = pts.get(e.pointerId); if (!q || !this.free) return;
+      const dx = e.clientX - q.x, dy = e.clientY - q.y; q.x = e.clientX; q.y = e.clientY;
+      const F = this.free;
+      if (pts.size === 2) {
+        const t = two();
+        if (last) { F.dist = clamp(F.dist * last.d / t.d, 8, 900); F.yaw -= t.ang - last.ang; F.pitch = clamp(F.pitch + (t.y - last.y) * 0.004, 0.08, 1.45); }
+        last = t;
+      } else if (q.btn === 2 || e.shiftKey) {
+        F.yaw += dx * 0.006; F.pitch = clamp(F.pitch + dy * 0.004, 0.08, 1.45);
+      } else {
+        // 手指往下拉 = 畫面往前走（跟拖地圖一樣）
+        const s = F.dist * 1.1 / Math.max(300, window.innerHeight);      // 每個像素移動的公尺數（拉遠移動得快）
+        const fx = Math.sin(F.yaw), fz = -Math.cos(F.yaw);
+        F.tx += (-dx * Math.cos(F.yaw) + dy * fx) * s; F.tz += (-dx * Math.sin(F.yaw) + dy * fz) * s;
+      }
+    });
+    const up = e => { pts.delete(e.pointerId); last = pts.size === 2 ? two() : null; };
+    ['pointerup', 'pointercancel'].forEach(ev => pad.addEventListener(ev, up));
+    pad.addEventListener('contextmenu', e => e.preventDefault());
+    pad.addEventListener('wheel', e => { e.preventDefault(); if (this.free) this.free.dist = clamp(this.free.dist * Math.exp(e.deltaY * 0.0012), 8, 900); }, { passive: false });
+    $('pv-free').onclick = () => this.setFree(!(this.cam.mode === 'free'));
+    $('pv-reset').onclick = () => this.setFree(true, true);
+    $('pv-back').onclick = () => this.ui.exitPreview();
+    $('pv-tees').querySelectorAll('[data-tee]').forEach(b => b.onclick = () => {
+      if (this.flight || this.swingAnim) return;
+      this.cfg.tee = b.dataset.tee; this.markPvTee(); this.loadHole(0);
+    });
+  }
+  markPvTee() { $('pv-tees').querySelectorAll('[data-tee]').forEach(b => b.classList.toggle('on', b.dataset.tee === this.cfg.tee)); }
+  setFree(on, reset = false) {
+    const pad = $('free-pad');
+    if (on) {
+      if (reset || !this.free) {
+        // 從梯台後上方看向果嶺，整洞放進畫面
+        const t = this.hole.teePos(this.cfg.tee), pin = this.hole.pin;
+        const L = Math.hypot(pin[0] - t[0], pin[1] - t[2]);
+        this.free = { tx: (t[0] + pin[0]) / 2, tz: (t[2] + pin[1]) / 2, yaw: Math.atan2(pin[0] - t[0], -(pin[1] - t[2])), pitch: 0.62, dist: Math.max(60, L * 0.95) };
+      }
+      this.cam.mode = 'free';
+    } else if (this.cam.mode === 'free') { this.cam.mode = 'address'; this.cam.cut = true; if (this.intro) { this.intro = null; this.beginTurn(this.cur); } }      // 回到球邊：不播開場飛行
+    pad.classList.toggle('hidden', !on);
+    document.body.toggleAttribute('data-free', on);
+    $('pv-free').textContent = on ? '回到球邊打打看' : '自由看';
+    $('pv-reset').classList.toggle('hidden', !on);
+  }
+  freeCamera() {
+    const F = this.free, camera = this.world.camera, h = this.hole.height(F.tx, F.tz);
+    const hd = Math.cos(F.pitch) * F.dist, fx = Math.sin(F.yaw), fz = -Math.cos(F.yaw);
+    const pos = new THREE.Vector3(F.tx - fx * hd, h + Math.sin(F.pitch) * F.dist, F.tz - fz * hd);
+    const gh = this.hole.height(pos.x, pos.z);
+    if (pos.y < gh + 1.5) pos.y = gh + 1.5;
+    const look = new THREE.Vector3(F.tx, h, F.tz);
+    this.cam.pos.copy(pos); this.cam.look.copy(look); this.cam.dpos.copy(pos); this.cam.dlook.copy(look);
+    camera.position.copy(pos); camera.lookAt(look);
+    this.world.shadowFocus = look;
+  }
+
   // ---------------- 鏡頭 ----------------
   updateCamera(dt) {
     const cam = this.cam, world = this.world, camera = world.camera;
+    if (cam.mode === 'free' && this.free) { this.freeCamera(); return; }
     const p = this.players[this.cur];
     if (!p) return;
     const ball = world.ball.position;
@@ -1530,7 +1712,7 @@ export class Game {
     const k = Math.tan(31 * Math.PI / 180) / Math.tan(cam.fov / 2 * Math.PI / 180);   // 視角越窄退越遠
     let back, up, f;
     // f = 球在畫面上的高度（0 = 最上面、1 = 最下面）。直向手機下方空間多，球和角色放低一點，上面留給地圖與資訊
-    if (this.club.putter) { back = portrait ? 3.0 : 2.6 * k; up = portrait ? 1.45 : 1.15 + 0.08 * k; f = portrait ? 0.8 : short ? 0.72 : 0.76; }
+    if (puttLike(this.club)) { back = portrait ? 3.0 : 2.6 * k; up = portrait ? 1.45 : 1.15 + 0.08 * k; f = portrait ? 0.8 : short ? 0.72 : 0.76; }
     else { back = portrait ? 6.2 : 3.2 * k; up = portrait ? 2.0 : 1.35 + 0.05 * k; f = portrait ? 0.8 : short ? 0.72 : 0.76; }
     const pos = b.clone().addScaledVector(d, -back).add(new THREE.Vector3(0, up, 0));
     const pitch = Math.atan2(up, back) - (f - 0.5) * cam.fov * Math.PI / 180;
@@ -1550,7 +1732,7 @@ export class Game {
     const dzt = Math.abs(dz) < (near ? 0.05 : 0.5) ? '高低差 0 Y' : `高低差 ${dz > 0 ? '+' : '−'}${near ? Math.abs(dz).toFixed(1) : Math.round(Math.abs(dz))} Y`;
     this.hud.tag('tag-pin', this.world.project(px, ph + 2.6, pz), undefined, `${txt}<small>${dzt}</small>`);
     // 擊球區（圓圈、力道條、瞄準、球位資訊）跟著球在畫面上的位置
-    const atBall = !this.flight && !this.swingAnim && !this.intro && !this.holeDone && this.cam.mode !== 'overview';
+    const atBall = !this.flight && !this.swingAnim && !this.intro && !this.holeDone && this.cam.mode !== 'overview' && this.cam.mode !== 'free';
     const b = this.world.ball.position;
     this.hud.placeSwingUI(atBall ? this.world.project(b.x, b.y, b.z) : null);
     this.hud.avoidPinTag();
@@ -1592,7 +1774,7 @@ export class Game {
   // 力道條：上面顯示力道（推桿顯示碼數），下面顯示這個力道的預估落點
   showPower(pw) {
     const p = this.players[this.cur];
-    if (this.club.putter) { this.hud.setPower(pw, toYd(pw * this.puttScale).toFixed(1) + ' Y', ''); this.hud.setAdjust(''); this.adjKey = null; return; }
+    if (puttLike(this.club)) { this.hud.setPower(pw, toYd(pw * this.puttScale).toFixed(1) + ' Y', ''); this.hud.setAdjust(''); this.adjKey = null; return; }
     const land = this.estCarry(p, pw > 0.02 ? pw : 1);
     this.hud.setPower(pw, null, '落點 ' + Math.round(toYd(land)) + ' Y');
     this.updateLieAdjust();
@@ -1604,7 +1786,7 @@ export class Game {
   updateLieAdjust() {
     const p = this.players[this.cur];
     const special = [SURF.ROUGH, SURF.DEEP, SURF.SAND, SURF.WASTE].includes(p.lie);
-    if (!special || this.club.putter || !this.hole) { this.hud.setAdjust(''); this.adjKey = null; this.adjCurve = null; clearTimeout(this.adjTimer); return; }
+    if (!special || puttLike(this.club) || !this.hole) { this.hud.setAdjust(''); this.adjKey = null; this.adjCurve = null; clearTimeout(this.adjTimer); return; }
     const key = [p.lie, this.club.id, this.aim.toFixed(2), p.ball[0].toFixed(1), p.ball[2].toFixed(1), this.wind[0].toFixed(2), this.wind[1].toFixed(2)].join('|');
     if (key === this.adjKey) { this.showAdjust(); return; }
     this.adjKey = key;

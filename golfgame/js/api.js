@@ -9,12 +9,14 @@ export async function call(action, payload = {}) {
   const url = gasUrl();
   if (!url) return local(body);
   let res;
+  // 90 秒沒回應就放棄（不然按鈕會一直停在等待中）
+  const ac = new AbortController(), timer = setTimeout(() => ac.abort(), 90000);
   try {
     // text/plain 避免 CORS 預檢，GAS 才收得到
-    res = await fetch(url, { method: 'POST', body: JSON.stringify(body), redirect: 'follow' });
+    res = await fetch(url, { method: 'POST', body: JSON.stringify(body), redirect: 'follow', signal: ac.signal });
   } catch (e) {
-    throw new Error('連不到伺服器，請檢查網路或 GAS 網址');
-  }
+    throw new Error(e.name === 'AbortError' ? '伺服器太久沒有回應，請稍後再試一次' : '連不到伺服器，請檢查網路或 GAS 網址');
+  } finally { clearTimeout(timer); }
   const j = await res.json().catch(() => ({ ok: false, error: '伺服器回應格式錯誤' }));
   // 伺服器回「未知動作」= 試算表的 Apps Script 還是舊版程式，沒有這個功能
   if (!j.ok && /^未知動作/.test(j.error || '')) throw new Error(`伺服器的程式是舊版（沒有「${action}」功能）。請把 gas/Code.gs 整份貼到 Apps Script，然後按「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本選『新版本』→ 部署」。不要用「新增部署作業」，那會產生新網址。`);
@@ -23,6 +25,28 @@ export async function call(action, payload = {}) {
 }
 
 export const isLocalMode = () => !gasUrl();
+
+// ---------------- 讀取型資料的快取（排行、回合紀錄、實際下場）----------------
+// 先顯示上次讀到的資料（記憶體 → 手機裡的備份），同時在背景向伺服器要新的；同一個動作同時只會有一個請求
+const memo = {}, inflight = {};
+const ckey = a => `dixen.cache.${session.user || ''}.${a}`;
+export function peek(action) {
+  const k = ckey(action);
+  if (memo[k]) return memo[k];
+  try { const v = JSON.parse(localStorage.getItem(k)); if (v) memo[k] = v; return v; } catch (e) { return null; }
+}
+export function refresh(action) {
+  const k = ckey(action);
+  if (!inflight[k]) inflight[k] = call(action).then(d => {
+    memo[k] = d;
+    try { localStorage.setItem(k, JSON.stringify(d)); } catch (e) { /* 太大存不下（排行很多場）就只留在記憶體 */ }
+    return d;
+  }).finally(() => { delete inflight[k]; });
+  return inflight[k];
+}
+// 改了資料（存回合、改實際下場紀錄）後：直接換成新的清單，或在背景重新讀
+export function setCache(action, data) { const k = ckey(action); memo[k] = data; try { localStorage.setItem(k, JSON.stringify(data)); } catch (e) { /* 存不下就算了 */ } }
+export function prefetch(actions) { for (const a of actions) refresh(a).catch(() => {}); }
 
 // ---------------- 本機模式 ----------------
 const DBK = 'dixen.localdb';
@@ -33,6 +57,12 @@ function db() {
   return d;
 }
 function save(d) { localStorage.setItem(DBK, JSON.stringify(d)); }
+const CDBK = 'dixen.localcustom';
+function cdb() { try { return JSON.parse(localStorage.getItem(CDBK)) || []; } catch (e) { return []; } }
+function csave(c) {
+  try { localStorage.setItem(CDBK, JSON.stringify(c)); }
+  catch (e) { throw new Error('本機測試模式的瀏覽器儲存空間滿了（正式版存在 Google 試算表，沒有這個限制）'); }
+}
 function prof(d, u) {
   if (!d.profiles[u]) d.profiles[u] = { user: u, points: START_POINTS, respecs: START_RESPECS, stats: {}, look: {}, rounds: 0, best: null, spent: 0, earned: START_POINTS };
   const p = d.profiles[u];
@@ -142,6 +172,39 @@ async function local(b) {
       }
       case 'getMsgs': { auth(d, b); const l = d.msgs[b.code]; if (!l) throw new Error('遊戲間已關閉'); return l.filter(m => m.seq > (b.since || 0) && m.from !== b.user); }
       case 'closeRoom': delete d.rooms[b.code]; delete d.msgs[b.code]; return true;
+      // 自製球場（本機模式另外存一份，不跟帳號資料擠在一起）
+      case 'customList': {
+        const a = auth(d, b), cs = cdb();
+        const pick = k => cs.filter(r => r.kind === k).map(r => ({ id: r.id, name: r.name, updated: r.updated, meta: r.meta }));
+        const out = { courses: pick('course'), overrides: pick('override').map(r => ({ id: r.id, updated: r.updated })) };
+        if (a.user === ADMIN_USER) out.drafts = pick('draft');
+        return out;
+      }
+      case 'customGet': {
+        auth(d, b);
+        const r = cdb().find(x => x.kind === b.kind && x.id === b.id);
+        if (!r) throw new Error('找不到這筆自製資料');
+        return r;
+      }
+      case 'customSave': {
+        admin(d, b);
+        const cs = cdb(), now = new Date().toISOString();
+        const rec = { kind: b.kind, id: String(b.id), name: String(b.name || ''), updated: now, meta: b.meta || {}, data: typeof b.data === 'string' ? JSON.parse(b.data) : b.data };
+        const i = cs.findIndex(x => x.kind === b.kind && x.id === rec.id);
+        if (i >= 0) cs[i] = rec; else cs.push(rec);
+        csave(cs);
+        return { id: rec.id, updated: now };
+      }
+      case 'customDelete': { admin(d, b); csave(cdb().filter(x => !(x.kind === b.kind && x.id === String(b.id)))); return true; }
+      // 實際下場紀錄（現實世界的回合）：每個帳號一份清單，用 id 新增 / 更新 / 刪除
+      case 'realList': { const a = auth(d, b); return ((d.real || {})[a.user] || []).slice().sort((x, y) => String(y.date).localeCompare(String(x.date)) || String(y.updated).localeCompare(String(x.updated))); }
+      case 'realSave': {
+        const a = auth(d, b), rec = { ...(b.rec || {}), id: String((b.rec || {}).id || Date.now().toString(36)), updated: new Date().toISOString() };
+        d.real = d.real || {}; const l = d.real[a.user] = d.real[a.user] || [];
+        const i = l.findIndex(x => x.id === rec.id); if (i >= 0) l[i] = rec; else l.push(rec);
+        return rec;
+      }
+      case 'realDelete': { const a = auth(d, b); d.real = d.real || {}; d.real[a.user] = (d.real[a.user] || []).filter(x => x.id !== String(b.id)); return true; }
       default: throw new Error('未知動作');
     }
   })();

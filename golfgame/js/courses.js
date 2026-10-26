@@ -21,6 +21,7 @@ export const COURSE_GROUPS = [
   { id: 'taiwan', name: '台灣球場' },
   { id: 'abroad', name: '國外球場' },
   { id: 'fantasy', name: '奇幻球場' },
+  { id: 'custom', name: '自製球場' },
   { id: 'coast', name: '海邊球場' },
   { id: 'mountain', name: '山地 / 林間球場' },
   { id: 'desert', name: '沙漠 / 高原球場' },
@@ -30,7 +31,7 @@ export const COURSES = [
   {
     id: 'heron', name: '鷺灣海岸', en: 'Heron Bay Links', style: 'links', group: 'coast',
     desc: '臨海林克斯球場。幾乎沒有樹，海風大且常轉向；球道硬、落地後滾很遠；深壺型沙坑掉進去常常只能往旁邊救。',
-    stimp: 8, firm: 1.25, altitude: 8, temp: 17, wind: [6, 15], fairwayW: 44, roughW: 22, corridor: 92, trees: 0.04,
+    stimp: 7, firm: 1.25, altitude: 8, temp: 17, wind: [6, 15], fairwayW: 44, roughW: 22, corridor: 92, trees: 0.04,
     holes: [
       [4, 452, -25, 'b3 sl J', 6], [4, 432, -18, 'b3 up S', 7], [4, 425, -22, 'sl b3', 9], [3, 210, 8, 'b4', 11], [4, 360, -45, 'b2 dn E', 17],
       [5, 575, 30, 'b4 sr D', 5], [3, 185, 0, 'b3 sl', 15], [5, 495, -30, 'b4 xc up D', 8], [4, 445, 25, 'b3 xc J', 1],
@@ -41,7 +42,7 @@ export const COURSES = [
   {
     id: 'maple', name: '楓林谷', en: 'Maple Valley', style: 'parkland', group: 'mountain',
     desc: '林間公園型球場。球道兩側高大樹林，多處水池，果嶺起伏較多，考驗開球準度與推桿判讀。',
-    stimp: 8.5, firm: 0.92, altitude: 220, temp: 22, wind: [2, 9], fairwayW: 32, roughW: 18, corridor: 70, trees: 1.0,
+    stimp: 7, firm: 0.92, altitude: 220, temp: 22, wind: [2, 9], fairwayW: 32, roughW: 18, corridor: 70, trees: 1.0,
     holes: [
       [5, 545, -30, 'b3 wr xc S', 2], [4, 401, 30, 'b2 tr S nw', 10], [4, 385, 35, 'b3 dn S', 12], [4, 428, -28, 'b3 wr S', 1], [3, 192, 10, 'b2 up', 17],
       [4, 440, 25, 'b3 tr UP E', 4], [4, 412, -50, 'b3 wr E', 5], [4, 389, 0, 'b2 wc up', 13], [5, 556, 30, 'b3 xc D', 9],
@@ -52,7 +53,7 @@ export const COURSES = [
   {
     id: 'canyon', name: '赤岩峽谷', en: 'Red Rock Canyon', style: 'canyon', group: 'desert',
     desc: '高海拔沙漠球場，空氣稀薄，球多飛約 6%。多洞必須飛越峽谷，球道外是荒地與岩石，果嶺最硬最快。',
-    stimp: 9, firm: 1.15, altitude: 1600, temp: 29, wind: [3, 12], fairwayW: 34, roughW: 10, corridor: 78, trees: 0.25,
+    stimp: 7.5, firm: 1.15, altitude: 1600, temp: 29, wind: [3, 12], fairwayW: 34, roughW: 10, corridor: 78, trees: 0.25,
     holes: [
       [4, 400, -50, 'b3 ww E', 12], [5, 590, 35, 'b3 xc ww S', 3], [4, 395, 45, 'b2 wr dn E', 17], [4, 470, -20, 'b3 ww UP J', 7], [3, 190, -10, 'b2 wc', 18],
       [4, 455, 25, 'b3 ww up S', 1], [5, 575, -35, 'b3 wr S', 4], [4, 330, -45, 'b2 xc E', 8], [3, 215, 0, 'b3 wc DN', 16],
@@ -64,7 +65,7 @@ export const COURSES = [
   {
     id: 'palmcove', name: '棕櫚灣', en: 'Palm Cove Resort', style: 'parkland', theme: 'tropical', group: 'coast',
     desc: '熱帶島嶼的度假球場：綠松石色的海、白色沙灘與沙坑、成排的棕櫚樹。好幾洞沿著海岸線，還有建在潟湖中央的孤島果嶺。海風穩定、球道柔軟。',
-    stimp: 8.5, firm: 1.0, altitude: 5, temp: 31, wind: [5, 14], fairwayW: 36, roughW: 18, corridor: 80, trees: 0.5,
+    stimp: 7, firm: 1.0, altitude: 5, temp: 31, wind: [5, 14], fairwayW: 36, roughW: 18, corridor: 80, trees: 0.5,
     holes: [
       [4, 370, -45, 'b1 wr J', 14], [4, 345, 35, 'b2 IG J', 16], [4, 360, -25, 'b1 sr dn', 13], [5, 565, 35, 'b2 sr D', 6], [4, 435, -30, 'b2 sl wc S', 10],
       [4, 400, -40, 'b2 sl S', 8], [3, 180, -8, 'b2 sr', 12], [4, 430, -50, 'b2 wr E', 1], [5, 530, -30, 'b2 wl xc S', 2],
@@ -75,7 +76,7 @@ export const COURSES = [
   {
     id: 'cliffs', name: '霧岬斷崖', en: 'Mistral Cliffs', style: 'links', theme: 'cliffs', group: 'coast',
     desc: '建在海崖上的球場：球道離海面十幾公尺高，崖下就是浪花，陰天的海風又強又冷。好幾洞要從崖頂飛越海灣（掉下去照峽谷規則罰 1 桿），三桿洞常常是整段跨海。',
-    stimp: 9, firm: 1.1, altitude: 40, temp: 15, wind: [7, 16], fairwayW: 34, roughW: 14, corridor: 80, trees: 0.25,
+    stimp: 7.5, firm: 1.1, altitude: 40, temp: 15, wind: [7, 16], fairwayW: 34, roughW: 14, corridor: 80, trees: 0.25,
     holes: [
       [5, 540, -40, 'b3 sl S', 2], [4, 410, -30, 'b2 sl E', 9], [4, 430, 25, 'b2 xc', 1], [3, 175, 0, 'b2 xc sr', 15], [4, 420, -25, 'b2 xc sl', 12],
       [4, 445, 20, 'b3 up S', 17], [5, 565, 30, 'b2 sr D', 6], [4, 425, -20, 'b3 xc sr S', 16], [4, 390, -45, 'b2 sl J', 7],
@@ -86,7 +87,7 @@ export const COURSES = [
   {
     id: 'alpine', name: '雪峰松嶺', en: 'Summit Pines', style: 'alpine', theme: 'alpine', group: 'mountain',
     desc: '海拔 2100 公尺的高山球場：四周是積雪的山峰與茂密的松林，球道沿著山坡大上大下，冰河湖守在果嶺旁。空氣稀薄、球飛得遠，下坡洞要少算很多距離。',
-    stimp: 9.5, firm: 1.05, altitude: 2100, temp: 12, wind: [3, 12], fairwayW: 32, roughW: 14, corridor: 72, trees: 1.0,
+    stimp: 8, firm: 1.05, altitude: 2100, temp: 12, wind: [3, 12], fairwayW: 32, roughW: 14, corridor: 72, trees: 1.0,
     holes: [
       [4, 425, 25, 'b2 wl S', 10], [4, 390, -50, 'b2 dn E', 17], [3, 175, -6, 'b2 IG', 16], [4, 400, 40, 'b2 tr E', 12], [4, 445, -25, 'b3 UP S', 1],
       [3, 195, 0, 'b2 wc DN', 15], [5, 590, -30, 'b2 UP D', 6], [4, 455, -20, 'b3 up', 4], [5, 560, 35, 'b2 UP S', 3],
@@ -97,7 +98,7 @@ export const COURSES = [
   {
     id: 'sakura', name: '櫻川庭苑', en: 'Sakura Gardens', style: 'parkland', theme: 'sakura', group: 'mountain',
     desc: '日式庭園風格的山谷球場：粉紅的櫻花樹、竹林與修剪過的松樹，錦鯉池與小溪穿過球道，花瓣隨風飄落。球道不長但池塘多、果嶺被水包圍，講究精準。',
-    stimp: 9, firm: 0.95, altitude: 300, temp: 18, wind: [1, 8], fairwayW: 34, roughW: 16, corridor: 74, trees: 0.9,
+    stimp: 7.5, firm: 0.95, altitude: 300, temp: 18, wind: [1, 8], fairwayW: 34, roughW: 16, corridor: 74, trees: 0.9,
     holes: [
       [4, 375, 30, 'b2 wr S', 9], [5, 520, -35, 'b2 xc S', 3], [3, 160, 0, 'b2 wc', 15], [5, 540, 30, 'b2 wl D', 5], [4, 385, -45, 'b2 wl E', 8],
       [5, 530, 35, 'b2 wr xc S', 2], [4, 400, 25, 'b2 xc J', 10], [3, 175, -10, 'b2 wr', 14], [4, 340, 55, 'b1 dn E', 16],
@@ -108,7 +109,7 @@ export const COURSES = [
   {
     id: 'oasis', name: '金沙綠洲', en: 'Golden Oasis', style: 'dunes', theme: 'dunes', group: 'desert',
     desc: '一望無際的金色沙丘中間開出的綠色球道：球道外全是沙漠荒地，棕櫚樹圍繞著綠洲水池，沙丘大波浪起伏、常看不到落點。炎熱乾燥、地面硬。',
-    stimp: 9.5, firm: 1.2, altitude: 300, temp: 36, wind: [4, 14], fairwayW: 34, roughW: 8, corridor: 76, trees: 0.35,
+    stimp: 8, firm: 1.2, altitude: 300, temp: 36, wind: [4, 14], fairwayW: 34, roughW: 8, corridor: 76, trees: 0.35,
     holes: [
       [4, 445, 25, 'b3 wl J', 8], [3, 190, 0, 'b2 IG', 15], [4, 420, -30, 'b2 E', 9], [4, 405, 0, 'b2 wl wr', 17], [5, 590, 30, 'b3 wr D', 7],
       [4, 425, 35, 'b3 E', 10], [4, 395, -45, 'b2 wr E', 11], [5, 555, -35, 'b3 wl S', 2], [3, 175, -8, 'b2 wc', 18],
@@ -119,7 +120,7 @@ export const COURSES = [
   {
     id: 'saltflat', name: '白鹽湖', en: 'White Salt Flats', style: 'salt', theme: 'salt', group: 'desert',
     desc: '乾涸鹽湖上的球場：地面幾乎全平，球道外是雪白的鹽殼，土耳其藍的鹽水池散落各處，遠方是粉紫色的山脈。沒有遮蔽，風從四面八方吹來，滾得很遠。',
-    stimp: 10, firm: 1.25, altitude: 1100, temp: 28, wind: [6, 16], fairwayW: 36, roughW: 8, corridor: 80, trees: 0.15,
+    stimp: 8.5, firm: 1.25, altitude: 1100, temp: 28, wind: [6, 16], fairwayW: 36, roughW: 8, corridor: 80, trees: 0.15,
     holes: [
       [4, 415, 0, 'b2 wc', 17], [5, 585, 30, 'b3 wr S', 3], [4, 400, -35, 'b2 wl wr S', 11], [5, 570, -35, 'b3 wr D', 2], [3, 210, 0, 'b3 IG', 14],
       [4, 435, 30, 'b3 wr S', 10], [3, 185, -6, 'b2 wl', 18], [4, 465, -20, 'b3 wl J', 4], [3, 225, 8, 'b3 IG', 13],
@@ -135,7 +136,7 @@ export const COURSES = [
     // 依官網每洞「球道配置圖」判讀的地圖（球道、長草、果嶺、發球台、沙坑、水、樹的實際形狀與位置）
     mapsUrl: 'assets/courses/orient-maps.json',
     desc: '桃園的丘陵林間球場（依官網 18 洞介紹建立）。上下坡很多，果嶺大多前低後高，打過旗桿就很難推；有濕地、水池、OB 山谷與多處 OB，考驗落點規劃。',
-    stimp: 9, firm: 1.0, altitude: 120, temp: 24, wind: [3, 11], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
+    stimp: 7.5, firm: 1.0, altitude: 120, temp: 24, wind: [4, 12], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
     holes: [
       [5, 535, -8, 'b1', 15, { tees: { black: 535, blue: 530, white: 525, red: 448 }, bendAt: 230, ob: 'L',
         elev: [[250, 1], [330, -2], [430, -6], [525, -4.5]], green: { slope: 0.024 }, bunkers: [{ g: 'L' }],
@@ -222,7 +223,7 @@ export const COURSES = [
     id: 'donghua', name: '東華', en: 'Tong Hwa Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新北林口',
     mapsUrl: 'assets/courses/donghua-maps.json',
     desc: '新北林口的台地球場（佐藤毅設計），蘇格蘭式的土丘把球道隔開，視野開闊、果嶺很大；靠海常有風，水池和大沙坑多。依官網 18 洞球道配置圖與攻擊策略建立。',
-    stimp: 9, firm: 1.05, altitude: 250, temp: 22, wind: [5, 15], fairwayW: 34, roughW: 18, corridor: 76, trees: 0.6,
+    stimp: 7.5, firm: 1.05, altitude: 250, temp: 22, wind: [6, 15], fairwayW: 34, roughW: 18, corridor: 76, trees: 0.6,
     holes: [
       [5, 562, 0, '', 9, { tees: { black: 562, blue: 562, white: 546, red: 478 }, elev: [[300, -1.5], [546, -3]], green: { slope: 0.015 },
         note: '筆直的長洞 · 球道寬 · 果嶺左前大沙坑 · 左側水池',
@@ -287,7 +288,7 @@ export const COURSES = [
     // 每洞 [標準桿, 藍 Tee 碼數, 0, '', 該區 HDCP(1~9), spec]；組成 18 洞時前九的 HCP 換成單數、後九換成雙數
     id: 'cggc', name: '長庚', en: 'Chang Gung Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園龜山',
     desc: '桃園龜山的台地林間球場，北、中、南三區各 9 洞，前九、後九可以自由選區。很多洞有左右兩個果嶺（每回合隨機使用其中一個），果嶺普遍偏硬不易停球，兩側多是樹林、車道與 OB。',
-    stimp: 9, firm: 1.08, altitude: 240, temp: 23, wind: [3, 12], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
+    stimp: 7.5, firm: 1.08, altitude: 240, temp: 23, wind: [4, 12], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
     mapsUrl: 'assets/courses/cggc-maps.json',
     nines: [
       { id: 'N', name: '北區', holes: [
@@ -385,7 +386,7 @@ export const COURSES = [
     // 地圖資料順序依 maps 檔：北 1~9、東 1~9、南 1~9、西 1~9（nines 的順序是畫面上的排列）
     id: 'miramar', name: '美麗華', en: 'Miramar Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '新北林口',
     desc: '新北林口的丘陵球場，北、東、南、西四區共 36 洞（官方分成西北、東南兩個 18 洞），前九、後九可以自由選區。每洞的球道形狀、沙坑、水池與果嶺照官網的全場球場圖（官網沒有逐洞圖，也沒有高低資料，起伏較平緩），碼數照各區計分卡。',
-    stimp: 8.5, firm: 1.0, altitude: 110, temp: 22, wind: [4, 13], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
+    stimp: 7, firm: 1.0, altitude: 110, temp: 22, wind: [6, 15], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.8,
     mapsUrl: 'assets/courses/miramar-maps.json', mapsOrder: ['N', 'E', 'S', 'W'],
     nines: [
       { id: 'W', name: '西區', holes: [
@@ -441,7 +442,7 @@ export const COURSES = [
     // 計分卡和每洞圖不一致的地方（東 4、西 9）以每洞圖為準；地圖資料順序：北 1~9、東 1~9、西 1~9
     id: 'hsingfu', name: '幸福', en: 'Hsing Fu Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新北林口',
     desc: '新北林口起伏緩和的丘陵球場，東、西、北三區共 27 洞（東 37、西 36、北 36 桿），每一洞都有雙果嶺，旗桿在哪個果嶺碼數和難度都差很多。球道大多寬闊、沒有高聳的樹林，果嶺速度不快。依官網 27 洞球道圖建立。',
-    stimp: 8.5, firm: 1.0, altitude: 150, temp: 22, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.6,
+    stimp: 7, firm: 1.0, altitude: 150, temp: 22, wind: [6, 15], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.6,
     mapsUrl: 'assets/courses/hsingfu-maps.json', mapsOrder: ['N', 'E', 'W'],
     nines: [
       { id: 'E', name: '東區', holes: [
@@ -485,7 +486,7 @@ export const COURSES = [
     // 每洞說明整理自官網攻略。官網梯台：藍 / 白 / 紅 → 黑梯、藍梯 = 藍 Tee。地圖資料順序：A 1~9、B 1~9、C 1~9、D 1~9
     id: 'taipei', name: '台北', en: 'Taipei Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園蘆竹',
     desc: '桃園蘆竹的山林球場，A、B、C、D 四區共 36 洞，球道兩側是茂密的松林，很多洞一邊是 OB、一邊是處罰區，還有著名的「魔鬼洞」B5。依官網 36 洞球道圖與攻略建立。',
-    stimp: 9, firm: 1.05, altitude: 200, temp: 22, wind: [3, 12], fairwayW: 30, roughW: 14, corridor: 66, trees: 0.9,
+    stimp: 7.5, firm: 1.05, altitude: 200, temp: 22, wind: [6, 15], fairwayW: 30, roughW: 14, corridor: 66, trees: 0.9,
     mapsUrl: 'assets/courses/taipei-maps.json', mapsOrder: ['A', 'B', 'C', 'D'],
     nines: [
       { id: 'A', name: 'A 區', holes: [
@@ -576,7 +577,7 @@ export const COURSES = [
     // 官網梯台：藍 / 白 / 銀 / 紅 → 黑梯、藍梯、白梯、紅梯；開場碼數用比較遠的那個果嶺
     id: 'nanyi', name: '南一', en: 'Nan Yi Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '台南關廟',
     desc: '台南關廟的丘陵球場，18 洞每一洞都有左右雙果嶺，旗桿在哪一個果嶺碼數和打法都不一樣。球道多採波浪型設計、大水池很多，第 4 洞是著名的魔鬼洞。依官網 18 洞球道攻略建立。',
-    stimp: 9, firm: 1.05, altitude: 60, temp: 27, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 7.5, firm: 1.05, altitude: 60, temp: 27, wind: [2, 8], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/nanyi-maps.json',
     holes: [
         [5, 540, 0, '', 7, { tees: { black: 540, blue: 524, white: 487, red: 482 }, note: '左邊沙坑右側開球 · 左側 150 碼大水池 · 雙果嶺',
@@ -623,7 +624,7 @@ export const COURSES = [
     // 官網梯台：Pro / Men / Ladies → 黑梯 = Pro、白梯 = Men、紅梯 = Ladies，藍梯取 Pro 與 Men 中間；官網沒有差點，同一區依長度排
     id: 'tashee', name: '大溪', en: 'Tashee Golf & Country Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園大溪',
     desc: '桃園大溪河階台地上的林間球場，東區（翠鳥）、中區（白鷺）、西區（畫眉）三區共 27 洞，前九、後九自由選區。球道兩側是成排的大樹，水池和成群的沙坑很多。依官網 27 洞介紹建立。',
-    stimp: 9.5, firm: 1.05, altitude: 220, temp: 23, wind: [2, 10], fairwayW: 32, roughW: 14, corridor: 70, trees: 0.9,
+    stimp: 8, firm: 1.05, altitude: 220, temp: 23, wind: [2, 9], fairwayW: 32, roughW: 14, corridor: 70, trees: 0.9,
     mapsUrl: 'assets/courses/tashee-maps.json', mapsOrder: ['E', 'M', 'W'],
     nines: [
       { id: 'E', name: '東區・翠鳥區', holes: [
@@ -694,7 +695,7 @@ export const COURSES = [
     // 官網梯台：B / M / L → 黑梯 = B、白梯 = M、紅梯 = L，藍梯取 B 與 M 中間
     id: 'taoyuan', name: '桃園', en: 'Taoyuan Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園龍潭',
     desc: '桃園龍潭 1979 年開幕的老牌球場，東、南、西三區共 27 洞，地形寬闊平坦，湖泊水塘與滿山綠蔭樹林。東區第 1 洞長達 756 碼、標準桿 6 桿，是台灣最長的球道。依官網 27 洞球道圖建立。',
-    stimp: 9, firm: 1.0, altitude: 250, temp: 23, wind: [3, 12], fairwayW: 36, roughW: 16, corridor: 74, trees: 0.8,
+    stimp: 7.5, firm: 1.0, altitude: 250, temp: 23, wind: [3, 11], fairwayW: 36, roughW: 16, corridor: 74, trees: 0.8,
     mapsUrl: 'assets/courses/taoyuan-maps.json', mapsOrder: ['E', 'S', 'W'],
     nines: [
       { id: 'E', name: '東區', holes: [
@@ -765,7 +766,7 @@ export const COURSES = [
     // 官網梯台：BT 藍 / RT 白 / LT 紅 → 黑梯 = BT、白梯 = RT、紅梯 = LT，藍梯取 BT 與 RT 中間
     id: 'yunghan', name: '永漢', en: 'Yung Han Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園蘆竹',
     desc: '桃園蘆竹、林口台地邊緣的丘陵林間球場（加藤俊輔設計、1991 年開幕），18 洞球道細長、兩側多是樹林與 OB，紅樁罰一桿區很多，冬天東北季風強勁。依官網 18 洞球道介紹建立。',
-    stimp: 9, firm: 1.05, altitude: 150, temp: 22, wind: [5, 15], fairwayW: 30, roughW: 14, corridor: 66, trees: 0.9,
+    stimp: 7.5, firm: 1.05, altitude: 150, temp: 22, wind: [6, 15], fairwayW: 30, roughW: 14, corridor: 66, trees: 0.9,
     mapsUrl: 'assets/courses/yunghan-maps.json',
     holes: [
         [5, 598, 0, '', 3, { tees: { black: 598, blue: 582, white: 567, red: 492 }, note: '右狗腿 · 左側一路 OB · 右側 150 碼沙坑 · 果嶺前與左前沙坑',
@@ -810,7 +811,7 @@ export const COURSES = [
     // 揚昇高爾夫鄉村俱樂部（桃園楊梅）：官網 18 張逐洞球道圖（向量插畫，含 A / B 雙果嶺與四組梯台）判讀（.claude/trace-generic.py 的 sunrise 設定），碼數照官網（A / B 果嶺各自的四組梯台），說明照官網球道攻略；官網沒有差點，前後九各依長度排
     id: 'sunrise', name: '揚昇', en: 'Sunrise Golf & Country Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園楊梅',
     desc: '桃園楊梅的國際錦標賽級球場，Robert Trent Jones Jr. 設計，每洞都有 A / B 雙果嶺，湖泊與大沙坑很多，東北季風來時風很大。每洞的球道形狀、沙坑、水池、雙果嶺與四組梯台都照官網的逐洞球道圖，說明照官網球道攻略。',
-    stimp: 10, firm: 1.05, altitude: 180, temp: 22, wind: [5, 15], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.45,
+    stimp: 8.5, firm: 1.05, altitude: 180, temp: 22, wind: [5, 14], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.45,
     mapsUrl: 'assets/courses/sunrise-maps.json',
     holes: [
       [4, 407, 0, '', 9, { tees: { black: 407, blue: 384, white: 362, red: 317 }, elev: [[0, 0], [362, 0]],
@@ -873,7 +874,7 @@ export const COURSES = [
     // 龍潭（桃園龍潭）：官網只有一張球場概要摺頁（含計分卡），依圖上的洞號切成一洞一張判讀（.claude/overview-prep.py + trace-generic.py 的 lungtan 設定），比例尺 = Gold Tee 碼數（17、18 洞驗證過概要圖比例一致）；其他梯台依總碼數比例，官網沒有差點，前後九各依長度排
     id: 'lungtan', name: '龍潭', en: 'Lung Tan Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '桃園龍潭',
     desc: '桃園市龍潭區的球場，J. Michael Poellot 設計，平坦的地形配合多個大型水池（Lake A 在 17、18 洞之間、Lake C 在 6、7 洞之間）。每洞的球道形狀、沙坑與水池照官網的球場概要圖（官網沒有逐洞圖）。',
-    stimp: 9.5, firm: 1.05, altitude: 230, temp: 23, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.6,
+    stimp: 8, firm: 1.05, altitude: 230, temp: 23, wind: [3, 11], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.6,
     mapsUrl: 'assets/courses/lungtan-maps.json',
     holes: [
       [4, 375, 0, '', 11, { tees: { black: 375, blue: 355, white: 333, red: 296 }, elev: [[0, 0], [333, 0]],
@@ -936,7 +937,7 @@ export const COURSES = [
     // 老爺關西（新竹關西）：官網逐洞球道圖判讀（.claude/trace-generic.py 的 royalkh 設定），比例尺 = 官網碼數（白梯），起伏依官網逐洞攻略的上 / 下坡描述
     id: 'royalkh', name: '老爺關西', en: 'Royal Kuan Hsi Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹關西',
     desc: '新竹縣關西鎮赤柯山上的山谷球場，曾舉辦 TLPGA 與 TPGA 巡迴賽。起伏大、沙坑多，第 6、9、17、18 洞有水池，第 18 洞果嶺前是長型海灘沙坑。每洞的球道形狀、沙坑、水池與果嶺都照官網的逐洞球道圖，說明照官網逐洞攻略。',
-    stimp: 9.5, firm: 1.05, altitude: 250, temp: 22, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 250, temp: 22, wind: [3, 11], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/royalkh-maps.json',
     holes: [
       [4, 377, 0, '', 11, { tees: { black: 377, blue: 358, white: 339, red: 302 }, elev: [[0, 0], [170, 3.0], [339, 6]],
@@ -999,7 +1000,7 @@ export const COURSES = [
     // 立益（新竹關西）：官網全區域配置圖（插畫）切成一洞一張判讀（.claude/overview-prep.py + trace-generic.py 的 lilygolf 設定），比例尺 = 官網藍梯碼數；說明照官網逐洞擊球注意事項
     id: 'lilygolf', name: '立益', en: 'Lily Golf & Country Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹關西',
     desc: '新竹縣關西鎮東山里的丘陵球場，會館居中、18 洞向四周散開，第 8 洞要經過紅色吊橋越過山谷，多座水池點綴其間。每洞的球道形狀、沙坑與水池照官網的全區域配置圖（官網的逐洞圖是空拍照片，只拿來對照方向），說明照官網逐洞擊球注意事項。',
-    stimp: 9.5, firm: 1.05, altitude: 230, temp: 22, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 230, temp: 22, wind: [3, 11], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/lilygolf-maps.json',
     holes: [
       [4, 378, 0, '', 11, { tees: { black: 378, blue: 378, white: 364, red: 294 }, elev: [[0, 0], [182, 0.0], [364, 0]],
@@ -1063,7 +1064,7 @@ export const COURSES = [
     //   碼數與標準桿照 Golfers Plaza 球場攻略頁（官網沒有計分卡），其他梯台依一般比例；差點：西、東區照 OSM，中區依碼數排；地圖順序 西、東、中
     id: 'hsinchu', name: '新豐', en: 'Hsinchu Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹新豐',
     desc: '新竹縣新豐鄉的新竹高爾夫俱樂部，西區「太平公主」、東區「神秘女郎」、中區「山地姑娘」共 27 洞，平行的林間球道兩側樹林茂密，前九、後九可以自由選區。每洞的球道形狀、沙坑、水池與果嶺都照官網的逐洞球道圖。',
-    stimp: 9.5, firm: 1.05, altitude: 60, temp: 23, wind: [4, 14], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 60, temp: 23, wind: [8, 15], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/hsinchu-maps.json', mapsOrder: ['W', 'E', 'C'],
     nines: [
       { id: 'W', name: '西區', holes: [
@@ -1159,7 +1160,7 @@ export const COURSES = [
     // 再興（新竹湖口）：官網只有全區圖（手繪，比例大致準），依圖上的洞號切成一洞一張判讀（.claude/zx-prep.py + trace-generic.py 的 zaixing 設定），比例尺 = 計分卡碼數
     id: 'zaixing', name: '再興', en: 'Tsai Hsing Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹湖口',
     desc: '新竹縣湖口鄉的丘陵球場，由 Gordon G. Lewis 設計，2014 年起全場改造、加大果嶺，會館由潘冀建築師事務所設計。球道斜向平行排列，沙坑大而多，曾舉辦 TLPGA 與 TPGA 賽事。每洞的球道形狀、沙坑與湖都照官網的全區圖（官網沒有逐洞圖，也沒有高低資料，起伏較平緩）。',
-    stimp: 10, firm: 1.05, altitude: 150, temp: 23, wind: [4, 14], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8.5, firm: 1.05, altitude: 150, temp: 23, wind: [7, 15], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/zaixing-maps.json',
     holes: [
       [4, 407, 0, '', 3, { tees: { black: 407, blue: 379, white: 355, red: 310 }, elev: [[0, 0], [50, 0.0], [101, 0.0], [152, 0.0], [202, 0.0], [253, 0.0], [304, 0.0], [355, 0.0]],
@@ -1222,7 +1223,7 @@ export const COURSES = [
     // 寶山（新竹寶山）：官網 18 張逐洞球道圖（勁海資訊）判讀（.claude/trace-generic.py 的 jh 設定 + .claude/jh-finalize.py），果嶺外形與大小照官網果嶺放大圖，高低照圖右邊的側面高低圖，說明照官網每洞的擊球注意事項
     id: 'paoshan', name: '寶山', en: 'Pao Shan Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹寶山',
     desc: '新竹縣寶山鄉的丘陵球場，緊鄰中山高速公路，球道依山勢起伏、兩側多深谷，多洞有水池。每洞的球道形狀、沙坑、水池與果嶺都照官網的逐洞球道圖，果嶺大小與外形照官網的果嶺放大圖，起伏照圖上的側面高低圖。',
-    stimp: 9.5, firm: 1.05, altitude: 60, temp: 23, wind: [4, 14], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 60, temp: 23, wind: [5, 13], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/paoshan-maps.json',
     holes: [
       [5, 556, 0, '', 11, { tees: { black: 556, blue: 540, white: 502, red: 429 }, elev: [[0, 0], [16, -0.3], [85, -2.7], [155, -0.2], [224, 1.6], [294, 2.3], [363, 3.1], [433, 4.0], [502, 6.2]],
@@ -1285,7 +1286,7 @@ export const COURSES = [
     // 山溪地（新竹關西）：官網 18 張逐洞球道圖（勁海資訊）判讀（.claude/trace-generic.py 的 jh 設定 + .claude/jh-finalize.py），果嶺外形與大小照官網果嶺放大圖，高低照圖右邊的側面高低圖
     id: 'suncity', name: '山溪地', en: 'Sun City Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹關西',
     desc: '新竹縣關西鎮的丘陵球場，會館西側是一串水池，多洞沿著水池邊打。每洞的球道形狀、沙坑、水池與果嶺都照官網的逐洞球道圖，果嶺大小與外形照官網的果嶺放大圖，起伏照圖上的側面高低圖。',
-    stimp: 9.5, firm: 1.05, altitude: 180, temp: 22, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 180, temp: 22, wind: [3, 11], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/suncity-maps.json',
     holes: [
       [4, 398, 0, '', 7, { tees: { black: 398, blue: 383, white: 372, red: 351 }, elev: [[0, 0], [24, -0.7], [74, -1.9], [123, -2.9], [173, -3.6], [223, -5.2], [273, -6.9], [322, -10.3], [372, -10.4]],
@@ -1348,7 +1349,7 @@ export const COURSES = [
     // 旭陽（新竹關西）：官網 18 張逐洞球道圖（向量插畫）判讀（.claude/trace-generic.py 的 sunvalley 設定），說明照官網球洞攻略；官網碼數 = 後梯，其他梯台依 USGA 證書總長比例，差點依碼數排
     id: 'sunvalley', name: '旭陽', en: 'Sunshine Valley Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '新竹關西',
     desc: '新竹縣關西鎮山林裡的球場，由歐美及日本高球大師設計，杉木林蔭大道與西班牙風格的紅瓦白牆會館，多座水池與層疊的山巒圍繞。每洞的球道形狀、沙坑、水池與果嶺都照官網的逐洞球道圖，說明照官網球洞攻略。',
-    stimp: 9.5, firm: 1.05, altitude: 200, temp: 22, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 200, temp: 22, wind: [3, 11], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/sunvalley-maps.json',
     holes: [
       [4, 419, 0, '', 11, { tees: { black: 419, blue: 398, white: 375, red: 319 }, elev: [[0, 0], [188, 0.0], [375, 0]],
@@ -1413,7 +1414,7 @@ export const COURSES = [
     //   官網三組碼數 → 黑梯 / 白梯 / 紅梯，藍梯取黑白之間；地圖資料順序依 maps 檔：東 1~9、中 1~9、西 1~9
     id: 'ticc', name: '台中國際', en: 'Taichung International Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '台中北屯',
     desc: '台中市大坑風景區裡、群山環抱的 27 洞球場，由英國設計師 David Thomas 設計，分成東、中、西三區，是台中市區內唯一的高爾夫球場；起伏多、水池與山谷穿插。每洞的球道形狀、沙坑、水池與果嶺照官網的逐洞球道圖，起伏照圖上的側面高低圖，說明照官網球道攻略。',
-    stimp: 9.5, firm: 1.05, altitude: 250, temp: 23, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 250, temp: 23, wind: [2, 9], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/ticc-maps.json', mapsOrder: ['E', 'C', 'W'],
     nines: [
       { id: 'E', name: '東區', holes: [
@@ -1483,7 +1484,7 @@ export const COURSES = [
     //   判讀（.claude/trace-generic.py 的 hunghsi 設定）；起伏依說明的上 / 下坡（第 9 洞說明寫高低差約 45 公尺），碼數：Blue / White / Red → 黑 / 白 / 紅，藍取中間
     id: 'hunghsi', name: '鴻禧太平', en: 'Horng-Shee Tai-Ping Golf Course', style: 'parkland', group: 'taiwan', real: true, area: '台中太平',
     desc: '台中市太平區頭汴坑山區的 9 洞球場，打兩輪成 18 洞。球道依山勢上下起伏、狗腿洞多，第 9 洞發球台與果嶺有約 45 公尺的高低差。每洞的球道形狀、沙坑、水池與果嶺照官網的球道簡介圖，說明照官網。',
-    stimp: 9.5, firm: 1.05, altitude: 300, temp: 23, wind: [3, 12], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 300, temp: 23, wind: [2, 8], fairwayW: 32, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/hunghsi-maps.json',
     holes: [
       [4, 373, 0, '', 7, { tees: { black: 373, blue: 363, white: 353, red: 320 }, elev: [[0, 0], [176, 3.0], [353, 6]],
@@ -1547,7 +1548,7 @@ export const COURSES = [
     //   碼數照官網 Blue / White / Silver / Red → 黑 / 藍 / 白 / 紅，說明照官網 18 洞巡禮；起伏依說明的上 / 下坡（官方圖沒有高低資料）
     id: 'taifong', name: '台豐', en: 'Taifong Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '彰化大村',
     desc: '彰化縣大村鄉八卦山台地上起伏多變的丘陵球場，球道斜向平行排列，沙坑與生態水池戰略性配置，需要靈活運用 14 支球桿。每洞的球道形狀、沙坑、水池、梯台與果嶺照官網的逐洞球道圖，說明照官網 18 洞巡禮。',
-    stimp: 10, firm: 1.05, altitude: 200, temp: 23, wind: [4, 13], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.6,
+    stimp: 8.5, firm: 1.05, altitude: 200, temp: 23, wind: [3, 11], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.6,
     mapsUrl: 'assets/courses/taifong-maps.json',
     holes: [
       [4, 390, 0, '', 17, { tees: { black: 390, blue: 380, white: 362, red: 357 }, elev: [[0, 0], [181, -3.0], [362, -6]],
@@ -1611,7 +1612,7 @@ export const COURSES = [
     //   直接轉成地圖（.claude/geo-course.py，實際比例）；圖上沒有樹，打球區外約 38 公尺起是樹林；沒有說明與差點：說明只寫圖上看得到的水池、沙坑，差點依碼數排；沒有高低資料
     id: 'nanfeng', name: '南峰', en: 'Nan Fong Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '南投市',
     desc: '南投市鳳山的丘陵球場，OUT、IN 共 18 洞。每洞的球道、沙坑、水池與果嶺照 Golfers Plaza 的逐洞球道圖（實際比例）；沒有官方說明與高低資料，起伏較平緩。',
-    stimp: 9.5, firm: 1.05, altitude: 250, temp: 23, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 250, temp: 23, wind: [0, 6], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/nanfeng-maps.json',
     holes: [
       [5, 590, 0, '', 1, { tees: { black: 590, blue: 560, white: 531, red: 472 }, elev: [[0, 0], [16, 0.0], [91, 0.0], [166, 0.0], [241, 0.0], [316, 0.0], [392, 0.0], [467, 0.0], [542, 0.0]],
@@ -1675,7 +1676,7 @@ export const COURSES = [
     //   第 3、9、11、18 洞果嶺對照圖上人工標點），碼數四組（Gold / Blue / White / Red）、標準桿與差點照計分卡，說明照官網攻略；起伏依說明
     id: 'palmlakes', name: '棕梠湖', en: 'Toyo Palm Lakes Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '嘉義番路', treeKind: 'tropic',
     desc: '嘉義縣番路鄉的度假村球場，名師設計，湖泊與椰林環繞、充滿南國風情，第 3 洞果嶺浮在湖中、第 6 洞越湖。每洞的球道形狀、水池、沙坑與果嶺照官網計分卡上的逐洞球道圖，碼數與差點照計分卡，說明照官網攻略。',
-    stimp: 9.5, firm: 1.05, altitude: 120, temp: 25, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 120, temp: 25, wind: [1, 7], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/palmlakes-maps.json',
     holes: [
       [5, 511, 0, '', 9, { tees: { black: 511, blue: 506, white: 485, red: 429 }, elev: [[0, 0], [242, 0.0], [485, 0.0]],
@@ -1739,7 +1740,7 @@ export const COURSES = [
     //   果嶺大小照圖上標的縱深；說明照官網擊球注意事項（只有第 1、2 洞有文字）；起伏依說明，圖上沒有高低資料
     id: 'chianan', name: '嘉南', en: 'Chianan Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '台南',
     desc: '台南的平地球場，湖泊與水道沿著球道分布，球道兩側樹叢茂密。每洞的球道形狀、沙坑、水池與果嶺都照官網的逐洞球道圖，果嶺大小照圖上標的縱深。',
-    stimp: 9.5, firm: 1.05, altitude: 40, temp: 26, wind: [3, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 40, temp: 26, wind: [4, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
     mapsUrl: 'assets/courses/chianan-maps.json',
     holes: [
       [4, 406, 0, '', 9, { tees: { black: 406, blue: 406, white: 392, red: 346 }, elev: [[0, 0], [196, 3.0], [392, 6]],
@@ -1798,6 +1799,235 @@ export const COURSES = [
         tip: '有水的那一側寧可保守。' }],
     ],
   },
+  {
+    // 南寶高爾夫球場（台南大內）27 洞（A / B / C 三區）：官網球道碼數圖（A1~C9）判讀。圖上果嶺放大圖用 5 碼格線、球道用碼數牌，兩種比例不同，
+    //   而且多半只畫到果嶺前 150~250 碼：先用 np_build.py 依各自的比例換算成同一比例重畫（果嶺、果嶺旁沙坑照格線的實際大小，球道照碼數牌），
+    //   圖上沒畫到的梯台區沿球道方向延伸（長草走廊＋各組梯台），再由 .claude/trace-generic.py 的 nanpao 設定判讀。
+    //   碼數照官網每洞列出的各組梯台（由短到長 → 紅 / 白 / 藍 / 黑）；官網沒有差點，依碼數 ÷ 標準桿排序；官網沒有文字說明，說明依球道圖整理
+    id: 'nanpao', name: '南寶', en: 'Nan Pao Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '台南大內',
+    desc: '台南市大內區丘陵上的 27 洞球場，分 A、B、C 三區，球道兩旁林木、水池與沙坑交錯，旁邊有度假住宿。果嶺與果嶺旁的沙坑照官網球道碼數圖上的 5 碼格線換算成實際大小，球道照圖上的碼數牌換算；圖上沒畫到的梯台區沿球道方向延伸。',
+    stimp: 8, firm: 1.05, altitude: 120, temp: 25, wind: [2, 8], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    mapsUrl: 'assets/courses/nanpao-maps.json', mapsOrder: ['A', 'B', 'C'],
+    nines: [
+      { id: 'A', name: 'A 區', holes: [
+        [4, 348, 0, '', 5, { tees: { black: 348, blue: 348, white: 314, red: 309 }, elev: [[0, 0], [157, 0.0], [314, 0]],
+        note: '四桿洞，果嶺周圍沙坑環繞' }],
+        [5, 448, 0, '', 4, { tees: { black: 448, blue: 431, white: 408, red: 381 }, elev: [[0, 0], [204, 0.0], [408, 0]],
+        note: '五桿洞，球道中段右側有水池，果嶺周圍沙坑環繞' }],
+        [3, 164, 0, '', 9, { tees: { black: 164, blue: 145, white: 126, red: 106 }, elev: [[0, 0], [63, 0.0], [126, 0]],
+        note: '三桿洞，果嶺右側有水池，果嶺旁有沙坑' }],
+        [4, 381, 0, '', 2, { tees: { black: 381, blue: 356, white: 328, red: 296 }, elev: [[0, 0], [164, 0.0], [328, 0]],
+        note: '四桿洞，球道中段左側有水池，果嶺周圍沙坑環繞' }],
+        [4, 331, 0, '', 7, { tees: { black: 331, blue: 331, white: 331, red: 296 }, elev: [[0, 0], [166, 0.0], [331, 0]],
+        note: '右狗腿的四桿洞，果嶺左側有水池，果嶺旁有沙坑' }],
+        [4, 346, 0, '', 6, { tees: { black: 346, blue: 346, white: 322, red: 251 }, elev: [[0, 0], [161, 0.0], [322, 0]],
+        note: '右狗腿的四桿洞，球道中段右側有水池，果嶺周圍沙坑環繞' }],
+        [4, 381, 0, '', 3, { tees: { black: 381, blue: 361, white: 331, red: 286 }, elev: [[0, 0], [166, 0.0], [331, 0]],
+        note: '左狗腿的四桿洞，果嶺周圍沙坑環繞' }],
+        [3, 166, 0, '', 8, { tees: { black: 166, blue: 156, white: 152, red: 104 }, elev: [[0, 0], [76, 0.0], [152, 0]],
+        note: '三桿洞，果嶺右側有水池，果嶺旁有沙坑' }],
+        [5, 533, 0, '', 1, { tees: { black: 533, blue: 511, white: 486, red: 451 }, elev: [[0, 0], [243, 0.0], [486, 0]],
+        note: '五桿洞，果嶺右側有水池，果嶺周圍沙坑環繞' }],
+      ] },
+      { id: 'B', name: 'B 區', holes: [
+        [5, 590, 0, '', 1, { tees: { black: 590, blue: 565, white: 539, red: 434 }, elev: [[0, 0], [270, 0.0], [539, 0]],
+        note: '右狗腿的五桿洞，球道中段右側有水池' }],
+        [3, 166, 0, '', 9, { tees: { black: 166, blue: 155, white: 142, red: 112 }, elev: [[0, 0], [71, 0.0], [142, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+        [4, 350, 0, '', 7, { tees: { black: 350, blue: 350, white: 336, red: 315 }, elev: [[0, 0], [168, 0.0], [336, 0]],
+        note: '右狗腿的四桿洞，球道中段左側有水池，果嶺周圍沙坑環繞' }],
+        [4, 365, 0, '', 6, { tees: { black: 365, blue: 365, white: 350, red: 310 }, elev: [[0, 0], [175, 0.0], [350, 0]],
+        note: '右狗腿的四桿洞，球道中段左側有水池，果嶺周圍沙坑環繞' }],
+        [4, 431, 0, '', 3, { tees: { black: 431, blue: 414, white: 391, red: 358 }, elev: [[0, 0], [196, 0.0], [391, 0]],
+        note: '左狗腿的四桿洞，球道中段右側有水池，果嶺周圍沙坑環繞' }],
+        [3, 182, 0, '', 8, { tees: { black: 182, blue: 182, white: 161, red: 135 }, elev: [[0, 0], [80, 0.0], [161, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+        [5, 476, 0, '', 5, { tees: { black: 476, blue: 459, white: 432, red: 385 }, elev: [[0, 0], [216, 0.0], [432, 0]],
+        note: '五桿洞，果嶺右側有水池，果嶺周圍沙坑環繞' }],
+        [4, 456, 0, '', 2, { tees: { black: 456, blue: 438, white: 426, red: 340 }, elev: [[0, 0], [213, 0.0], [426, 0]],
+        note: '四桿洞，果嶺左側有水池，果嶺周圍沙坑環繞' }],
+        [4, 389, 0, '', 4, { tees: { black: 389, blue: 389, white: 373, red: 324 }, elev: [[0, 0], [186, 0.0], [373, 0]],
+        note: '右狗腿的四桿洞' }],
+      ] },
+      { id: 'C', name: 'C 區', holes: [
+        [4, 375, 0, '', 5, { tees: { black: 375, blue: 362, white: 339, red: 292 }, elev: [[0, 0], [170, 0.0], [339, 0]],
+        note: '四桿洞，果嶺旁有沙坑' }],
+        [5, 529, 0, '', 1, { tees: { black: 529, blue: 515, white: 488, red: 411 }, elev: [[0, 0], [244, 0.0], [488, 0]],
+        note: '右狗腿的五桿洞，果嶺周圍沙坑環繞' }],
+        [4, 341, 0, '', 7, { tees: { black: 341, blue: 326, white: 304, red: 276 }, elev: [[0, 0], [152, 0.0], [304, 0]],
+        note: '右狗腿的四桿洞，球道中段右側有水池，果嶺旁有沙坑' }],
+        [4, 409, 0, '', 3, { tees: { black: 409, blue: 397, white: 381, red: 314 }, elev: [[0, 0], [190, 0.0], [381, 0]],
+        note: '四桿洞，果嶺周圍沙坑環繞' }],
+        [3, 172, 0, '', 8, { tees: { black: 172, blue: 172, white: 172, red: 140 }, elev: [[0, 0], [86, 0.0], [172, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+        [5, 525, 0, '', 2, { tees: { black: 525, blue: 507, white: 478, red: 421 }, elev: [[0, 0], [239, 0.0], [478, 0]],
+        note: '五桿洞，果嶺左側有水池' }],
+        [4, 361, 0, '', 6, { tees: { black: 361, blue: 345, white: 322, red: 282 }, elev: [[0, 0], [161, 0.0], [322, 0]],
+        note: '左狗腿的四桿洞，果嶺周圍沙坑環繞' }],
+        [3, 141, 0, '', 9, { tees: { black: 141, blue: 141, white: 141, red: 109 }, elev: [[0, 0], [70, 0.0], [141, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+        [4, 387, 0, '', 4, { tees: { black: 387, blue: 387, white: 373, red: 337 }, elev: [[0, 0], [186, 0.0], [373, 0]],
+        note: '左狗腿的四桿洞，果嶺右側有水池，果嶺周圍沙坑環繞' }],
+      ] },
+    ],
+  },
+  {
+    // 台南高爾夫球俱樂部（台南）：官網球洞資訊的 18 張逐洞球道圖（手繪，梯台碼數紅 / 白 / 藍 / 橘標在圖上）判讀（.claude/trace-generic.py 的 tainan 設定；
+    //   圖上沒有明確的球道邊，球道取打球區中間一帶），果嶺大小與形狀照官網果嶺放大圖（公尺）；標準桿與差點照官網，官網沒有文字說明，說明依球道圖整理
+    id: 'tainan', name: '台南', en: 'Tainan Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '台南', treeKind: 'tropic',
+    desc: '1976 年啟用的台南老球場，平坦的球道兩旁是椰子樹與老樹，水池散布在梯台前與球道邊。每洞的球道、沙坑、水池與梯台照官網逐洞球道圖，果嶺的大小與形狀照官網的果嶺放大圖。',
+    stimp: 8, firm: 1.05, altitude: 10, temp: 26, wind: [4, 12], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    mapsUrl: 'assets/courses/tainan-maps.json',
+    holes: [
+      [5, 525, 0, '', 7, { tees: { black: 525, blue: 525, white: 515, red: 450 }, elev: [[0, 0], [258, 0.0], [515, 0]],
+        note: '右狗腿的五桿洞，果嶺旁有沙坑' }],
+      [4, 330, 0, '', 13, { tees: { black: 330, blue: 310, white: 284, red: 252 }, elev: [[0, 0], [142, 0.0], [284, 0]],
+        note: '右狗腿的四桿洞，果嶺周圍沙坑環繞' }],
+      [3, 210, 0, '', 17, { tees: { black: 210, blue: 190, white: 170, red: 130 }, elev: [[0, 0], [85, 0.0], [170, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+      [4, 360, 0, '', 9, { tees: { black: 360, blue: 360, white: 340, red: 300 }, elev: [[0, 0], [170, 0.0], [340, 0]],
+        note: '四桿洞，果嶺右側有水池，果嶺周圍沙坑環繞' }],
+      [3, 250, 0, '', 11, { tees: { black: 250, blue: 230, white: 210, red: 178 }, elev: [[0, 0], [105, 0.0], [210, 0]],
+        note: '三桿洞，果嶺右側有水池，果嶺周圍沙坑環繞' }],
+      [5, 535, 0, '', 5, { tees: { black: 535, blue: 535, white: 520, red: 450 }, elev: [[0, 0], [260, 0.0], [520, 0]],
+        note: '右狗腿的五桿洞，梯台前要越過水池，果嶺旁有沙坑' }],
+      [4, 425, 0, '', 1, { tees: { black: 425, blue: 425, white: 410, red: 346 }, elev: [[0, 0], [205, 0.0], [410, 0]],
+        note: '左狗腿的四桿洞，梯台前要越過水池，果嶺周圍沙坑環繞' }],
+      [4, 400, 0, '', 3, { tees: { black: 400, blue: 400, white: 365, red: 342 }, elev: [[0, 0], [182, 0.0], [365, 0]],
+        note: '左狗腿的四桿洞，果嶺左側有水池，果嶺周圍沙坑環繞' }],
+      [4, 355, 0, '', 15, { tees: { black: 355, blue: 355, white: 340, red: 310 }, elev: [[0, 0], [170, 0.0], [340, 0]],
+        note: '四桿洞，梯台前要越過水池，果嶺周圍沙坑環繞' }],
+      [4, 345, 0, '', 14, { tees: { black: 345, blue: 345, white: 306, red: 280 }, elev: [[0, 0], [153, 0.0], [306, 0]],
+        note: '右狗腿的四桿洞，果嶺周圍沙坑環繞' }],
+      [4, 355, 0, '', 6, { tees: { black: 355, blue: 355, white: 335, red: 290 }, elev: [[0, 0], [168, 0.0], [335, 0]],
+        note: '左狗腿的四桿洞，梯台前要越過水池，果嶺周圍沙坑環繞' }],
+      [4, 450, 0, '', 2, { tees: { black: 450, blue: 430, white: 360, red: 320 }, elev: [[0, 0], [180, 0.0], [360, 0]],
+        note: '左狗腿的四桿洞，果嶺旁有沙坑' }],
+      [3, 220, 0, '', 8, { tees: { black: 220, blue: 220, white: 185, red: 162 }, elev: [[0, 0], [92, 0.0], [185, 0]],
+        note: '三桿洞，梯台前要越過水池，果嶺周圍沙坑環繞' }],
+      [4, 305, 0, '', 12, { tees: { black: 305, blue: 305, white: 275, red: 250 }, elev: [[0, 0], [138, 0.0], [275, 0]],
+        note: '左狗腿的四桿洞，果嶺左側有水池，果嶺周圍沙坑環繞' }],
+      [5, 530, 0, '', 4, { tees: { black: 530, blue: 530, white: 503, red: 473 }, elev: [[0, 0], [252, 0.0], [503, 0]],
+        note: '右狗腿的五桿洞，梯台前要越過水池，果嶺旁有沙坑' }],
+      [4, 325, 0, '', 18, { tees: { black: 325, blue: 325, white: 295, red: 270 }, elev: [[0, 0], [148, 0.0], [295, 0]],
+        note: '右狗腿的四桿洞，梯台前要越過水池，果嶺周圍沙坑環繞' }],
+      [3, 190, 0, '', 10, { tees: { black: 190, blue: 190, white: 170, red: 140 }, elev: [[0, 0], [85, 0.0], [170, 0]],
+        note: '三桿洞，果嶺左側有水池，果嶺周圍沙坑環繞' }],
+      [5, 480, 0, '', 16, { tees: { black: 480, blue: 480, white: 455, red: 430 }, elev: [[0, 0], [228, 0.0], [455, 0]],
+        note: '右狗腿的五桿洞，球道中段左側有水池，果嶺周圍沙坑環繞' }],
+    ],
+  },
+  {
+    // 高雄高爾夫俱樂部（高雄鳥松，澄清湖旁）：官網球道介紹 OUT / IN 每頁右上角的小球道圖判讀（.claude/trace-generic.py 的 kaohsiung 設定；
+    //   攻略線照圖上的深藍線，梯台 / 果嶺 = 線兩端的深綠塊），碼數（藍 / 白 / 紅）、標準桿與差點照官網；說明依球道圖整理
+    id: 'kaohsiung', name: '高雄', en: 'Kaohsiung Golf Country Club', style: 'parkland', group: 'taiwan', real: true, area: '高雄鳥松',
+    desc: '高雄澄清湖旁丘陵林地裡的 18 洞球場，林木夾道的球道彎來彎去，有幾洞要越過水池，西南方遠處是高雄市區的大樓。每洞的球道形狀、沙坑、水池照官網球道介紹的球道圖，碼數與差點照官網。',
+    stimp: 8, firm: 1.05, altitude: 30, temp: 26, wind: [2, 8], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    mapsUrl: 'assets/courses/kaohsiung-maps.json',
+    holes: [
+      [5, 570, 0, '', 9, { tees: { black: 570, blue: 570, white: 560, red: 490 }, elev: [[0, 0], [280, 0.0], [560, 0]],
+        note: '右狗腿的五桿洞' }],
+      [4, 445, 0, '', 5, { tees: { black: 445, blue: 445, white: 420, red: 400 }, elev: [[0, 0], [210, 0.0], [420, 0]],
+        note: '四桿洞' }],
+      [4, 330, 0, '', 13, { tees: { black: 330, blue: 330, white: 300, red: 220 }, elev: [[0, 0], [150, 0.0], [300, 0]],
+        note: '左狗腿的四桿洞，梯台前要越過水池' }],
+      [5, 580, 0, '', 3, { tees: { black: 580, blue: 580, white: 550, red: 545 }, elev: [[0, 0], [275, 0.0], [550, 0]],
+        note: '左狗腿的五桿洞' }],
+      [4, 370, 0, '', 11, { tees: { black: 370, blue: 370, white: 350, red: 340 }, elev: [[0, 0], [175, 0.0], [350, 0]],
+        note: '四桿洞，果嶺周圍沙坑環繞' }],
+      [3, 160, 0, '', 17, { tees: { black: 160, blue: 160, white: 140, red: 130 }, elev: [[0, 0], [70, 0.0], [140, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+      [4, 440, 0, '', 1, { tees: { black: 440, blue: 440, white: 430, red: 352 }, elev: [[0, 0], [215, 0.0], [430, 0]],
+        note: '四桿洞' }],
+      [4, 450, 0, '', 7, { tees: { black: 450, blue: 450, white: 440, red: 430 }, elev: [[0, 0], [220, 0.0], [440, 0]],
+        note: '四桿洞，果嶺周圍沙坑環繞' }],
+      [3, 190, 0, '', 15, { tees: { black: 190, blue: 190, white: 170, red: 144 }, elev: [[0, 0], [85, 0.0], [170, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+      [5, 565, 0, '', 8, { tees: { black: 565, blue: 565, white: 560, red: 497 }, elev: [[0, 0], [280, 0.0], [560, 0]],
+        note: '左狗腿的五桿洞，梯台前要越過水池' }],
+      [4, 400, 0, '', 4, { tees: { black: 400, blue: 400, white: 385, red: 313 }, elev: [[0, 0], [192, 0.0], [385, 0]],
+        note: '左狗腿的四桿洞，果嶺周圍沙坑環繞' }],
+      [3, 190, 0, '', 18, { tees: { black: 190, blue: 190, white: 170, red: 160 }, elev: [[0, 0], [85, 0.0], [170, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+      [5, 555, 0, '', 6, { tees: { black: 555, blue: 555, white: 535, red: 404 }, elev: [[0, 0], [268, 0.0], [535, 0]],
+        note: '五桿洞，果嶺周圍沙坑環繞' }],
+      [3, 170, 0, '', 16, { tees: { black: 170, blue: 170, white: 150, red: 140 }, elev: [[0, 0], [75, 0.0], [150, 0]],
+        note: '三桿洞，果嶺周圍沙坑環繞' }],
+      [4, 380, 0, '', 12, { tees: { black: 380, blue: 380, white: 360, red: 330 }, elev: [[0, 0], [180, 0.0], [360, 0]],
+        note: '右狗腿的四桿洞' }],
+      [4, 400, 0, '', 10, { tees: { black: 400, blue: 400, white: 385, red: 367 }, elev: [[0, 0], [192, 0.0], [385, 0]],
+        note: '右狗腿的四桿洞，果嶺旁有沙坑' }],
+      [4, 415, 0, '', 2, { tees: { black: 415, blue: 415, white: 395, red: 310 }, elev: [[0, 0], [198, 0.0], [395, 0]],
+        note: '四桿洞，果嶺旁有沙坑' }],
+      [4, 390, 0, '', 14, { tees: { black: 390, blue: 390, white: 370, red: 340 }, elev: [[0, 0], [185, 0.0], [370, 0]],
+        note: '左狗腿的四桿洞，果嶺周圍沙坑環繞' }],
+    ],
+  },
+  {
+    // 信誼高爾夫球場（高雄大樹）：官網球道介紹的 18 張逐洞球道圖（向量圖，每洞左右兩個果嶺）判讀（.claude/trace-generic.py 的 hsinyi 設定；
+    //   梯台照圖上的紅 / 白 / 藍小方塊），碼數照圖上的左 / 右果嶺碼數表（紅、白↑、白↓、藍 → 紅 / 白 / 藍 / 黑，卡上用較長那個果嶺），
+    //   起伏照官網文字寫的落差，說明照官網文字整理；官網沒有差點，依碼數 ÷ 標準桿排序
+    id: 'hsinyi', name: '信誼', en: 'Hsin Yi Golf Club', style: 'parkland', group: 'taiwan', real: true, area: '高雄大樹',
+    desc: '高雄大樹區丘陵上的球場，每洞都有左右兩個果嶺，起伏很大（第 5 洞一路下坡約 40 公尺、第 15 洞上坡約 35 公尺），砲台果嶺、水池與狗腿洞多。每洞的球道、沙坑、水池、梯台照官網球道圖，碼數照官網的左 / 右果嶺碼數，說明照官網文字整理。',
+    stimp: 8, firm: 1.05, altitude: 100, temp: 25, wind: [2, 8], fairwayW: 34, roughW: 16, corridor: 72, trees: 0.7,
+    mapsUrl: 'assets/courses/hsinyi-maps.json',
+    holes: [
+      [4, 415, 0, '', 9, { tees: { black: 415, blue: 397, white: 397, red: 382 }, elev: [[0, 0], [198, 0.0], [397, 0]],
+        note: '寬闊平坦的開場洞，右側整片密林',
+        tip: '球道平寬，右邊全是雜林，右曲球要小心；右果嶺是高台，面上的坡度變化大。' }],
+      [4, 461, 0, '', 5, { tees: { black: 461, blue: 444, white: 419, red: 352 }, elev: [[0, 0], [210, -9.5], [419, -19]],
+        note: '發球台比果嶺高約 19 公尺的長四桿',
+        tip: '開球要閃過右側侵入球道的杉樹，越過轉角讓球順著下坡滾；第二桿全是下坡球位，果嶺兩旁各有兩個沙坑。' }],
+      [3, 238, 0, '', 15, { tees: { black: 238, blue: 212, white: 188, red: 159 }, elev: [[0, 0], [94, 0.0], [188, 0]],
+        note: '中間隔著水的長三桿洞，右側 OB',
+        tip: '左右兩組發球台各攻一個果嶺：右發球台攻左果嶺，前面被沙坑封住，要打高球直接飛過；左發球台攻右果嶺，距離更長、更靠近 OB。' }],
+      [5, 552, 0, '', 7, { tees: { black: 552, blue: 514, white: 494, red: 475 }, elev: [[0, 0], [247, 12.5], [494, 25]],
+        note: '上坡右狗腿五桿，發球台到果嶺爬升約 25 公尺',
+        tip: '開球要越過轉角的小山與樹林，左邊有沙坑；砲台式果嶺看不到果嶺面，兩個果嶺前方都被沙坑封住。' }],
+      [4, 415, 0, '', 11, { tees: { black: 415, blue: 390, white: 365, red: 290 }, elev: [[0, 0], [182, -20.0], [365, -40]],
+        note: '一路下坡、落差約 40 公尺的窄四桿',
+        tip: '球道窄、兩側都是 OB，整條球道往右傾，開球要打到中間最好的落點；右果嶺較遠、前方有沙坑。' }],
+      [3, 224, 0, '', 17, { tees: { black: 224, blue: 204, white: 204, red: 134 }, elev: [[0, 0], [102, 0.0], [204, 0]],
+        note: '前有沙坑與大水池的長三桿洞，後方與右側 OB',
+        tip: '兩組發球台各在左右：右組攻左果嶺要飛過水池與沙坑；左組攻右果嶺，右果嶺平坦又往後傾，不容易停球。' }],
+      [4, 389, 0, '', 13, { tees: { black: 389, blue: 372, white: 350, red: 288 }, elev: [[0, 0], [175, 10.0], [350, 20]],
+        note: '上坡 20 公尺的左狗腿短四桿',
+        tip: '用左曲球越過中段左側的小假山最理想；兩個果嶺旁都是沙坑，打過頭會掉進後方長草坡。' }],
+      [5, 652, 0, '', 1, { tees: { black: 652, blue: 629, white: 609, red: 519 }, elev: [[0, 0], [304, 10.0], [609, 20]],
+        note: '超過 600 碼、上坡 20 公尺的長五桿',
+        tip: '開球要又遠又直落在球道正中央；第二桿看不到落點，要越過右側下坡轉角的林區；右果嶺前有沙坑，左果嶺更遠且左方、後方是 OB。' }],
+      [4, 497, 0, '', 3, { tees: { black: 497, blue: 457, white: 435, red: 398 }, elev: [[0, 0], [218, 0.0], [435, 0]],
+        note: '前九最難的長四桿，球道中央有大水池',
+        tip: '開球放在中左側約 250 碼處最有利；攻右果嶺要面對水池與左前、右後的大沙坑，果嶺是平坦的砲台式，不易停球。' }],
+      [4, 457, 0, '', 6, { tees: { black: 457, blue: 443, white: 420, red: 355 }, elev: [[0, 0], [210, 0.0], [420, 0]],
+        note: '平寬的左狗腿四桿，低砲台果嶺',
+        tip: '開球要越過中段轉角才好直攻；左果嶺是前傾雙層，右果嶺較平但前方有沙坑。' }],
+      [4, 469, 0, '', 2, { tees: { black: 469, blue: 464, white: 446, red: 392 }, elev: [[0, 0], [223, -17.5], [446, -35]],
+        note: '長下坡左狗腿，發球台到果嶺下降約 35 公尺',
+        tip: '用長左曲球越過左側轉角的高大林木，閃開落點右側的大沙坑；兩個果嶺都是高砲台，後方腹地很小。' }],
+      [4, 466, 0, '', 4, { tees: { black: 466, blue: 423, white: 404, red: 320 }, elev: [[0, 0], [202, 0.0], [404, 0]],
+        note: '長距離的四桿洞，球道微微左彎',
+        tip: '開球沿球道左側最順；果嶺前方與兩側有沙坑，第二桿距離長，打短一點比打過頭安全。' }],
+      [3, 226, 0, '', 16, { tees: { black: 226, blue: 206, white: 187, red: 160 }, elev: [[0, 0], [94, 0.0], [187, 0]],
+        note: '果嶺前有大水池與沙坑的三桿洞，右側 OB',
+        tip: '要準確地一桿上果嶺，果嶺後方落球空間小；兩個果嶺左側內凹、右側突出，推桿變化大。' }],
+      [4, 436, 0, '', 12, { tees: { black: 436, blue: 406, white: 366, red: 295 }, elev: [[0, 0], [183, 5.0], [366, 10]],
+        note: '上坡約 10 公尺的左狗腿四桿',
+        tip: '用直球或左曲球越過左側邊坡最理想；偏右會掉進右側大沙坑甚至 OB；兩個果嶺都是上坡砲台。' }],
+      [5, 562, 0, '', 8, { tees: { black: 562, blue: 554, white: 542, red: 463 }, elev: [[0, 0], [271, 17.5], [542, 35]],
+        note: '上坡約 35 公尺的長五桿，右側全是 OB',
+        tip: '球道整片往右傾，前兩桿都要打長又要閃右邊；兩個果嶺左右後方都是沙坑，看不到果嶺面。' }],
+      [4, 444, 0, '', 10, { tees: { black: 444, blue: 434, white: 422, red: 367 }, elev: [[0, 0], [211, 0.0], [422, 0]],
+        note: '大角度的右狗腿四桿',
+        tip: '敢挑戰的話直接越過右轉角的大沙坑與邊坡林木，第二桿只剩短桿；打太左會穿出球道受罰。' }],
+      [3, 209, 0, '', 18, { tees: { black: 209, blue: 195, white: 178, red: 142 }, elev: [[0, 0], [89, -5.0], [178, -10]],
+        note: '發球台高、往下打約 10 公尺的三桿洞',
+        tip: '兩個果嶺都緊貼前方的水池，後面有沙坑、再後方是 OB，左果嶺更危險；只能直接攻上果嶺。' }],
+      [5, 516, 0, '', 14, { tees: { black: 516, blue: 490, white: 469, red: 403 }, elev: [[0, 0], [234, 10.0], [469, 20]],
+        note: '上坡 20 公尺的收尾五桿洞',
+        tip: '第二桿是關鍵：左中央有水池與大樹、球道窄、左側 OB；左果嶺凹陷，右果嶺前方是砲台。' }],
+    ],
+  },
   // ---------- 國外球場 ----------
   {
     // Cliffhangers（美國密蘇里州 Hollister，Big Cedar Lodge 旁）：Johnny Morris 與兒子 JP Morris 設計的 18 洞三桿洞球場，2025 年 7 月 4 日開幕。
@@ -1808,7 +2038,7 @@ export const COURSES = [
     id: 'cliffhangers', name: 'Cliffhangers', en: 'Cliffhangers at Big Cedar Lodge', style: 'parkland', group: 'abroad', real: true,
     country: '美國・密蘇里州', tagline: '瀑布洞穴開球的 18 洞三桿洞球場',
     desc: '位在密蘇里州 Ozark 山區、俯瞰 Table Rock 湖的 18 洞三桿洞球場，Big Cedar Lodge 的一部分。全場都是 65~157 碼的短洞，從高處往下打、穿過石灰岩峭壁與瀑布；第 3 洞 Lion\'s Den 要從瀑布後面的洞穴開球。官方沒有完整的逐洞圖，依計分卡與官方介紹復刻。',
-    stimp: 10.5, firm: 1.05, altitude: 280, temp: 23, wind: [2, 10], fairwayW: 30, roughW: 14, corridor: 60, trees: 0.8,
+    stimp: 9, firm: 1.05, altitude: 280, temp: 23, wind: [1, 8], fairwayW: 30, roughW: 14, corridor: 60, trees: 0.8,
     holes: [
       [3, 65, 0, 'b1', 17, { tees: { black: 72, blue: 68, white: 65, red: 55 }, elev: [[65, -2]], bunkers: [{ g: 'B' }], green: { size: [26, 34], slope: 0.02 },
         note: 'Horizons · 開場最短的一洞 · 往湖的方向打 · 大果嶺',
@@ -1877,7 +2107,7 @@ export const COURSES = [
     id: 'standrews', name: '聖安德魯斯老球場', en: 'The Old Course, St Andrews', style: 'links', group: 'abroad', real: true,
     country: '英國・蘇格蘭', tagline: '高爾夫發源地，最古老的林克斯',
     desc: '蘇格蘭東岸、聖安德魯斯鎮旁的老球場，15 世紀就有人在這裡打球，被公認為高爾夫的發源地。全場是起伏的林克斯沙丘地，球道寬但藏著 112 個壺形沙坑，7 個大果嶺是兩洞共用的雙果嶺；第 14 洞有地獄沙坑（Hell Bunker），第 17 洞要越過 Old Course Hotel 的屋角開球，第 18 洞走過 Swilcan 石橋回到 R&A 會館前。依 OpenStreetMap 的逐洞圖資與數值地形建立。',
-    stimp: 10, firm: 1.25, altitude: 8, temp: 13, wind: [9, 22], fairwayW: 40, roughW: 14, corridor: 80, trees: 0.3, treeKind: 'gorse',
+    stimp: 8.5, firm: 1.25, altitude: 8, temp: 13, wind: [9, 15], fairwayW: 40, roughW: 14, corridor: 80, trees: 0.3, treeKind: 'gorse',
     mapsUrl: 'assets/courses/standrews-maps.json', sceneUrl: 'assets/courses/standrews-scene.json',
     holes: [
       [4, 375, 0, '', 10, { tees: { black: 375, blue: 345, white: 327, red: 309 },
@@ -1942,7 +2172,7 @@ export const COURSES = [
     id: 'pebble', name: '圓石灘', en: 'Pebble Beach Golf Links', style: 'parkland', group: 'abroad', real: true,
     country: '美國・加州', tagline: '緊貼太平洋海崖的海岸球場',
     desc: '加州蒙特雷半島、Carmel 灣旁的海岸球場，1919 年開幕、舉辦過多屆美國公開賽。第 4 到 10 洞與第 17、18 洞沿著太平洋的海崖，第 7 洞是 107 碼的下坡短洞、果嶺幾乎被海包圍；第 8 洞要飛過海崖缺口，第 18 洞沿著海岸往左彎回到 The Lodge。依 OpenStreetMap 的逐洞圖資與數值地形建立。',
-    stimp: 11, firm: 1.1, altitude: 20, temp: 16, wind: [6, 18], fairwayW: 32, roughW: 14, corridor: 72, trees: 0.5, treeKind: 'cypress',
+    stimp: 9.5, firm: 1.1, altitude: 20, temp: 16, wind: [6, 15], fairwayW: 32, roughW: 14, corridor: 72, trees: 0.5, treeKind: 'cypress',
     mapsUrl: 'assets/courses/pebble-maps.json', sceneUrl: 'assets/courses/pebble-scene.json',
     holes: [
       [4, 378, 0, '', 6, { tees: { black: 378, blue: 349, white: 337, red: 310 },
@@ -2007,7 +2237,7 @@ export const COURSES = [
     id: 'kawana', name: '川奈富士', en: 'Kawana Hotel Golf Course, Fuji Course', style: 'parkland', group: 'abroad', real: true,
     country: '日本・靜岡縣', tagline: '相模灣海崖、遠望富士山',
     desc: '靜岡縣伊東市、伊豆半島東岸的川奈飯店高爾夫球場富士球場，C.H. Alison 設計、1936 年開幕，是日本最具代表性的世界百大名場。球道沿著相模灣的海岸懸崖鋪開，天氣好時可以同時看到太平洋、伊豆大島與西北方的富士山。果嶺是高麗草，順草下坡時球完全停不住。依 OpenStreetMap 的逐洞圖資與數值地形建立。',
-    stimp: 9.5, firm: 1.1, altitude: 50, temp: 18, wind: [5, 16], fairwayW: 32, roughW: 14, corridor: 72, trees: 0.7, treeKind: 'jpine',
+    stimp: 8, firm: 1.1, altitude: 50, temp: 18, wind: [5, 14], fairwayW: 32, roughW: 14, corridor: 72, trees: 0.7, treeKind: 'jpine',
     mapsUrl: 'assets/courses/kawana-maps.json', sceneUrl: 'assets/courses/kawana-scene.json',
     holes: [
       [4, 415, 0, '', 9, { tees: { black: 415, blue: 409, white: 397, red: 370 },
@@ -2072,7 +2302,7 @@ export const COURSES = [
     id: 'mangilao', name: '曼吉勞', en: 'Mangilao Golf Club', style: 'parkland', group: 'abroad', real: true,
     country: '關島', tagline: '跨越太平洋海灣的開球',
     desc: '關島東海岸、Robin Nelson 設計的海岸球場。前九洞比較開闊、有幾個小湖，後九洞往海岸走，第 11 到 14 洞沿著石灰岩海崖；招牌的第 12 洞要從崖邊把球打過一個太平洋的小海灣，落在對岸岩石頂端的果嶺上，海浪就在腳下拍打。依 OpenStreetMap 的逐洞圖資與數值地形建立。',
-    stimp: 9.5, firm: 1.05, altitude: 30, temp: 29, wind: [8, 18], fairwayW: 32, roughW: 14, corridor: 72, trees: 0.6, treeKind: 'tropic',
+    stimp: 8, firm: 1.05, altitude: 30, temp: 29, wind: [8, 15], fairwayW: 32, roughW: 14, corridor: 72, trees: 0.6, treeKind: 'tropic',
     mapsUrl: 'assets/courses/mangilao-maps.json', sceneUrl: 'assets/courses/mangilao-scene.json',
     holes: [
       [4, 342, 0, '', 17, { tees: { black: 342, blue: 319, white: 294, red: 243 },
@@ -2140,7 +2370,7 @@ export const COURSES = [
     feature: { name: '螢火之環', tags: ['fr1', 'fr2'], short: '球從光環中穿過會加速，飛得更遠',
       text: '空中漂浮著螢火蟲圍成的光環。球從發球台那一側穿過光環，速度會變成 1.3 倍、飛得更遠。',
       tip: '第一個光環在開球飛行的途中（約 100~125 公尺、離地 13~18 公尺），有些洞果嶺前還有第二個。用比較低的彈道瞄準光環。' },
-    stimp: 8, firm: 0.95, altitude: 60, temp: 30, wind: [1, 7], fairwayW: 40, roughW: 22, corridor: 82, trees: 1.0,
+    stimp: 7, firm: 0.95, altitude: 60, temp: 30, wind: [1, 7], fairwayW: 40, roughW: 22, corridor: 82, trees: 1.0,
     holes: [
       [5, 545, 30, 'b2 D wr fr1 fr2', 5], [4, 420, 35, 'b2 S fr1', 1], [5, 560, -35, 'b2 D xc fr1', 2], [4, 360, -30, 'b1 J IG fr2', 16], [3, 190, -8, 'b2 wc fr1', 11],
       [5, 530, -40, 'b2 S xc fr2 wd', 3], [3, 175, 15, 'b2 wr fr1', 12], [4, 405, -55, 'b2 E wl fr1', 7], [4, 410, -25, 'b2 J wc fr1', 10],
@@ -2154,7 +2384,7 @@ export const COURSES = [
     feature: { name: '彈跳巨菇', tags: ['mu'], short: '球落在巨大蘑菇的菇傘上會被彈起來',
       text: '球道兩旁和中間長著有斑點的巨大發光蘑菇。球從上方落在菇傘上會被彈起來，繼續往前飛。',
       tip: '彈起來保留大部分前進速度，可以借力多跑一段；但菇傘在球道邊的話，也可能把球彈進森林。' },
-    stimp: 9, firm: 1.0, altitude: 400, temp: 16, wind: [1, 8], fairwayW: 36, roughW: 18, corridor: 78, trees: 0.9,
+    stimp: 7.5, firm: 1.0, altitude: 400, temp: 16, wind: [1, 8], fairwayW: 36, roughW: 18, corridor: 78, trees: 0.9,
     holes: [
       [4, 365, -30, 'b1 J IG', 13], [3, 185, 10, 'b1 mu wr', 14], [4, 435, -25, 'b2 mu nw', 4], [3, 170, -10, 'b1 mu wc', 15], [4, 425, -40, 'b2 S mu wr', 1],
       [5, 540, 40, 'b2 S mu wl', 3], [3, 160, 0, 'b1 IG', 18], [4, 380, -25, 'b1 mu', 9], [5, 530, -35, 'b2 S mu', 2],
@@ -2168,7 +2398,7 @@ export const COURSES = [
     feature: { name: '噴發口', tags: ['gv'], short: '球落進噴發口會被噴上天，往前飛一段',
       text: '落點區有幾個會冒火星、每隔幾秒大噴發一次的噴發口。球落到或滾進噴發口，會被噴上天、大致往前飛一段（方向有隨機偏差）。',
       tip: '運氣好直接噴上果嶺，運氣不好噴進熔岩。想穩就避開，想賭就瞄準。' },
-    stimp: 10, firm: 1.2, altitude: 900, temp: 34, wind: [4, 14], fairwayW: 30, roughW: 12, corridor: 74, trees: 0.5,
+    stimp: 8.5, firm: 1.2, altitude: 900, temp: 34, wind: [4, 14], fairwayW: 30, roughW: 12, corridor: 74, trees: 0.5,
     holes: [
       [5, 575, 30, 'b3 D xc ww gv', 6], [3, 215, 8, 'b3 wc DN gv', 15], [4, 425, 35, 'b3 J ww dn gv', 10], [3, 205, 0, 'b3 wc gv', 14], [4, 450, -20, 'b3 nw wl gv', 4],
       [4, 430, -50, 'b2 E wr ww gv', 5], [4, 365, 40, 'b2 S wr dn', 16], [5, 550, -40, 'b3 S wr xc gv', 2], [3, 170, -12, 'b2 IG', 18],
@@ -2182,7 +2412,7 @@ export const COURSES = [
     feature: { name: '冰鏡牆', tags: ['iw'], short: '球撞到冰牆會反彈回來',
       text: '球道兩側和狗腿彎道的外側立著半透明的冰牆（高 4 公尺）。球撞到冰牆會像撞球一樣反彈，保留約 8 成速度。',
       tip: '彎道外側的冰牆可以當成「彈牆」：故意打向牆，讓球彈回球道繞過狗腿。飛得比牆高就不會碰到。' },
-    stimp: 10, firm: 1.15, altitude: 1800, temp: -4, wind: [5, 15], fairwayW: 34, roughW: 14, corridor: 76, trees: 0.7,
+    stimp: 8.5, firm: 1.15, altitude: 1800, temp: -4, wind: [5, 15], fairwayW: 34, roughW: 14, corridor: 76, trees: 0.7,
     holes: [
       [4, 420, -50, 'b2 E iw wr', 8], [5, 545, 40, 'b2 S iw xc', 2], [4, 360, -35, 'b2 J iw IG', 12], [3, 165, 5, 'b1 wc', 18], [4, 370, 30, 'b1 J iw dn', 13],
       [4, 415, 45, 'b2 S iw wl', 5], [4, 390, -40, 'b2 S iw wl', 16], [3, 195, -10, 'b2 IG', 14], [4, 385, 25, 'b2 iw nw up', 17],
@@ -2196,7 +2426,7 @@ export const COURSES = [
     feature: { name: '星門', tags: ['pt'], short: '球穿過藍色星門，會從果嶺附近的紫色星門飛出',
       text: '球道上立著藍色漩渦的入口星門（有的懸在虛空裂縫上方）。球從正面穿過，會從果嶺附近的紫色出口星門飛出來，速度不變、方向轉成出口的朝向。',
       tip: '星門離地約 5 公尺、半徑 5 公尺，要打低一點的平飛球。穿過星門可以一口氣跳過裂縫、少打一桿。' },
-    stimp: 10.5, firm: 1.1, altitude: 300, temp: 18, wind: [3, 12], fairwayW: 30, roughW: 12, corridor: 70, trees: 0.45,
+    stimp: 9, firm: 1.1, altitude: 300, temp: 18, wind: [3, 12], fairwayW: 30, roughW: 12, corridor: 70, trees: 0.45,
     holes: [
       [5, 560, -30, 'b2 S g2 nw pt', 1], [4, 385, 30, 'b2 g1 pt', 9], [3, 195, -12, 'b1 IG pt', 11], [5, 530, -40, 'b2 D g2 wl pt', 4], [3, 210, -8, 'b2 IG pt', 14],
       [5, 525, 35, 'b2 D g2 wr pt', 13], [4, 400, 40, 'b2 S g1', 10], [3, 145, 0, 'b2 IG', 17], [5, 575, 30, 'b2 S g2 nw pt', 6],
@@ -2212,7 +2442,7 @@ export const COURSES = [
     feature: { name: '蜂蜜池', tags: ['hy'], short: '球碰到蜂蜜會立刻黏住停下',
       text: '六角形的金色蜂蜜池散在球道上。球不論是落下或滾進去，只要碰到蜂蜜就會黏住、停在原地，不會再彈跳或滾動。',
       tip: '每洞果嶺前都有一池，打短也能停在果嶺邊；開球落點兩側的蜂蜜池可以當作停球的目標，但停在裡面的位置不一定好打。' },
-    stimp: 8.5, firm: 1.0, altitude: 80, temp: 26, wind: [1, 8], fairwayW: 38, roughW: 20, corridor: 80, trees: 0.9,
+    stimp: 7, firm: 1.0, altitude: 80, temp: 26, wind: [1, 8], fairwayW: 38, roughW: 20, corridor: 80, trees: 0.9,
     holes: [
       [4, 395, 20, 'b2 hy', 9], [3, 165, -6, 'b2 wc hy', 15], [4, 410, -35, 'b2 E wl hy', 5], [5, 535, 30, 'b2 D hy wd', 3], [4, 375, 0, 'b1 S hy', 11],
       [4, 430, 45, 'b2 J wr hy', 1], [3, 190, 10, 'b2 IG hy', 13], [5, 555, -30, 'b2 S xc hy', 7], [4, 360, -20, 'b1 hy up', 17],
@@ -2226,7 +2456,7 @@ export const COURSES = [
     feature: { name: '轉向齒輪', tags: ['gr'], short: '球碰到齒輪盤會被轉向甩出去',
       text: '球道上有平躺、一直在轉的銅齒輪盤。球落到或滾到齒輪上，會依齒輪上箭頭的方向轉彎，從齒輪邊緣甩出去（至少用中等速度滾出）。',
       tip: '狗腿洞轉角的齒輪會把球轉向彎過去的那一邊，開球打到轉角就能順著轉彎；其他齒輪的方向不一定，先看箭頭往哪邊轉。' },
-    stimp: 9.5, firm: 1.05, altitude: 150, temp: 20, wind: [2, 9], fairwayW: 34, roughW: 16, corridor: 74, trees: 0.7,
+    stimp: 8, firm: 1.05, altitude: 150, temp: 20, wind: [2, 9], fairwayW: 34, roughW: 16, corridor: 74, trees: 0.7,
     holes: [
       [5, 540, 40, 'b2 D gr', 5], [4, 410, -45, 'b2 E gr', 3], [4, 380, 30, 'b2 J gr wr', 11], [3, 175, 0, 'b2 wc gr', 15], [4, 425, 60, 'b2 E gr nw', 1],
       [4, 360, -35, 'b1 S gr', 13], [5, 560, -40, 'b2 S gr wl', 7], [3, 195, 12, 'b2 gr', 17], [4, 400, 50, 'b2 J gr', 9],
@@ -2240,7 +2470,7 @@ export const COURSES = [
     feature: { name: '引魂燈', tags: ['ws'], short: '球從鬼火旁邊飛過，會被拉向旗桿',
       text: '空中飄著綠色的引魂燈（離地約 9~16 公尺），外圍有一圈淡淡的光環。球從光環範圍內飛過，水平方向會被轉向旗桿，速度不變。',
       tip: '打偏的球只要經過引魂燈就會被拉回來。地上的綠色圓圈標出燈的位置，彈道高度要剛好落在燈的高度附近。' },
-    stimp: 9, firm: 1.0, altitude: 220, temp: 14, wind: [1, 7], fairwayW: 34, roughW: 16, corridor: 74, trees: 0.95,
+    stimp: 7.5, firm: 1.0, altitude: 220, temp: 14, wind: [1, 7], fairwayW: 34, roughW: 16, corridor: 74, trees: 0.95,
     holes: [
       [4, 390, -25, 'b2 ws', 9], [4, 420, 40, 'b2 E wr ws', 3], [5, 545, -35, 'b2 S ws wl', 5], [3, 170, 6, 'b2 wc ws', 15], [4, 365, -50, 'b1 J ws tr', 11],
       [3, 200, -10, 'b2 xc ws', 13], [4, 410, 30, 'b2 S ws nw', 1], [4, 380, -40, 'b2 E ws wl', 7], [5, 525, 35, 'b2 D ws', 17],
@@ -2254,7 +2484,7 @@ export const COURSES = [
     feature: { name: '彈珠柱', tags: ['bp'], short: '球撞到柱子會加速彈開',
       text: '球道兩側和果嶺兩旁立著紅白條紋的彈珠柱。球（飛行或滾動中）撞到柱子，會依撞到的角度反彈，速度變成 1.2 倍（至少 10 m/s）。',
       tip: '柱子高約 3 公尺，高飛球會從上面飛過去。果嶺兩旁的柱子能把打偏的球彈回果嶺，也可能把球彈進障礙。' },
-    stimp: 8.5, firm: 1.0, altitude: 30, temp: 24, wind: [0, 6], fairwayW: 36, roughW: 18, corridor: 76, trees: 0.7,
+    stimp: 7, firm: 1.0, altitude: 30, temp: 24, wind: [0, 6], fairwayW: 36, roughW: 18, corridor: 76, trees: 0.7,
     holes: [
       [3, 160, 0, 'b2 bp', 17], [4, 380, 30, 'b2 E bp', 7], [4, 400, -35, 'b2 S bp wl', 3], [5, 520, 40, 'b2 D bp', 5], [4, 355, -20, 'b1 bp nw', 13],
       [3, 185, 10, 'b2 wc bp', 11], [5, 550, -40, 'b2 S bp wr', 1], [4, 410, 50, 'b2 J bp', 9], [4, 370, -30, 'b2 E bp wl', 15],
@@ -2268,12 +2498,164 @@ export const COURSES = [
     feature: { name: '雷雲', tags: ['cl'], short: '球穿過雷雲會被閃電打中、直直掉下來',
       text: '離地約 17~23 公尺的空中飄著灰黑色的雷雲，裡面不時閃著光。球穿過雷雲會被閃電打中，水平速度幾乎歸零，從那裡直直掉下來。',
       tip: '雷雲大多在開球落點附近，以及果嶺前或果嶺後。地上有雲影可以判斷位置；用低一點的彈道從雲下面穿過，或乾脆讓果嶺上方的雷雲幫你停球。' },
-    stimp: 10, firm: 1.1, altitude: 1400, temp: 12, wind: [5, 16], fairwayW: 32, roughW: 14, corridor: 70, trees: 0.6,
+    stimp: 8.5, firm: 1.1, altitude: 1400, temp: 12, wind: [5, 16], fairwayW: 32, roughW: 14, corridor: 70, trees: 0.6,
     holes: [
       [4, 400, 25, 'b2 cl', 9], [5, 555, -40, 'b2 D cl wl', 3], [4, 420, 45, 'b2 E cl', 5], [4, 370, -30, 'b1 S cl dn', 13], [3, 195, 8, 'b2 xc cl', 11],
       [4, 440, -50, 'b2 J cl nw', 1], [4, 385, 30, 'b2 cl wr', 15], [3, 165, -10, 'b2 IG cl', 17], [5, 540, 35, 'b2 S cl up', 7],
       [4, 410, -45, 'b2 E cl wl', 4], [4, 395, 30, 'b2 J cl', 10], [5, 565, -35, 'b2 D cl xc', 2], [3, 180, 0, 'b2 wc cl', 14], [4, 360, 40, 'b1 S cl', 16],
       [5, 530, -30, 'b2 S cl wr', 6], [4, 430, 50, 'b2 E cl UP', 8], [3, 205, -12, 'b2 cl', 12], [4, 415, -25, 'b2 J cl wc', 18],
+    ],
+  },
+  // ---------- 奇幻球場第三批：每座一個主題，機關換成當地的樣子（遊戲層觸發，物理照舊）----------
+  //   tp 彈跳床、bo 加速帶、cn 大砲（挑戰模式的機關，自動擺位）；其他沿用前兩批的機關。
+  //   feature.kind = 機關種類、say = 觸發時的提示；waterName / fallName = 落水 / 墜落時的稱呼
+  {
+    id: 'sugar', name: '糖果王國', en: 'Sugarloaf Kingdom', style: 'parkland', theme: 'candy', group: 'fantasy',
+    desc: '【簡單】整座球場都是甜點做的：棉花糖樹、棒棒糖、拐杖糖圍籬，巧克力河蜿蜒穿過球道，天上一直飄著彩色糖粒（掉進巧克力河照水障礙罰 1 桿）。',
+    feature: { name: '果凍彈床', kind: 'tramp', say: '果凍彈床　彈起來！', tags: ['tp'], short: '球落在果凍上會被彈起來，繼續往前飛',
+      text: '落點區和果嶺前擺著一塊塊會變色的果凍墊。球落上去（或滾上去）會被往上彈，前進速度保留九成。',
+      tip: '開球落在果凍上可以多飛一段；果嶺前那塊會把打短的球彈上果嶺，但力道太大也可能彈過頭。' },
+    waterName: '巧克力河',
+    stimp: 7.5, firm: 0.95, altitude: 60, temp: 24, wind: [1, 6], fairwayW: 40, roughW: 20, corridor: 84, trees: 0.8,
+    holes: [
+      [4, 360, 15, 'b1 tp', 15], [5, 510, -30, 'b2 S tp wl', 5], [3, 150, 0, 'b1 tp wc', 17], [4, 385, 35, 'b2 E tp', 9], [4, 345, -20, 'b1 J tp xc', 13],
+      [3, 175, 10, 'b2 tp', 11], [5, 525, 30, 'b2 D tp wr', 3], [4, 370, -35, 'b1 E tp wd', 7], [4, 400, 0, 'b2 tp wc', 1],
+      [4, 355, 25, 'b1 tp wl', 14], [3, 160, -8, 'b1 IG', 18], [5, 540, -40, 'b2 D tp xc', 4], [4, 390, 45, 'b2 J tp', 8], [4, 340, -15, 'b1 tp wd', 16],
+      [3, 185, 12, 'b2 tp wr', 10], [5, 515, 35, 'b2 S tp', 2], [4, 375, -30, 'b1 E tp wl', 12], [4, 395, 20, 'b2 tp wc', 6],
+    ],
+  },
+  {
+    id: 'neonlane', name: '霓虹夜城', en: 'Neon Boulevard', style: 'salt', theme: 'neon', group: 'fantasy',
+    desc: '【中等】永遠是午夜的未來城市：合成波格線的地面、霓虹招牌的大樓、紫紅色的天空和一輪巨大的夕陽，球道兩旁的光點跟著節奏閃爍（掉進運河照水障礙罰 1 桿）。',
+    feature: { name: '霓虹加速帶', kind: 'boost', say: '霓虹加速帶　衝刺！', tags: ['bo'], short: '球滾過發光箭頭會被往箭頭方向推出去',
+      text: '球道中間鋪著一段段流動的青色箭頭。球貼著地面經過，會被往箭頭方向加速推出去，滾得更遠。',
+      tip: '箭頭大多朝向果嶺。開球落在加速帶前面最划算；狗腿洞的加速帶可能把球推過彎道外側。' },
+    waterName: '運河',
+    stimp: 8, firm: 1.1, altitude: 30, temp: 22, wind: [1, 6], fairwayW: 34, roughW: 12, corridor: 74, trees: 0.4,
+    holes: [
+      [4, 400, 0, 'b2 bo', 9], [4, 420, -35, 'b2 E bo wl', 5], [3, 170, 10, 'b2 wc', 15], [5, 560, 40, 'b2 D bo wr', 1], [4, 385, -25, 'b1 J bo nw', 11],
+      [4, 360, 30, 'b2 bo', 13], [3, 195, -10, 'b2 bo wr', 17], [5, 545, -30, 'b2 S bo xc', 3], [4, 410, 45, 'b2 E bo', 7],
+      [4, 395, -40, 'b2 J bo wl', 6], [3, 155, 0, 'b1 IG', 18], [4, 430, 25, 'b2 bo nw', 2], [5, 530, -35, 'b2 D bo wc', 8], [4, 375, 35, 'b1 S bo', 14],
+      [4, 415, -20, 'b2 bo wr', 10], [3, 185, 12, 'b2 bo', 16], [5, 555, 30, 'b2 S bo wl', 4], [4, 405, -30, 'b2 E bo wc', 12],
+    ],
+  },
+  {
+    id: 'lunar', name: '靜海基地', en: 'Tranquility Base', style: 'salt', theme: 'moon', group: 'fantasy',
+    desc: '【中等偏難】月球表面的球場：灰色的月壤、到處是隕石坑沙坑，黑色天空裡掛著藍色的地球，沒有風、空氣稀薄，球飛得特別遠也特別直。',
+    feature: { name: '引力信標', kind: 'wisp', say: '引力信標　拉向旗桿！', tags: ['ws'], short: '球從信標旁邊飛過，會被拉向旗桿',
+      text: '球道上空飄著藍白色的引力信標，周圍一圈淡淡的光環就是引力範圍。球從範圍內飛過，水平方向會轉向旗桿（速度不變）。',
+      tip: '空氣稀薄時球很難轉彎，信標是少數能修正方向的機會；但它只改方向不改距離，打太遠一樣會飛過果嶺。' },
+    stimp: 8.5, firm: 1.2, altitude: 4500, temp: -20, wind: [0, 0], fairwayW: 34, roughW: 10, corridor: 78, trees: 0.4,
+    holes: [
+      [4, 430, 20, 'b3 ws', 9], [5, 600, -35, 'b3 D ws', 3], [3, 220, 0, 'b3 ws', 13], [4, 460, 40, 'b3 E ws', 5], [4, 410, -25, 'b2 J ws nw', 11],
+      [5, 615, 30, 'b3 S ws', 1], [3, 200, -12, 'b4', 17], [4, 445, -40, 'b3 E ws', 7], [4, 425, 25, 'b3 ws up', 15],
+      [4, 450, -30, 'b3 J ws', 8], [3, 235, 10, 'b3 ws', 12], [5, 590, 40, 'b3 D ws', 2], [4, 405, 0, 'b4 ws nw', 14], [4, 470, -45, 'b3 E ws dn', 4],
+      [3, 185, 0, 'b4', 18], [5, 620, -30, 'b3 S ws', 6], [4, 440, 35, 'b3 J ws', 10], [4, 455, -20, 'b3 ws', 16],
+    ],
+  },
+  {
+    id: 'pharaoh', name: '法老神殿', en: "Pharaoh's Sands", style: 'dunes', theme: 'egypt', group: 'fantasy',
+    desc: '【中等】沙漠裡的古文明：金字塔、方尖碑、人面獅身像，尼羅河的綠洲沿著球道，熱浪裡飄著細沙（掉進尼羅河照水障礙罰 1 桿）。',
+    feature: { name: '聖甲蟲之門', kind: 'portal', say: '穿過聖甲蟲之門！', tags: ['pt'], short: '球穿過金色的門，會從果嶺附近的出口飛出',
+      text: '球道上立著兩根石柱撐起的金色漩渦門。球從正面穿過，會從果嶺附近的出口門飛出來，速度不變、方向轉成出口的朝向。',
+      tip: '門離地約 5 公尺、半徑 5 公尺，要打低一點的平飛球。穿過去等於直接被送到果嶺前。' },
+    waterName: '尼羅河',
+    stimp: 8.5, firm: 1.2, altitude: 80, temp: 38, wind: [3, 10], fairwayW: 34, roughW: 8, corridor: 76, trees: 0.4,
+    holes: [
+      [4, 395, 25, 'b2 pt ww', 11], [5, 545, -35, 'b2 D pt wl', 3], [3, 175, 0, 'b3', 15], [4, 420, 40, 'b2 E pt', 7], [4, 380, -30, 'b2 J pt xc', 9],
+      [3, 200, 12, 'b2 pt', 17], [5, 565, 30, 'b2 S pt wr', 1], [4, 405, -45, 'b2 E pt ww', 5], [4, 370, 0, 'b3 pt wc', 13],
+      [4, 410, 35, 'b2 J pt', 6], [3, 160, -10, 'b2 IG', 18], [5, 555, -40, 'b2 D pt xc', 2], [4, 390, 30, 'b2 pt ww', 12], [4, 425, -25, 'b2 S pt wl', 8],
+      [3, 190, 8, 'b3 pt', 16], [5, 530, 35, 'b2 S pt', 4], [4, 400, -35, 'b2 E pt wr', 10], [4, 415, 20, 'b2 pt wc', 14],
+    ],
+  },
+  {
+    id: 'coral', name: '珊瑚海底', en: 'Coral Abyss', style: 'dunes', theme: 'reef', group: 'fantasy',
+    desc: '【中等】沉在海底的球場：五顏六色的珊瑚與海草、沉船和魚群，陽光從海面灑下一道道光束，氣泡不停往上冒，只有微弱的洋流（掉進深海溝照水障礙罰 1 桿）。',
+    feature: { name: '氣泡環', kind: 'ring', say: '氣泡環　加速！', tags: ['fr1', 'fr2'], short: '球從氣泡圍成的環中間穿過，速度變快',
+      text: '空中漂著由氣泡圍成的發光圓環。球從環中間穿過，飛行速度乘上 1.3 倍，往同一個方向繼續飛。',
+      tip: '環的高度大約 10~18 公尺，要配合彈道高度；穿過以後會多飛很多，記得選短一點的桿。' },
+    waterName: '深海溝',
+    stimp: 7.5, firm: 0.95, altitude: 0, temp: 20, wind: [0, 2], fairwayW: 36, roughW: 16, corridor: 78, trees: 0.9,
+    holes: [
+      [4, 380, -20, 'b2 fr1', 11], [4, 405, 35, 'b2 E fr1 wr', 7], [3, 165, 0, 'b1 fr1 wc', 15], [5, 540, -40, 'b2 D fr2 wl', 3], [4, 360, 25, 'b1 J fr1', 13],
+      [3, 185, -10, 'b2 IG', 17], [4, 420, -35, 'b2 E fr1 xc', 5], [5, 555, 30, 'b2 S fr2', 1], [4, 390, 40, 'b2 fr1 wl', 9],
+      [4, 400, -25, 'b2 J fr1 wr', 8], [3, 175, 12, 'b2 fr1', 16], [5, 525, -35, 'b2 S fr2 xc', 2], [4, 370, 30, 'b1 E fr1', 14], [4, 415, -40, 'b2 fr1 wc', 6],
+      [3, 150, 0, 'b1 IG', 18], [5, 545, 35, 'b2 D fr2 wr', 4], [4, 385, -20, 'b2 J fr1', 12], [4, 410, 25, 'b2 fr1 wl wr', 10],
+    ],
+  },
+  {
+    id: 'jurassic', name: '恐龍谷', en: 'Jurassic Basin', style: 'volcanic', theme: 'dino', group: 'fantasy',
+    desc: '【中等偏難】一億年前的盆地：巨大的蕨類和蘇鐵、遠方冒煙的火山、天上盤旋的翼龍、草叢裡的恐龍骨，火山噴氣孔從地底冒著熱氣（掉進焦油沼照水障礙罰 1 桿）。',
+    feature: { name: '火山噴氣孔', kind: 'vent', say: '噴氣孔把球噴上天！', tags: ['gv'], short: '球落進噴氣孔會被噴上天，往前飛一段',
+      text: '落點區有幾個冒著熱氣、每隔幾秒大噴發一次的噴氣孔。球落到或滾進去，會被噴上天、大致往前飛一段（方向有隨機偏差）。',
+      tip: '運氣好直接噴上果嶺，運氣不好噴進焦油沼。想穩就避開，想賭就瞄準。' },
+    waterName: '焦油沼',
+    stimp: 8, firm: 1.05, altitude: 300, temp: 30, wind: [2, 7], fairwayW: 34, roughW: 18, corridor: 76, trees: 1.0,
+    holes: [
+      [4, 405, 30, 'b2 gv tr', 9], [5, 555, -40, 'b2 D gv wl', 3], [3, 180, 8, 'b2 wc', 15], [4, 425, -30, 'b2 E gv', 5], [4, 375, 40, 'b1 J gv tr', 11],
+      [4, 440, -20, 'b2 gv up', 1], [3, 200, 0, 'b2 gv wr', 17], [5, 530, 35, 'b2 S gv xc', 7], [4, 395, -45, 'b2 E gv', 13],
+      [4, 415, 35, 'b2 J gv wl', 6], [3, 165, -12, 'b1 IG', 18], [5, 570, -35, 'b2 D gv tr', 2], [4, 385, 25, 'b2 gv dn', 12], [4, 430, -40, 'b2 S gv wr', 8],
+      [3, 190, 10, 'b2 gv', 16], [5, 545, 30, 'b2 S gv wc', 4], [4, 400, -25, 'b2 E gv tr', 10], [4, 420, 20, 'b2 gv UP', 14],
+    ],
+  },
+  {
+    id: 'crystalcave', name: '水晶洞窟', en: 'Crystal Caverns', style: 'canyon', theme: 'crystal', group: 'fantasy',
+    desc: '【困難】深埋地底的巨大洞窟：紫色和藍色的水晶從岩壁長出來、一閃一閃發著光，光點在黑暗中漂浮，球道窄、兩旁是看不到底的地底深淵（掉下去照峽谷罰 1 桿）。',
+    feature: { name: '水晶壁', kind: 'wall', say: '水晶壁反彈！', tags: ['iw'], short: '球撞到水晶壁會反彈回來',
+      text: '球道兩側立著半透明的紫色水晶壁，狗腿洞的彎道外側也有一道。球撞到會像撞牆一樣反彈，損失一部分速度。',
+      tip: '水晶壁擋住往外飛的球，也可以故意打過去讓它反彈回球道；角度太斜會彈到奇怪的地方。' },
+    fallName: '掉進地底深淵',
+    stimp: 8.5, firm: 1.1, altitude: 200, temp: 12, wind: [0, 3], fairwayW: 30, roughW: 12, corridor: 66, trees: 0.6,
+    holes: [
+      [4, 390, 35, 'b2 iw nw', 9], [4, 420, -40, 'b2 E iw wl', 3], [3, 175, 0, 'b2 iw wc', 15], [5, 545, 35, 'b2 D iw xc', 5], [4, 375, -30, 'b2 J iw', 11],
+      [3, 195, 12, 'b2 IG', 17], [4, 440, 45, 'b2 E iw wr', 1], [5, 530, -35, 'b2 S iw nw', 7], [4, 405, 25, 'b2 iw wl wr', 13],
+      [4, 395, -45, 'b2 J iw', 6], [3, 160, -10, 'b2 iw wc', 18], [5, 560, 40, 'b2 D iw xc', 2], [4, 380, -25, 'b2 S iw nw', 12], [4, 430, 35, 'b2 E iw wr', 8],
+      [3, 205, 8, 'b2 IG', 16], [4, 415, -40, 'b2 J iw wl', 4], [5, 540, 30, 'b2 S iw', 10], [4, 400, -20, 'b2 iw wc nw', 14],
+    ],
+  },
+  {
+    id: 'mirefen', name: '迷霧沼澤', en: 'Mirefen Bog', style: 'salt', theme: 'swamp', group: 'fantasy',
+    desc: '【困難】終年起霧的沼澤：枯樹垂著苔蘚、螢火蟲在霧裡閃爍，濃霧時聚時散，看不清遠方的旗桿，泥沼一不小心就把球吞住（掉進沼澤照水障礙罰 1 桿）。',
+    feature: { name: '泥沼', kind: 'honey', say: '陷進泥沼了！', tags: ['hy'], short: '球碰到泥沼會被黏住，原地停下',
+      text: '落點區兩側、果嶺前後有一塊塊冒著泡的泥沼。移動中的球一碰到（落地或滾進去）就會被吸住，停在原地，下一桿從泥沼裡打。',
+      tip: '泥沼不罰桿，但球位很差。果嶺前那塊專門接打短的球，寧可打長一點。' },
+    waterName: '沼澤',
+    stimp: 7.5, firm: 0.9, altitude: 10, temp: 26, wind: [0, 4], fairwayW: 32, roughW: 14, corridor: 70, trees: 1.0,
+    holes: [
+      [4, 375, -25, 'b1 hy wl', 11], [4, 410, 40, 'b2 E hy wr', 5], [3, 160, 0, 'b1 hy wc', 15], [5, 535, -35, 'b2 D hy xc', 3], [4, 390, 30, 'b1 J hy tr', 9],
+      [3, 180, -12, 'b1 IG', 17], [4, 425, -40, 'b2 E hy wl wr', 1], [5, 550, 35, 'b2 S hy wc', 7], [4, 365, 20, 'b1 hy nw', 13],
+      [4, 400, -30, 'b2 J hy wr', 6], [3, 170, 10, 'b1 hy wc', 18], [5, 560, -40, 'b2 D hy xc', 2], [4, 385, 35, 'b1 S hy tr', 12], [4, 420, -25, 'b2 E hy wl', 8],
+      [3, 190, 0, 'b2 IG', 16], [5, 525, 30, 'b2 S hy wr', 4], [4, 395, -35, 'b1 J hy nw', 10], [4, 405, 25, 'b2 hy wc wl', 14],
+    ],
+  },
+  {
+    id: 'redplanet', name: '赤色火星', en: 'Red Planet', style: 'canyon', theme: 'mars', group: 'fantasy',
+    desc: '【困難】火星峽谷裡的球場：紅色的岩壁和沙丘、天上兩顆小月亮，沙塵暴颳著大風，空氣稀薄，地上是探測車留下的軌跡和深不見底的裂谷（掉進裂谷照峽谷罰 1 桿）。',
+    feature: { name: '發射井', kind: 'cannon', say: '發射井　點火！', tags: ['cn'], short: '球落進發射井會被轟向果嶺',
+      text: '開球落點附近有一座朝著果嶺的發射井。球落進（或滾進）發射井的範圍，會被轟向果嶺，落在果嶺附近。',
+      tip: '發射井是穩定上果嶺的捷徑，但落點有一點隨機；強風天被轟出去的球也會被風吹偏。' },
+    fallName: '掉進裂谷',
+    stimp: 8.5, firm: 1.15, altitude: 2500, temp: -5, wind: [5, 14], fairwayW: 32, roughW: 10, corridor: 72, trees: 0.4,
+    holes: [
+      [4, 425, 30, 'b2 cn', 9], [5, 575, -40, 'b2 D cn wl', 3], [3, 195, 0, 'b2 xc', 15], [4, 440, -35, 'b2 E cn', 5], [4, 400, 40, 'b2 J cn wr', 11],
+      [4, 455, -25, 'b2 S cn nw', 1], [3, 210, 12, 'b2 wc', 17], [5, 560, 35, 'b2 D cn xc', 7], [4, 415, -45, 'b2 E cn', 13],
+      [4, 430, 35, 'b2 J cn wl', 6], [3, 180, -10, 'b2 IG', 18], [5, 590, -35, 'b2 S cn', 2], [4, 405, 25, 'b2 cn wr', 12], [4, 445, -40, 'b2 E cn UP', 8],
+      [3, 200, 8, 'b2 xc', 16], [5, 565, 30, 'b2 D cn wc', 4], [4, 420, -30, 'b2 J cn', 10], [4, 435, 20, 'b2 cn wl wr', 14],
+    ],
+  },
+  {
+    id: 'skyreach', name: '天空之城', en: 'Skyreach Citadel', style: 'void', theme: 'sky', group: 'fantasy',
+    desc: '【極難】雲海上的浮空城堡：白色的城牆、尖塔和飛艇，島和島之間是一望無際的雲海，風很大，島很小（掉下去照峽谷罰 1 桿）。',
+    feature: { name: '棉花雲', kind: 'cloud', say: '被棉花雲接住了！', tags: ['cl'], short: '球穿過白雲會被軟軟接住、直直落下',
+      text: '離地約 17~23 公尺的空中飄著一團團白色的棉花雲。球穿過雲團會被接住，水平速度幾乎歸零，從那裡直直落下。',
+      tip: '雲在開球落點附近和果嶺前後。從雲下面穿過去，或乾脆讓果嶺上方的雲幫你停球；落在雲下方的虛空就慘了。' },
+    fallName: '墜入雲海',
+    stimp: 8.5, firm: 1.05, altitude: 2000, temp: 14, wind: [5, 13], fairwayW: 30, roughW: 10, corridor: 68, trees: 0.35,
+    holes: [
+      [4, 400, 30, 'b2 g1 cl', 9], [5, 555, -35, 'b2 S g2 cl', 3], [3, 185, 0, 'b1 IG cl', 15], [4, 420, -40, 'b2 E g1 cl nw', 5], [3, 205, 12, 'b2 IG', 17],
+      [5, 540, 35, 'b2 D g2 cl', 1], [4, 385, -25, 'b2 J g1 cl', 11], [4, 435, 40, 'b2 E g2 cl', 7], [4, 390, -30, 'b2 J g1 cl', 13],
+      [4, 410, -35, 'b2 S g1 cl nw', 6], [5, 570, 30, 'b2 D g2 cl', 2], [3, 195, 10, 'b1 IG', 18], [4, 395, 35, 'b2 J g1 cl', 12], [4, 445, -45, 'b2 E g2 cl', 4],
+      [3, 175, 0, 'b2 IG cl', 16], [5, 545, -30, 'b2 S g2 cl', 8], [4, 405, 25, 'b2 g1 cl nw', 10], [4, 425, -20, 'b2 g2 cl', 14],
     ],
   },
 ];
@@ -2312,7 +2694,12 @@ export function holeLabel(course, idx) {
 }
 
 // 真實球場的描圖地圖：第一次用到時下載（之後從手機快取讀），建洞之前要先等它
+// 自製球場 / 修改過的現有球洞（custom.js 設定）：球場地圖載入後套用（每座球場只套一次）
+let mapsHook = null;
+export function setMapsHook(fn) { mapsHook = fn; }
 export async function loadCourseMaps(course) {
+  // 自製球場：地圖從 Google 試算表下載（第一次打才下載，之後從手機快取讀）
+  if (course && course.loadMaps) { if (!course.maps) await course.loadMaps(course); return; }
   if (course && course.baseId && !course.maps) {
     // 分區組合：先載入整座球場 27 洞的地圖，再挑出選到的兩區
     const base = COURSES.find(c => c.id === course.baseId);
@@ -2321,11 +2708,19 @@ export async function loadCourseMaps(course) {
     if (base.maps) course.maps = course.nineIds.flatMap(k => { const i = order.indexOf(k); return base.maps.slice(i * 9, i * 9 + 9); });
     return;
   }
-  if (!course || !course.mapsUrl || course.maps) return;
+  if (!course || !course.mapsUrl) return;
   // 國外真實球場另外有整座球場共用的場景檔（地形高程、建築、海岸線），每一洞的地圖都指到同一份
-  if (!course._mapsP) course._mapsP = Promise.all([fetch(course.mapsUrl).then(r => r.json()), course.sceneUrl ? fetch(course.sceneUrl).then(r => r.json()) : null])
-    .then(([m, sc]) => { if (sc) for (const h of m) h.scene = sc; course.maps = m; }).catch(e => { course._mapsP = null; throw e; });
-  await course._mapsP;
+  if (!course.maps) {
+    if (!course._mapsP) course._mapsP = Promise.all([fetch(course.mapsUrl).then(r => r.json()), course.sceneUrl ? fetch(course.sceneUrl).then(r => r.json()) : null])
+      .then(([m, sc]) => { if (sc) for (const h of m) h.scene = sc; course.maps = m; }).catch(e => { course._mapsP = null; throw e; });
+    await course._mapsP;
+  }
+  // 地圖已經下載好、修改過的球洞還在套用時，也要等它套完（不然 18 洞預覽會用到原本的地圖）
+  if (mapsHook) await (course._hookP = course._hookP || mapsHook(course).catch(e => { console.warn('修改過的球洞載入失敗', e); }));
+}
+// 修改 / 還原現有球洞後：這座球場（含分區組合）已經載入的地圖作廢，下次用到時重新載入並套用
+export function resetCourseMaps(id) {
+  for (const c of [COURSES.find(x => x.id === id), ...[...combos.values()].filter(x => x.baseId === id)]) if (c) { c.maps = null; c._mapsP = null; c._hookP = null; }
 }
 
 export function teeYards(course, holeIdx, teeId) {

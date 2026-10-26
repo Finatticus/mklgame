@@ -3,12 +3,15 @@
 // 每關的球場資料用 spec 指定（距離都從發球台量，單位碼）：bendAt / bend2At 轉彎、water / bunkers 障礙、
 // specials 機關（ring 螢火之環、orb 金球、portal 星門、vent 噴發口、shroom 彈跳巨菇、wall 冰鏡牆、tramp 彈跳床、boost 加速帶、cannon 大砲）、
 // gaps 浮島 / 屋頂之間的裂縫
+// 51~100 關換到新的世界（雨林、櫻花、玩具城、蜂蜜、冰原、墓園、齒輪、雷鳴、菇林、熔岩、海灣、虛空），也用到奇幻球場的機關
+//   （feat 代號 hy 蜂蜜池、gr 齒輪、ws 引魂燈、bp 彈珠柱、cl 雷雲，位置由球場生成決定）；越後面桿數上限越緊、條件越刁鑽
 // 星星：第 1 顆 = 在桿數上限內進洞，第 2、3 顆 = 各關自己的條件（也要先進洞才算）
 import { registerCourse } from './courses.js';
 import { SURF } from './physics.js';
+import { genLevels, CHAPTERS_2 } from './challenge-gen.js';
 
 const T = y => ({ black: y, blue: y, white: y, red: y });
-const BASE = { stimp: 9, firm: 1.0, altitude: 100, temp: 22, wind: [2, 6], fairwayW: 34, roughW: 16, corridor: 76, trees: 0.7 };
+const BASE = { stimp: 8, firm: 1.0, altitude: 100, temp: 22, wind: [2, 6], fairwayW: 34, roughW: 16, corridor: 76, trees: 0.7 };
 // 每個主題的地形風格與環境
 const TH = {
   candy: { style: 'parkland', c: { temp: 24, wind: [1, 5] } },
@@ -25,16 +28,32 @@ const TH = {
   dino: { style: 'volcanic', c: { temp: 30, wind: [2, 7], trees: 1.0 } },
   neon: { style: 'salt', c: { temp: 22, wind: [1, 6], trees: 0.4 } },
   crystal: { style: 'canyon', c: { temp: 12, wind: [0, 3], trees: 0.6, roughW: 12 } },
+  // 51 關以後的新世界（沿用奇幻球場的地形風格與環境）
+  jungle: { style: 'parkland', c: { temp: 30, wind: [0, 5], trees: 1.1 } },
+  sakura: { style: 'parkland', c: { temp: 18, wind: [1, 6], trees: 0.8 } },
+  toy: { style: 'parkland', c: { temp: 22, wind: [1, 6], trees: 0.6 } },
+  honey: { style: 'parkland', c: { temp: 26, wind: [1, 5], trees: 0.8 } },
+  frost: { style: 'frost', c: { altitude: 1500, temp: -8, wind: [3, 10], trees: 0.6 } },
+  haunt: { style: 'parkland', c: { temp: 12, wind: [1, 6], trees: 0.9 } },
+  clock: { style: 'parkland', c: { temp: 20, wind: [0, 4], trees: 0.6 } },
+  storm: { style: 'alpine', c: { altitude: 1200, temp: 10, wind: [6, 14], trees: 0.5 } },
+  mushroom: { style: 'parkland', c: { temp: 16, wind: [0, 3], trees: 0.9 } },
+  lava: { style: 'volcanic', c: { temp: 34, wind: [2, 8], trees: 0.5, roughW: 12 } },
+  tropical: { style: 'parkland', c: { temp: 30, wind: [3, 10], trees: 0.8 } },
+  void: { style: 'void', c: { temp: 0, wind: [0, 4], trees: 0.3, fairwayW: 32, roughW: 10 } },
 };
 export const THEME_NAME = { candy: '糖果王國', city: '天際屋頂', sky: '雲海天空城', moon: '月面基地', mars: '紅色火星', reef: '海底珊瑚礁', autumn: '楓紅山谷',
-  lavender: '薰衣草花田', tulip: '風車鬱金香', egypt: '法老神殿', swamp: '迷霧沼澤', dino: '恐龍谷', neon: '霓虹夜城', crystal: '水晶洞窟' };
+  lavender: '薰衣草花田', tulip: '風車鬱金香', egypt: '法老神殿', swamp: '迷霧沼澤', dino: '恐龍谷', neon: '霓虹夜城', crystal: '水晶洞窟',
+  jungle: '翡翠雨林', sakura: '櫻花庭園', toy: '積木玩具城', honey: '蜂蜜花谷', frost: '極地冰原', haunt: '幽光墓園', clock: '齒輪工坊', storm: '雷鳴高原',
+  mushroom: '螢光菇林', lava: '熔岩地心', tropical: '椰林海灣', void: '星環虛空' };
 
 // 目標的種類（goalMet 用）：
 //   clear 進洞、strokes 桿數 ≤ v、hio 一桿進洞、teeGreen 開球上果嶺、teeNear 開球離旗桿 ≤ v 碼、teeFairway 開球停在球道、
 //   driveRange 開球 v[0]~v[1] 碼、drive 開球 ≥ v 碼、noHazard 沒落水 / 掉落 / OB、noSand 沒進沙坑、noRough 沒進長草、
 //   fairwayAll 每一桿都停在球道或果嶺、fx 機關累計 ≥ v、fxOne 同一桿觸發 ≥ v、fxGreen 觸發那一桿停上果嶺、fxTotal 所有機關合計 ≥ v、
 //   avoid 完全沒碰到某種機關、orbs 金球 ≥ v、putts 推桿 ≤ v、noPutt 不用推桿進洞、longPutt 從 ≥ v 碼推進、greenIn 第 v 桿以內上果嶺、
-//   airTime 某一桿在空中 ≥ v 秒、apex 某一桿最高點 ≥ v 公尺、lastClub 用指定的球桿進洞、clubCount 最多用 v 種球桿、all 子條件全部達成
+//   airTime 某一桿在空中 ≥ v 秒、apex 某一桿最高點 ≥ v 公尺、lastClub 用指定的球桿進洞、clubCount 最多用 v 種球桿、
+//   holeOut 從 ≥ v 碼外不用推桿直接進洞、fxKinds 觸發 ≥ v 種不同的機關、all 子條件全部達成
 const R = (at, h = 12, lat = 0) => ({ kind: 'ring', at, h, lat });
 const O = (at, h = 6, lat = 0) => ({ kind: 'orb', at, h, lat });
 const LV = [
@@ -193,7 +212,186 @@ const LV = [
   { t: 'crystal', title: '水晶終章', en: 'Crystal Finale', intro: '最後的試煉：水晶牆、光環、噴發口、金球，全部都在這一洞。',
     hole: [5, 640, -30, '', { bendAt: 300, water: [{ g: 'FR' }], specials: [R(95, 17), { kind: 'wall', at: 318, lat: 26, len: 46, ang: -28 }, { kind: 'vent', at: 420, lat: 0 }, O(160, 12), O(300, 8, -6), O(520, 6, 4)] }],
     max: 7, goals: [{ t: 'all', text: '收集 3 顆金球，也穿過光環', sub: [{ t: 'orbs', v: 3 }, { t: 'fx', kind: 'ring', v: 1 }] }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
+  // ---------- 51~60：異界巡禮（新的世界，難度從第 50 關接著往上）----------
+  { t: 'jungle', title: '叢林初探', en: 'Jungle Trail', intro: '藤蔓垂掛的雨林，左邊是一整條翡翠色的溪流，空中漂著兩顆金球。',
+    hole: [4, 370, -15, '', { bendAt: 210, water: [{ from: 60, to: 340, side: 'L', w: 30, gap: 6 }], bunkers: [{ g: 'FR' }], specials: [O(140, 9, 4), O(260, 6, -2)] }],
+    max: 6, goals: [{ t: 'orbs', v: 2, text: '收集 2 顆金球' }, { t: 'noHazard', text: '一次都沒掉進溪裡' }] },
+  { t: 'sakura', title: '櫻花台階', en: 'Petal Steps', intro: '櫻花飄落的日式庭園，果嶺分成上下兩層，旗桿在上層。',
+    c: { stimp: 10.5 }, hole: [3, 155, 0, '', { green: { size: [30, 34], slope: 0.03, tier: true, tierAt: 0.2 }, bunkers: [{ g: 'FL' }, { g: 'BR' }] }],
+    max: 5, goals: [{ t: 'teeGreen', text: '開球直接上果嶺' }, { t: 'putts', v: 1, text: '只推 1 次' }] },
+  { t: 'toy', title: '積木跳台', en: 'Block Jump', intro: '積木堆成的玩具城，落點區放了兩張彈跳床。',
+    hole: [4, 350, 0, '', { bunkers: [{ g: 'FL' }, { g: 'FR' }], specials: [{ kind: 'tramp', at: 200, lat: -3 }, { kind: 'tramp', at: 240, lat: 4 }] }],
+    max: 6, goals: [{ t: 'fx', kind: 'tramp', v: 1, text: '落上彈跳床 1 次' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'honey', title: '蜂蜜陷阱', en: 'Honey Trap', intro: '花谷裡散落著金黃色的蜂蜜池，掉進去球會立刻黏住。',
+    hole: [4, 380, 20, 'hy', { bendAt: 220, bunkers: [{ g: 'FL' }] }],
+    max: 6, goals: [{ t: 'avoid', kind: 'honey', text: '一次都沒被蜂蜜黏住' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'frost', title: '冰原折返', en: 'Glacier Bounce', intro: '極地冰原上的左狗腿洞，轉角立著一道冰牆，可以靠反彈過彎。',
+    hole: [4, 400, -55, '', { bendAt: 210, specials: [{ kind: 'wall', at: 225, lat: 28, len: 46, ang: -28 }], bunkers: [{ g: 'FR' }] }],
+    max: 6, goals: [{ t: 'fx', kind: 'wall', v: 1, text: '撞冰牆反彈 1 次' }, { t: 'greenIn', v: 2, text: '兩桿內上果嶺' }] },
+  { t: 'haunt', title: '幽光墓園', en: 'Lantern Graves', intro: '古堡後的墓園，引魂燈會把飛過的球拉向旗桿。',
+    hole: [3, 175, 0, 'ws', { bunkers: [{ g: 'FL' }, { g: 'R' }] }],
+    max: 5, goals: [{ t: 'fx', kind: 'wisp', v: 1, text: '被引魂燈拉過 1 次' }, { t: 'teeNear', v: 10, text: '開球停在旗桿 10 碼內' }] },
+  { t: 'clock', title: '齒輪迴廊', en: 'Cog Corridor', intro: '巨大的齒輪工坊，轉角的齒輪會把球甩向彎過去的方向。',
+    hole: [5, 530, 40, 'gr', { bendAt: 260, bunkers: [{ g: 'FL' }, { g: 'BR' }] }],
+    max: 7, goals: [{ t: 'fx', kind: 'gear', v: 1, text: '被齒輪甩出去 1 次' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'storm', title: '雷暴前夕', en: 'Before the Storm', intro: '高原上烏雲密布，球穿過雷雲會被閃電打下來。左邊吹來 10 mph 的風。',
+    wind: { mph: 10, from: 'L' }, hole: [4, 410, 0, 'cl', { bunkers: [{ g: 'FL' }, { at: 240, side: 'R' }] }],
+    max: 6, goals: [{ t: 'avoid', kind: 'cloud', text: '一次都沒被雷打中' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'mushroom', title: '螢光菇林', en: 'Glowcap Grove', intro: '發光的巨菇林，落點有兩朵彈跳巨菇，落上去會被彈起來。',
+    hole: [4, 380, 0, '', { bunkers: [{ g: 'FR' }], specials: [{ kind: 'shroom', at: 210, lat: -4 }, { kind: 'shroom', at: 250, lat: 5, h: 6 }] }],
+    max: 6, goals: [{ t: 'fx', kind: 'shroom', v: 1, text: '被巨菇彈起來' }, { t: 'fxGreen', kind: 'shroom', text: '被巨菇彈起的那一桿直接上果嶺' }] },
+  { t: 'lava', title: '熔岩孤島', en: 'Magma Isle', intro: '果嶺浮在一片熔岩湖中央，只有發球台和果嶺是陸地。',
+    hole: [3, 190, 0, 'IG', { bunkers: [{ g: 'B' }] }],
+    max: 4, goals: [{ t: 'teeGreen', text: '開球直接上果嶺' }, { t: 'strokes', v: 2, text: '2 桿以內進洞' }] },
+  // ---------- 61~70：組合技 ----------
+  { t: 'tropical', title: '椰林海灣', en: 'Palm Bay', intro: '右邊整片都是碧藍的海灣，球道沿著海岸彎過去。',
+    hole: [5, 560, 25, 'wr', { bendAt: 300, bunkers: [{ at: 260, side: 'L' }, { g: 'FL' }] }],
+    max: 7, goals: [{ t: 'fairwayAll', text: '每一桿都停在球道或果嶺' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'void', title: '虛空三島', en: 'Three Isles', intro: '漂在星空裡的三座浮島，兩道裂縫一失手就掉進虛空。',
+    hole: [4, 420, 0, 'nw', { gaps: [{ at: 170, half: 11 }, { at: 310, half: 11 }] }],
+    max: 6, goals: [{ t: 'noHazard', text: '一次都沒掉進虛空' }, { t: 'greenIn', v: 2, text: '兩桿內上果嶺' }] },
+  { t: 'toy', title: '玩具彈珠台', en: 'Toy Pinball', intro: '球道兩側立著一根根彈珠柱，撞到會加速彈開。',
+    hole: [4, 400, 0, 'bp', { bunkers: [{ g: 'FL' }] }],
+    max: 6, goals: [{ t: 'fx', kind: 'bumper', v: 2, text: '撞彈珠柱 2 次以上' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'jungle', title: '雙環峽谷', en: 'Twin Ring Gorge', intro: '峽谷上方兩個螢火之環排成一線，一桿穿過兩個才算厲害。',
+    hole: [4, 390, 0, 'xc', { bunkers: [{ g: 'FR' }], specials: [R(90, 15), R(145, 22)] }],
+    max: 6, goals: [{ t: 'fxOne', kind: 'ring', v: 2, text: '同一桿穿過 2 個光環' }, { t: 'noHazard', text: '一次都沒掉進峽谷' }] },
+  { t: 'frost', title: '冰鏡迷宮', en: 'Mirror Maze', intro: '三道冰牆排成之字形，轉角要靠反彈過去。',
+    hole: [4, 370, -65, '', { bendAt: 190, specials: [{ kind: 'wall', at: 205, lat: 27, len: 48, ang: -30 }, { kind: 'wall', at: 290, lat: -22, len: 34 }, { kind: 'wall', at: 110, lat: 20, len: 28 }] }],
+    max: 6, goals: [{ t: 'fx', kind: 'wall', v: 2, text: '撞冰牆 2 次以上' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'honey', title: '黏黏五桿', en: 'Sticky Five', intro: '蜂蜜池和轉向齒輪混在一起的五桿洞，閃過蜂蜜、看準齒輪。',
+    hole: [5, 545, -30, 'hy gr', { bendAt: 280, bunkers: [{ g: 'FR' }] }],
+    max: 7, goals: [{ t: 'avoid', kind: 'honey', text: '一次都沒被蜂蜜黏住' }, { t: 'greenIn', v: 3, text: '三桿內上果嶺' }] },
+  { t: 'haunt', title: '午夜引魂', en: 'Midnight Wisps', intro: '五桿洞上飄著三盞引魂燈，連續被拉兩次就能直奔旗桿。',
+    hole: [5, 580, 0, 'ws', { bunkers: [{ g: 'FL' }, { g: 'FR' }] }],
+    max: 7, goals: [{ t: 'fx', kind: 'wisp', v: 2, text: '被引魂燈拉過 2 次以上' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'storm', title: '落雷禁區', en: 'Lightning Zone', intro: '果嶺前飄著一朵雷雲，逆風 12 mph，要從雷雲下面鑽過去。',
+    wind: { mph: 12, from: 'H' }, hole: [3, 205, 0, 'cl', { bunkers: [{ g: 'FL' }, { g: 'FR' }] }],
+    max: 5, goals: [{ t: 'teeGreen', text: '開球直接上果嶺' }, { t: 'avoid', kind: 'cloud', text: '一次都沒被雷打中' }] },
+  { t: 'sakura', title: '一支七號鐵', en: 'Seven Only', intro: '整洞只能用 7 號鐵和推桿。櫻花樹下的短四桿。',
+    clubs: ['7I', 'PT'], hole: [4, 330, 15, '', { bendAt: 170, bunkers: [{ at: 160, side: 'R' }, { g: 'FL' }] }],
+    max: 6, goals: [{ t: 'strokes', v: 4, text: '標準桿以內' }, { t: 'putts', v: 1, text: '只推 1 次' }] },
+  { t: 'lava', title: '熔岩大砲', en: 'Magma Cannon', intro: '熔岩河兩岸各有噴發口，中間一座大砲直接轟向果嶺。',
+    hole: [5, 600, 0, 'xc', { specials: [{ kind: 'vent', at: 180, lat: -7 }, { kind: 'vent', at: 200, lat: 6 }, { kind: 'cannon', at: 260, r: 4.2 }] }],
+    max: 7, goals: [{ t: 'fx', kind: 'cannon', v: 1, text: '被大砲轟出去' }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
+  // ---------- 71~80：專家 ----------
+  { t: 'clock', title: '精密齒輪', en: 'Precision Gear', intro: '小小的果嶺旁邊有一個齒輪，差一點就被甩走。',
+    hole: [3, 165, 0, 'gr', { green: { size: [20, 24] }, bunkers: [{ g: 'FL' }, { g: 'BR' }] }],
+    max: 4, goals: [{ t: 'teeNear', v: 4, text: '開球停在旗桿 4 碼內' }, { t: 'putts', v: 1, text: '只推 1 次' }] },
+  { t: 'mushroom', title: '菇菇連彈', en: 'Triple Bounce', intro: '三朵巨菇排在球道中央，一桿連彈兩次以上。',
+    hole: [5, 560, 0, '', { bunkers: [{ g: 'FL' }], specials: [{ kind: 'shroom', at: 230 }, { kind: 'shroom', at: 275, lat: 2, h: 6 }, { kind: 'shroom', at: 320, lat: -2, h: 7 }] }],
+    max: 6, goals: [{ t: 'fxOne', kind: 'shroom', v: 2, text: '同一桿被巨菇彈 2 次以上' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'tropical', title: '海島孤峰', en: 'Lonely Atoll', intro: '海中央的孤島果嶺，右邊吹來 12 mph 的海風。',
+    wind: { mph: 12, from: 'R' }, hole: [3, 230, 0, 'IG', { bunkers: [{ g: 'BL' }] }],
+    max: 4, goals: [{ t: 'teeGreen', text: '開球直接上果嶺' }, { t: 'strokes', v: 2, text: '2 桿以內進洞' }] },
+  { t: 'void', title: '星門迷航', en: 'Lost Gate', intro: '四座浮島、三道裂縫，前面有一座星門可以直接跳到果嶺前。',
+    hole: [5, 640, 0, 'nw', { gaps: [{ at: 200, half: 11 }, { at: 360, half: 12 }, { at: 510, half: 11 }], specials: [{ kind: 'portal', at: 140, h: 5.5, exitAt: 590 }] }],
+    max: 6, goals: [{ t: 'all', text: '穿過星門，而且一次都沒掉下去', sub: [{ t: 'fx', kind: 'portal', v: 1 }, { t: 'noHazard' }] }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
+  { t: 'toy', title: '只用沙坑桿', en: 'Sand Wedge Only', intro: '只能用沙坑桿和推桿的 280 碼右狗腿。',
+    clubs: ['SW', 'PT'], hole: [4, 280, 30, '', { bendAt: 140, bunkers: [{ at: 140, side: 'R' }, { g: 'FL' }] }],
+    max: 6, goals: [{ t: 'strokes', v: 4, text: '標準桿以內' }, { t: 'noRough', text: '一次都沒進長草' }] },
+  { t: 'jungle', title: '叢林巨砲', en: 'Canopy Cannon', intro: '470 碼的長四桿，開球要越過叢林才看得到果嶺。',
+    hole: [4, 470, 0, 'tr', { bunkers: [{ at: 280, side: 'L' }, { at: 300, side: 'R' }, { g: 'F' }] }],
+    max: 6, goals: [{ t: 'drive', v: 280, text: '開球 280 碼以上' }, { t: 'greenIn', v: 2, text: '兩桿內上果嶺' }] },
+  { t: 'frost', title: '冰上推桿', en: 'Ice Rink Green', intro: '結了霜的果嶺又快又陡（果嶺速度 13），分成兩層。',
+    c: { stimp: 13 }, hole: [3, 140, 0, '', { green: { size: [32, 36], slope: 0.04, tier: true, side: 0.02 }, bunkers: [{ g: 'FL' }, { g: 'FR' }] }],
+    max: 4, goals: [{ t: 'putts', v: 1, text: '只推 1 次' }, { t: 'strokes', v: 2, text: '2 桿以內進洞' }] },
+  { t: 'haunt', title: '墓園精準', en: 'Graveyard Line', intro: '開球要剛好停在 220~240 碼之間，太短太長都會進墓園。',
+    hole: [4, 360, 0, '', { bunkers: [{ at: 205, side: 'L' }, { at: 255, side: 'R' }, { g: 'FL' }] }],
+    max: 5, goals: [{ t: 'driveRange', v: [220, 240], text: '開球停在 220~240 碼之間' }, { t: 'teeFairway', text: '開球停在球道上' }] },
+  { t: 'storm', title: '暴風之眼', en: 'Eye of the Storm', intro: '左邊吹來 18 mph 的暴風，雷雲在球道上空盤旋。',
+    wind: { mph: 18, from: 'L' }, hole: [4, 420, 0, 'cl wr', { bunkers: [{ g: 'FL' }] }],
+    max: 6, goals: [{ t: 'noHazard', text: '一次都沒失誤' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'lava', title: '熔岩深淵', en: 'Magma Abyss', intro: '熔岩裂谷橫斷球道，裂谷前後三個噴發口隨時待命。',
+    hole: [4, 440, 0, 'xc', { specials: [{ kind: 'vent', at: 200, lat: -5 }, { kind: 'vent', at: 230, lat: 6 }, { kind: 'vent', at: 300, lat: 0 }] }],
+    max: 5, goals: [{ t: 'fx', kind: 'vent', v: 1, text: '被噴發口噴上天' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  // ---------- 81~90：大師 ----------
+  { t: 'clock', title: '時間競賽', en: 'Race Against Time', intro: '齒輪和彈珠柱交錯的長五桿，看你能玩出幾種機關。',
+    hole: [5, 610, 30, 'gr bp', { bendAt: 300, bunkers: [{ g: 'FL' }] }],
+    max: 6, goals: [{ t: 'fxKinds', v: 2, text: '觸發 2 種以上不同的機關' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'honey', title: '甜蜜孤島', en: 'Nectar Isle', intro: '孤島果嶺四周是蜂蜜，不准用推桿進洞！',
+    hole: [3, 180, 0, 'IG hy', { bunkers: [{ g: 'L' }] }],
+    max: 4, goals: [{ t: 'teeGreen', text: '開球直接上果嶺' }, { t: 'noPutt', text: '不用推桿進洞（切進或一桿進洞）' }] },
+  { t: 'sakura', title: '櫻吹雪', en: 'Petal Storm', intro: '又窄又長的櫻花林道，花瓣滿天飛，每一桿都要在球道上。',
+    c: { fairwayW: 26 }, hole: [5, 560, -20, 'nw tr', { bendAt: 280, bunkers: [{ g: 'FR' }, { at: 260, side: 'L' }] }],
+    max: 6, goals: [{ t: 'fairwayAll', text: '每一桿都停在球道或果嶺' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'mushroom', title: '巨菇天梯', en: 'Fungal Stairway', intro: '一路往上爬的四桿洞，要打出超高的球才上得去。',
+    hole: [4, 420, 0, 'UP', { elev: [[150, 6], [300, 16], [420, 24]], specials: [{ kind: 'shroom', at: 230, h: 7 }], bunkers: [{ g: 'FL' }] }],
+    max: 6, goals: [{ t: 'apex', v: 40, text: '打出最高點 40 公尺以上的球' }, { t: 'greenIn', v: 2, text: '兩桿內上果嶺' }] },
+  { t: 'tropical', title: '珍珠小島', en: 'Pearl Islet', intro: '130 碼的孤島短洞，果嶺小得像一顆珍珠。',
+    hole: [3, 130, 0, 'IG', { green: { size: [18, 22] }, bunkers: [{ g: 'B' }] }],
+    max: 4, goals: [{ t: 'teeNear', v: 3, text: '開球停在旗桿 3 碼內' }, { t: 'strokes', v: 2, text: '2 桿以內進洞' }] },
+  { t: 'void', title: '虛空長征', en: 'Void March', intro: '680 碼、五座浮島、四道裂縫，一桿都不能失誤。',
+    hole: [5, 680, 0, 'nw', { gaps: [{ at: 170, half: 10 }, { at: 320, half: 11 }, { at: 460, half: 11 }, { at: 590, half: 10 }] }],
+    max: 6, goals: [{ t: 'noHazard', text: '一次都沒掉進虛空' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'toy', title: '積木大亂鬥', en: 'Toybox Brawl', intro: '彈跳床、加速帶、玩具牆、大砲和彈珠柱，全部塞在同一洞。',
+    hole: [5, 600, 0, 'bp', { specials: [{ kind: 'tramp', at: 190, lat: -4 }, { kind: 'boost', at: 260 }, { kind: 'wall', at: 360, lat: 24, len: 40, ang: -20 }, { kind: 'cannon', at: 330, lat: -5 }] }],
+    max: 6, goals: [{ t: 'fxTotal', v: 5, text: '觸發機關合計 5 次以上' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'jungle', title: '叢林神射', en: 'Jungle Sniper', intro: '果嶺前是一條溪，從 60 碼外直接打進洞才算神射手。',
+    hole: [4, 330, 0, '', { water: [{ g: 'F' }], bunkers: [{ g: 'BL' }, { g: 'BR' }] }],
+    max: 5, goals: [{ t: 'holeOut', v: 60, text: '從 60 碼外直接打進洞（不用推桿）' }, { t: 'strokes', v: 3, text: '3 桿以內進洞' }] },
+  { t: 'frost', title: '極地雙門', en: 'Polar Gates', intro: '兩座星門串連冰原，兩側都是冰湖。',
+    hole: [5, 620, 0, 'wl wr', { specials: [{ kind: 'portal', at: 120, h: 5.5, exitAt: 320 }, { kind: 'portal', at: 380, h: 5.5, exitAt: 580 }] }],
+    max: 6, goals: [{ t: 'all', text: '穿過兩座星門，而且一次都沒落水', sub: [{ t: 'fx', kind: 'portal', v: 2 }, { t: 'noHazard' }] }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
+  { t: 'lava', title: '火山心臟', en: 'Heart of the Volcano', intro: '火山口裡的四桿洞，熔岩溪橫越、果嶺前還有熔岩池。',
+    hole: [4, 460, 0, 'xc', { water: [{ g: 'F' }], specials: [{ kind: 'vent', at: 250, lat: 0 }], bunkers: [{ g: 'BR' }] }],
+    max: 5, goals: [{ t: 'greenIn', v: 2, text: '兩桿內上果嶺' }, { t: 'strokes', v: 3, text: '3 桿以內進洞' }] },
+  // ---------- 91~100：深淵（終極）----------
+  { t: 'haunt', title: '亡魂之路', en: 'Path of Souls', intro: '引魂燈與雷雲交織的五桿洞，至少玩出兩種機關，還要 4 桿進洞。',
+    hole: [5, 640, 0, 'ws cl', { bunkers: [{ g: 'FL' }, { g: 'FR' }] }],
+    max: 6, goals: [{ t: 'fxKinds', v: 2, text: '觸發 2 種以上不同的機關' }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
+  { t: 'storm', title: '雷神之怒', en: 'Wrath of Thunder', intro: '逆風 20 mph，風大到球像撞上一面牆。',
+    wind: { mph: 20, from: 'H' }, hole: [4, 400, 0, 'cl', { bunkers: [{ g: 'FL' }, { g: 'FR' }] }],
+    max: 5, goals: [{ t: 'noHazard', text: '一次都沒失誤' }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'clock', title: '鐘樓一擊', en: 'Clocktower Drop', intro: '從鐘樓頂往下打的 190 碼短洞，果嶺小、落差 18 公尺。',
+    hole: [3, 190, 0, 'DN', { elev: [[190, -18]], green: { size: [20, 24] }, bunkers: [{ g: 'FL' }, { g: 'FR' }, { g: 'B' }] }],
+    max: 3, goals: [{ t: 'teeNear', v: 3, text: '開球停在旗桿 3 碼內' }, { t: 'strokes', v: 2, text: '2 桿以內進洞' }] },
+  { t: 'honey', title: '花蜜迷宮', en: 'Nectar Maze', intro: '蜂蜜池、彈珠柱、齒輪擠成一座迷宮，避開蜂蜜還要玩到機關。',
+    hole: [4, 380, -25, 'hy bp gr', { bendAt: 200 }],
+    max: 5, goals: [{ t: 'all', text: '沒被蜂蜜黏住，也觸發 2 次以上機關', sub: [{ t: 'avoid', kind: 'honey' }, { t: 'fxTotal', v: 2 }] }, { t: 'strokes', v: 4, text: '標準桿以內' }] },
+  { t: 'mushroom', title: '夜光一擊', en: 'Glowing Ace', intro: '果嶺前有一朵巨菇，彈上去直接上果嶺最理想。',
+    hole: [3, 160, 0, '', { specials: [{ kind: 'shroom', at: 120, h: 5 }], bunkers: [{ g: 'BL' }, { g: 'BR' }] }],
+    max: 3, goals: [{ t: 'fxGreen', kind: 'shroom', text: '被巨菇彈起的那一桿停上果嶺' }, { t: 'strokes', v: 2, text: '2 桿以內進洞' }] },
+  { t: 'tropical', title: '珊瑚緞帶', en: 'Coral Ribbon', intro: '650 碼的緞帶球道，兩側都是海，球道只有 24 碼寬。',
+    c: { fairwayW: 24, roughW: 6 }, hole: [5, 650, 0, 'nw', { water: [{ from: 30, to: 640, side: 'L', w: 30, gap: 9 }, { from: 30, to: 640, side: 'R', w: 30, gap: 9 }] }],
+    max: 6, goals: [{ t: 'fairwayAll', text: '每一桿都停在球道或果嶺' }, { t: 'strokes', v: 5, text: '標準桿以內' }] },
+  { t: 'void', title: '黑洞邊緣', en: 'Event Horizon', intro: '窄窄的浮島四桿洞，三道裂縫緊緊相連。',
+    hole: [4, 450, 0, 'nw', { gaps: [{ at: 150, half: 10 }, { at: 260, half: 11 }, { at: 370, half: 10 }] }],
+    max: 5, goals: [{ t: 'noHazard', text: '一次都沒掉進虛空' }, { t: 'strokes', v: 3, text: '3 桿以內進洞' }] },
+  { t: 'toy', title: '五號鐵之王', en: 'Five Iron King', intro: '整洞只能用 5 號鐵和推桿的 400 碼四桿洞。',
+    clubs: ['5I', 'PT'], hole: [4, 400, 0, '', { bunkers: [{ at: 190, side: 'L' }, { at: 350, side: 'R' }, { g: 'F' }] }],
+    max: 5, goals: [{ t: 'strokes', v: 4, text: '標準桿以內' }, { t: 'putts', v: 1, text: '只推 1 次' }] },
+  { t: 'lava', title: '熔岩終焉', en: 'Magma Finale', intro: '熔岩裂谷、噴發口、大砲、光環和三顆金球，地心的最後試煉。',
+    hole: [5, 660, 25, 'xc', { bendAt: 320, specials: [R(95, 16), { kind: 'vent', at: 230, lat: -6 }, { kind: 'cannon', at: 380, lat: 3 }, O(150, 11), O(300, 8, 5), O(520, 6, -4)] }],
+    max: 5, goals: [{ t: 'all', text: '收集 3 顆金球，也穿過光環', sub: [{ t: 'orbs', v: 3 }, { t: 'fx', kind: 'ring', v: 1 }] }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
+  { t: 'void', title: '無盡深淵', en: 'Endless Abyss', intro: '最終關：浮島、裂縫、星門、冰牆、光環和金球，全部在這裡。',
+    hole: [5, 700, -20, 'nw', { bendAt: 330, gaps: [{ at: 190, half: 11 }, { at: 430, half: 12 }], specials: [R(95, 16), { kind: 'portal', at: 300, h: 5.5, exitAt: 620 }, { kind: 'wall', at: 345, lat: 26, len: 44, ang: -25 }, O(160, 12), O(260, 8, -5), O(560, 6, 4)] }],
+    max: 5, goals: [{ t: 'all', text: '收集 3 顆金球、穿過星門，而且一次都沒掉下去', sub: [{ t: 'orbs', v: 3 }, { t: 'fx', kind: 'portal', v: 1 }, { t: 'noHazard' }] }, { t: 'strokes', v: 4, text: '4 桿以內進洞' }] },
 ];
+
+// 前 70 關裡籠統的「標準桿以內」換成跟這一洞有關的條件（有水 → 不落水、沙坑多 → 不進沙坑、三桿洞 → 開球靠近旗桿…）
+function specificGoal(l, n) {
+  const [par, , , feat, spec] = l.hole, has = t => l.goals.some(g => g.t === t);
+  const wet = (spec.water && spec.water.length) || (spec.gaps && spec.gaps.length) || /xc|wl|wr|IG/.test(feat);
+  if (wet && !has('noHazard')) return { t: 'noHazard', text: '一次都沒失誤（落水 / 掉落 / OB）' };
+  if ((spec.bunkers || []).length >= 2 && !has('noSand')) return { t: 'noSand', text: '一次都沒進沙坑' };
+  if (par === 3 && !has('teeNear')) { const v = n < 30 ? 12 : 8; return { t: 'teeNear', v, text: `開球停在旗桿 ${v} 碼內` }; }
+  if (par >= 4 && !has('greenIn')) return { t: 'greenIn', v: par - 2, text: `${par - 2} 桿內上果嶺` };
+  if (!has('noRough')) return { t: 'noRough', text: '一次都沒進長草' };
+  return null;
+}
+for (const [i, l] of LV.entries()) {
+  if (i >= 70) break;
+  l.goals = l.goals.map(g => g.t === 'strokes' && g.v === l.hole[0] ? (specificGoal(l, i + 1) || g) : g);
+}
+// 第 101~300 關（challenge-gen.js 產生）
+LV.push(...genLevels());
+// 章節：前 100 關每 10 關一章，101 關以後每 20 關一章（第 20 關是頭目關）
+export const CHAPTERS = [
+  ...['入門', '中等', '進階', '困難', '大師', '異界巡禮', '組合技', '專家', '大師之路', '深淵'].map((name, k) => ({ name, from: k * 10 + 1, to: k * 10 + 10 })),
+  ...CHAPTERS_2.map((c, k) => ({ name: c.name, from: 101 + k * 20, to: 120 + k * 20 })),
+];
+export const chapterOf = n => CHAPTERS.findIndex(c => n >= c.from && n <= c.to);
 
 export const LEVELS = LV.map((l, i) => {
   const n = i + 1, id = 'lv' + String(n).padStart(2, '0'), th = TH[l.t];
@@ -241,6 +439,8 @@ export function goalMet(g, att, par, done = true) {
     case 'apex': return shots.some(s => s.apex >= g.v);
     case 'lastClub': return end(ok && shots.length && g.clubs.includes(shots[shots.length - 1].club));
     case 'clubCount': return end(ok && new Set(shots.map(s => s.club)).size <= g.v);
+    case 'holeOut': return shots.some(s => s.holed && !s.putter && s.distBefore >= g.v);
+    case 'fxKinds': return new Set(shots.flatMap(s => Object.keys(s.fx).filter(k => s.fx[k] > 0))).size >= g.v;
     case 'all': return g.sub.every(x => goalMet(x, att, par, done));
     default: return false;
   }

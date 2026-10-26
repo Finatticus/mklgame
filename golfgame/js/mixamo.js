@@ -11,7 +11,7 @@ const ANIMS = ['preshot', 'drive', 'chip', 'putt'];
 const BALL_R = 0.021335;
 const GRIP_TOP = 0.06;     // 握把頂端在兩手中心上方 6 公分
 // 準備姿勢時球到腳尖連線的距離（公分）；動作是開球木桿的動作、雙手位置固定，所以靠這個決定球桿長度與傾斜角
-const TOE_DIST = { driver: 92, wood: 87, iron: 78, wedge: 73, putter: 48 };
+const TOE_DIST = { driver: 92, wood: 87, iron: 78, wedge: 73, putter: 48, chipper: 50 };
 
 let GLTFLoaderC = null, FBXLoaderC = null, SkeletonUtilsM = null;
 async function loaders() {
@@ -262,7 +262,7 @@ export class MixamoGolfer {
     this.ballPos = ballPos.clone();
     this.yaw = yaw;
     this.clubType = clubIcon;
-    this.isPutt = clubIcon === 'putter';
+    this.isPutt = clubIcon === 'putter' || clubIcon === 'chipper';      // 寶刀用推桿動作
     if (!this.club) { this.club = this.clubMaker.club; this.clubMaker.rig.remove(this.club); this.object.add(this.club); }
     const swingK = this.swingClipFor();
     const cal = this.clubCal(swingK);

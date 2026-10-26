@@ -80,6 +80,17 @@ const M = {
   haunt: () => `<path d="M30 64 V40 l4 -6 4 6 V64z M44 64 V30 l6 -8 6 8 V64z M62 64 V42 l4 -5 4 5 V64z"/><path d="M48 40 h4 v6 h-4z M34 46 h2 v4 h-2z" fill="#fff"/><path d="M68 24 a7 7 0 1 0 0 0.1" fill="none"/><circle cx="70" cy="24" r="5" fill="none" stroke-width="1.6"/>`,
   toy: () => `<rect x="30" y="50" width="16" height="14"/><rect x="48" y="50" width="16" height="14" fill="none" stroke-width="2"/><rect x="38" y="36" width="18" height="14"/><circle cx="35" cy="48.5" r="1.8"/><circle cx="41" cy="48.5" r="1.8"/><circle cx="44" cy="34.5" r="1.8"/><circle cx="50" cy="34.5" r="1.8"/><path d="M68 64 V44" stroke-width="3"/><path d="M66 46 h4 M66 52 h4 M66 58 h4" stroke-width="1.4"/>`,
   storm: () => `<path d="M30 40 q0 -10 10 -9 q4 -8 12 -4 q10 -3 12 6 q8 1 6 8 z"/><path d="M50 42 l-6 12 h6 l-4 12 12 -16 h-6 l4 -8z"/>`,
+  // ---- 奇幻第三批 ----
+  sugar: () => `<circle cx="50" cy="38" r="13"/><path d="M50 38 m0 -9 a9 9 0 1 1 -9 9 a6 6 0 1 1 6 -6 a3 3 0 1 1 -3 3" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="48.5" y="51" width="3" height="16" rx="1.5"/>`,
+  neonlane: () => `<path d="M24 56 V44 h6 V36 h6 V48 h5 V30 h7 V52 h5 V40 h6 V50 h5 V38 h6 V56z"/><path d="M24 60 h52 M28 64 h44" fill="none" stroke-width="1.4"/><circle cx="50" cy="24" r="5" fill="none" stroke-width="1.6"/>`,
+  lunar: () => `<path d="M58 22 a16 16 0 1 0 12 26 a12 12 0 1 1 -12 -26z"/><circle cx="32" cy="30" r="4" fill="none" stroke-width="1.6"/><path d="M26 64 q24 -8 48 0" fill="none" stroke-width="2"/><path d="M46 60 v-12 l8 3 -8 3" stroke-width="1.4"/>`,
+  pharaoh: () => `<path d="M24 64 L46 30 L68 64z"/><path d="M58 64 L68 48 L78 64z"/><path d="M46 30 L52 64" fill="none" stroke="#fff" stroke-width="1"/>` + sun(30, 28, 4),
+  coral: () => `<path d="M50 66 V48 M50 52 q-8 -4 -8 -14 M50 50 q8 -4 8 -12 M42 40 q-6 -2 -6 -8 M58 40 q5 -3 4 -9" fill="none" stroke-width="3" stroke-linecap="round"/><circle cx="66" cy="30" r="2.5" fill="none" stroke-width="1.4"/><circle cx="70" cy="22" r="1.8" fill="none" stroke-width="1.2"/><circle cx="32" cy="26" r="2" fill="none" stroke-width="1.2"/>`,
+  jurassic: () => `<path d="M24 64 L40 38 h10 L66 64z"/><path d="M42 38 q-2 -8 2 -14 M48 38 q2 -8 6 -12" fill="none" stroke-width="2"/><path d="M66 64 q0 -14 6 -22 q4 -4 6 0 q-4 0 -5 4 q-3 8 -2 18z"/>`,
+  crystalcave: () => `<path d="M34 64 L30 42 L36 30 L42 42 L40 64z"/><path d="M44 64 L42 36 L50 20 L58 36 L56 64z"/><path d="M60 64 L60 46 L66 36 L72 46 L68 64z"/><path d="M50 22 L50 60" fill="none" stroke="#fff" stroke-width="1"/>`,
+  mirefen: () => `<path d="M48 66 V44 q0 -8 -10 -14 M48 48 q4 -10 14 -12 M44 38 l-6 -2 M58 37 l4 -6" fill="none" stroke-width="3" stroke-linecap="round"/><path d="M24 56 q8 -3 16 0 q8 3 16 0 q8 -3 20 0 M28 62 q10 -3 20 0 q10 3 24 0" fill="none" stroke-width="1.4"/>`,
+  redplanet: () => `<circle cx="48" cy="44" r="16"/><circle cx="42" cy="38" r="3" fill="#fff" opacity=".6"/><circle cx="54" cy="50" r="4" fill="#fff" opacity=".5"/><circle cx="72" cy="26" r="2.5"/><circle cx="26" cy="30" r="1.8"/>`,
+  skyreach: () => `<path d="M36 50 V36 l3 -6 3 6 V50 M46 50 V28 l4 -8 4 8 V50 M58 50 V38 l3 -5 3 5 V50z"/><path d="M24 58 q4 -8 12 -4 q6 -8 14 -2 q8 -6 14 2 q8 -4 12 4z"/>`,
 };
 
 // 墨水色：依球場群組
