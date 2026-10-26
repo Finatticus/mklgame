@@ -53,6 +53,12 @@ const M = {
   // 圓石灘：海崖上一棵平頂的蒙特利柏樹、下方的浪
   pebble: () => `<path d="M22 66 L22 52 L40 48 L54 54 L60 66z"/>` + `<path d="M40 48 L41 34" fill="none" stroke-width="2"/><ellipse cx="36" cy="33" rx="11" ry="4"/><ellipse cx="46" cy="29" rx="9" ry="3.5"/>` + wave(70, 26, 76, 2) + flag(70, 60, 14),
   // 川奈：遠方積雪的富士山、相模灣、海崖上的松樹
+  // 孤島果嶺與旗
+  sawgrass: () => `<ellipse cx="50" cy="56" rx="26" ry="9" fill="none" stroke-width="2"/><ellipse cx="50" cy="54" rx="13" ry="5"/>` + flag(52, 53, 22) + wave(66, 28, 72, 1.6),
+  // 郵票（鋸齒邊）裡的小果嶺
+  troon: () => `<rect x="30" y="26" width="40" height="40" fill="none" stroke-width="2" stroke-dasharray="3 2"/><ellipse cx="50" cy="48" rx="7" ry="12"/><circle cx="38" cy="40" r="3" fill="none" stroke-width="1.4"/><circle cx="62" cy="54" r="3" fill="none" stroke-width="1.4"/>`,
+  // Barry Burn 上的石橋
+  carnoustie: () => `<path d="M24 58 h52" stroke-width="2"/><path d="M32 58 Q50 40 68 58" fill="none" stroke-width="3"/>` + wave(64, 24, 76, 1.8) + flag(50, 48, 16),
   kawana: () => `<path d="M26 58 L44 30 Q50 26 56 30 L74 58z"/><path d="M44 30 Q50 26 56 30 L59 35 L54 33 L50 37 L46 33 L41 35z" fill="#fff"/>` + wave(64, 26, 74, 1.8) + `<path d="M24 70 L24 62 L34 62" fill="none" stroke-width="2"/><ellipse cx="30" cy="56" rx="7" ry="2.6"/><path d="M30 62 V57" stroke-width="1.6"/>`,
   // 曼吉勞：兩邊的海崖、中間的海灣，對岸岩石上的果嶺與旗
   mangilao: () => `<path d="M20 66 L20 46 L34 48 L38 66z"/><path d="M80 66 L80 50 L64 52 L60 66z"/>` + wave(62, 38, 60, 1.8) + wave(68, 36, 62, 1.8) + `<ellipse cx="71" cy="51" rx="7" ry="2" fill="none" stroke-width="1.4"/>` + flag(72, 50, 14) + bird(48, 32, 0.8),

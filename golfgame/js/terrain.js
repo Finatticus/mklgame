@@ -1247,6 +1247,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (kind === 'gorse') return src === 'n' ? { type: 'broad', h: 7 + trng() * 4, r: 3 + trng() * 1.5 } : { type: 'shrub', h: 1.3 + trng() * 0.8, r: 1.6 + trng() * 1.2, gorse: 1 };
     if (kind === 'cypress') return r0 < 0.75 || src === 'n' ? { type: 'broad', h: 12 + trng() * 8, r: 5 + trng() * 2.5, mcyp: 1 } : { type: 'pine', h: 14 + trng() * 8, r: 3 + trng() };
     if (kind === 'jpine') return r0 < 0.7 ? { type: 'broad', h: 8 + trng() * 6, r: 3.6 + trng() * 1.6, jpine: 1 } : { type: 'broad', h: 9 + trng() * 5, r: 3.4 + trng() * 1.8, jungle: 1 };
+    if (kind === 'florida') return r0 < 0.55 ? { type: 'pine', h: 16 + trng() * 9, r: 2.8 + trng() } : r0 < 0.8 ? { type: 'palm', h: 9 + trng() * 6, r: 3 + trng() } : { type: 'broad', h: 9 + trng() * 5, r: 4.5 + trng() * 2 };      // 佛州：高瘦的松、棕櫚、橡樹
     if (kind === 'tropic') return r0 < 0.35 ? { type: 'palm', h: 9 + trng() * 7, r: 3 + trng() } : r0 < 0.8 ? { type: 'broad', h: 6 + trng() * 5, r: 3 + trng() * 2, jungle: 1 } : { type: 'shrub', h: 1.6 + trng(), r: 1.8 + trng(), jungle: 1 };
     return null;
   };
