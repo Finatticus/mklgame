@@ -59,6 +59,12 @@ const M = {
   troon: () => `<rect x="30" y="26" width="40" height="40" fill="none" stroke-width="2" stroke-dasharray="3 2"/><ellipse cx="50" cy="48" rx="7" ry="12"/><circle cx="38" cy="40" r="3" fill="none" stroke-width="1.4"/><circle cx="62" cy="54" r="3" fill="none" stroke-width="1.4"/>`,
   // Barry Burn 上的石橋
   carnoustie: () => `<path d="M24 58 h52" stroke-width="2"/><path d="M32 58 Q50 40 68 58" fill="none" stroke-width="3"/>` + wave(64, 24, 76, 1.8) + flag(50, 48, 16),
+  // Kiawah：大西洋海浪＋沙丘上的果嶺旗
+  kiawah: () => wave(66, 22, 78, 1.8) + wave(72, 26, 74, 1.4) + `<path d="M24 58 Q38 44 50 52 Q62 42 76 56" fill="none" stroke-width="2.4"/>` + flag(52, 48, 20),
+  // Royal St George's：第 4 洞「喜馬拉雅」巨型沙坑（枕木牆）
+  rsg: () => `<path d="M26 60 Q40 34 58 40 Q72 44 74 60 Z" fill="none" stroke-width="2.4"/><path d="M34 52 h30 M36 47 h24 M40 42 h14" stroke-width="1.4"/>` + flag(66, 36, 14),
+  // Royal Melbourne：沙帶地果嶺旁的大沙坑與茶樹
+  rmw: () => `<ellipse cx="54" cy="50" rx="13" ry="9"/><path d="M28 58 Q34 46 44 54 Q40 62 30 62 Z" fill="none" stroke-width="2"/><circle cx="72" cy="36" r="6" fill="none" stroke-width="1.8"/><circle cx="66" cy="30" r="5" fill="none" stroke-width="1.8"/>` + flag(56, 48, 18),
   kawana: () => `<path d="M26 58 L44 30 Q50 26 56 30 L74 58z"/><path d="M44 30 Q50 26 56 30 L59 35 L54 33 L50 37 L46 33 L41 35z" fill="#fff"/>` + wave(64, 26, 74, 1.8) + `<path d="M24 70 L24 62 L34 62" fill="none" stroke-width="2"/><ellipse cx="30" cy="56" rx="7" ry="2.6"/><path d="M30 62 V57" stroke-width="1.6"/>`,
   // 曼吉勞：兩邊的海崖、中間的海灣，對岸岩石上的果嶺與旗
   mangilao: () => `<path d="M20 66 L20 46 L34 48 L38 66z"/><path d="M80 66 L80 50 L64 52 L60 66z"/>` + wave(62, 38, 60, 1.8) + wave(68, 36, 62, 1.8) + `<ellipse cx="71" cy="51" rx="7" ry="2" fill="none" stroke-width="1.4"/>` + flag(72, 50, 14) + bird(48, 32, 0.8),

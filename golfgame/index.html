@@ -684,7 +684,13 @@
     <button type="button" id="set-cache-clear" class="btn-chip">清除下載的資料</button>
     <p class="small">只會清掉角色、材質、球場地圖這些下載的檔案，帳號、成績、成就、外觀都不受影響；下次用到時會重新下載。</p>
   </div>
+  <div class="set-help"><button type="button" id="set-readme" class="btn ghost-dark">遊戲說明書</button><button type="button" id="set-tut" class="btn ghost-dark">重看新手教學</button></div>
   <div class="dlg-btns"><button id="set-cancel" class="btn ghost-dark">取消</button><button id="set-save" class="btn brass">儲存</button></div>
+</div></div>
+
+<div id="dlg-readme" class="dlg readme-dlg"><div class="readme-box">
+  <div class="readme-bar"><b>遊戲說明書</b><button type="button" class="btn ghost-dark" onclick="document.getElementById('dlg-readme').classList.remove('open')">關閉</button></div>
+  <iframe id="rd-frame" title="遊戲說明書"></iframe>
 </div></div>
 
 <div id="dlg-mull" class="dlg"><div class="dlg-box">

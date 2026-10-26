@@ -217,13 +217,17 @@ const CLUB_NOMINAL_MPH = 113; // TrackMan 一號木平均桿頭速度，用來�
 // 「總距離 → 球速」用同一套物理在平坦果嶺上實際模擬一次建表（每種果嶺速度一張），之後內插
 const CHIP_SPIN = 500, chipCal = {};
 const chipLaunch = v => clamp(20 - (v - 5) * 0.5, 13, 20);
-export function chipSpeed(dist, stimp = 8) {
-  const key = stimp.toFixed(1);
+// 長草 / 深草 / 沙坑 / 荒地裡用寶刀：把球「挑」起來（起飛 24~32°、後旋多一點），約 6 成距離是飛的，
+//   果嶺邊幾碼的長草可以直接飛過去落在果嶺上再滾（低低的切滾球第一跳落在長草裡會被吃掉，切不上去）
+const CHIP_POP_SPIN = 900;
+const chipPopLaunch = v => clamp(32 - (v - 5) * 0.6, 24, 32);
+export function chipSpeed(dist, stimp = 8, pop = false) {
+  const key = stimp.toFixed(1) + (pop ? 'p' : '');
   let t = chipCal[key];
   if (!t) {
     const flat = { course: { firm: 1, stimp }, height: () => 0, surface: () => SURF.GREEN, normal: () => [0, 1, 0], inBounds: () => true, treeAt: () => null, distToPin: () => 999 };
     t = chipCal[key] = [[0, 0]];
-    for (let v = 0.5; v <= 32; v += 0.5) t.push([v, simulate({ speed: v, launchDeg: chipLaunch(v), yaw: 0, spin: CHIP_SPIN, axisDeg: 0, pos: [0, R, 0] }, { rho: 1.2, wind: [0, 0], rng: ZERO_RNG }, flat).total]);
+    for (let v = 0.5; v <= 34; v += 0.5) t.push([v, simulate({ speed: v, launchDeg: pop ? chipPopLaunch(v) : chipLaunch(v), yaw: 0, spin: pop ? CHIP_POP_SPIN : CHIP_SPIN, axisDeg: 0, pos: [0, R, 0] }, { rho: 1.2, wind: [0, 0], rng: ZERO_RNG }, flat).total]);
   }
   for (let i = 1; i < t.length; i++) if (t[i][1] >= dist) { const [v0, d0] = t[i - 1], [v1, d1] = t[i]; return v0 + (v1 - v0) * (dist - d0) / Math.max(1e-6, d1 - d0); }
   return t[t.length - 1][0];
@@ -256,14 +260,17 @@ export function makeLaunch(input, ctx) {
 
   if (club.chipper) {
     // 寶刀（切推桿）：跟推桿一樣，拉桿長度決定「在平坦果嶺上的總距離」，換算成低飛的切滾球（先小跳一段再滾）。
-    //   距離手感用「推桿手感」素質、方向用「推桿方向」；球位會吃距離：長草少 15%、深草少 40%、沙坑少一半而且很不穩
+    //   距離手感用「推桿手感」素質、方向用「推桿方向」；
+    //   長草、深草、沙坑、荒地改用「挑起來」的出球（飛過果嶺邊的長草），球位只稍微吃距離：長草少 5%、荒地少 5%、深草少 15%、沙坑少 25%
     const want = Math.max(0.5, input.power * ctx.puttScale);
-    const keep = lie === SURF.ROUGH ? 0.85 : lie === SURF.DEEP ? 0.6 : lie === SURF.SAND ? 0.5 : lie === SURF.WASTE ? 0.9 : 1;
-    const wild = lie === SURF.ROUGH ? 1.5 : lie === SURF.DEEP ? 2.4 : lie === SURF.SAND ? 3 : lie === SURF.WASTE ? 1.4 : 1;
-    const vn = chipSpeed(want, ctx.stimp);
+    const pop = lie === SURF.ROUGH || lie === SURF.DEEP || lie === SURF.SAND || lie === SURF.WASTE;
+    const keep = lie === SURF.ROUGH ? 0.95 : lie === SURF.DEEP ? 0.85 : lie === SURF.SAND ? 0.75 : lie === SURF.WASTE ? 0.95 : 1;
+    const wild = lie === SURF.ROUGH ? 1.2 : lie === SURF.DEEP ? 1.8 : lie === SURF.SAND ? 2.4 : lie === SURF.WASTE ? 1.2 : 1;
+    const vn = chipSpeed(want, ctx.stimp, pop);
     const v0 = vn * keep * (1 + n() * (d.touchSigma * 1.35 + 0.012) * wild * pm);
     const yaw = input.aimYaw + rad(input.curve * 2 + n() * d.lineSigma * 1.6 * wild * pm);
-    return { speed: v0, launchDeg: chipLaunch(vn) + n() * 1.2, yaw, spin: CHIP_SPIN * (0.85 + rng() * 0.3), axisDeg: n() * 2, info: { clubMph: 0, smash: 0, ballMph: v0 / MPH } };
+    const launchDeg = (pop ? chipPopLaunch(vn) : chipLaunch(vn)) + n() * 1.2;
+    return { speed: v0, launchDeg, yaw, spin: (pop ? CHIP_POP_SPIN : CHIP_SPIN) * (0.85 + rng() * 0.3), axisDeg: n() * 2, info: { clubMph: 0, smash: 0, ballMph: v0 / MPH } };
   }
 
   let pw = clamp(input.power, 0.05, 1.1);

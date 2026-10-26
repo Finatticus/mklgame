@@ -696,7 +696,8 @@ export function buildHole(course, holeIdx, opts = {}) {
   };
 
   // ---------- 7. 地面種類 ----------
-  const MAP_SURF = [SURF.OB, SURF.ROUGH, SURF.FAIRWAY, SURF.GREEN, SURF.TEE, SURF.SAND, SURF.WATER, SURF.ROUGH, SURF.DEEP, SURF.FRINGE];
+  // 10 = 判讀時的暫用類別（不會出現）、11 = 廢沙地（Kiawah 這類「沙地不算沙坑」的球場，照一般區域打）
+  const MAP_SURF = [SURF.OB, SURF.ROUGH, SURF.FAIRWAY, SURF.GREEN, SURF.TEE, SURF.SAND, SURF.WATER, SURF.ROUGH, SURF.DEEP, SURF.FRINGE, SURF.ROUGH, SURF.WASTE];
   function mapSurface(u, v) {
     const i = cellAt(u, v);
     if (i < 0) return SURF.OB;
@@ -1248,6 +1249,10 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (kind === 'cypress') return r0 < 0.75 || src === 'n' ? { type: 'broad', h: 12 + trng() * 8, r: 5 + trng() * 2.5, mcyp: 1 } : { type: 'pine', h: 14 + trng() * 8, r: 3 + trng() };
     if (kind === 'jpine') return r0 < 0.7 ? { type: 'broad', h: 8 + trng() * 6, r: 3.6 + trng() * 1.6, jpine: 1 } : { type: 'broad', h: 9 + trng() * 5, r: 3.4 + trng() * 1.8, jungle: 1 };
     if (kind === 'florida') return r0 < 0.55 ? { type: 'pine', h: 16 + trng() * 9, r: 2.8 + trng() } : r0 < 0.8 ? { type: 'palm', h: 9 + trng() * 6, r: 3 + trng() } : { type: 'broad', h: 9 + trng() * 5, r: 4.5 + trng() * 2 };      // 佛州：高瘦的松、棕櫚、橡樹
+    // 海岸沙丘（Kiawah）：大多是低矮的棕櫚灌叢與海濱植物，偶爾一棵矮棕櫚、海岸活橡樹
+    if (kind === 'dune') return r0 < 0.7 && src !== 'n' ? { type: 'shrub', h: 1.1 + trng() * 1.1, r: 1.5 + trng() * 1.3, jungle: 1 } : r0 < 0.88 ? { type: 'palm', h: 6 + trng() * 5, r: 2.6 + trng() } : { type: 'broad', h: 6 + trng() * 4, r: 4.5 + trng() * 2 };
+    // 墨爾本沙帶地：茶樹叢（矮、圓）與高瘦的尤加利
+    if (kind === 'sandbelt') return r0 < 0.45 && src !== 'n' ? { type: 'shrub', h: 2.6 + trng() * 1.6, r: 2.4 + trng() * 1.2 } : { type: 'broad', h: 13 + trng() * 8, r: 4 + trng() * 2 };
     if (kind === 'tropic') return r0 < 0.35 ? { type: 'palm', h: 9 + trng() * 7, r: 3 + trng() } : r0 < 0.8 ? { type: 'broad', h: 6 + trng() * 5, r: 3 + trng() * 2, jungle: 1 } : { type: 'shrub', h: 1.6 + trng(), r: 1.8 + trng(), jungle: 1 };
     return null;
   };

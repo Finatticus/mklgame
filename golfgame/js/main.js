@@ -20,6 +20,7 @@ import { LEVELS, levelById, THEME_NAME, CHAPTERS, chapterOf } from './challenge.
 import { clubById } from './clubs.js';
 import { initReal, renderRealTab } from './real.js';
 import { careerHtml } from './career.js';
+import { startTutorial, tutorialSeen } from './tutorial.js';
 
 const $ = id => document.getElementById(id);
 const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-chal', 'scr-shop', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-real', 'scr-admin', 'scr-editor', 'scr-edcanvas', 'scr-game'];
@@ -141,6 +142,7 @@ function openSettings() {
   $('set-cache-clear').onclick = clearAssetCache;
   $('set-quality').value = getSetting('quality', 'high');
   $('set-sound').checked = getSetting('sound', true);
+  $('set-tut').classList.toggle('hidden', !session.user);      // 重看新手教學要先登入
   $('dlg-settings').classList.add('open');
 }
 function initSettings() {
@@ -155,6 +157,10 @@ function initSettings() {
     if (needReload) alert('畫質會在重新開啟遊戲後套用');
   };
   $('set-cancel').onclick = () => $('dlg-settings').classList.remove('open');
+  // 遊戲說明書（README）：在遊戲裡全螢幕打開
+  $('set-readme').onclick = () => { $('dlg-settings').classList.remove('open'); const f = $('rd-frame'); if (!f.src) f.src = 'README.html'; $('dlg-readme').classList.add('open'); };
+  // 重看新手教學（要先登入；在遊戲中按的話先回大廳）
+  $('set-tut').onclick = () => { $('dlg-settings').classList.remove('open'); if (document.body.dataset.screen !== 'scr-lobby') enterLobby(); runTutorial(); };
   setSound(getSetting('sound', true));
   applyFontSize(getSetting('fs', 1));
   applyPuttCam(getSetting('puttCam', true) !== false);
@@ -199,6 +205,17 @@ function enterLobby() {
   refreshCustom().catch(() => {});        // 自製球場清單（發布的球場、修改過的球洞）
   checkChallenge(LEVELS);
   checkResume();
+  // 新帳號（還沒打過任何回合）第一次進大廳：自動開始新手教學（這台裝置看過就不再自動跑，設定裡可以重看）
+  if (!tutorialSeen(session.user) && !(Number(session.profile.rounds) > 0)) setTimeout(() => { if (document.body.dataset.screen === 'scr-lobby') runTutorial(); }, 900);
+}
+
+// 新手教學：練習場打兩桿 → 回大廳介紹各功能
+function runTutorial() {
+  startTutorial({
+    user: session.user,
+    startRange: () => { setup.pkind = 'range'; openSetup('practice'); $('st-go').click(); },
+    quitToLobby: () => { if (game) game.quit(); net = null; enterLobby(); },
+  });
 }
 
 // 上次沒打完的單人回合（APP 被關掉或中途離開）：回到大廳時問要不要接著打（7 天內、同一個帳號）
