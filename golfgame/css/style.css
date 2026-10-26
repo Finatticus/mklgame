@@ -1417,3 +1417,24 @@ button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border
   .char-body[data-ct="look"] .char-left canvas { height: 230px; }
 }
 .cp-done.part { color: #8a6a1a; background: #f6eed8; border-color: #e6d6a8; }
+
+/* 外觀特效開關 */
+.gx-fx { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 12px 10px 52px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid #e6dcc4; }
+.gx-fx span { display: flex; flex-direction: column; font-size: 13px; font-weight: 600; }
+.gx-fx small { font-size: 11px; font-weight: 400; color: var(--muted); }
+.sw { appearance: none; -webkit-appearance: none; flex: none; width: 44px; height: 26px; border-radius: 13px; background: #cfc8b6; position: relative; cursor: pointer; transition: background .2s; margin: 0; }
+.sw::after { content: ""; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+.sw:checked { background: #2f6a3f; }
+.sw:checked::after { transform: translateX(18px); }
+
+/* 選球場：名稱不被完成次數擠掉，放不下時完成次數換到下一行 */
+.cp-name { flex-wrap: wrap; row-gap: 3px; }
+.cp-name b { max-width: 100%; }
+
+/* SHOT DATA 蓋在紅色字卡上面（要關掉才能打下一桿） */
+#shot-data { z-index: 45; }
+/* 風速 / 地圖面板精簡：氣溫、果嶺兩格同一行 */
+.env-grid div { gap: 4px; white-space: nowrap; }
+@media (orientation: portrait) {
+  .env-grid { grid-template-columns: 1fr; }
+}

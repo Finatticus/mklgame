@@ -83,18 +83,9 @@ export class Hud {
     const ang = Math.atan2(cross, along) * 180 / Math.PI;
     $('w-arrow').setAttribute('transform', `rotate(${ang.toFixed(1)} 50 50)`);
     $('w-speed').textContent = mph.toFixed(0);
-    let txt = '無風';
-    if (mph >= 1) {
-      const a = Math.abs(ang);
-      const head = a < 30 ? '順風' : a > 150 ? '逆風' : a < 60 ? '順側風' : a > 120 ? '逆側風' : '側風';
-      const side = a < 20 || a > 160 ? '' : cross > 0 ? '（左→右）' : '（右→左）';
-      txt = head + side;
-    }
-    $('w-text').textContent = txt;
-    $('e-elev').textContent = (elevDiff >= 0 ? '+' : '') + Math.round(elevDiff / 0.3048) + ' FT';
+    // 精簡：風向看指針、高低差看紅色字卡；果嶺速度與硬度合成一格（例如 8.0 · MEDIUM）
     $('e-temp').textContent = Math.round(temp) + '°C';
-    $('e-stimp').textContent = 'STIMP ' + stimp.toFixed(1);
-    $('e-firm').textContent = firm > 1.1 ? 'FIRM' : firm < 0.95 ? 'SOFT' : 'MEDIUM';
+    $('e-green').textContent = stimp.toFixed(1) + ' · ' + (firm > 1.1 ? 'FIRM' : firm < 0.95 ? 'SOFT' : 'MEDIUM');
   }
 
   setClub(club, table, mine) {
@@ -150,6 +141,22 @@ export class Hud {
     if (!pos || !pos.visible) { e.classList.add('off'); return; }
     e.classList.remove('off');
     e.style.transform = `translate(${pos.x.toFixed(1)}px, ${pos.y.toFixed(1)}px)`;
+    this.fitPowerBar();
+  }
+
+  // 力道條（連同上方的落點 xxx Y）碰到右上風速 / 地圖面板或左上按鈕時，把力道條縮短，讓落點停在面板下面
+  fitPowerBar() {
+    const tr = this._pvTrack || (this._pvTrack = document.querySelector('#swing-ui .pv-track'));
+    const blocks = this._pvBlocks || (this._pvBlocks = [...document.querySelectorAll('#hud .hud-env, #hud .hud-tools')]);
+    tr.style.height = '';
+    const a = tr.parentElement.getBoundingClientRect(), pad = 6;
+    let need = 0;
+    for (const b of blocks) {
+      if (!b.offsetParent) continue;
+      const r = b.getBoundingClientRect();
+      if (r.width && a.right > r.left && a.left < r.right && a.top < r.bottom + pad && a.bottom > r.top) need = Math.max(need, r.bottom + pad - a.top);
+    }
+    if (need > 0) tr.style.height = Math.max(70, tr.getBoundingClientRect().height - need) + 'px';
   }
 
   setAdjust(text, pct = 0) {
@@ -178,7 +185,7 @@ export class Hud {
   // 旗桿距離紅卡一定要看得到：永遠畫在最上層；跟它重疊的面板、訊息、力道條在重疊期間變半透明（不重疊就恢復）
   guardPinTag() {
     const pin = $('tag-pin');
-    const list = this._guard || (this._guard = [...document.querySelectorAll('#chal-goals, #hud .hud-panel, #toast, #shot-data, .pv-track, #tag-ball, #nice-on')]);
+    const list = this._guard || (this._guard = [...document.querySelectorAll('#chal-goals, #hud .hud-panel:not(#shot-data), #toast, .pv-track, #tag-ball, #nice-on')]);
     const visible = pin.style.display !== 'none' && pin.offsetParent;
     const b = visible ? pin.getBoundingClientRect() : null, pad = 4;
     for (const e of list) {

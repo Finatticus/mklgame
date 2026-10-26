@@ -15,7 +15,7 @@ import { MixamoGolfer } from './mixamo.js';
 import { escapeHtml, fmtToPar } from './util.js';
 import { setSound, unlockAudio } from './audio.js';
 import { stampSvg, stampTier, STAMP_TIERS } from './stamps.js';
-import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, stampDone, prog, chal, progressOf, medalHtml, checkChallenge, skinUnlocked, skinById, equippedSkins, achById, checkCounters, skinDesc, starBalance, buySkin, FX_NAME } from './progress.js';
+import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, stampDone, prog, chal, progressOf, medalHtml, checkChallenge, skinUnlocked, skinById, equippedSkins, achById, checkCounters, skinDesc, starBalance, buySkin, FX_NAME, fxIsOff, stampCount, nineCount, backfillStamps } from './progress.js';
 import { LEVELS, levelById, THEME_NAME, CHAPTERS, chapterOf } from './challenge.js';
 import { clubById } from './clubs.js';
 import { initReal, renderRealTab } from './real.js';
@@ -189,7 +189,13 @@ function enterLobby() {
   const cachedRows = peek('getRankings');
   lbStats(myBest.user === session.user ? myBest.v : cachedRows ? bestFrom(cachedRows) : null);
   refreshMyBest().then(lbStats).catch(() => lbStats(p.best));
-  if (!prefetched.has(session.user)) { prefetched.add(session.user); prefetch(['getStarRanking', 'getRounds', 'realList']); }
+  if (!prefetched.has(session.user)) {
+    prefetched.add(session.user); prefetch(['getStarRanking', 'realList']);
+    const who = session.user;
+    Promise.all([refresh('getRankings').catch(() => []), refresh('getRounds').catch(() => [])]).then(([rk, rd]) => {
+      if (session.user === who) backfillStamps([...(rk || []), ...(rd || [])], who);
+    });
+  }
   $('mode-chal-sub').textContent = `${LEVELS.length} 個特別設計的關卡 · 已拿 ${chal().total} / ${LEVELS.length * 3} 顆星`;
   show('scr-lobby');
   refreshCustom().catch(() => {});        // 自製球場清單（發布的球場、修改過的球洞）
@@ -450,8 +456,8 @@ function playedTag(c) {
   const st = prog().stamps[c.id];
   if (c.nines) {
     if (!st || !st.nines) return '';
-    const cnt = k => (st.nineN && st.nineN[k]) || (st.nines[k] ? 1 : 0);
-    return `<i class="cp-done ${c.nines.every(n => cnt(n.id)) ? '' : 'part'}">${c.nines.map(n => `${escapeHtml(n.name)} ${cnt(n.id)}`).join(' · ')}</i>`;
+    const cnt = k => nineCount(st, k);
+    return `<i class="cp-done ${c.nines.every(n => cnt(n.id)) ? '' : 'part'}">${c.nines.map(n => `${escapeHtml(n.short || n.name)} ${cnt(n.id)}`).join(' · ')}</i>`;
   }
   return st && st.n ? `<i class="cp-done">已完成 ${st.n} 次${st.best && st.best < 999 ? ` · 最佳 ${st.best}` : ''}</i>` : '';
 }
@@ -876,7 +882,8 @@ function gearHtml() {
         const how = sk.std ? '' : sk.price ? `<em class="gtag star">星星 ${sk.price}</em>` : '<em class="gtag ach">成就</em>';
         return `<div class="gx-row ${on ? 'on' : ''} ${got ? '' : 'locked'} ${sel ? 'sel' : ''}">
           <button class="gx-main" data-slot="${slot}" data-skin="${sk.id}">${gearSwatch(sk)}<span class="gx-t"><b>${escapeHtml(sk.name)}${sk.fx ? `<i class="sh-fx">${FX_NAME[sk.fx]}</i>` : ''}</b><small>${on ? '裝備中' : got ? '已擁有' : '尚未取得'}</small></span>${how}</button>
-          ${sel ? `<div class="gx-act">${got && !on ? `<button class="btn brass" data-eq="1">裝備</button>` : on ? '<span class="gx-on">目前裝備中</span>' : ''}<button class="btn ghost-dark" data-info="1">${got ? '詳細' : sk.price ? '詳細 / 購買' : '取得方式'}</button></div>` : ''}
+          ${sel ? `<div class="gx-act">${got && !on ? `<button class="btn brass" data-eq="1">裝備</button>` : on ? '<span class="gx-on">目前裝備中</span>' : ''}<button class="btn ghost-dark" data-info="1">${got ? '詳細' : sk.price ? '詳細 / 購買' : '取得方式'}</button></div>
+          ${sk.fx && got ? `<label class="gx-fx"><span>特效「${FX_NAME[sk.fx]}」<small>${fxIsOff(draft.look, slot) ? '已關閉，裝備時不顯示' : '開啟中'}</small></span><input type="checkbox" class="sw" data-fx="${slot}" ${fxIsOff(draft.look, slot) ? '' : 'checked'}></label>` : ''}` : ''}
         </div>`;
       }).join('') : ''}</div></div>`;
   }).join('');
@@ -887,6 +894,7 @@ function bindGear() {
   const sel = previewPick && SKINS.find(x => x.slot === previewPick.slot && x.id === previewPick.id);
   $('ch-gear').querySelector('[data-eq]')?.addEventListener('click', () => skinAct('equip', sel));
   $('ch-gear').querySelector('[data-info]')?.addEventListener('click', () => openSkin(sel.slot, sel.id));
+  $('ch-gear').querySelector('[data-fx]')?.addEventListener('change', e => setFx(e.target.dataset.fx, e.target.checked));
 }
 function renderGear() { $('ch-gear').innerHTML = gearHtml(); bindGear(); }
 
@@ -936,14 +944,28 @@ function openSkin(slot, id) {
   const btns = [];
   if (got && !cur) btns.push(`<button class="btn brass" data-act="equip">裝備</button>`);
   if (got && cur && !sk.std) btns.push(`<button class="btn ghost-dark" data-act="unequip">卸下（換回標準）</button>`);
+  if (got && sk.fx) btns.push(`<button class="btn ghost-dark" data-act="fx">${fxIsOff(draft.look, slot) ? '開啟特效' : '關閉特效'}</button>`);
   if (!got && sk.price) btns.push(`<button class="btn brass" data-act="buy" ${starBalance() < sk.price ? 'disabled' : ''}>${starBalance() < sk.price ? `星星不足（還差 ${sk.price - starBalance()} 顆）` : `用 ${sk.price} 顆星星購買`}</button>`);
   btns.push('<button class="btn ghost-dark" data-act="close">關閉</button>');
   $('sk-btns').innerHTML = btns.join('');
   $('sk-btns').querySelectorAll('[data-act]').forEach(b => b.onclick = () => skinAct(b.dataset.act, sk));
   $('dlg-skin').classList.add('open');
 }
+// 特效開關（每一類一個開關，存在外觀的 fxOff）：直接存檔，預覽與遊戲裡的粒子跟著開關
+async function setFx(slot, on) {
+  const off = new Set(draft.look.fxOff || []);
+  if (on) off.delete(slot); else off.add(slot);
+  draft.look.fxOff = [...off];
+  try {
+    const p = session.profile;
+    const r = await call('saveProfile', { profile: { stats: p.stats, look: draft.look, points: p.points, respecs: p.respecs, spent: p.spent } });
+    session.profile = { ...session.profile, ...r };
+  } catch (e) { msg('ch-msg', e.message); }
+  if ($('scr-char').classList.contains('active')) { renderGear(); applyPreviewPick(); }
+}
 async function skinAct(act, sk) {
   if (act === 'close') { $('dlg-skin').classList.remove('open'); return; }
+  if (act === 'fx') { await setFx(sk.slot, fxIsOff(draft.look, sk.slot)); openSkin(sk.slot, sk.id); return; }
   if (act === 'buy') {
     if (!confirm(`用 ${sk.price} 顆星星購買「${sk.name}」？`)) return;
     if (!buySkin(sk)) { alert('星星不足'); return; }
@@ -1169,7 +1191,8 @@ function applyPreviewLook(me) {
   me.ball.material.color.set(b.std ? 0xffffff : b.color);
   me.ball.material.emissive.set(b.glow || 0x000000); me.ball.material.emissiveIntensity = b.glow ? 0.6 : 0;
   // 特效：選了哪一項就看那一項的特效；沒選就看手上這支桿
-  const slot = previewPick ? previewPick.slot : 'iron', fxk = sk[slot] && sk[slot].fx;
+  const slot = previewPick ? previewPick.slot : 'iron', pickSk = previewPick && SKINS.find(x => x.slot === previewPick.slot && x.id === previewPick.id);
+  const fxk = fxIsOff(draft.look, slot) ? null : (pickSk ? pickSk.fx : sk[slot] && sk[slot].fx);
   me.fxKind = fxk; me.fx.visible = !!fxk;
   if (fxk) me.fx.material.color.set(FX_COLOR[fxk] || 0xffffff);
 }
@@ -1247,9 +1270,9 @@ function passportHtml() {
       const nines = c.nines ? `<div class="sp-nines">${c.nines.map(nn => `<span class="${x.nines && x.nines[nn.id] ? 'on' : ''}">${escapeHtml(nn.name)}</span>`).join('')}</div>` : '';
       const left = c.nines && !done ? c.nines.filter(nn => !(x.nines && x.nines[nn.id])).map(nn => nn.name) : [];
       // 印章等級：3 / 5 / 10 次升級；下一級還差幾次
-      const tn = x.n || 1, tier = stampTier(tn), nextT = STAMP_TIERS[tier + 1];
+      const tn = Math.max(1, stampCount(c.id)), tier = stampTier(tn), nextT = STAMP_TIERS[tier + 1];
       const tierInfo = done ? `<span class="sp-tier t${tier}">${STAMP_TIERS[tier].name}${nextT ? `・再打 ${nextT.n - tn} 次升級${nextT.name}` : '・最高等級'}</span>` : '';
-      const info = done ? `<span>${fmtD(x.date)} 蓋章</span>${x.best && x.best < 999 ? `<span>最佳 ${x.best} 桿 · ${tn} 場</span>` : ''}${tierInfo}`
+      const info = done ? `<span>${fmtD(x.date)} 蓋章</span>${c.nines ? `<span>${c.nines.map(nn => `${escapeHtml(nn.name)} ${nineCount(x, nn.id)} 次`).join(' · ')}（每一區都打完算一輪，共 ${tn} 輪）</span>` : ''}${x.best && x.best < 999 ? `<span>最佳 ${x.best} 桿${c.nines ? '（18 洞）' : ` · ${tn} 場`}</span>` : ''}${tierInfo}`
         : left.length && left.length < c.nines.length ? `<span class="sp-left">還沒打：${left.map(escapeHtml).join('、')}</span>`
           : `<span>${c.nines ? '每一區都打完過就蓋章' : '打完 18 洞就蓋章'}</span>`;
       return `<button class="sp ${done ? 'got' : ''} ${done ? 'tier' + tier : ''}" data-sp="${c.id}">${stampSvg(c, done, tier >= 2 ? 0 : rot, tn)}<div class="sp-info"><b>${escapeHtml(c.name)}</b>${c.nines && !done ? nines : ''}</div>
@@ -1368,12 +1391,12 @@ function renderRanking() {
 // 總桿 / 球場排行：桿數少的在前；同桿數比對標準桿，再比誰先打出來
 // 三桿洞球場（例如 Cliffhangers，18 洞 Par 54）桿數本來就少很多、奇幻球場有機關幫忙，都不列入總桿排行與最佳 18 洞，只在自己的球場排行裡比
 const fullPar = r => !r.par || r.par >= (r.holes === 18 ? 66 : 33);
-const rowCourse = r => { const id = String(r.courseId || '').split(':')[0]; return COURSES.find(c => c.id === id) || COURSES.find(c => c.name === r.course); };
+const rowCourse = r => { const id = String(r.courseId || '').split(':')[0]; return COURSES.find(c => c.id === id) || COURSES.find(c => c.name === r.course || (c.oldName && c.oldName === r.course)); };
 const countsForTotal = r => r.rankable !== false && fullPar(r) && !['fantasy', 'custom'].includes((rowCourse(r) || {}).group) && !String(r.courseId || '').startsWith('custom_');
 function strokeHtml() {
   const course = COURSES.find(c => c.id === rank.course);
   const list = rank.rows
-    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && r.course === course.name)))
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && (r.course === course.name || r.course === course.oldName))))
     .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
     .slice(0, 100);
   const note = rank.tab === 'total' ? '<p class="small rk-note">三桿洞球場（例如 Cliffhangers，Par 54）與奇幻球場不列入總桿排行，請到「球場」分頁看各球場的排行。</p>' : '';

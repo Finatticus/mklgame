@@ -9,6 +9,7 @@
 import { registerCourse } from './courses.js';
 import { SURF } from './physics.js';
 import { genLevels, CHAPTERS_2 } from './challenge-gen.js';
+import { genLevels3, CHAPTERS_3 } from './challenge-gen3.js';
 
 const T = y => ({ black: y, blue: y, white: y, red: y });
 const BASE = { stimp: 8, firm: 1.0, altitude: 100, temp: 22, wind: [2, 6], fairwayW: 34, roughW: 16, corridor: 76, trees: 0.7 };
@@ -386,10 +387,15 @@ for (const [i, l] of LV.entries()) {
 }
 // 第 101~300 關（challenge-gen.js 產生）
 LV.push(...genLevels());
+// 第 301~500 關（challenge-gen3.js 產生）
+LV.push(...genLevels3());
+// 不同產生器之間偶爾會撞名：後面的加上關卡編號
+{ const seen = new Set(); LV.forEach((l, i) => { if (seen.has(l.title)) l.title += '・' + (i + 1); seen.add(l.title); }); }
 // 章節：前 100 關每 10 關一章，101 關以後每 20 關一章（第 20 關是頭目關）
 export const CHAPTERS = [
   ...['入門', '中等', '進階', '困難', '大師', '異界巡禮', '組合技', '專家', '大師之路', '深淵'].map((name, k) => ({ name, from: k * 10 + 1, to: k * 10 + 10 })),
   ...CHAPTERS_2.map((c, k) => ({ name: c.name, from: 101 + k * 20, to: 120 + k * 20 })),
+  ...CHAPTERS_3.map((c, k) => ({ name: c.name, from: 301 + k * 20, to: 320 + k * 20 })),
 ];
 export const chapterOf = n => CHAPTERS.findIndex(c => n >= c.from && n <= c.to);
 
@@ -441,6 +447,13 @@ export function goalMet(g, att, par, done = true) {
     case 'clubCount': return end(ok && new Set(shots.map(s => s.club)).size <= g.v);
     case 'holeOut': return shots.some(s => s.holed && !s.putter && s.distBefore >= g.v);
     case 'fxKinds': return new Set(shots.flatMap(s => Object.keys(s.fx).filter(k => s.fx[k] > 0))).size >= g.v;
+    // ---- 第 301 關以後的新條件 ----
+    case 'clubNear': return shots.some(s => s.club === g.club && s.distBefore >= (g.min || 0) && (s.holed || s.distAfter <= g.v));      // 用某支桿從 min 碼外打到旗桿 v 碼內
+    case 'useClub': return shots.some(s => s.club === g.club);
+    case 'notClub': return end(ok && !shots.some(s => s.club === g.club));
+    case 'teeMax': return !!s0 && s0.endSurf != null && s0.total <= g.v;                                       // 開球放短（沒落水 / 出界）
+    case 'avoidAll': return end(ok && shots.every(s => Object.values(s.fx).every(v => !v)));
+    case 'lastNonPutt': { const on = shots.find(s => s.onGreen && !s.putter); return !!on && g.clubs.includes(on.club); }      // 上果嶺的那一桿用指定的桿
     case 'all': return g.sub.every(x => goalMet(x, att, par, done));
     default: return false;
   }

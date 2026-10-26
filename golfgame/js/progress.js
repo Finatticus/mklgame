@@ -37,6 +37,12 @@ export const SKINS = [
   { id: 'crystalC', slot: 'chipper', name: '水晶寶刀', head: 0xc8a8ff, glow: 0x8a4aff, metal: 1, shaft: 0xe8d8ff, ach: 'crystal_par', fx: 'frost' },
   { id: 'skyD', slot: 'driver', name: '蒼穹 Driver', head: 0xf4f8ff, glow: 0x8ac8ff, metal: 1, shaft: 0xc8e0ff, ach: 'sky_clean', fx: 'star' },
   { id: 'cosmoB', slot: 'ball', name: '萬象球', color: 0xffffff, glow: 0xff8ad8, trail: 'galaxy', ach: 'fantasy_master', fx: 'rainbow' },
+  // ---- 挑戰第 301~500 關的成就獎勵 ----
+  { id: 'timeI', slot: 'iron', name: '時空鐵桿', head: 0x1a2a4a, glow: 0x6ad8ff, metal: 1, shaft: 0xb8c8ff, ach: 'ch400', fx: 'portal' },
+  { id: 'eternityD', slot: 'driver', name: '永恆 Driver', head: 0xf4f0ff, glow: 0xffd870, metal: 1, shaft: 0x2a1a4a, ach: 'ch500', fx: 'star' },
+  { id: 'summitP', slot: 'putter', name: '巔峰推桿', head: 0x14161c, glow: 0x9affe0, metal: 1, shaft: 0xe8e4d8, ach: 'ch_p30', fx: 'aurora' },
+  { id: 'legendC', slot: 'chipper', name: '傳說寶刀', head: 0xd8a830, glow: 0xff5a3a, metal: 1, shaft: 0x2a1410, ach: 'ch500_3', fx: 'ember' },
+  { id: 'novaB', slot: 'ball', name: '超新星球', color: 0xfff8e8, glow: 0xff8a3a, trail: 'rainbow', ach: 'ch_stars1300', fx: 'sun' },
   // ---- 寶刀（切推桿）：成就解鎖 ----
   { id: 'jadeC', slot: 'chipper', name: '青龍寶刀', head: 0x1f6a52, glow: 0x4affc0, metal: 1, shaft: 0xd8f0e4, ach: 'chip_in10', fx: 'aurora' },
   { id: 'dragonC', slot: 'chipper', name: '赤龍寶刀', head: 0x8a1410, glow: 0xffb030, metal: 1, shaft: 0x2a1410, ach: 'chip_round3', fx: 'ember' },
@@ -105,7 +111,7 @@ export const SKINS = [
   { id: 'sunset', slot: 'ball', name: '晚霞球', color: 0xffb070, glow: 0xff5a8a, trail: 'rainbow', price: 280, desc: '晚霞色的球，彈道是一道彩虹。', fx: 'rainbow' },
 ];
 // 成就外觀的介紹
-const ACH_SKIN_DESC = { coralB: '珊瑚海底 18 洞標準桿以內的紀念，珊瑚色的球拖著海水藍的尾巴。', pharaohP: '法老神殿 18 洞標準桿以內才拿得到，黃金配青金石。', fossilI: '恐龍谷 18 洞標準桿以內的證明，像從岩層裡挖出來的化石。', crystalC: '水晶洞窟 18 洞標準桿以內，刀身是一整塊紫水晶。', skyD: '天空之城 18 洞一次都沒墜入雲海，桿頭白得像雲。', cosmoB: '20 座奇幻球場全部打出標準桿以內，球裡裝著整個奇幻世界。', jadeC: '用寶刀切進 10 次的證明，青玉色刀身流動著光。', dragonC: '同一場用寶刀切進 3 次才拿得到，赤紅刀身燒著火光。', moonC: '從 30 碼外用寶刀切進，月光一樣冷冽的刀身。', goldD: '純金打造的一號木，只有打出天外飛球的人才拿得到。', frostD: '極光冰境的冰晶鍛造，桿頭透著冷冽的藍光。', galaxyD: '挑戰模式的最高榮譽，桿頭是一整片星河。',
+const ACH_SKIN_DESC = { timeI: '通過挑戰第 400 關，桿頭裡封著一道時空裂縫。', eternityD: '通過挑戰第 500 關的證明，白金桿頭永遠發著金光。', summitP: '傳說之巔全部滿星，站在最高處的推桿。', legendC: '挑戰第 500 關拿到 3 星，傳說中的那把寶刀。', novaB: '挑戰累計 1300 顆星，像超新星一樣爆發光芒的球。', coralB: '珊瑚海底 18 洞標準桿以內的紀念，珊瑚色的球拖著海水藍的尾巴。', pharaohP: '法老神殿 18 洞標準桿以內才拿得到，黃金配青金石。', fossilI: '恐龍谷 18 洞標準桿以內的證明，像從岩層裡挖出來的化石。', crystalC: '水晶洞窟 18 洞標準桿以內，刀身是一整塊紫水晶。', skyD: '天空之城 18 洞一次都沒墜入雲海，桿頭白得像雲。', cosmoB: '20 座奇幻球場全部打出標準桿以內，球裡裝著整個奇幻世界。', jadeC: '用寶刀切進 10 次的證明，青玉色刀身流動著光。', dragonC: '同一場用寶刀切進 3 次才拿得到，赤紅刀身燒著火光。', moonC: '從 30 碼外用寶刀切進，月光一樣冷冽的刀身。', goldD: '純金打造的一號木，只有打出天外飛球的人才拿得到。', frostD: '極光冰境的冰晶鍛造，桿頭透著冷冽的藍光。', galaxyD: '挑戰模式的最高榮譽，桿頭是一整片星河。',
   lavaI: '熔岩之心的火山岩打造，裂縫裡流著岩漿。', obsidianI: '黑曜石磨成的鐵桿，透出紫色的光。', moonP: '在月光下打磨的推桿。', lavaP: '被噴發口洗禮過的推桿，桿頭還在發燙。',
   sakuraP: '櫻川庭苑的櫻花木製成。', gold: '一桿進洞的紀念。', firefly: '螢火蟲聚成的光球。', lava: '還在冒著熱氣的熔岩球。', frost: '冰鏡牆的碎片凝成的冰晶球。', spore: '蘑菇幻境的孢子球。',
   portal: '吸進星門的漩渦。', star: '星光凝成的球。', rainbow: '環遊世界的證明，彈道會變換七彩顏色，飛行時灑出彩色火花。',
@@ -135,9 +141,13 @@ export function buySkin(s) {
   return true;
 }
 // 某個玩家外觀裡裝備的皮膚（球桿依類型分組）
+// look.fxOff = 關掉特效的欄位（例如 ['ball', 'driver']）：外觀照樣換，只是不噴粒子
 export function equippedSkins(look = {}) {
-  return { driver: skinById('driver', look.drvSkin), iron: skinById('iron', look.ironSkin), putter: skinById('putter', look.putSkin), chipper: skinById('chipper', look.chipSkin), ball: skinById('ball', look.ballSkin) };
+  const sk = { driver: skinById('driver', look.drvSkin), iron: skinById('iron', look.ironSkin), putter: skinById('putter', look.putSkin), chipper: skinById('chipper', look.chipSkin), ball: skinById('ball', look.ballSkin) };
+  for (const slot of look.fxOff || []) if (sk[slot] && sk[slot].fx) sk[slot] = { ...sk[slot], fx: null };
+  return sk;
 }
+export const fxIsOff = (look, slot) => (look.fxOff || []).includes(slot);
 
 // ---------------- 成就 ----------------
 // tier（徽章外觀，畫面上不寫出難度）：bronze 簡單、silver 中級（這兩級只解開成就）、gold 困難（送 1~2 點能力點）、legend 超難（解鎖球桿或球的外觀）
@@ -307,13 +317,38 @@ export const ACH = [
   { id: 'ch_combo', cat: 'chal', tier: 'gold', glyph: '鎖', name: '機關連鎖', desc: '挑戰模式中一桿連續觸發 3 次以上機關', pts: 2 },
   { id: 'ch50_3', cat: 'chal', tier: 'gold', glyph: '巔', name: '水晶之巔', desc: '挑戰第 50 關「水晶終章」拿到 3 星', pts: 2 },
   { id: 'ch100_3', cat: 'chal', tier: 'gold', glyph: '巔', name: '無盡之巔', desc: '挑戰第 100 關拿到 3 星', pts: 2 },
+  { id: 'ch350', cat: 'chal', tier: 'gold', glyph: '劍', name: '三百五十關', desc: '通過挑戰第 350 關', pts: 1 },
+  { id: 'ch400', cat: 'chal', tier: 'legend', glyph: '時', name: '四百關', desc: '通過挑戰第 400 關「時空裂縫」' },
+  { id: 'ch450', cat: 'chal', tier: 'gold', glyph: '獵', name: '四百五十關', desc: '通過挑戰第 450 關', pts: 2 },
+  { id: 'ch500', cat: 'chal', tier: 'legend', glyph: '永', name: '五百關制霸', desc: '通過挑戰第 500 關「傳說之巔」' },
+  { id: 'ch500_3', cat: 'chal', tier: 'legend', glyph: '傳', name: '傳說本人', desc: '挑戰第 500 關拿到 3 星' },
+  { id: 'ch_stars1000', cat: 'chal', tier: 'gold', glyph: '煌', name: '千星', desc: '挑戰模式累計 1000 顆星', cnt: 'chalStars', n: 1000, pts: 2 },
+  { id: 'ch_stars1300', cat: 'chal', tier: 'legend', glyph: '新', name: '超新星', desc: '挑戰模式累計 1300 顆星', cnt: 'chalStars', n: 1300 },
+  { id: 'ch_p21', cat: 'chal', tier: 'gold', glyph: '道', name: '寶刀道場滿星', desc: '挑戰第 21 章（第 301~320 關）全部 3 星', pts: 2 },
+  { id: 'ch_p22', cat: 'chal', tier: 'gold', glyph: '修', name: '單桿修行滿星', desc: '挑戰第 22 章（第 321~340 關）全部 3 星', pts: 2 },
+  { id: 'ch_p23', cat: 'chal', tier: 'gold', glyph: '滯', name: '滯空藝術滿星', desc: '挑戰第 23 章（第 341~360 關）全部 3 星', pts: 2 },
+  { id: 'ch_p24', cat: 'chal', tier: 'gold', glyph: '迷', name: '迷宮花園滿星', desc: '挑戰第 24 章（第 361~380 關）全部 3 星', pts: 2 },
+  { id: 'ch_p25', cat: 'chal', tier: 'gold', glyph: '機', name: '星際彈珠台滿星', desc: '挑戰第 25 章（第 381~400 關）全部 3 星', pts: 2 },
+  { id: 'ch_p26', cat: 'chal', tier: 'gold', glyph: '裂', name: '時空裂縫滿星', desc: '挑戰第 26 章（第 401~420 關）全部 3 星', pts: 2 },
+  { id: 'ch_p27', cat: 'chal', tier: 'gold', glyph: '颶', name: '風暴之眼滿星', desc: '挑戰第 27 章（第 421~440 關）全部 3 星', pts: 2 },
+  { id: 'ch_p28', cat: 'chal', tier: 'gold', glyph: '寶', name: '黃金獵人滿星', desc: '挑戰第 28 章（第 441~460 關）全部 3 星', pts: 2 },
+  { id: 'ch_p29', cat: 'chal', tier: 'gold', glyph: '混', name: '極限混合滿星', desc: '挑戰第 29 章（第 461~480 關）全部 3 星', pts: 2 },
+  { id: 'ch_p30', cat: 'chal', tier: 'legend', glyph: '峰', name: '傳說之巔滿星', desc: '挑戰第 30 章（第 481~500 關）全部 3 星' },
   { id: 'ch300_3', cat: 'chal', tier: 'legend', glyph: '王', name: '星海之王', desc: '挑戰第 300 關拿到 3 星' },
 ];
 export const TIER_NAME = { bronze: '銅', silver: '銀', gold: '金', legend: '傳說' };      // 只在程式裡用，畫面上不顯示難度
 export const achById = id => ACH.find(a => a.id === id);
 
 // 球場護照：每座一般球場（分區球場算同一座）
-export const PASSPORT = COURSES.map(c => ({ id: c.id, name: c.name, en: c.en, group: c.group, nines: c.nines ? c.nines.map(n => ({ id: n.id, name: n.name })) : null }));
+export const PASSPORT = COURSES.map(c => ({ id: c.id, name: c.name, oldName: c.oldName, en: c.en, group: c.group, nines: c.nines ? c.nines.map(n => ({ id: n.id, name: n.name })) : null }));
+// 分區球場某一區打完幾次（舊資料只有第一次的日期，算 1 次）
+export const nineCount = (x, k) => (x && x.nineN && Number(x.nineN[k])) || (x && x.nines && x.nines[k] ? 1 : 0);
+// 印章的輪數（決定墨印 / 銅印 / 銀章 / 金章）：一般球場 = 18 洞打完幾次；分區球場 = 每一區都打完算一輪，取打最少的那一區
+export function stampCount(id) {
+  const x = prog().stamps[id], c = PASSPORT.find(q => q.id === id);
+  if (!x || !c) return 0;
+  return c.nines ? Math.min(...c.nines.map(n => nineCount(x, n.id))) : Number(x.n) || 0;
+}
 // 這個球場的章蓋成了沒（分區球場：每一區都打過）
 export function stampDone(id) {
   const x = prog().stamps[id], c = PASSPORT.find(q => q.id === id);
@@ -368,6 +403,9 @@ export function checkChallenge(levels) {
   for (const [n, id] of [[180, 'ch150'], [200, 'ch200'], [260, 'ch250'], [300, 'ch300']]) if (levels.length >= n && s(n) >= 1) unlock(id);
   for (let k = 0; k < 10; k++) { const lv = levels.slice(100 + k * 20, 120 + k * 20); if (lv.length === 20 && lv.every(l => (st[l.id] || 0) >= 3)) unlock('ch_p' + (11 + k)); }
   if (levels.length >= 300 && s(300) >= 3) unlock('ch300_3');
+  for (const [n, id] of [[350, 'ch350'], [400, 'ch400'], [450, 'ch450'], [500, 'ch500']]) if (levels.length >= n && s(n) >= 1) unlock(id);
+  for (let k = 0; k < 10; k++) { const lv = levels.slice(300 + k * 20, 320 + k * 20); if (lv.length === 20 && lv.every(l => (st[l.id] || 0) >= 3)) unlock('ch_p' + (21 + k)); }
+  if (levels.length >= 500 && s(500) >= 3) unlock('ch500_3');
   for (let k = 0; k < 10; k++) { const lv = levels.slice(k * 10, k * 10 + 10); if (lv.length === 10 && lv.every(l => (st[l.id] || 0) >= 3)) unlock('ch_p' + (k + 1)); }
   if (levels.length >= 50 && s(50) >= 3) unlock('ch50_3');
   if (levels.length >= 100 && s(100) >= 3) unlock('ch100_3');
@@ -384,7 +422,7 @@ export function checkCounters() {
   if (PASSPORT.filter(x => x.group === 'taiwan').every(x => has(x.id))) unlock('stamps_tw');
   if (PASSPORT.filter(x => x.group === 'fantasy').every(x => has(x.id))) unlock('stamps_fx');
   if (PASSPORT.every(x => has(x.id))) unlock('stamps_world');
-  if (Object.values(prog().stamps).some(x => (x.n || 0) >= 10)) unlock('stamp_max');
+  if (PASSPORT.some(x => stampCount(x.id) >= 10)) unlock('stamp_max');
   if (FX_KINDS.every(k => (Number(c[k]) || 0) >= 1)) unlock('fx_all');
   save();
 }
@@ -484,3 +522,51 @@ export const medalHtml = (a, got, cls = '') => {
   return `<span class="medal2 t-${a.tier} ${got ? '' : 'locked'} ${cls}"><svg viewBox="0 0 64 64" aria-hidden="true">${MEDAL_SHAPE[a.tier] || MEDAL_SHAPE.bronze}
     <text x="32" y="${a.tier === 'legend' ? 39.5 : 39}" text-anchor="middle">${a.glyph}</text></svg></span>`;
 };
+
+// 補登護照：排行與回合紀錄裡有、護照沒記到的場次（例如護照記錄各區之前打的 9 洞）補進去，只增不減
+// rows = 排行（每一場一列，有 courseId）＋ 自己的回合紀錄（只有球場名稱）；同一場兩邊都有，用時間去掉重複
+export function backfillStamps(rows, user) {
+  const seen = new Set(), hist = {};
+  for (const r of rows || []) {
+    if (r.user != null && String(r.user) !== String(user)) continue;
+    const holes = Number(r.holes), key = String(r.date).slice(0, 19);
+    if (holes !== 9 && holes !== 18) continue;
+    if (seen.has(key)) continue;
+    let c = null, ids = [];
+    if (r.courseId) {
+      const [bid, code = ''] = String(r.courseId).split(':');
+      c = PASSPORT.find(q => q.id === bid);
+      if (c && c.nines) ids = [...code].filter(k => c.nines.some(n => n.id === k));
+    } else {
+      const m = String(r.course || '').match(/^([^（]+)(?:（(.+)）)?$/);
+      if (m) c = PASSPORT.find(q => q.name === m[1].trim() || q.oldName === m[1].trim());
+      if (c && c.nines && m[2]) ids = m[2].split('＋').map(nm => (c.nines.find(n => n.name === nm.trim()) || {}).id).filter(Boolean);
+    }
+    if (!c) continue;
+    if (c.nines) { ids = ids.slice(0, holes === 18 ? 2 : 1); if (!ids.length) continue; }
+    else if (holes !== 18) continue;
+    seen.add(key);
+    const h = hist[c.id] = hist[c.id] || { n: 0, best: 999, first: null, nine: {}, nineFirst: {} };
+    const d = String(r.date || '');
+    if (holes === 18) { h.n++; if (Number(r.strokes) > 0) h.best = Math.min(h.best, Number(r.strokes)); if (!h.first || d < h.first) h.first = d; }
+    for (const k of ids) { h.nine[k] = (h.nine[k] || 0) + 1; if (!h.nineFirst[k] || d < h.nineFirst[k]) h.nineFirst[k] = d; }
+  }
+  const st = prog().stamps;
+  let changed = false;
+  for (const id in hist) {
+    const h = hist[id], c = PASSPORT.find(q => q.id === id), before = stampDone(id);
+    const x = st[id] = st[id] || { n: 0 };
+    if (h.n > (Number(x.n) || 0)) { x.n = h.n; changed = true; }
+    if (h.best < 999 && h.best < (Number(x.best) || 999)) { x.best = h.best; changed = true; }
+    if (c.nines) {
+      x.nines = x.nines || {}; x.nineN = x.nineN || {};
+      for (const k in h.nine) {
+        if (!x.nines[k]) { x.nines[k] = h.nineFirst[k] || new Date().toISOString(); changed = true; }
+        if (h.nine[k] > nineCount(x, k)) { x.nineN[k] = h.nine[k]; changed = true; }
+      }
+      if (!before && stampDone(id) && !x.date) x.date = Object.values(x.nines).sort().pop();
+    } else if (!x.date && h.first) { x.date = h.first; changed = true; }
+  }
+  if (changed) { dirty = true; checkCounters(); }
+  return changed;
+}
