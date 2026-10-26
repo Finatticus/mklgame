@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 67）· 2026-10-26<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 68）· 2026-10-26<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -322,6 +322,15 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td><b>曼吉勞</b>（關島）</td><td>GolfPass 球場卡：Black / Blue / White / Red。</td><td>太平洋、石灰岩海崖、椰子樹與熱帶樹林；第 12 洞跨海開球。</td></tr>
 </table></div>
 <p>真實地形的處理：陸地一定高於海面（DEM 網格在海邊會被內插得太低），海崖頂端只用陸地的取樣點內插，地圖範圍外依取樣點判斷是海還是陸地，DEM 範圍外慢慢降到低地。海用一整片海面，岸邊有起伏的浪花。各球場有當地的樹種：金雀花叢、蒙特利柏樹、日本黑松、熱帶樹林。逐洞說明的高低差、海在哪一側由地圖算出。地圖資料 © OpenStreetMap contributors（ODbL）。</p>
+<h3>國外球場：TPC 鋸草、皇家特倫、卡努斯蒂（照官方逐洞球道圖）</h3>
+<p>三座國際大賽球場，每洞的球道、果嶺、沙坑、水、樹林都照<b>官方的逐洞球道圖</b>判讀（<code>.claude/trace-generic.py</code>，設定在 <code>trace-generic-courses.py</code>；原圖放在 <code>.claude/holes/</code>），不是用衛星圖或 OSM。</p>
+<div class="scroll"><table>
+  <tr><th>球場</th><th>官方圖與資料</th><th>判讀方式</th></tr>
+  <tr><td><b>TPC 鋸草 THE PLAYERS Stadium Course</b>（美國・佛州，Par 72，7,279 碼）</td><td>TPC Sawgrass 官網免費下載的 2025 年 Yardage Guide（48 頁 PDF）：每洞一張 3D 鳥瞰球道圖、THE PLAYERS / BLUE / WHITE / GREEN 碼數、男子難度。</td><td>從 PDF 抽出每洞原圖（638×975）；水 = 深藍、沙坑 = 白灰、松針地與樹 = 樹林、亮綠 = 球道。果嶺與最後面的梯台人工標點，果嶺畫成標準大小。3D 圖的樹冠會蓋住球道邊，算路線時樹也當可走（<code>routePlay</code>）。樹種是新的 <code>florida</code>：高瘦的松、棕櫚、橡樹。</td></tr>
+  <tr><td><b>皇家特倫 Old Course</b>（英國・蘇格蘭，Par 71，7,208 碼）</td><td>官網 18 個單洞頁面的 Strokesaver 球道圖（550×1104，正上方俯視）；標準桿、冠軍梯碼數、難度在單洞頁裡（其他梯台照 95% / 90% / 80%）。</td><td>球道和長草顏色很接近：球道是平塗、長草有草紋，用「附近顏色的標準差」分開；金雀花 = 幾乎沒有藍色的黃 / 暗橄欖。果嶺 = 上面 30% 最大的淺綠塊，梯台 = 下面 25% 最下面的梯台方塊。</td></tr>
+  <tr><td><b>卡努斯蒂 Championship</b>（英國・蘇格蘭，Par 72，6,945 碼）</td><td>官網球場頁每洞的 Strokesaver 照片風碼數圖（約 330×607）與官方計分卡（White / Yellow / Green / Black 梯、難度、洞名）。</td><td>放大 2 倍判讀；Barry Burn 等小溪 = 灰藍、沙坑 = 被包住的白色橢圓（方方正正的白框是碼數框，當長草）、圖邊淡出的奶油色不算沙坑。果嶺中心與白梯（白色小方塊）人工標點，果嶺照圖上標的縱深畫成橢圓。</td></tr>
+</table></div>
+<p>三座都有中文介紹寫清楚來歷（大賽紀錄、名人、經典洞），每洞的說明與攻略照官網的單洞介紹整理；球場護照各有一個印章（孤島果嶺、郵票、石橋）。梯台若算到水裡，會沿路線往前、再往後找到可以站的地面。</p>
 <h3>印章等級、小地圖、距離標籤、排行規則</h3>
 <ul>
   <li><b>印章等級</b>：同一座球場打完 1 次蓋<b>墨印</b>（線條），3 次升級<b>銅印</b>（淡色底、銅色外圈與小珠），5 次<b>銀章</b>（彩色實景：依球場類型的天空、太陽光暈、遠景與地面，圖案有陰影，銀色金屬外框），10 次<b>金章</b>（再加放射光芒、閃光、金色鋸齒外框、月桂葉、紅色緞帶）。護照上顯示目前等級與「再打幾次升級」。英文名太長時外圈的字會自動縮小。</li>
