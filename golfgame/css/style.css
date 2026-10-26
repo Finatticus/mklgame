@@ -1383,7 +1383,8 @@ button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border
 
 /* 旗桿距離紅卡：永遠在最上層，跟它重疊的東西變半透明 */
 #tag-pin { z-index: 40; }
-.under-pin { opacity: .18 !important; transition: opacity .15s; }
+/* 用 filter 乘上去：本來就隱藏的東西（opacity 0 的 SHOT DATA、球洞介紹）維持隱藏，不會被叫出來 */
+.under-pin { filter: opacity(.18); transition: filter .15s; }
 
 /* 角色外觀：球具清單（五類，點類別展開；點一項在上面預覽） */
 .gear-tip { margin: 2px 0 10px; }
@@ -1415,3 +1416,4 @@ button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border
   .char-body[data-ct="look"] .ch-stage { position: sticky; top: -16px; z-index: 3; background: var(--paper); padding: 16px 0 6px; margin-top: -16px; box-shadow: 0 6px 8px -6px rgba(0,0,0,.15); }
   .char-body[data-ct="look"] .char-left canvas { height: 230px; }
 }
+.cp-done.part { color: #8a6a1a; background: #f6eed8; border-color: #e6d6a8; }

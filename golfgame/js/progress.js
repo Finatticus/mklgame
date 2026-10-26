@@ -395,7 +395,8 @@ export function stamp(courseId, strokes, nineIds = null) {
   const st = prog().stamps, now = new Date().toISOString(), before = stampDone(courseId);
   const cur = st[courseId] || { n: 0 };
   if (strokes) { cur.best = Math.min(cur.best || 999, strokes); cur.n = (cur.n || 0) + 1; }
-  if (nineIds) { cur.nines = cur.nines || {}; for (const k of nineIds) if (!cur.nines[k]) cur.nines[k] = now; }
+  // 分區球場：每一區第一次打完的時間（蓋章用）＋打完幾次（選球場時顯示各區完成次數）
+  if (nineIds) { cur.nines = cur.nines || {}; cur.nineN = cur.nineN || {}; for (const k of nineIds) { if (!cur.nines[k]) cur.nines[k] = now; cur.nineN[k] = (cur.nineN[k] || (cur.nines[k] !== now ? 1 : 0)) + 1; } }
   st[courseId] = cur;
   if (!before && stampDone(courseId)) cur.date = now;
   else if (!nineIds && strokes && !cur.date) cur.date = now;

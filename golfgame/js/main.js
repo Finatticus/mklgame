@@ -424,7 +424,7 @@ function openCoursePicker(kind) {
     return `<h4>${g.name}</h4>${gnote}` + (list.length ? `<div class="cp-group">${list.map(c => {
       const on = c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':');
       return `<div class="cp-item ${on ? 'on' : ''}">
-        <button class="cp-row" data-open="${c.id}"><span class="cp-name"><b>${c.name}</b>${c.area || c.country ? `<small>${c.area || c.country}</small>` : ''}${playedTag(c.id)}</span>
+        <button class="cp-row" data-open="${c.id}"><span class="cp-name"><b>${c.name}</b>${c.area || c.country ? `<small>${c.area || c.country}</small>` : ''}${playedTag(c)}</span>
           <span class="cp-sum">${courseSummary(c)}</span><i class="cp-arrow"></i></button>
         <div class="cp-more"><em class="cp-en">${c.en}</em>${c.country && c.tagline ? `<i class="cp-country">${c.country}・${c.tagline}</i>` : ''}
           <div class="cp-stats"><span>Stimp(果嶺速度) <b>${c.stimp}</b></span><span>風 <b>${c.wind[0]}~${Math.min(15, c.wind[1])} mph</b></span><span>海拔 <b>${c.altitude} m</b></span>${c.nines ? `<span>分區 <b>${c.nines.map(n => n.name).join(' / ')}</b></span>` : ''}</div>
@@ -445,10 +445,15 @@ function openCoursePicker(kind) {
   });
   $('dlg-courses').classList.add('open');
 }
-// 打完過幾次 18 洞（球場護照的紀錄），還有最佳成績
-function playedTag(id) {
-  const st = prog().stamps[id];
-  return st && st.n ? `<i class="cp-done">已完成 ${st.n} 次${st.best ? ` · 最佳 ${st.best}` : ''}</i>` : '';
+// 打完過幾次（球場護照的紀錄）：一般球場 = 18 洞次數與最佳成績；分區球場 = 每一區打完幾次（看得出還差哪一區）
+function playedTag(c) {
+  const st = prog().stamps[c.id];
+  if (c.nines) {
+    if (!st || !st.nines) return '';
+    const cnt = k => (st.nineN && st.nineN[k]) || (st.nines[k] ? 1 : 0);
+    return `<i class="cp-done ${c.nines.every(n => cnt(n.id)) ? '' : 'part'}">${c.nines.map(n => `${escapeHtml(n.name)} ${cnt(n.id)}`).join(' · ')}</i>`;
+  }
+  return st && st.n ? `<i class="cp-done">已完成 ${st.n} 次${st.best && st.best < 999 ? ` · 最佳 ${st.best}` : ''}</i>` : '';
 }
 // 球場清單一列的重點：幾洞（分區球場寫幾區）、Par、黑梯總碼數
 function courseSummary(c) {

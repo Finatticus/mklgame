@@ -218,7 +218,11 @@ function mergeProg(a, b) {
   for (const k in b.cnt || {}) o.cnt[k] = Math.max(Number(o.cnt[k]) || 0, Number(b.cnt[k]) || 0);
   for (const k in b.stamps || {}) {
     const x = o.stamps[k], y = b.stamps[k];
-    o.stamps[k] = !x ? y : { date: x.date || y.date, best: Math.min(Number(x.best) || 999, Number(y.best) || 999), n: Math.max(Number(x.n) || 0, Number(y.n) || 0), nines: { ...(y.nines || {}), ...(x.nines || {}) } };
+    if (!x) { o.stamps[k] = y; continue; }
+    const best = Math.min(Number(x.best) || 999, Number(y.best) || 999), nineN = { ...(x.nineN || {}) };
+    for (const q in y.nineN || {}) nineN[q] = Math.max(Number(nineN[q]) || 0, Number(y.nineN[q]) || 0);
+    o.stamps[k] = { date: x.date || y.date, n: Math.max(Number(x.n) || 0, Number(y.n) || 0), nines: { ...(y.nines || {}), ...(x.nines || {}) }, nineN };
+    if (best < 999) o.stamps[k].best = best;
   }
   return o;
 }
