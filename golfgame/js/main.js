@@ -1,7 +1,7 @@
 // 介面流程：登入/註冊 → 大廳 → 單人 / 建立遊戲間 / 加入遊戲間 / 練習場；角色素質、紀錄、管理員
 import * as THREE from 'three';
 import { session, call, isLocalMode, peek, refresh, prefetch } from './api.js';
-import { gasUrl, getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
+import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS } from './stats.js';
 import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel } from './courses.js';
 import { World } from './render.js';
@@ -138,15 +138,12 @@ async function clearAssetCache() {
 function openSettings() {
   showCacheInfo();
   $('set-cache-clear').onclick = clearAssetCache;
-  $('set-gas').value = gasUrl();
   $('set-quality').value = getSetting('quality', 'high');
   $('set-sound').checked = getSetting('sound', true);
   $('dlg-settings').classList.add('open');
 }
 function initSettings() {
   $('set-save').onclick = () => {
-    const url = $('set-gas').value.trim();
-    try { if (url) localStorage.setItem('dixen.gas', url); else localStorage.removeItem('dixen.gas'); } catch (e) { /* 忽略 */ }
     const q = $('set-quality').value;
     const needReload = world && q !== getSetting('quality', 'high');
     setSetting('quality', q);

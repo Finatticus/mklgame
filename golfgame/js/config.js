@@ -1,6 +1,6 @@
 // ===== Dixen Golf 設定 =====
 export const CONFIG = {
-  // 部署 GAS 網頁應用程式後，把網址貼在這裡（也可以在登入畫面右上角「設定」裡填，存在瀏覽器）
+  // GAS 網頁應用程式的網址（內建，玩家不用自己填；重新部署時用「管理部署作業 → 編輯 → 新版本」，網址不變）
   // 留空 = 本機模式：帳號存在這台裝置的瀏覽器，方便測試，但不能跨裝置連線。
   GAS_URL: 'https://script.google.com/macros/s/AKfycbxpTR_Gu7T6VYKb965LypAW6C-MJQerOWgyPHLbfikEuHUi7JSVJ8TSzhTy9ap4tLPG/exec',
 
@@ -30,9 +30,9 @@ export const characterDef = id => CHARACTERS.find(c => c.id === id) || CHARACTER
 
 export function gasUrl() {
   try {
-    const v = localStorage.getItem('dixen.gas');
-    if (v === 'local') return '';            // 測試用：強制本機模式，不動到正式試算表
-    return v || CONFIG.GAS_URL;
+    // 測試用：強制本機模式，不動到正式試算表（沒有設定畫面，只有開發時手動設）；以前在設定裡填過的網址一律不再採用
+    if (localStorage.getItem('dixen.gas') === 'local') return '';
+    return CONFIG.GAS_URL;
   } catch (e) { return CONFIG.GAS_URL; }
 }
 
