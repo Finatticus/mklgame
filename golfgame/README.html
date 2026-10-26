@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 66）· 2026-10-26<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 67）· 2026-10-26<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -497,10 +497,10 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <li>選單「擴充功能」→「Apps Script」，把 <code>gas/Code.gs</code> 的內容全部貼上，存檔。</li>
   <li>上方函式選 <code>setup</code> → 執行（第一次會要求授權，按允許）。會建立「Account」工作頁和 Michael 帳號（密碼 1220、啟用 Y）。</li>
   <li>右上「部署」→「新增部署作業」→ 類型選「網頁應用程式」，執行身分「我」，存取權「所有人」→ 部署 → 複製「網頁應用程式網址」（結尾是 <code>/exec</code>）。</li>
-  <li>把網址貼到 <code>js/config.js</code> 的 <code>GAS_URL: ''</code> 引號裡；或打開遊戲登入畫面右上角 ⚙ 設定貼上（只存在那台裝置）。建議貼在 config.js，大家都會用到。</li>
+  <li>把網址貼到 <code>js/config.js</code> 的 <code>GAS_URL</code> 引號裡（網址只在這裡設定，遊戲裡沒有填網址的地方）。</li>
   <li>之後改了 Code.gs，要「部署」→「管理部署作業」→ 編輯 → 版本選「新版本」才會生效（網址不變）。</li>
 </ol>
-<div class="note"><b>測試用</b>：在瀏覽器把設定的 GAS 網址填成 <code>local</code>，就會強制使用本機模式，不會動到正式的試算表。</div>
+<div class="note"><b>GAS 網址是內建的</b>（<code>js/config.js</code> 的 <code>GAS_URL</code>），設定畫面裡沒有網址欄位，玩家不用自己填；以前在設定裡填過的網址也不再採用。<b>測試用</b>：開發時在瀏覽器的 localStorage 把 <code>dixen.gas</code> 設成 <code>local</code>，就會強制使用本機模式，不會動到正式的試算表。</div>
 <h3>2. GitHub Pages 網站</h3>
 <ol>
   <li>在 GitHub 建立一個 repository，把整個資料夾的檔案上傳（<code>index.html</code>、<code>css/</code>、<code>js/</code>、<code>assets/</code>、<code>manifest.webmanifest</code>、<code>sw.js</code>、<code>README.html</code>；<code>gas/</code> 可以一起放，但它不會在網站上執行；<code>style-sample.html</code>、<code>.claude/</code> 可以不傳）。</li>
