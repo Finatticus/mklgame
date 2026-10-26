@@ -628,11 +628,13 @@ export function buildHole(course, holeIdx, opts = {}) {
   const tees = TEE_SETS.map(t => {
     if (map && map.tees[t.id]) {
       let [u, v] = map.tees[t.id];
-      // 描圖算出來的梯台落在水、沙坑、樹林或圖外
-      //   （發球台四周 5 公尺都要是乾的地面）→ 沿洞線前後找最近的乾地（優先往果嶺方向，最多前 90、後 40 公尺），梯台放在洞線上
-      const dryAt = (uu, vv) => { const i = cellAt(uu, vv); return i >= 0 && [1, 2, 4, 9].includes(MG.g[i]); };
-      const padOk = (uu, vv) => dryAt(uu, vv) && dryAt(uu + 5, vv) && dryAt(uu - 5, vv) && dryAt(uu, vv + 5) && dryAt(uu, vv - 5);
-      if (!padOk(u, v)) {
+      // 描圖算出來的梯台四周 3 公尺內有水、沙坑或果嶺 → 沿洞線前後找最近的乾地（優先往果嶺方向，最多前 90、後 40 公尺），梯台放在洞線上
+      //   樹林、車道、荒地、圖邊不算：發球台那一塊本來就會畫成發球台（inTee），樹也會清掉；
+      //   以前這些也算「不乾」，貼著圖邊或樹叢的梯台會被往前推好幾十公尺（例：南一 8 號 135 碼變 58 碼）
+      const dryAt = (uu, vv) => { const i = cellAt(uu, vv); return i >= 0 && ![3, 5, 6].includes(MG.g[i]); };
+      const padOk = (uu, vv) => dryAt(uu, vv) && dryAt(uu + 3, vv) && dryAt(uu - 3, vv) && dryAt(uu, vv + 3) && dryAt(uu, vv - 3);      // 四周 3 公尺（很多梯台就在水邊）
+      const onPad = (() => { const i = cellAt(u, v); return i >= 0 && MG.g[i] === 4; })();      // 站在官網圖上畫的梯台方塊上：照圖放，不挪
+      if (!padOk(u, v) && !onPad) {
         const s0 = near(u, v).s;
         for (let k = 2; k <= 90; k += 2) {
           const f = pointAt(s0 + k); if (padOk(f[0], f[1])) { [u, v] = f; break; }
@@ -703,6 +705,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (i < 0) return SURF.OB;
     const c = MG.g[i];
     if (cross && cross.kind === 'valley' && c !== 3 && c !== 4 && !inTee(u, v)) { const { s, d } = near(u, v); if (crossDist(s, d) < 0) return SURF.OB; }
+    if (c === 0 && inTee(u, v)) return SURF.TEE;                    // 梯台貼著圖邊（一部分在圖外）：發球台照樣是發球台
     if (c === 0) {
       // 圖外：OB 那一側直接界外；其他地方 14 公尺內是樹林（深草），再外面界外
       if (obSide) { const { d } = near(u, v); if (obSide * d > 0) return SURF.OB; }

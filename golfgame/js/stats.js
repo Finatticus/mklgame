@@ -1,11 +1,11 @@
-// 角色素質系統：13 項素質、基準值 50、上限 99，用能力點升級
+// 角色素質系統：14 項素質、基準值 50、上限 99，用能力點升級
 export const BASE = 50;
 export const MAX = 99;
 export const START_POINTS = 30;
 export const START_RESPECS = 10;
 
 export const STATS = [
-  { key: 'power', group: '長打', name: '力量', en: 'Power', desc: '桿頭速度。50 時一號木約 88 mph（約 180 碼），99 時約 117 mph（約 280 碼）。' },
+  { key: 'power', group: '長打', name: '力量', en: 'Power', desc: '桿頭速度。50 時一號木約 88 mph（Carry 約 195 碼），99 時約 117 mph（約 293 碼）。' },
   { key: 'contact', group: '長打', name: '擊球效率', en: 'Contact', desc: '擊球效率 (Smash) 上限，以及打不到甜蜜點的機率。' },
   { key: 'launch', group: '長打', name: '彈道控制', en: 'Launch', desc: '發射角的穩定度，越穩越接近該支球桿的最佳彈道。' },
   { key: 'accuracy', group: '方向', name: '準度', en: 'Accuracy', desc: '桿面角度的隨機誤差，影響左右偏移。' },
@@ -27,7 +27,7 @@ export const STAT_DETAIL = {
   power: {
     detail: '決定揮桿的桿頭速度，推桿以外的所有球桿都會一起變快。桿頭速度越快、球速越快、飛得越遠，是距離最主要的來源。',
     formula: '一號木桿頭速度 = 58 + 0.6 × 力量（mph）\n其他球桿 = 一號木 × 球桿比例（例：7 號鐵 × 0.796、SW × 0.695）\n球速 = 桿頭速度 × 擊球效率',
-    effect: v => `一號木桿頭速度 ${f1(58 + 0.6 * v)} mph、7 號鐵 ${f1((58 + 0.6 * v) * 0.796)} mph（一號木 Carry 約 ${Math.round(180 + (v - 50) * 2)} 碼）`,
+    effect: v => `一號木桿頭速度 ${f1(58 + 0.6 * v)} mph、7 號鐵 ${f1((58 + 0.6 * v) * 0.796)} mph（一號木 Carry 約 ${Math.round(195 + (v - 50) * 2)} 碼）`,
   },
   contact: {
     detail: '擊球效率（球速 ÷ 桿頭速度）的上限，以及打不到甜蜜點的程度。打偏時球速變慢、後旋改變，距離會短。每一桿都會隨機打偏一點，這項越高偏得越少。',
@@ -66,12 +66,12 @@ export const STAT_DETAIL = {
   },
   bunker: {
     detail: '沙坑擊球：球道沙坑保留多少球速、果嶺邊沙坑爆炸球的球速，以及誤差放大的程度。',
-    formula: '球道沙坑：球速 × (0.62 + 0.0025 × 沙坑)\n果嶺邊沙坑（55 碼內挖起桿）：球速 × (0.42 + 0.0025 × 沙坑 × 0.8)\n誤差 × (1.7 − 0.009 × 沙坑)',
-    effect: v => `球道沙坑球速 ${f1((0.62 + 0.0025 * v) * 100)}%、爆炸球球速 ${f1((0.42 + 0.002 * v) * 100)}%、誤差 ×${f1(1.7 - 0.009 * v, 2)}`,
+    formula: '球道沙坑：球速 × (0.82 + 0.0013 × 沙坑)\n果嶺邊沙坑（55 碼內挖起桿）：球速 × (0.42 + 0.002 × 沙坑)\n誤差 × (1.7 − 0.009 × 沙坑)',
+    effect: v => `球道沙坑球速 ${f1((0.82 + 0.0013 * v) * 100)}%、爆炸球球速 ${f1((0.42 + 0.002 * v) * 100)}%、誤差 ×${f1(1.7 - 0.009 * v, 2)}`,
   },
   recovery: {
     detail: '在長草、深草、荒地，以及斜坡站位時，球速損失和誤差放大的程度。長草會讓後旋變少（飛球），落地後滾比較多。',
-    formula: '長草：球速 × (0.80 + 0.0018 × 脫困)、後旋 × 0.62\n深草：長草 × 0.72\n誤差 × (1.5 − 0.005 × 脫困)',
+    formula: '長草：球速 × (0.80 + 0.0018 × 脫困)、後旋 × 0.62\n深草：長草 × 0.84\n誤差 × (1.5 − 0.005 × 脫困)',
     effect: v => `長草球速 ${f1((0.8 + 0.0018 * v) * 100)}%、深草 ${f1((0.8 + 0.0018 * v) * 72)}%、誤差 ×${f1(1.5 - 0.005 * v, 2)}`,
   },
   touch: {
@@ -117,7 +117,7 @@ export function normalizeStats(stats) {
   return o;
 }
 
-export const POWER_MPH = { base: 58, k: 0.6 };   // 力量 → 一號木桿頭速度（mph）：50 點 88 mph（一號木 Carry 約 180 碼、7 鐵約 120）、100 點 118 mph（約 280 碼、7 鐵約 170）
+export const POWER_MPH = { base: 58, k: 0.6 };   // 力量 → 一號木桿頭速度（mph）：50 點 88 mph（一號木 Carry 約 195 碼、7 鐵約 112）、100 點 118 mph（約 280 碼、7 鐵約 170）
 
 // 把素質轉成物理計算實際用到的數字（全部都是線性對應，方便在 README 說明）
 export function derive(stats) {
@@ -133,7 +133,8 @@ export function derive(stats) {
     spinMul: 0.85 + s.spin * 0.003,                 // 短鐵/挖起桿後旋倍率
     chipSigma: 0.10 - s.chipping * 0.0008,          // 切球距離誤差（比例）
     chipFace: 1.0 - s.chipping * 0.005,             // 切球方向誤差倍率
-    sandKeep: 0.62 + s.bunker * 0.0025,             // 球道沙坑球速保留
+    sandKeep: 0.82 + s.bunker * 0.0013,             // 球道沙坑球速保留（乾淨擊球，50 點約少 13% 球速）
+    sandShortKeep: 0.42 + s.bunker * 0.002,         // 果嶺邊沙坑（55 碼內挖起桿）球速保留
     sandSigma: 1.7 - s.bunker * 0.009,              // 沙坑誤差倍率
     roughKeep: 0.80 + s.recovery * 0.0018,          // 長草球速保留
     roughSigma: 1.5 - s.recovery * 0.005,           // 長草誤差倍率
@@ -154,8 +155,8 @@ export const LOOK_OPTIONS = {
   cap: ['#1d3a2a', '#ffffff', '#20324f', '#a3302a', '#1c1c1c', '#d8c08a'],
 };
 
-// 角色等級：所有能力值的平均，平均 50 = 1 等，每多 0.5 再升 1 等（平均 50.5 = 2 等、99 = 99 等），最高 100 等
+// 角色等級：所有能力值的平均，平均 50 = 1 等，每多 0.5 再升 1 等（平均 50.5 = 2 等、99 = 99 等），最高 99 等（素質上限 99）
 export function levelOf(stats = {}) {
   const avg = STATS.reduce((s, st) => s + (Number(stats[st.key]) || BASE), 0) / STATS.length;
-  return Math.max(1, Math.min(100, Math.floor((avg - BASE) * 2 + 1e-9) + 1));
+  return Math.max(1, Math.min(99, Math.floor((avg - BASE) * 2 + 1e-9) + 1));
 }

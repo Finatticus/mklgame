@@ -8,7 +8,13 @@ export const SURF_NAME = ['發球台', '球道', '果嶺邊', '果嶺', '長草'
 const R = 0.021335, AREA = Math.PI * R * R, MASS = 0.04593, G = 9.81;
 const CUP_R = 0.054;
 // 空氣動力係數：用 PGA TrackMan 平均數據回歸（Driver 167mph/10.9°/2686rpm → 275y；7I 120mph → 172y）
-const CD0 = 0.215, CDK = 0.30, CLK = 1.8, CLQ = 1.5, CL_MAX = 0.34, SPIN_TAU = 25;
+// 空氣力學參數（集中在這裡，方便調整）：
+//   WIND：風的有效強度（1.2 = 顯示風速 × 1.2，讓 10 mph 逆風對一號木少約 8%、7 鐵少約 6%，接近實測）
+//   SPIN_EXP：後旋隨揮桿速度變化的指數。以前是 1（線性），慢的揮桿後旋太少、球飛得太低（素質 50 一號木最高點只有 14 公尺），
+//     風和海拔幾乎影響不到；實測業餘慢揮桿的後旋跟職業差不多，改成 0.2
+//   LAUNCH_LOW：揮桿比標準慢時多加的發射角（度，乘上「慢多少」的比例），慢揮桿的彈道比較高（素質 50 一號木最高點約 22 公尺）
+export const AERO = { CD0: 0.215, CDK: 0.30, CLK: 1.8, CLQ: 1.5, CL_MAX: 0.34, WIND: 1.2, SPIN_EXP: 0.2, LAUNCH_LOW: 12 };
+const SPIN_TAU = 25;
 
 // 各地面：e = 法向恢復係數；keep = 落地切向速度保留；crr = 滾動阻力係數
 export const GROUND = {
@@ -33,7 +39,7 @@ export const stimpCrr = stimp => (1.83 * 1.83) / (2 * stimp * 0.3048) / G;
 function windAt(env, h) {
   // 對數風廓線：地面風小、高空風大。顯示的風速是 10 公尺高度
   const f = clamp(Math.log(Math.max(h, 0.3) / 0.05) / Math.log(10 / 0.05), 0.3, 1.25);
-  return [env.wind[0] * f, env.wind[1] * f];
+  return [env.wind[0] * f * AERO.WIND, env.wind[1] * f * AERO.WIND];
 }
 
 export function groundFor(code, course) {
@@ -82,8 +88,8 @@ export function simulate(launch, env, terrain) {
       const rvx = vx - wx, rvy = vy, rvz = vz - wz;
       const sp = Math.hypot(rvx, rvy, rvz) || 1e-6;
       const S = R * w / sp;
-      const cd = CD0 + CDK * S;
-      const cl = S < 0.3 ? Math.min(CL_MAX, CLK * S - CLQ * S * S) : CL_MAX;
+      const cd = AERO.CD0 + AERO.CDK * S;
+      const cl = S < 0.3 ? Math.min(AERO.CL_MAX, AERO.CLK * S - AERO.CLQ * S * S) : AERO.CL_MAX;
       const k = 0.5 * rho * AREA * sp / MASS;
       // 升力方向 = 旋轉軸 × 相對速度（單位化）
       let lx = sy * rvz - sz * rvy, ly = sz * rvx - sx * rvz, lz = sx * rvy - sy * rvx;
@@ -287,10 +293,10 @@ export function makeLaunch(input, ctx) {
   let lieKeep = 1, lieSpin = 1, lieSig = 1, launchAdd = 0;
   const shortGame = ctx.distToPin < 55 && club.wedge;
   if (lie === SURF.ROUGH) { lieKeep = d.roughKeep; lieSpin = 0.62; lieSig = d.roughSigma; launchAdd = 1.2; }
-  else if (lie === SURF.DEEP) { lieKeep = d.roughKeep * 0.72; lieSpin = 0.45; lieSig = d.roughSigma * 1.5; launchAdd = 3; }
+  else if (lie === SURF.DEEP) { lieKeep = d.roughKeep * 0.84; lieSpin = 0.45; lieSig = d.roughSigma * 1.5; launchAdd = 3; }
   else if (lie === SURF.WASTE) { lieKeep = (d.roughKeep + 0.05) * 0.95; lieSpin = 0.7; lieSig = d.roughSigma * 1.1; }
   else if (lie === SURF.SAND) {
-    if (shortGame) { lieKeep = 0.42 + (d.sandKeep - 0.62) * 0.8; lieSpin = 0.55; launchAdd = 6; }
+    if (shortGame) { lieKeep = d.sandShortKeep; lieSpin = 0.55; launchAdd = 6; }      // 果嶺邊沙坑（爆炸球）：照舊
     else { lieKeep = d.sandKeep; lieSpin = 0.8; }
     lieSig = d.sandSigma;
   } else if (lie === SURF.FAIRWAY || lie === SURF.FRINGE || lie === SURF.GREEN) {
@@ -305,8 +311,9 @@ export function makeLaunch(input, ctx) {
   const smash = club.smash * d.smashMul * (1 - mis * 1.6);
   const ballMph = clubMph * powerNoise * smash * lieKeep;
 
-  const launchDeg = club.launch * (0.85 + 0.15 * pw) + launchAdd + n() * d.launchSigma * Math.sqrt(sig) * pm;
-  let spin = club.spin * (clubMph / (CLUB_NOMINAL_MPH * club.ratio)) * (0.6 + 0.4 * pw) * lieSpin;
+  const spd = clubMph / (CLUB_NOMINAL_MPH * club.ratio);
+  const launchDeg = club.launch * (0.85 + 0.15 * pw) + launchAdd + AERO.LAUNCH_LOW * Math.max(0, 1 - spd) + n() * d.launchSigma * Math.sqrt(sig) * pm;
+  let spin = club.spin * Math.pow(spd, AERO.SPIN_EXP) * (0.6 + 0.4 * pw) * lieSpin;
   if (club.wedge || club.id === '9I' || club.id === '8I') spin *= d.spinMul;
   spin *= 1 + mis * 2.5 * (n() > 0 ? 1 : -0.4);
 
