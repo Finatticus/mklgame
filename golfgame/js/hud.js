@@ -68,7 +68,7 @@ export class Hud {
 
   setPlayers(players, par, mode) {
     const box = $('h-players');
-    if (players.length < 2) { box.classList.add('hidden'); return; }
+    if (players.length < 2 && !(players.solo && players.length === 1)) { box.classList.add('hidden'); return; }
     box.classList.remove('hidden');
     box.innerHTML = players.map(p => {
       const tot = p.scores.reduce((s, v, i) => s + (v ? v - p.pars[i] : 0), 0);

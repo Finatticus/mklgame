@@ -1468,3 +1468,84 @@ button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border
 .rec-holes span { display: flex; flex-direction: column; align-items: center; background: #f6f1e4; border-radius: 6px; padding: 2px 0; }
 .rec-holes small { font-size: 9.5px; color: var(--muted); }
 .rec-holes b { font: 700 14px "Barlow Condensed"; color: var(--forest); display: block; }
+
+/* ---------------- 個人紀錄（生涯儀表板） ---------------- */
+.career { display: flex; flex-direction: column; gap: 12px; }
+.cs-hero { background: linear-gradient(135deg, #12261b, #1d3a2a 60%, #2a4a33); color: #f4efe2; border-radius: 16px; padding: 16px 18px; display: grid; gap: 14px; }
+.cs-who small { font: 600 11px "Barlow Condensed"; letter-spacing: .3em; color: var(--brass2); }
+.cs-who b { display: block; font: 700 22px "Noto Serif TC"; }
+.cs-who > span { font-size: 12px; color: rgba(244,239,226,.7); }
+.cs-hero-k { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.cs-hero .cs-kpi { background: rgba(255,255,255,.06); border-color: rgba(214,187,130,.25); }
+.cs-hero .cs-kpi span { color: rgba(244,239,226,.7); }
+.cs-hero .cs-kpi b { color: #fff; }
+.cs-note { margin: -2px 2px 0; }
+.cs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.cs-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-width: 0; }
+.cs-card.wide { grid-column: 1 / -1; }
+.cs-card h4 { font: 700 14px "Noto Serif TC"; color: var(--forest); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.cs-card h4::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: var(--brass); }
+.cs-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cs-kpis.k4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cs-kpis + .cs-kpis, .cs-rings + .cs-kpis, .cs-kpis + .cs-bars, .cs-bars + .cs-kpis { margin-top: 10px; }
+.cs-kpi { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; background: #fbf8f0; }
+.cs-kpi span { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-kpi b { font: 700 22px/1.15 "Barlow Condensed"; color: var(--forest); }
+.cs-kpi small { font-size: 10.5px; color: var(--muted); }
+.cs-kpi.hl { background: #12261b; border-color: #12261b; }
+.cs-kpi.hl span, .cs-kpi.hl small { color: rgba(244,239,226,.7); }
+.cs-kpi.hl b { color: var(--brass2); }
+.cs-kpi.gold b { color: #a8761e; }
+.cs-bars { display: flex; flex-direction: column; gap: 6px; }
+.cs-bar { display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 8px; font-size: 12px; }
+.cs-bl { color: #4a463c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-bt { height: 10px; background: #efe9da; border-radius: 6px; overflow: hidden; }
+.cs-bt i { display: block; height: 100%; background: var(--forest); border-radius: 6px; }
+.cs-bar b { font: 700 14px "Barlow Condensed"; color: #1c1a16; min-width: 28px; text-align: right; }
+.cs-stack { display: flex; height: 22px; border-radius: 8px; overflow: hidden; gap: 2px; background: #efe9da; }
+.cs-stack i { display: block; min-width: 3px; }
+.cs-legend { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 10px; margin-top: 10px; }
+.cs-legend span { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #4a463c; }
+.cs-legend i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.cs-legend b { font: 700 15px "Barlow Condensed"; color: #1c1a16; margin-left: auto; }
+.cs-legend small { font-size: 10.5px; color: var(--muted); min-width: 28px; text-align: right; }
+.cs-sub { margin-top: 8px; }
+.cs-line { width: 100%; height: auto; display: block; }
+.cs-line .avg-t { fill: #a8761e; }
+.cs-line .zero { stroke: #c9bfa6; stroke-dasharray: 4 4; }
+.cs-line .avg { stroke: var(--brass); stroke-dasharray: 2 4; }
+.cs-line .ln { fill: none; stroke: var(--forest); stroke-width: 2.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cs-line .pt { fill: #fff; stroke: var(--forest); stroke-width: 2; }
+.cs-line .best { fill: #c0463a; stroke: #fff; stroke-width: 2; }
+.cs-line .lbl { font: 600 18px "Barlow Condensed"; fill: var(--muted); }
+.cs-cap { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+.cs-cols { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; height: 130px; align-items: end; }
+.cs-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 3px; }
+.cs-col i { display: block; width: 100%; max-width: 26px; background: linear-gradient(#3f7a4a, #2f5a44); border-radius: 5px 5px 2px 2px; min-height: 2px; }
+.cs-col b { font: 700 12px "Barlow Condensed"; color: var(--forest); min-height: 14px; }
+.cs-col span { font-size: 10px; color: var(--muted); }
+.cs-rings { display: flex; gap: 10px; justify-content: space-around; }
+.cs-ring { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.cs-ring svg { width: 84px; height: 84px; }
+.cs-ring .bg { fill: none; stroke: #efe9da; stroke-width: 9; }
+.cs-ring .fg { fill: none; stroke: var(--forest); stroke-width: 9; stroke-linecap: round; }
+.cs-ring text { font: 700 17px "Barlow Condensed"; fill: var(--forest); }
+.cs-ring b { font-size: 12px; color: #1c1a16; }
+.cs-ring small { font-size: 10.5px; color: var(--muted); }
+.cs-table { display: flex; flex-direction: column; }
+.cs-tr { display: grid; grid-template-columns: 1fr 52px 52px 60px; gap: 8px; padding: 6px 2px; border-bottom: 1px solid #f0eadb; font-size: 13px; align-items: center; }
+.cs-tr.th { font-size: 11px; color: var(--muted); }
+.cs-tr span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-tr b { font: 700 15px "Barlow Condensed"; color: var(--forest); text-align: right; }
+.cs-tr.th span:not(:first-child) { text-align: right; }
+.cs-evs { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: 12px; color: #4a463c; }
+.cs-evs span::before { content: "◆ "; color: var(--brass); }
+.cs-empty { text-align: center; padding: 40px 10px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+.cs-foot { text-align: center; }
+@media (max-width: 640px) {
+  .cs-grid { grid-template-columns: 1fr; }
+  .cs-hero-k { grid-template-columns: repeat(2, 1fr); }
+  .cs-kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cs-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cs-kpi b { font-size: 20px; }
+}

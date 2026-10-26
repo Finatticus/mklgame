@@ -479,7 +479,7 @@
 <section id="scr-records" class="screen app-screen">
   <header class="appbar"><small>RECORDS</small><h4>紀錄</h4></header>
   <div class="body narrow scroll">
-    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="rounds" class="on">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button><button data-rc="real">實際下場</button></div>
+    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="stats" class="on">個人紀錄</button><button data-rc="rounds">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button><button data-rc="real">實際下場</button></div>
     <div id="rc-list"></div>
   </div>
   <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records" class="on"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
@@ -685,6 +685,12 @@
     <p class="small">只會清掉角色、材質、球場地圖這些下載的檔案，帳號、成績、成就、外觀都不受影響；下次用到時會重新下載。</p>
   </div>
   <div class="dlg-btns"><button id="set-cancel" class="btn ghost-dark">取消</button><button id="set-save" class="btn brass">儲存</button></div>
+</div></div>
+
+<div id="dlg-mull" class="dlg"><div class="dlg-box">
+  <h3>確定要重打？</h3>
+  <p id="mu-body" class="center"></p>
+  <div class="dlg-btns"><button id="mu-no" class="btn ghost-dark">不要</button><button id="mu-yes" class="btn brass">確定重打</button></div>
 </div></div>
 
 <div id="dlg-resume" class="dlg"><div class="dlg-box">

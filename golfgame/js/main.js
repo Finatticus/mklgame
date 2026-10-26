@@ -19,6 +19,7 @@ import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, stampDo
 import { LEVELS, levelById, THEME_NAME, CHAPTERS, chapterOf } from './challenge.js';
 import { clubById } from './clubs.js';
 import { initReal, renderRealTab } from './real.js';
+import { careerHtml } from './career.js';
 
 const $ = id => document.getElementById(id);
 const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-chal', 'scr-shop', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-real', 'scr-admin', 'scr-editor', 'scr-edcanvas', 'scr-game'];
@@ -1213,7 +1214,7 @@ function stopPreview() {
 }
 
 // ---------------- 紀錄 ----------------
-let rcTab = 'rounds', rcOpen = null;
+let rcTab = 'stats', rcOpen = null;
 const fmtDay = d => { const t = new Date(d); return `${t.getMonth() + 1}/${t.getDate()}`; };
 async function openRecords() {
   show('scr-records');
@@ -1224,6 +1225,7 @@ async function openRecords() {
 async function renderRecords() {
   $('rc-tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.rc === rcTab));
   if (rcTab === 'ach') { $('rc-list').innerHTML = achHtml(); return; }
+  if (rcTab === 'stats') { renderCareer(); return; }
   if (rcTab === 'real') { renderRealTab($('rc-list'), () => rcTab === 'real' && document.body.dataset.screen === 'scr-records'); return; }
   if (rcTab === 'pass') { $('rc-list').innerHTML = passportHtml(); $('rc-list').querySelectorAll('[data-sp]').forEach(b => b.onclick = () => openStamp(b)); return; }
   // 一場一列（日期、球場、桿數），點一下展開：梯台、模式、同組、推桿、上球道、GIR、每洞桿數
@@ -1244,6 +1246,21 @@ async function renderRecords() {
     const list = await refresh('getRounds');
     if (rcTab === 'rounds' && document.body.dataset.screen === 'scr-records') draw(list);
   } catch (e) { if (!old) $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+}
+
+// 個人紀錄：整個生涯的儀表板（先畫快取，背景讀到最新的回合與排行再重畫）
+async function renderCareer() {
+  const draw = () => {
+    const rounds = peek('getRounds'), rows = peek('getRankings');
+    if (!rounds && !rows) { $('rc-list').innerHTML = '<p class="small">讀取中…</p>'; return; }
+    $('rc-list').innerHTML = careerHtml({ rounds: rounds || [], rankRows: rows || [], user: session.user, profile: session.profile,
+      bestBlack: rows ? bestFrom(rows) : null, levels: LEVELS, chapters: CHAPTERS, realCount: (peek('realList') || null)?.length });
+  };
+  draw();
+  try {
+    await Promise.all([refresh('getRounds'), refresh('getRankings')]);
+    if (rcTab === 'stats' && document.body.dataset.screen === 'scr-records') draw();
+  } catch (e) { if (!peek('getRounds')) $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
 }
 
 // 成就：依分類列成清單（一列一個：小徽章、名稱與說明、右邊是進度 / 獎勵 / 達成日期），不顯示難度，看徽章外觀分辨
@@ -1406,17 +1423,18 @@ const rowCourse = r => { const id = String(r.courseId || '').split(':')[0]; retu
 // 這一場打的梯台（藍黑共用的球場，藍梯算黑梯）
 const rowTee = r => teeKey(rowCourse(r), r.tee);
 // 總桿排行 / 最佳 18 洞：只比黑梯（最遠的梯台）
-const countsForTotal = r => r.rankable !== false && fullPar(r) && rowTee(r) === 'black' && !['fantasy', 'custom'].includes((rowCourse(r) || {}).group) && !String(r.courseId || '').startsWith('custom_');
+const noMull = r => !(Number(r.mulligans) > 0);
+const countsForTotal = r => r.rankable !== false && noMull(r) && fullPar(r) && rowTee(r) === 'black' && !['fantasy', 'custom'].includes((rowCourse(r) || {}).group) && !String(r.courseId || '').startsWith('custom_');
 function strokeHtml() {
   const course = COURSES.find(c => c.id === rank.course);
   const list = rank.rows
-    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : rowTee(r) === rank.tee && (r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && (r.course === course.name || r.course === course.oldName)))))
+    .filter(r => r.holes === rank.holes && (rank.tab === 'total' ? countsForTotal(r) : noMull(r) && rowTee(r) === rank.tee && (r.courseId === rank.course || String(r.courseId || '').startsWith(rank.course + ':') || (!r.courseId && course && (r.course === course.name || r.course === course.oldName)))))
     .sort((a, b) => a.strokes - b.strokes || a.toPar - b.toPar || new Date(a.date) - new Date(b.date))
     .slice(0, 100);
   const teeName = (teeList(course).find(t => t.id === rank.tee) || {}).name || '';
   const note = rank.tab === 'total'
-    ? '<p class="small rk-note"><b>總桿排行只比黑梯</b>（最遠的梯台；官網沒有黑梯的球場，藍梯就是黑梯）。藍、白、紅梯的成績請到「球場排行」選梯台查看。三桿洞球場（例如 Cliffhangers，Par 54）與奇幻球場也不列入總桿排行。</p>'
-    : `<p class="small rk-note">只和打<b>${escapeHtml(teeName)}</b>的成績一起排名，換梯台請用上面的「梯台」選單。</p>`;
+    ? '<p class="small rk-note"><b>總桿排行只比黑梯</b>（最遠的梯台；官網沒有黑梯的球場，藍梯就是黑梯）。藍、白、紅梯的成績請到「球場排行」選梯台查看。三桿洞球場（例如 Cliffhangers，Par 54）與奇幻球場也不列入總桿排行。<b>用過重打的回合不列入任何排行。</b></p>'
+    : `<p class="small rk-note">只和打<b>${escapeHtml(teeName)}</b>的成績一起排名，換梯台請用上面的「梯台」選單；用過重打的回合不列入。</p>`;
   if (!list.length) return '<p class="small rk-empty">還沒有紀錄，打完一場就會出現在這裡。</p>' + note;
   return note + list.map((r, i) => `
     <div class="rk-row ${r.user === session.user ? 'me' : ''}">

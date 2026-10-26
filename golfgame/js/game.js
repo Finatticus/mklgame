@@ -11,7 +11,7 @@ import { MixamoGolfer } from './mixamo.js';
 import { characterDef, ANIM_BASE, getSetting } from './config.js';
 import { SwingInput } from './input.js';
 import * as sfx from './audio.js';
-import { bump, unlock, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal, fantasyPar } from './progress.js';
+import { bump, unlock, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal, fantasyPar, setMax } from './progress.js';
 import { LEVELS, levelById, evaluate, goalMet } from './challenge.js';
 
 const WIND = { calm: [0, 0], light: [2, 6], normal: [6, 11], strong: [11, 15] };
@@ -75,7 +75,7 @@ export class Game {
     $('btn-view').onclick = () => { if (this.canControl()) this.cam.mode = this.cam.mode === 'overview' ? 'address' : 'overview'; };
     this.initFree();
     this.initChat();
-    $('btn-mulligan').onclick = () => this.mulligan();
+    $('btn-mulligan').onclick = () => this.askMulligan();
     $('btn-map').addEventListener('click', e => { e.stopPropagation(); this.hud.openBigMap(); });
     $('map-close').onclick = () => $('dlg-map').classList.remove('open');
     // 地圖只用來看，不能點來改方向（方向只能擊球前左右滑）。點小地圖 = 打開大地圖。
@@ -370,7 +370,7 @@ export class Game {
   serialize(turn) {
     return {
       k: this.k, turn, shotNo: this.shotNo, matchStatus: this.matchStatus, undoP: this.lastShotUndo ? this.lastShotUndo.p : -1,
-      players: this.players.map(p => ({ ball: p.ball, lie: p.lie, strokes: p.strokes, holed: p.holed, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, scores: p.scores, putts: p.putts, fwHit: p.fwHit, fwTotal: p.fwTotal, gir: p.gir, mulligans: p.mulligans, picked: p.picked, away: p.away, pars: p.pars, copied: p.copied || [] })),
+      players: this.players.map(p => ({ ball: p.ball, lie: p.lie, strokes: p.strokes, holed: p.holed, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, scores: p.scores, putts: p.putts, fwHit: p.fwHit, fwTotal: p.fwTotal, gir: p.gir, fwH: p.fwH || [], girH: p.girH || [], mulligans: p.mulligans, picked: p.picked, away: p.away, pars: p.pars, copied: p.copied || [] })),
     };
   }
 
@@ -549,6 +549,8 @@ export class Game {
       const m = this.matchStatus;
       list.matchText = m === 0 ? 'ALL SQUARE' : `${escapeHtml(this.players[m > 0 ? 0 : 1].user)} ${Math.abs(m)} UP`;
     }
+    // 單人回合也顯示目前對標準桿（練習、挑戰模式不顯示）
+    list.solo = !this.cfg.practice && !this.cfg.holePractice && !this.level;
     this.hud.setPlayers(list, this.hole.par, this.cfg.mode);
   }
 
@@ -696,10 +698,20 @@ export class Game {
     if (ok) $('btn-mulligan').textContent = `重打(${me.mulligans})`;
   }
 
+  // 重打之前先確認：用過重打的這一場不列入排行與個人最佳 18 洞
+  askMulligan() {
+    const box = $('dlg-mull');
+    $('mu-body').innerHTML = this.cfg.practice ? '' : '用過重打的這一場<b>不會列入排行榜</b>，也<b>不算個人最佳 18 洞</b>。<br>確定要重打這一桿嗎？';
+    $('mu-no').onclick = () => box.classList.remove('open');
+    $('mu-yes').onclick = () => { box.classList.remove('open'); this.mulligan(); };
+    box.classList.add('open');
+  }
+
   mulligan() {
     if (this.flight || this.swingAnim || this.holeDone) return;
     const me = this.players.find(q => q.local);
     if (!me) return;
+    bump('mulliganUsed');
     if (this.authority) this.doMulligan(me.idx);
     else this.net.send({ t: 'mulligan', p: me.idx });
     $('btn-mulligan').classList.add('hidden');
@@ -1081,8 +1093,8 @@ export class Game {
       p.ball = r.end;
     }
     p.lie = this.hole.surface(p.ball[0], p.ball[2]);
-    if (firstShot && this.hole.par >= 4) { p.fwTotal++; if (p.lie === SURF.FAIRWAY && r.result === 'rest') p.fwHit++; }
-    if (!p.girDone && (p.lie === SURF.GREEN || p.holed) && p.strokes <= this.hole.par - 2) { p.girDone = true; p.gir++; }
+    if (firstShot && this.hole.par >= 4) { p.fwTotal++; const hit = p.lie === SURF.FAIRWAY && r.result === 'rest'; if (hit) p.fwHit++; (p.fwH = p.fwH || [])[this.k] = hit ? 1 : 0; }
+    if (!p.girDone && (p.lie === SURF.GREEN || p.holed) && p.strokes <= this.hole.par - 2) { p.girDone = true; p.gir++; (p.girH = p.girH || [])[this.k] = 1; }
     const gimme = (this.cfg.gimme || 0) * YD;
     if (!p.holed && gimme > 0 && p.lie === SURF.GREEN && this.distPin(p) <= gimme) {
       p.holed = true; p.strokes++; p.holePutts++;
@@ -1215,6 +1227,25 @@ export class Game {
       if (endSurf === SURF.SAND) a.sand = true;
       if (club.putter) a.putts++;
     }
+    // 個人紀錄（生涯統計）用的計數
+    bump('shots'); bump('club_' + club.id);
+    if (r.result === 'water' || r.result === 'ob' || r.result === 'chasm') bump('pen_' + r.result);
+    if (ctx.lie === SURF.SAND) bump('sandShots');
+    if (ctx.lie === SURF.ROUGH || ctx.lie === SURF.DEEP) bump('roughShots');
+    const rt = p.rtrk;
+    rt.shots = (rt.shots || 0) + 1;
+    rt.clubs = rt.clubs || {}; rt.clubs[club.id] = (rt.clubs[club.id] || 0) + 1;
+    if (ctx.lie === SURF.SAND) rt.sand = (rt.sand || 0) + 1;
+    if (club.id === 'D' && ctx.lie === SURF.TEE && r.result === 'rest') {
+      const yd = Math.round(toYd(r.total));
+      setMax('maxDrive', yd); bump('drives'); bump('driveYds', yd);
+      rt.maxDrive = Math.max(rt.maxDrive || 0, yd);
+    }
+    if (r.result === 'holed') {
+      const d = Math.round(toYd(ctx.dist || 0));
+      if (club.putter) setMax('longPutt', d); else if (ctx.lie !== SURF.TEE) setMax('longHoleOut', d);
+    }
+    if ((r.flightTime || 0) > 0) setMax('maxAir10', Math.round(r.flightTime * 10));
     for (const k in fx) bump(k, fx[k]);
     const fxN = Object.values(fx).reduce((a, b) => a + b, 0);
     if (fxN) bump('fxAll', fxN);
@@ -1283,6 +1314,9 @@ export class Game {
       if (d >= 1) p.rtrk.bogey = true;
     } else p.rtrk.bogey = true;
     if ((p.putts[this.k] || 0) >= 3) p.rtrk.three = true;
+    if (!p.picked) { const d = s - par; bump(d === 0 ? 'parN' : d === 1 ? 'bogeyN' : d === 2 ? 'doubleN' : d >= 3 ? 'tripleN' : 'underN'); }
+    const pt = p.putts[this.k] || 0;
+    if (pt === 1) bump('onePutt'); else if (pt >= 3) bump('threePutt');
     checkCounters();
   }
 
@@ -1408,13 +1442,17 @@ export class Game {
     return {
       course: nine9 ? `${this.course.name.split('（')[0]}（${this.course.nineNames[0]}）` : this.course.name, holes, tee: teeKey(this.course, this.cfg.tee), strokes, toPar: strokes - par,
       blackTee: teeKey(this.course, this.cfg.tee) === 'black',      // 最佳 18 洞只算黑梯
+      // 用過重打：不列入排行、不算最佳 18 洞
+      mulligans: Math.max(0, (this.cfg.mulligans || 0) - (p.mulligans || 0)),
+      // 每洞細節（個人紀錄的統計用）：標準桿、推桿、上球道、標準桿上果嶺、這一場的球桿使用與最遠開球
+      detail: { pars: p.pars, putts: p.putts, fw: p.fwH || [], gir: p.girH || [], haz: p.rtrk.haz || 0, sand: p.rtrk.sand || 0, maxDrive: p.rtrk.maxDrive || 0, clubs: p.rtrk.clubs || {}, wind: Math.round(Math.hypot(this.wind[0], this.wind[1]) / MPH) },
       putts: p.putts.reduce((s, v) => s + (v || 0), 0), fairways: `${p.fwHit}/${p.fwTotal}`, gir: `${p.gir}/${holes}`,
       mode: this.players.length > 1 ? (this.cfg.mode === 'match' ? '比洞賽' : '比桿賽') : '單人',
       partners: this.players.filter(q => q !== p).map(q => q.user).join(','), scores: p.scores,
       // 排行用：球場代號、範圍（全 18 / 前 9 / 後 9）、標準桿、這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞）
       courseId: nine9 ? `${this.course.baseId}:${this.course.nineIds[0]}` : this.course.id, range: this.cfg.holes, par, events: this.specialEvents(p),
       // 能不能算總桿排行 / 最佳 18 洞：奇幻球場（有機關）與三桿洞球場（Par 54）不算
-      rankable: this.course.group !== 'fantasy' && this.course.group !== 'custom' && par >= (holes === 18 ? 66 : 33),      // 自製球場也不算
+      rankable: this.course.group !== 'fantasy' && this.course.group !== 'custom' && par >= (holes === 18 ? 66 : 33) && !(this.cfg.mulligans - p.mulligans > 0),      // 自製球場、用過重打也不算
     };
   }
 

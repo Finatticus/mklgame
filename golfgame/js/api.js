@@ -109,11 +109,11 @@ async function local(b) {
         (d.rounds[b.user] = d.rounds[b.user] || []).push({ ...r, date });
         // 排行（跟 GAS 的「排行」工作頁同一個格式）
         (d.rankings = d.rankings || []).push({ date, user: b.user, course: r.course, courseId: r.courseId, holes: r.holes,
-          range: r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞', tee: r.tee, strokes: r.strokes, par: r.par, toPar: r.toPar, mode: r.mode, events: r.events || [], rankable: r.rankable !== false });
+          range: r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞', tee: r.tee, strokes: r.strokes, par: r.par, toPar: r.toPar, mode: r.mode, events: r.events || [], rankable: r.rankable !== false, mulligans: Number(r.mulligans) || 0 });
         const earned = Math.floor(r.holes / 9);
         cur.rounds++; cur.points += earned; cur.earned += earned;
         // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
-        if (r.holes === 18 && r.blackTee === true && r.rankable !== false && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;      // 只算黑梯
+        if (r.holes === 18 && r.blackTee === true && !(Number(r.mulligans) > 0) && r.rankable !== false && !(r.par < 66) && (!cur.best || r.strokes < cur.best)) cur.best = r.strokes;      // 只算黑梯
         return { earned, profile: cur };
       }
       case 'saveProgress': {
@@ -133,7 +133,7 @@ async function local(b) {
         return { added: add, profile: cur };
       }
       case 'getStarRanking': auth(d, b); return Object.values(d.starRank || {});
-      case 'getRounds': auth(d, b); return (d.rounds[b.user] || []).slice(-40).reverse();
+      case 'getRounds': auth(d, b); return (d.rounds[b.user] || []).slice(-3000).reverse();      // 全部（個人紀錄要算生涯統計）
       case 'getRankings': auth(d, b); return (d.rankings || []).slice(-5000);
       case 'listAccounts': admin(d, b); return d.accounts.map(a => ({ ...a, ...pick(prof(d, a.user)) }));
       case 'setActive': {

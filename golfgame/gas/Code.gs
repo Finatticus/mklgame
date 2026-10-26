@@ -25,12 +25,12 @@ const CHUNK = 45000;
 const STAR_SHEET = '挑戰排行';
 const STAR_HEADER = ['帳號', '總星數', '最遠關卡', '更新時間'];
 const RANK_SHEET = '排行';
-const RANK_HEADER = ['日期', '帳號', '球場', '球場代號', '洞數', '範圍', '梯台', '總桿', '標準桿', '對標準桿', '模式', '一桿進洞', '信天翁', '老鷹', '特殊紀錄'];
+const RANK_HEADER = ['日期', '帳號', '球場', '球場代號', '洞數', '範圍', '梯台', '總桿', '標準桿', '對標準桿', '模式', '一桿進洞', '信天翁', '老鷹', '特殊紀錄', '重打'];
 
 // 玩家頁上半部的欄位（第 1~13 列，A=名稱 B=值）；成就 = 徽章 / 計數 / 球場護照（JSON），挑戰 = 每關星數（JSON）
 const PROFILE_KEYS = ['帳號', '能力點', '剩餘重新分配次數', '素質', '外觀', '總回合數', '最佳18洞', '建立時間', '最後登入', '已用能力點', '累計獲得點數', '成就', '挑戰'];
 const ROUND_HEADER_ROW = 14;
-const ROUND_HEADER = ['日期', '球場', '洞數', '梯台', '桿數', '對標準桿', '推桿數', '上球道', '標準桿上果嶺', '模式', '同組', '每洞桿數'];
+const ROUND_HEADER = ['日期', '球場', '洞數', '梯台', '桿數', '對標準桿', '推桿數', '上球道', '標準桿上果嶺', '模式', '同組', '每洞桿數', '重打', '球場代號', '範圍', '標準桿', '每洞細節'];
 
 function setup() {
   const ss = SpreadsheetApp.getActive();
@@ -135,17 +135,22 @@ const ACTIONS = {
     return withLock_(() => {
       const sh = ensurePlayerSheet_(acc.user);
       const now = new Date();
-      sh.appendRow([now, r.course, r.holes, r.tee, r.strokes, r.toPar, r.putts, r.fairways, r.gir, r.mode, r.partners || '', JSON.stringify(r.scores)]);
+      // 舊的玩家頁 / 排行頁：欄位名稱補上新加的欄（重打、球場代號、範圍、標準桿、每洞細節）
+      if (sh.getRange(ROUND_HEADER_ROW, ROUND_HEADER.length).getValue() !== ROUND_HEADER[ROUND_HEADER.length - 1]) sh.getRange(ROUND_HEADER_ROW, 1, 1, ROUND_HEADER.length).setValues([ROUND_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
+      sh.appendRow([now, r.course, r.holes, r.tee, r.strokes, r.toPar, r.putts, r.fairways, r.gir, r.mode, r.partners || '', JSON.stringify(r.scores),
+        Number(r.mulligans) || 0, r.courseId || '', r.range || '', Number(r.par) || '', JSON.stringify(r.detail || {})]);
       // 排行：每一場都單獨記一列；特殊紀錄 = 這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞、標準桿）
       const ev = Array.isArray(r.events) ? r.events : [];
       const cnt = t => ev.filter(e => e.t === t).length;
       const range = r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞';
-      rankSheet_().appendRow([now, acc.user, r.course, r.courseId || '', r.holes, range, r.tee, r.strokes, r.par || (r.strokes - r.toPar), r.toPar, r.mode, cnt('hio'), cnt('albatross'), cnt('eagle'), JSON.stringify(ev)]);
+      const rk = rankSheet_();
+      if (rk.getRange(1, RANK_HEADER.length).getValue() !== RANK_HEADER[RANK_HEADER.length - 1]) rk.getRange(1, 1, 1, RANK_HEADER.length).setValues([RANK_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
+      rk.appendRow([now, acc.user, r.course, r.courseId || '', r.holes, range, r.tee, r.strokes, r.par || (r.strokes - r.toPar), r.toPar, r.mode, cnt('hio'), cnt('albatross'), cnt('eagle'), JSON.stringify(ev), Number(r.mulligans) || 0]);
       const cur = readProfile_(acc.user);
       const earned = Math.floor(r.holes / 9);
       const upd = { '總回合數': cur.rounds + 1, '能力點': cur.points + earned, '累計獲得點數': cur.earned + earned };
       // 最佳 18 洞只算一般長度的球場（三桿洞球場 Par 54 不算）
-      if (r.holes === 18 && r.blackTee === true && r.rankable !== false && !(Number(r.par) < 66) && (!cur.best || r.strokes < cur.best)) upd['最佳18洞'] = r.strokes;      // 只算黑梯（最遠的梯台）
+      if (r.holes === 18 && r.blackTee === true && !(Number(r.mulligans) > 0) && r.rankable !== false && !(Number(r.par) < 66) && (!cur.best || r.strokes < cur.best)) upd['最佳18洞'] = r.strokes;      // 只算黑梯（最遠的梯台）
       writeProfile_(acc.user, upd);
       return { earned: earned, profile: readProfile_(acc.user) };
     });
@@ -156,11 +161,12 @@ const ACTIONS = {
     const sh = ensurePlayerSheet_(acc.user);
     const last = sh.getLastRow();
     if (last <= ROUND_HEADER_ROW) return [];
-    const n = Math.min(40, last - ROUND_HEADER_ROW);
+    const n = Math.min(3000, last - ROUND_HEADER_ROW);      // 全部（個人紀錄要算生涯統計）
     const rows = sh.getRange(last - n + 1, 1, n, ROUND_HEADER.length).getValues();
     return rows.reverse().map(r => ({
       date: r[0] instanceof Date ? r[0].toISOString() : r[0], course: r[1], holes: r[2], tee: r[3], strokes: r[4],
       toPar: r[5], putts: r[6], fairways: r[7], gir: r[8], mode: r[9], partners: r[10], scores: safeParse_(r[11], []),
+      mulligans: Number(r[12]) || 0, courseId: r[13] || '', range: r[14] || '', par: Number(r[15]) || 0, detail: safeParse_(r[16], null),
     }));
   },
 
@@ -173,7 +179,7 @@ const ACTIONS = {
     const n = Math.min(5000, last - 1);
     return sh.getRange(last - n + 1, 1, n, RANK_HEADER.length).getValues().map(r => ({
       date: r[0] instanceof Date ? r[0].toISOString() : r[0], user: String(r[1]), course: r[2], courseId: r[3], holes: Number(r[4]),
-      range: r[5], tee: r[6], strokes: Number(r[7]), par: Number(r[8]), toPar: Number(r[9]), mode: r[10], events: safeParse_(r[14], []),
+      range: r[5], tee: r[6], strokes: Number(r[7]), par: Number(r[8]), toPar: Number(r[9]), mode: r[10], events: safeParse_(r[14], []), mulligans: Number(r[15]) || 0,
     }));
   },
 
