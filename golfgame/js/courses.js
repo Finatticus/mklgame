@@ -9,6 +9,8 @@
 //   xc    球道中段橫越障礙（溪流 / 峽谷）       sl/sr 整洞左/右側是海
 //   b0~b4 沙坑多寡                             up/dn 果嶺比發球台高/低（UP/DN 落差更大）
 //   tr    兩側樹林特別密、球道窄                 ww 兩側大片荒地
+import { CREATIVE_COURSES } from './courses-creative.js';
+
 export const TEE_SETS = [
   { id: 'black', name: '黑梯', color: '#1c1c1c', ratio: 1.0 },
   { id: 'blue', name: '藍梯', color: '#2c4f8f', ratio: 0.94 },
@@ -25,6 +27,7 @@ export const COURSE_GROUPS = [
   { id: 'coast', name: '海邊球場' },
   { id: 'mountain', name: '山地 / 林間球場' },
   { id: 'desert', name: '沙漠 / 高原球場' },
+  { id: 'creative', name: '非真實球場' },
 ];
 
 export const COURSES = [
@@ -3116,6 +3119,8 @@ export const COURSES = [
     ],
   },
 ];
+// 非真實球場（@C）：名稱照真實球場、球洞自創（js/courses-creative.js）
+COURSES.push(...CREATIVE_COURSES);
 
 // 分區球場（例如長庚北 / 中 / 南）：base.holes 先放全部 27 洞，選區後用「代號:前九後九」組成 18 洞（例如 cggc:NM）
 for (const c of COURSES) if (c.nines) c.holes = c.nines.flatMap(n => n.holes);

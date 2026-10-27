@@ -493,6 +493,8 @@ export function buildHole(course, holeIdx, opts = {}) {
     const [lu, lv] = gLocal(u, v);
     let hh = lv * slopeBack + lu * slopeSide;
     if (sg.tier) hh += 0.24 * ss(-3.5, 3.5, lv - (sg.tierAt || 0) * gry);      // 雙層果嶺：中間一道約 24 公分的階
+    // sg.crown：正 = 龜背果嶺（中間高、往四周掉，Pinehurst 那種），負 = 碗形果嶺（四周高、往中間收）；數值 = 邊緣比中心低多少公尺
+    if (sg.crown) hh -= sg.crown * Math.min(1.3, (lu / grx) ** 2 + (lv / gry) ** 2);
     for (const b of bumps) hh += b.a * Math.exp(-((lu - b.lu) ** 2 + (lv - b.lv) ** 2) / (2 * b.s * b.s));
     return hh;
   };
@@ -595,6 +597,19 @@ export function buildHole(course, holeIdx, opts = {}) {
     const sAt = Lp - gry - depth - (par === 3 ? 4 : 6);
     const pt = pointAt(sAt), dir = dirAt(sAt);
     waters.push({ u: pt[0], v: pt[1], rx: grx + 16 + rng() * 8, ry: depth, rot: Math.atan2(dir[0], dir[1]), kind: pondKind, ph: rng() * 6 });
+  }
+  // spec.wash：乾河床 / 荒地溝（例如加州球場的 barranca）：球可以打，地面是荒地、比旁邊低一點
+  //   {from, to, side, w} 沿球道一側（距白梯碼數、寬度碼）、{at, w} 橫越整條球道
+  const washes = [];
+  if (spec && spec.wash && !map) for (const w of spec.wash) {
+    if (w.at != null) {
+      const sA = atY(w.at), pt = pointAt(sA), dir = dirAt(sA);
+      washes.push({ u: pt[0], v: pt[1], rx: fwBase / 2 + course.roughW + 24, ry: (w.w || 14) * YD * 0.75, rot: Math.atan2(dir[0], dir[1]), ph: rng() * 6 });
+      continue;
+    }
+    const s0 = atY(w.from), s1 = atY(w.to), sm = (s0 + s1) / 2, pt = pointAt(sm), dir = dirAt(sm), sd = w.side === 'L' ? -1 : 1;
+    const rx = (w.w || 12) * YD / 2, lat = sd * (fwHalf(sm, sd) + rx * 0.7);
+    washes.push({ u: pt[0] + dir[1] * lat, v: pt[1] - dir[0] * lat, rx, ry: (s1 - s0) / 2 + 6, rot: Math.atan2(dir[0], dir[1]), ph: rng() * 6 });
   }
   // IG（浮島以外的主題）：果嶺孤島，果嶺邊外面一圈水 / 熔岩，只能飛上去
   const moat = F.has('IG') && !isVoid ? { rIn: fringeR + 0.1, rOut: 1 + 15 / Math.min(grx, gry), level: 0 } : null;
@@ -734,6 +749,7 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (gr < fringeR) return SURF.FRINGE;
     for (const z of zones) if (Math.hypot(u - z.u, v - z.v) < z.r * (1 + 0.15 * nz2(u * 0.1, v * 0.1))) return z.surf;
     if (inTee(u, v)) return SURF.TEE;
+    for (const w of washes) if (waterR(w, u, v) < 1) return SURF.WASTE;
     const fh = fwHalf(s, d > 0 ? 1 : -1);
     if (obSide && obSide * d > fh + 18 && s > 0 && s < Lp + 10 && gr > 2.2) return SURF.OB;
     if (s > fs && s < fe) {
@@ -917,6 +933,7 @@ export function buildHole(course, holeIdx, opts = {}) {
       }
     }
     hh = lerp(beforeWater, hh, gk);
+    for (const w of washes) { const wr = waterR(w, u, v); if (wr < 1.4) hh -= gk * 1.7 * ss(1.4, 0.75, wr); }
     if (cross) {
       const cd = crossDist(s, d);
       if (cd < (cross.kind === 'chasm' || cross.kind === 'valley' ? 2 : 5)) {
@@ -1256,6 +1273,23 @@ export function buildHole(course, holeIdx, opts = {}) {
     if (kind === 'dune') return r0 < 0.7 && src !== 'n' ? { type: 'shrub', h: 1.1 + trng() * 1.1, r: 1.5 + trng() * 1.3, jungle: 1 } : r0 < 0.88 ? { type: 'palm', h: 6 + trng() * 5, r: 2.6 + trng() } : { type: 'broad', h: 6 + trng() * 4, r: 4.5 + trng() * 2 };
     // 墨爾本沙帶地：茶樹叢（矮、圓）與高瘦的尤加利
     if (kind === 'sandbelt') return r0 < 0.45 && src !== 'n' ? { type: 'shrub', h: 2.6 + trng() * 1.6, r: 2.4 + trng() * 1.2 } : { type: 'broad', h: 13 + trng() * 8, r: 4 + trng() * 2 };
+    // ---- 非真實球場（@C）用的地區樹種 ----
+    // 喬治亞州：高聳的火炬松，林下開著杜鵑與山茱萸
+    if (kind === 'azalea') return r0 < 0.72 || src === 'n' ? { type: 'pine', h: 22 + trng() * 10, r: 2.6 + trng() * 0.8, tall: 1 } : r0 < 0.95 ? { type: 'shrub', h: 1.2 + trng() * 0.7, r: 1.5 + trng(), azalea: 1 } : { type: 'broad', h: 5 + trng() * 2, r: 1.8 + trng() * 0.7, dogwood: 1 };
+    // 北卡沙丘地：稀疏的長葉松，地上是一叢叢鐵線草
+    if (kind === 'longleaf') return r0 < 0.6 || src === 'n' ? { type: 'pine', h: 18 + trng() * 9, r: 2.4 + trng() * 0.8, tall: 1 } : { type: 'shrub', h: 0.7 + trng() * 0.4, r: 0.9 + trng() * 0.5, wire: 1 };
+    // 美國東北 / 中西部林木球場：大橡樹、楓樹、少量松
+    if (kind === 'oak') return r0 < 0.6 ? { type: 'broad', h: 14 + trng() * 8, r: 5 + trng() * 2.5, oak: 1 } : r0 < 0.82 ? { type: 'maple', h: 12 + trng() * 6, r: 4.5 + trng() * 2 } : { type: 'pine', h: 16 + trng() * 6, r: 3 + trng() };
+    // 英國石南荒原：歐洲赤松、白樺，地面是紫色石南
+    if (kind === 'heath') return r0 < 0.45 || src === 'n' ? { type: 'pine', h: 15 + trng() * 8, r: 3 + trng(), scots: 1 } : r0 < 0.7 ? { type: 'broad', h: 10 + trng() * 5, r: 3 + trng() * 1.4, birch: 1 } : { type: 'shrub', h: 0.8 + trng() * 0.5, r: 1.6 + trng(), heather: 1 };
+    // 太平洋西北：又高又暗的花旗松
+    if (kind === 'fir') return { type: 'pine', h: 24 + trng() * 12, r: 3 + trng() * 1.2, fir: 1 };
+    // 索諾拉沙漠：仙人掌、假紫荊灌木、偶爾一棵棕櫚
+    if (kind === 'desert') return r0 < 0.45 ? { type: 'cactus', h: 3 + trng() * 4, r: 0.8 } : r0 < 0.85 ? { type: 'shrub', h: 2.4 + trng() * 2, r: 2.2 + trng() * 1.4, palo: 1 } : { type: 'palm', h: 10 + trng() * 6, r: 3 + trng() };
+    // 美國東南低地：垂著鬆蘿的活橡樹、棕櫚灌叢、松
+    if (kind === 'lowcountry') return r0 < 0.5 ? { type: 'broad', h: 10 + trng() * 5, r: 6 + trng() * 3, liveoak: 1 } : r0 < 0.75 ? { type: 'pine', h: 18 + trng() * 8, r: 2.8 + trng(), tall: 1 } : { type: 'palm', h: 6 + trng() * 4, r: 2.6 + trng() };
+    // 南加州：尤加利、松，球道邊偶爾一棵棕櫚
+    if (kind === 'eucalyptus') return r0 < 0.6 ? { type: 'broad', h: 16 + trng() * 9, r: 4 + trng() * 2, euc: 1 } : r0 < 0.85 ? { type: 'pine', h: 14 + trng() * 6, r: 3 + trng() } : { type: 'palm', h: 12 + trng() * 8, r: 3 + trng() };
     if (kind === 'tropic') return r0 < 0.35 ? { type: 'palm', h: 9 + trng() * 7, r: 3 + trng() } : r0 < 0.8 ? { type: 'broad', h: 6 + trng() * 5, r: 3 + trng() * 2, jungle: 1 } : { type: 'shrub', h: 1.6 + trng(), r: 1.8 + trng(), jungle: 1 };
     return null;
   };
@@ -1315,7 +1349,13 @@ export function buildHole(course, holeIdx, opts = {}) {
     const sf = surface(u, v);
     if (sf === SURF.WATER || sf === SURF.CHASM || sf === SURF.SAND) continue;
     let t;
-    if (theme) { t = themeTree(ad, minAd); if (!t) continue; }
+    // 指定當地樹種的球場（非真實球場 @C）：走廊邊混灌木與花，越往外越是高樹
+    if (course.treeKind) {
+      const edge = ss(minAd, minAd + 14, ad);
+      if (trng() > (links ? 0.45 : 0.35 + 0.65 * edge)) continue;
+      t = localTree(course.treeKind, edge > 0.6 ? 'n' : 'e');
+      if (!t) continue;
+    } else if (theme) { t = themeTree(ad, minAd); if (!t) continue; }
     else if (park) {
       // 越靠近走廊邊越密，形成樹牆
       const edge = ss(minAd, minAd + 14, ad);
@@ -1350,12 +1390,13 @@ export function buildHole(course, holeIdx, opts = {}) {
       const sf = surface(u, v);
       if (sf === SURF.WATER || sf === SURF.SAND || sf === SURF.GREEN || sf === SURF.TEE || sf === SURF.FAIRWAY) continue;
       const pine = trng() < 0.3;
-      const t = { type: pine ? 'pine' : 'broad', h: (pine ? 15 : 12) + trng() * 8, r: pine ? 3.2 : 4 + trng() * 2 };
+      // 有當地樹種的球場（treeKind）：樹叢也種當地的樹（只取高樹，不要灌木）
+      let t = course.treeKind ? localTree(course.treeKind, 'n') : null;
+      if (!t || t.type === 'shrub' || t.h < 6) t = { type: pine ? 'pine' : 'broad', h: (pine ? 15 : 12) + trng() * 8, r: pine ? 3.2 : 4 + trng() * 2 };
       const x = u, z = -v;
       if (tooClose(x, z, t.r * 0.8)) continue;
       t.x = x; t.z = z; t.y = height(u, v); t.rot = trng() * 6.28; t.tint = trng();
-      t.cy = t.type === 'pine' ? t.y + t.h * 0.5 : t.y + t.h * 0.66;
-      t.cr = t.type === 'pine' ? t.r * 0.9 : t.r;
+      treeColl(t);
       addTree(t);
     }
   }

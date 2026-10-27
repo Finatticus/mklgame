@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { session, call, isLocalMode, peek, refresh, refreshWith, setCache, prefetch } from './api.js';
 import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS, levelOf } from './stats.js';
+import { CREATIVE_TIERS } from './courses-creative.js';
 import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel, teeKey, teeList } from './courses.js';
 import { World } from './render.js';
 import { Hud } from './hud.js';
@@ -437,14 +438,18 @@ function holeFeatures(course, spec) {
 
 // 球場選單：上方切換一般球場（台灣、海邊、山地、沙漠）/ 奇幻球場，再依群組列出；之後新增球場會自動出現在對應群組
 function openCoursePicker(kind) {
-  if (!kind) { const g0 = courseById(setup.courseId).group; kind = g0 === 'fantasy' ? 'fantasy' : g0 === 'custom' ? 'custom' : 'real'; }       // 打開時停在目前球場那一類
+  if (!kind) { const g0 = courseById(setup.courseId).group; kind = g0 === 'fantasy' ? 'fantasy' : g0 === 'custom' ? 'custom' : g0 === 'creative' ? 'creative' : 'real'; }       // 打開時停在目前球場那一類
   $('cp-kind').querySelectorAll('button').forEach(b => {
     b.classList.toggle('on', b.dataset.k === kind);
     b.onclick = () => { openCoursePicker(b.dataset.k); $('cp-list').scrollTop = 0; };
   });
-  $('cp-list').innerHTML = COURSE_GROUPS.filter(g => kind === 'custom' ? g.id === 'custom' : g.id !== 'custom' && (g.id === 'fantasy') === (kind === 'fantasy')).map(g => {
-    const list = g.id === 'custom' ? customCourses() : COURSES.filter(c => c.group === g.id);
+  const only = { custom: 'custom', fantasy: 'fantasy', creative: 'creative' }[kind];
+  $('cp-list').innerHTML = COURSE_GROUPS.filter(g => only ? g.id === only : !['custom', 'fantasy', 'creative'].includes(g.id)).flatMap(g =>
+    // 非真實球場很多：依生涯用到的層級分成小群組
+    g.id === 'creative' ? CREATIVE_TIERS.map(t => ({ ...g, name: t.name, tier: t.id, first: t.id === CREATIVE_TIERS[0].id })) : [g]).map(g => {
+    const list = g.id === 'custom' ? customCourses() : COURSES.filter(c => c.group === g.id && (!g.tier || c.tier === g.tier));
     const gnote = g.id === 'fantasy' ? '<p class="small cp-note">奇幻球場不列入總桿排行與大廳的最佳 18 洞，每座球場仍有自己的球場排行。</p>'
+      : g.id === 'creative' ? (g.first ? '<p class="small cp-note">非真實球場：名稱照真實球場（後面加 @C），每洞的標準桿與碼數照真實計分卡，洞形依當地特色自創。比照一般球場：計入排行、可以蓋紀念章，另有一組非真實球場的成就。</p>' : '')
       : g.id === 'custom' ? `<p class="small cp-note">管理員自製的球場：不列入排行，也沒有紀念章。第一次打會從伺服器下載，之後存在手機裡。${customStore.loaded ? '' : '（讀取中…）'}</p>` : '';
     return `<h4>${g.name}</h4>${gnote}` + (list.length ? `<div class="cp-group">${list.map(c => {
       const on = c.id === setup.courseId || String(setup.courseId).startsWith(c.id + ':');
@@ -1369,10 +1374,11 @@ function achHtml() {
 
 // 球場護照：每座球場打完 18 洞蓋一個章
 function passportHtml() {
-  const st = prog().stamps, n = PASSPORT.filter(c => stampDone(c.id)).length;
+  const st = prog().stamps, real = PASSPORT.filter(c => c.group !== 'creative'), n = real.filter(c => stampDone(c.id)).length;
+  const cr = PASSPORT.filter(c => c.group === 'creative'), nC = cr.filter(c => stampDone(c.id)).length;
   const fmtD = d => { const t = new Date(d); return `${t.getFullYear()}.${String(t.getMonth() + 1).padStart(2, '0')}.${String(t.getDate()).padStart(2, '0')}`; };
-  return `<div class="ach-sum"><b class="num">${n}</b> / ${PASSPORT.length} 個章　<span class="small">一般球場打完 18 洞就蓋章；分區球場要每一區都打完過（打 9 洞也算那一區）</span></div>` + COURSE_GROUPS.map(gr => {
-    const list = PASSPORT.filter(c => c.group === gr.id);
+  return `<div class="ach-sum"><b class="num">${n}</b> / ${real.length} 個章${cr.length ? `　<span class="small">非真實球場 ${nC} / ${cr.length}</span>` : ''}　<span class="small">一般球場打完 18 洞就蓋章；分區球場要每一區都打完過（打 9 洞也算那一區）</span></div>` + COURSE_GROUPS.flatMap(gr => gr.id === 'creative' ? CREATIVE_TIERS.map(t => ({ ...gr, name: '非真實・' + t.name, tier: t.id })) : [gr]).map(gr => {
+    const list = PASSPORT.filter(c => c.group === gr.id && (!gr.tier || c.tier === gr.tier));
     if (!list.length) return '';
     return `<h4 class="ach-cat">${gr.name}<span>${list.filter(c => stampDone(c.id)).length} / ${list.length}</span></h4><div class="stamp-grid">${list.map((c, i) => {
       const x = st[c.id] || {}, done = stampDone(c.id), rot = done ? ((c.id.charCodeAt(0) + c.id.length * 7) % 15) - 7 : 0;

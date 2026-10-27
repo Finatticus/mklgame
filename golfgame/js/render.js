@@ -1497,6 +1497,15 @@ export class World {
       if (t.gorse) return t.tint < 0.3 ? c.setHSL(0.13, 0.75, 0.42 + t.tint * 0.2) : c.setHSL(0.22 + t.tint * 0.04, 0.32, 0.17 + t.tint * 0.05);
       if (t.mcyp) return c.setHSL(0.3 + t.tint * 0.04, 0.3, 0.15 + t.tint * 0.05);
       if (t.jpine) return c.setHSL(0.32 + t.tint * 0.04, 0.35, 0.17 + t.tint * 0.05);
+      // 非真實球場（@C）的地區植物
+      if (t.azalea) return t.tint < 0.45 ? c.setHSL(0.92 + t.tint * 0.06, 0.7, 0.62) : t.tint < 0.7 ? c.setHSL(0.0, 0.0, 0.92) : c.setHSL(0.83, 0.55, 0.6);       // 杜鵑：桃紅、白、紫紅
+      if (t.dogwood) return c.setHSL(0.1, 0.25, 0.86 + t.tint * 0.06);
+      if (t.wire) return c.setHSL(0.12, 0.35, 0.48 + t.tint * 0.1);            // 鐵線草：枯黃
+      if (t.heather) return c.setHSL(0.82 + t.tint * 0.05, 0.32, 0.36 + t.tint * 0.08);      // 石南：紫
+      if (t.palo) return c.setHSL(0.2, 0.3, 0.42 + t.tint * 0.08);            // 沙漠灌木：灰綠
+      if (t.liveoak) return c.setHSL(0.26, 0.28, 0.2 + t.tint * 0.05);
+      if (t.euc) return c.setHSL(0.3, 0.18, 0.36 + t.tint * 0.08);             // 尤加利：灰綠
+      if (t.oak) return c.setHSL(0.25 + t.tint * 0.05, 0.42, 0.22 + t.tint * 0.06);
       if (t.type === 'maple') return c.setHSL(0.04 + t.tint * 0.06, 0.62, 0.36 + t.tint * 0.08);
       if (t.type === 'shrub') return c.setHSL(0.2, 0.3, 0.15 + t.tint * 0.05);
       if (t.type === 'juniper') return c.setHSL(0.22, 0.2, 0.17 + t.tint * 0.05);
@@ -1507,18 +1516,24 @@ export class World {
         const lowCanopy = t.type === 'shrub' || t.type === 'juniper';
         // 蒙特利柏樹、日本黑松：平頂、往兩側展開的樹冠，樹幹露出來
         if (t.mcyp || t.jpine) { P.set(t.x, t.y + t.h * 0.78, t.z); S.set(t.r * 1.35, t.r * (t.mcyp ? 0.5 : 0.6), t.r * 1.15); return canopyColor(t); }
+        // 活橡樹：低矮、往兩側攤得很開的樹冠
+        if (t.liveoak) { P.set(t.x, t.y + t.h * 0.62, t.z); S.set(t.r * 1.25, t.r * 0.48, t.r * 1.15); return canopyColor(t); }
         P.set(t.x, lowCanopy ? t.y + t.h * 0.45 : t.y + t.h * 0.64, t.z);
         S.set(t.r, lowCanopy ? t.h * 0.55 : t.r * 1.08 + t.h * 0.05, t.r);
         return canopyColor(t);
       }, sfx === 'N');
       make(G.pine, leafMat, groups['pine' + sfx], (t, P, S) => {
+        // 高瘦的松（火炬松、長葉松）：樹冠只在上半段，下面是光禿的樹幹
+        if (t.tall) { P.set(t.x, t.y + t.h * 0.42, t.z); S.set(t.r / 0.4, t.h * 0.58, t.r / 0.4); return c.setHSL(0.27 + t.tint * 0.04, 0.32, 0.2 + t.tint * 0.05); }
         P.set(t.x, t.y, t.z); S.set(t.r / 0.4, t.h, t.r / 0.4);
+        if (t.fir) return c.setHSL(0.4, 0.32, 0.13 + t.tint * 0.04);
+        if (t.scots) return c.setHSL(0.3, 0.28, 0.2 + t.tint * 0.05);
         return t.toy ? c.setHSL(0.3 + t.tint * 0.06, 0.75, 0.4 + t.tint * 0.08) : t.snow ? c.setHSL(0.58, 0.12, 0.72 + t.tint * 0.12) : t.cypress ? c.setHSL(0.33, 0.28, 0.14 + t.tint * 0.04) : t.bonsai ? c.setHSL(0.3, 0.35, 0.22 + t.tint * 0.05) : c.setHSL(0.36, 0.3, 0.2 + t.tint * 0.05);
       }, sfx === 'N');
       make(G.trunk, barkMat, groups['trunk' + sfx], (t, P, S) => {
         P.set(t.x, t.y - 0.3, t.z);
         const tr = t.type === 'juniper' ? 0.12 : 0.16 + t.h * 0.012 + (t.mcyp ? 0.25 : 0);
-        S.set(tr, t.type === 'pine' ? t.h * 0.4 : t.mcyp || t.jpine ? t.h * 0.78 : t.h * 0.55, tr);
+        S.set(tr, t.type === 'pine' ? (t.tall ? t.h * 0.62 : t.h * 0.4) : t.mcyp || t.jpine ? t.h * 0.78 : t.liveoak ? t.h * 0.62 : t.h * 0.55, tr);
         return null;
       }, sfx === 'N');
     }

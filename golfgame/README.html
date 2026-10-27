@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 88）· 2026-10-27<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 89）· 2026-10-27<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -339,6 +339,21 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <li><b>舊資料自動搬</b>：舊的共用「實際下場」頁還在的話，每個人第一次打開 / 存 / 刪實際下場時，伺服器把他的那幾列搬到自己的玩家頁，搬完把共用頁的那幾列刪掉。共用頁只剩標題時就可以整頁刪除。共用的「生涯統計」頁不再使用（如果有，可以直接刪；個人紀錄會自動重算一次）。</li>
   <li><b>測試</b>：用模擬的試算表跑實際的 <code>Code.gs</code>：搬家（自己的 3 場搬過來、別人的留在原頁）、更新、新增、刪除實際下場、存 8 場遊戲回合、存 10 萬字的生涯統計再讀回來，位置和內容都正確，左邊的遊戲回合沒有被動到。</li>
   <li><b>GAS 要重新部署</b>；畫面端沒有改。</li>
+</ul>
+<h3>新增 80 座非真實球場（@C）（修訂 89，版本 v91）</h3>
+<ul>
+  <li><b>非真實球場</b>：選球場多一個「非真實球場」分頁，共 80 座，名稱照真實球場、後面加 <code>@C</code>（例如「奧古斯塔國家@C」）。每洞的標準桿與冠軍梯碼數照公開的真實計分卡（查不到的在介紹裡寫「計分卡約略」），知名的洞照公開文字描述做出特徵（例如 Amen Corner、教堂座椅沙坑、Calamity Corner），其他洞依當地的地形、樹種、沙坑與水的特色由程式設計。分頁裡依生涯用到的層級分成九組：四大賽輪替、PGA TOUR、歐巡、團體賽與奧運、亞巡、業餘大賽、Korn Ferry、大學、青少年。</li>
+  <li><b>資料檔</b>：<code>js/courses-creative.js</code>。每座球場一筆：計分卡 <code>card</code>、球場特色 <code>p</code>（狗腿角度、起伏、沙坑多寡、水的機率、果嶺大小與坡度、樹叢、海、荒地）、指定洞 <code>over</code>。<code>designHole</code> 依這些產生每洞的 spec（各梯台碼數、沙坑、水、起伏、果嶺、樹叢、界外、特徵摘要），亂數種子是球場代號，每次產生的結果都一樣；差點順序依長度與障礙自動排。狗腿角度設定值放大 1.5 倍（轉角會被中心線平滑掉一些）。</li>
+  <li><b>地形新功能</b>（<code>terrain.js</code>，只有寫了才會用到，現有球場不受影響）：
+    <ul>
+      <li>果嶺 <code>green.crown</code>：正數 = 龜背果嶺（中間高、往四周掉，例如派恩赫斯特），負數 = 碗形果嶺；數值是邊緣比中心低幾公尺。</li>
+      <li><code>spec.wash</code>：乾河床 / 荒地溝（例如洛杉磯球場的 barranca）：<code>{from, to, side, w}</code> 沿球道一側、<code>{at, w}</code> 橫越球道；地面是荒地（可以打）、比旁邊低約 1.7 公尺。</li>
+      <li>沒有描圖地圖的球場也會照 <code>treeKind</code> 種當地樹種；<code>spec.trees</code> 的樹叢也用當地樹種。</li>
+      <li>新的地區樹種：<code>azalea</code>（喬治亞火炬松 + 杜鵑 + 山茱萸）、<code>longleaf</code>（北卡長葉松 + 鐵線草）、<code>oak</code>（美東林木：橡樹、楓樹）、<code>heath</code>（英國石南荒原：赤松、白樺、石南）、<code>fir</code>（太平洋西北花旗松）、<code>desert</code>（仙人掌、沙漠灌木、棕櫚）、<code>lowcountry</code>（活橡樹、松、棕櫚灌叢）、<code>eucalyptus</code>（南加州尤加利）；<code>render.js</code> 加上對應的顏色與樹形（高瘦的松只有上半段有樹冠、活橡樹的樹冠往兩側攤開）。</li>
+    </ul></li>
+  <li><b>比照一般球場</b>：計入總桿排行與球場排行、可以蓋紀念章（印章圖案依當地地形與樹種自動組合，幾座有招牌景物的另外畫）。</li>
+  <li><b>成就與護照</b>：非真實球場的章另外算：「平行世界」10 座、「另一個地球」40 座（能力點 1）、「造物者的巡禮」全部 80 座（能力點 2）。原本的「集滿 10 / 20 座」「環遊世界」只算真實球場，已經拿到的成就不受影響。護照頁的總數只算真實球場，旁邊另外顯示非真實球場的進度；非真實球場依層級分組。</li>
+  <li><b>檢查工具</b>（本機用，不上傳）：<code>.claude/review-sheet.js</code> 畫 18 洞俯視縮圖、<code>.claude/review-check.js</code> 檢查每洞的梯台、果嶺、旗桿、球道比例與每 210 公尺的落點，<code>.claude/review-3d.js</code> 存 3D 畫面。80 座 × 18 洞全部通過（越水的短三桿洞水面比例高是設計如此）。</li>
 </ul>
 <h3>開場改直線空拍、切桿特寫條件（修訂 83）</h3>
 <ul>

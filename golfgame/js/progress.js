@@ -264,7 +264,11 @@ export const ACH = [
   { id: 'stamps20', cat: 'pass', tier: 'gold', glyph: '程', name: '萬里行', desc: '集滿 20 個球場的章', cnt: 'stamps', n: 20, pts: 2 },
   { id: 'stamps_fx', cat: 'pass', tier: 'gold', glyph: '幻', name: '奇幻旅人', desc: '集滿所有奇幻球場的章', pts: 2 },
   { id: 'stamp_max', cat: 'pass', tier: 'gold', glyph: '印', name: '老主顧', desc: '同一座球場的章升到最高等級（打滿 10 場）', pts: 1 },
-  { id: 'stamps_world', cat: 'pass', tier: 'legend', glyph: '界', name: '環遊世界', desc: '集滿所有球場的章' },
+  { id: 'stamps_world', cat: 'pass', tier: 'legend', glyph: '界', name: '環遊世界', desc: '集滿所有球場的章（不含非真實球場）' },
+  // 非真實球場（@C）的章另外算，不影響上面的護照成就
+  { id: 'stampsC10', cat: 'pass', tier: 'silver', glyph: '仿', name: '平行世界', desc: '集滿 10 座非真實球場（@C）的章', cnt: 'stampsC', n: 10 },
+  { id: 'stampsC40', cat: 'pass', tier: 'gold', glyph: '擬', name: '另一個地球', desc: '集滿 40 座非真實球場（@C）的章', cnt: 'stampsC', n: 40, pts: 1 },
+  { id: 'stampsC80', cat: 'pass', tier: 'legend', glyph: '創', name: '造物者的巡禮', desc: '集滿全部 80 座非真實球場（@C）的章', cnt: 'stampsC', n: 80, pts: 2 },
 
   // 挑戰模式（300 關：前 100 關每章 10 關、之後每章 20 關，共 20 章）
   { id: 'ch_star1', cat: 'chal', tier: 'bronze', glyph: '星', name: '第一顆星', desc: '在挑戰模式拿到第一顆星', cnt: 'chalStars', n: 1 },
@@ -340,7 +344,7 @@ export const TIER_NAME = { bronze: '銅', silver: '銀', gold: '金', legend: '�
 export const achById = id => ACH.find(a => a.id === id);
 
 // 球場護照：每座一般球場（分區球場算同一座）
-export const PASSPORT = COURSES.map(c => ({ id: c.id, name: c.name, oldName: c.oldName, en: c.en, group: c.group, nines: c.nines ? c.nines.map(n => ({ id: n.id, name: n.name })) : null }));
+export const PASSPORT = COURSES.map(c => ({ id: c.id, name: c.name, oldName: c.oldName, en: c.en, group: c.group, tier: c.tier, treeKind: c.treeKind, theme: c.theme, style: c.style, nines: c.nines ? c.nines.map(n => ({ id: n.id, name: n.name })) : null }));
 // 分區球場某一區打完幾次（舊資料只有第一次的日期，算 1 次）
 export const nineCount = (x, k) => (x && x.nineN && Number(x.nineN[k])) || (x && x.nines && x.nines[k] ? 1 : 0);
 // 印章的輪數（決定墨印 / 銅印 / 銀章 / 金章）：一般球場 = 18 洞打完幾次；分區球場 = 每一區都打完算一輪，取打最少的那一區
@@ -415,13 +419,14 @@ export function checkChallenge(levels) {
 
 export function checkCounters() {
   const c = prog().cnt;
-  c.stamps = PASSPORT.filter(x => stampDone(x.id)).length;
+  c.stamps = PASSPORT.filter(x => x.group !== 'creative' && stampDone(x.id)).length;
+  c.stampsC = PASSPORT.filter(x => x.group === 'creative' && stampDone(x.id)).length;
   c.chalStars = chal().total;
   for (const a of ACH) if (a.cnt && (Number(c[a.cnt]) || 0) >= a.n) unlock(a.id);
   const has = stampDone;
   if (PASSPORT.filter(x => x.group === 'taiwan').every(x => has(x.id))) unlock('stamps_tw');
   if (PASSPORT.filter(x => x.group === 'fantasy').every(x => has(x.id))) unlock('stamps_fx');
-  if (PASSPORT.every(x => has(x.id))) unlock('stamps_world');
+  if (PASSPORT.filter(x => x.group !== 'creative').every(x => has(x.id))) unlock('stamps_world');
   if (PASSPORT.some(x => stampCount(x.id) >= 10)) unlock('stamp_max');
   if (FX_KINDS.every(k => (Number(c[k]) || 0) >= 1)) unlock('fx_all');
   save();

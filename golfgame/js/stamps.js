@@ -107,8 +107,41 @@ const M = {
   skyreach: () => `<path d="M36 50 V36 l3 -6 3 6 V50 M46 50 V28 l4 -8 4 8 V50 M58 50 V38 l3 -5 3 5 V50z"/><path d="M24 58 q4 -8 12 -4 q6 -8 14 -2 q8 -6 14 2 q8 -4 12 4z"/>`,
 };
 
+// 非真實球場（@C）：依當地的地形與樹種組合圖案；幾座有招牌景物的另外畫
+const palm = (x, y, s = 1) => `<path d="M${x} ${y} q${2 * s} ${-10 * s} ${-1 * s} ${-20 * s}" fill="none" stroke-width="${2 * s}"/><path d="M${x - 1 * s} ${y - 20 * s} q-8 -2 -12 4 M${x - 1 * s} ${y - 20 * s} q8 -4 12 2 M${x - 1 * s} ${y - 20 * s} q-4 -6 -10 -6 M${x - 1 * s} ${y - 20 * s} q5 -6 11 -4" fill="none" stroke-width="${1.8 * s}"/>`;
+const cactus = (x, y, s = 1) => `<path d="M${x} ${y}v${-18 * s} M${x} ${y - 10 * s}h${-5 * s}v${-5 * s} M${x} ${y - 7 * s}h${5 * s}v${-6 * s}" fill="none" stroke-width="${2.6 * s}" stroke-linecap="round"/>`;
+const tallPine = (x, y, s = 1) => `<path d="M${x} ${y}v${-16 * s}" fill="none" stroke-width="${1.6 * s}"/><path d="M${x} ${y - 28 * s}l${5 * s} ${9 * s}h${-3 * s}l${4 * s} ${6 * s}h${-12 * s}l${4 * s} ${-6 * s}h${-3 * s}z"/>`;
+const roundTree = (x, y, s = 1) => `<circle cx="${x}" cy="${y - 12 * s}" r="${7 * s}"/><rect x="${x - 1.2 * s}" y="${y - 6 * s}" width="${2.4 * s}" height="${6 * s}"/>`;
+const dunes = () => `<path d="M24 64 q8 -10 16 -6 q8 -12 18 -4 q8 -8 18 2" fill="none" stroke-width="2"/>`;
+function creativeMotif(c) {
+  const special = {
+    c_augusta: () => tallPine(30, 62, 1) + tallPine(70, 62, 1.1) + `<path d="M42 50h16v12h-16z M40 50 l10 -6 10 6z" fill="none" stroke-width="1.6"/>` + flag(50, 64, 10) + ground(),
+    c_harbourtown: () => `<path d="M46 62 L48 26 h4 L54 62z"/><path d="M48 36h4 M48 46h4" stroke="#fff" stroke-width="2.5"/><path d="M46 26 h8 v-4 h-8z"/>` + wave(66, 26, 74, 1.6) + flag(30, 62, 12),
+    c_tpcscottsdale: () => `<path d="M26 60 V40 h48 V60" fill="none" stroke-width="2"/><path d="M26 46h48 M26 52h48" stroke-width="1.2"/>` + flag(50, 62, 14) + cactus(70, 66, 0.6),
+    c_oakmont: () => [32, 40, 48, 56, 64].map(x => `<path d="M${x} 58 h6" stroke-width="3"/>`).join('') + `<path d="M28 52 h44" stroke-width="1.2"/>` + flag(50, 46, 14),
+    c_portrush: () => `<path d="M22 64 L30 46 h14 L50 64z" fill="none" stroke-width="2"/><path d="M58 40 h12 v-8 h-3 v3 h-3 v-3 h-3 v3 h-3z"/>` + wave(66, 52, 76, 1.6) + flag(36, 46, 10),
+    c_whistling: () => wave(60) + wave(66, 30, 70) + dunes() + flag(50, 50, 16),
+    c_kapalua: () => `<path d="M22 60 L40 34 L52 46 L62 38 L78 60z" fill="none" stroke-width="2"/>` + palm(66, 62, 0.8) + wave(68, 26, 74, 1.4),
+    c_taiheiyo: () => `<path d="M24 62 L50 26 L76 62z" fill="none" stroke-width="2"/><path d="M42 37 l8 -11 8 11 q-4 3 -8 0 q-4 3 -8 0z"/>` + flag(64, 62, 10),
+    c_valhalla: () => `<path d="M30 52 q20 -10 40 0 q-20 10 -40 0z" fill="none" stroke-width="1.8"/>` + wave(60, 26, 74, 1.6) + flag(50, 50, 14),
+  };
+  if (special[c.id]) return special[c.id]();
+  const k = c.treeKind, th = c.theme;
+  if (th === 'cliffs') return `<path d="M22 64 V44 h22 l6 20" fill="none" stroke-width="2"/>` + wave(66, 50, 78, 1.6) + flag(34, 44, 12) + bird(64, 34);
+  if (k === 'desert') return cactus(32, 64) + cactus(66, 64, 0.8) + sun(50, 30, 5) + flag(50, 64, 14) + ground();
+  if (k === 'tropic') return palm(34, 64) + palm(64, 64, 0.85) + wave(68, 26, 74, 1.4) + flag(50, 60, 12);
+  if (k === 'gorse' || c.style === 'links') return dunes() + flag(50, 56, 18) + bird(34, 30) + bird(66, 34, 0.8);
+  if (k === 'longleaf' || k === 'azalea') return tallPine(32, 64) + tallPine(46, 64, 0.85) + tallPine(68, 64) + flag(57, 64, 12) + ground();
+  if (k === 'heath') return tree(32, 54) + tree(66, 52, 1.1) + `<path d="M24 64 q6 -4 12 0 q6 -4 12 0 q6 -4 12 0 q6 -4 16 0" fill="none" stroke-width="1.6"/>` + flag(50, 58, 14);
+  if (k === 'lowcountry') return `<path d="M24 50 q14 -14 30 -4 q10 -8 22 2" fill="none" stroke-width="3"/><path d="M38 50 v14 M62 50 v14" stroke-width="2"/>` + wave(68, 26, 74, 1.4) + flag(50, 64, 10);
+  if (k === 'eucalyptus') return tree(30, 52, 1.2) + roundTree(66, 64, 1.1) + sun(50, 26, 4) + flag(48, 64, 14) + ground();
+  if (k === 'fir' || k === 'jpine') return tree(30, 52, 1.3) + tree(46, 48, 1.5) + tree(66, 52, 1.2) + flag(56, 64, 10) + ground();
+  if (k === 'cypress') return roundTree(32, 64, 1.1) + roundTree(68, 64) + sun(50, 28, 4) + flag(50, 64, 14) + ground();
+  return roundTree(30, 64) + roundTree(70, 64, 1.1) + flag(50, 62, 18) + ground();
+}
+
 // 墨水色：依球場群組
-export const STAMP_INK = { taiwan: '#a3302a', abroad: '#2a4a7a', fantasy: '#5a3aa8', coast: '#1f6a8a', mountain: '#2f6a3a', desert: '#a8682a' };
+export const STAMP_INK = { taiwan: '#a3302a', abroad: '#2a4a7a', fantasy: '#5a3aa8', coast: '#1f6a8a', mountain: '#2f6a3a', desert: '#a8682a', creative: '#3a6a62' };
 
 let uid = 0;
 const PFX = Math.random().toString(36).slice(2, 6);      // 每個印章的 defs 編號不重複
@@ -127,6 +160,7 @@ const SCENE = {
   coast: { sky: ['#e2f4fb', '#8ccbea'], sun: '#ffffff', land: ['#5aaed4', '#286a9a'], far: '#9ac8d8', sea: 1 },
   mountain: { sky: ['#e6f2f2', '#a6cdd6'], sun: '#ffffff', land: ['#76a862', '#386a3a'], far: '#7d9a92' },
   desert: { sky: ['#feeac0', '#f2ab68'], sun: '#fff1c8', land: ['#dcaa6a', '#a86c3c'], far: '#c48a5a' },
+  creative: { sky: ['#eaf3ee', '#9cc8b8'], sun: '#ffffff', land: ['#7ab47a', '#3a7a5a'], far: '#7a9a8e' },
 };
 
 // 回傳一個印章的 SVG；got = 已蓋章；n = 打完的次數（決定等級）
@@ -134,9 +168,9 @@ export function stampSvg(c, got, rot = 0, n = 1) {
   const tier = got ? stampTier(n) : 0;
   const ink = got ? STAMP_INK[c.group] || '#8a3a2a' : '#bdb49e';
   const id = 'st' + PFX + (++uid);
-  const motif = (M[c.id] || (() => flag(50, 58, 24)))();
+  const motif = (M[c.id] || (c.group === 'creative' ? () => creativeMotif(c) : () => flag(50, 58, 24)))();
   const en = String(c.en || '').toUpperCase().replace(/GOLF|COUNTRY|CLUB|&|\./g, '').replace(/\s+/g, ' ').trim().slice(0, 26);
-  const name = c.name.length > 4 ? c.name.slice(0, 4) : c.name;
+  const nm = c.name.replace(/@C$/, ''), name = nm.length > 4 ? nm.slice(0, 4) : nm;
   const ringText = (fill, r = 41) => `<path id="${id}a" d="M60 60 m-${r} 0 a${r} ${r} 0 1 1 ${r * 2} 0" fill="none" stroke="none"/>
       <text font-size="${Math.min(9.6, Math.PI * r * 0.92 / (en.length * 0.62 + 0.1)).toFixed(2)}" font-weight="700" letter-spacing="${en.length > 20 ? 0.8 : 1.4}" font-family="Barlow Condensed, sans-serif" fill="${fill}" stroke="none"><textPath href="#${id}a" startOffset="50%" text-anchor="middle">${en}</textPath></text>`;
   const motifG = (fill, stroke, extra = '') => `<g transform="translate(12.5 9) scale(0.95)" fill="${fill}" stroke="${stroke}" stroke-linecap="round" stroke-linejoin="round" ${extra}>${motif}</g>`;
