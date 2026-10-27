@@ -314,16 +314,13 @@ export class Game {
     this.lastShotUndo = null;
     this.undoP = -1;
     this.honor = this.honorOrder();
-    // 開場：從果嶺上空飛回發球台
-    const pin = this.hole.pin, ph = this.hole.height(pin[0], pin[1]);
-    const t0 = new THREE.Vector3(...tee);
-    const back = new THREE.Vector3(pin[0] - t0.x, 0, pin[1] - t0.z).normalize();
-    this.intro = {
-      t: 0, dur: 3.4,
-      // 果嶺後方有瀑布岩壁（Cliffhangers）時起點拉高，免得被岩壁擋住
-      p0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, 45).add(new THREE.Vector3(0, 38 + (this.hole.falls && this.hole.falls.length ? 14 : 0), 0)),
-      l0: new THREE.Vector3(pin[0], ph, pin[1]).addScaledVector(back, -60),
-    };
+    // 開場：從發球台上空沿著洞線慢慢飛到果嶺（看清楚整條球道），在果嶺停一下，然後直接切回球邊（不飛回來，比較不會暈）
+    {
+      const L = this.hole.L, t0 = new THREE.Vector3(...tee);
+      const sStart = clamp(this.hole.near ? this.hole.near(t0.x, -t0.z).s : 0, 0, L);
+      const fly = clamp((L - sStart) / 110, 2.2, 5.2);
+      this.intro = { t: 0, fly, hold: 1.3, dur: fly + 1.3, s0: sStart, L, high: 26 + (this.hole.falls && this.hole.falls.length ? 14 : 0) };
+    }
     const note = this.hole.spec && this.hole.spec.note;
     const lab = holeLabel(this.course, idx), side = this.hole.greenSide;
     // 奇幻球場：這一洞有特色機關就在開場標出來
@@ -951,7 +948,8 @@ export class Game {
       const f = msg.res.frames;
       this.flight = { msg, frames: f, t: 0, i: 0, speed: 1, events: msg.res.events.slice(), start: new THREE.Vector3(f[0][1], f[0][2], f[0][3]), putt: !!club.putter, short: msg.res.total < 45, landed: false, endHold: 0 };
       // 長推桿特寫：8 碼以上的推桿，進洞、差 1 碼以內或擦過洞口時，球快到洞口就切到洞旁的低角度慢動作（選單可以關掉）
-      if (club.putter && getSetting('puttCam', true) && (this.shotCtx.dist || 0) >= 8 * YD) {
+      const chipCine = !club.putter && (this.shotCtx.dist || 0) <= 80 * YD && (this.shotCtx.dist || 0) >= 4 * YD;      // 切桿、短打、寶刀：差點進或切進也要特寫
+      if (getSetting('puttCam', true) && ((club.putter && (this.shotCtx.dist || 0) >= 8 * YD) || chipCine)) {
         const [px, pz] = this.hole.pin;
         let md = 1e9; for (const q of f) md = Math.min(md, Math.hypot(q[1] - px, q[3] - pz));
         const holed = msg.res.result === 'holed';
@@ -990,11 +988,13 @@ export class Game {
       this.world.setBall(x, y, z);
       if (f.cine && !f.cine.done) {
         const dp = Math.hypot(x - this.hole.pin[0], z - this.hole.pin[1]);
-        if (!f.cine.on && dp < 1.3) { f.cine.on = true; f.cine.t = 0; f.speed = 0.45; document.body.classList.add('putt-cine'); }
+        // 球離洞 1.3 公尺內（切桿的球還在空中時離洞 4 公尺內、往下掉的時候）就切到洞旁的低角度慢動作；切入、切出都直接切換，鏡頭不飛來飛去
+        const near = !f.putt && y - this.hole.height(x, z) > 0.4 ? dp < 4 && b[2] < a[2] : dp < 1.3;
+        if (!f.cine.on && near) { f.cine.on = true; f.cine.t = 0; f.speed = 0.45; this.cam.cut = true; document.body.classList.add('putt-cine'); }
         if (f.cine.on) {
           f.cine.t += dt;
           // 最多 3 秒；沒進的球滾離洞口一段就結束，進洞的停在特寫直到這一桿結束
-          if (f.cine.t > 3 || (!f.cine.holed && dp > 1.1 && f.cine.t > 0.9)) { f.cine.on = false; f.cine.done = true; f.speed = 1; document.body.classList.remove('putt-cine'); }
+          if (f.cine.t > 3 || (!f.cine.holed && dp > 1.1 && f.cine.t > 0.9)) { f.cine.on = false; f.cine.done = true; f.speed = 1; this.cam.cut = true; document.body.classList.remove('putt-cine'); }
         }
       }
       if (!f.putt) this.world.pushTracer(x, y, z);
@@ -1114,7 +1114,11 @@ export class Game {
       const diff = p.strokes - this.hole.par;
       // 低於標準桿 2 桿以上（老鷹、信天翁、一桿進洞）：放 3 秒慶祝動畫，不另外跳文字
       if (!p.picked && diff <= -2) party = this.celebration(p, diff);
-      else if (!p.picked) toasts.push(p.strokes === 1 ? '一桿進洞！HOLE IN ONE!' : (SCORE_NAME[diff] || `+${diff}`));
+      else if (!p.picked && !club.putter && lieBefore !== SURF.GREEN && !firstShot) {
+        // 沒推桿、從果嶺外直接切進 / 打進：放幾秒慶祝動畫
+        const far = (this.shotCtx && this.shotCtx.dist || 0) > 60 * YD;
+        party = { title: far ? 'HOLE OUT' : 'CHIP IN', sub: `${far ? '直接打進' : club.chipper ? '寶刀切進' : '切進'}！　${SCORE_NAME[diff] || (diff > 0 ? '+' + diff : diff)}`, name: p.user };
+      } else if (!p.picked) toasts.push(p.strokes === 1 ? '一桿進洞！HOLE IN ONE!' : (SCORE_NAME[diff] || `+${diff}`));
       p.scores[this.k] = p.strokes;
       p.putts[this.k] = p.holePutts;
     }
@@ -1672,16 +1676,24 @@ export class Game {
     const r = new THREE.Vector3(Math.cos(this.aim), 0, Math.sin(this.aim));
     let k = 3;
     if (this.intro) {
-      const it = this.intro;
+      const it = this.intro, h = this.hole;
       it.t += dt;
-      const addr = this.addressCam(p, d, r);
-      const s = smooth(clamp(it.t / it.dur, 0, 1));
-      cam.pos.copy(it.p0).lerp(addr.pos, s);
-      cam.look.copy(it.l0).lerp(addr.look, s);
+      if (it.t >= it.dur) {
+        // 開場結束：直接切回球邊（cut），接著看到擊球前的預備動作
+        this.intro = null; this.cam.mode = 'address'; cam.cut = true; this.beginTurn(this.cur);
+        return;
+      }
+      const at = sv => { const q = h.pointAt(clamp(sv, 0, it.L)); return new THREE.Vector3(q[0], h.height(q[0], -q[1]), -q[1]); };
+      const [px, pz] = h.pin, pin = new THREE.Vector3(px, h.height(px, pz), pz);
+      // 鏡頭在洞線上方、跟著往前飛，看著前方的球道；最後停在果嶺前上方看著果嶺
+      const k = smooth(clamp(it.t / it.fly, 0, 1));
+      const sc = it.s0 + (it.L - 40 - it.s0) * k;
+      const pos = at(sc - 18), look = at(sc + 55).lerp(pin, k * k);
+      pos.y = Math.max(pos.y, at(sc).y) + it.high;
+      cam.pos.copy(pos); cam.look.copy(look);
       camera.position.copy(cam.pos);
       camera.lookAt(cam.look);
-      world.shadowFocus = cam.look.clone().lerp(ball, s);
-      if (it.t >= it.dur) { this.intro = null; this.beginTurn(this.cur); }
+      world.shadowFocus = cam.look.clone();
       return;
     }
     const f = this.flight;
@@ -1689,9 +1701,10 @@ export class Game {
       // 長推桿特寫：鏡頭在洞的另一側、貼近地面，看著球滾向洞口
       const [px, pz] = this.hole.pin, pin = new THREE.Vector3(px, this.hole.height(px, pz), pz);
       const dir = new THREE.Vector3(px - f.start.x, 0, pz - f.start.z).normalize(), side = new THREE.Vector3(-dir.z, 0, dir.x);
-      cam.dpos.copy(pin).addScaledVector(dir, 0.95).addScaledVector(side, 0.5).add(new THREE.Vector3(0, 0.24, 0));
-      cam.dlook.copy(pin).lerp(ball, 0.4).add(new THREE.Vector3(0, 0.02, 0));
-      k = 12;
+      // 鏡頭固定在洞旁（不跟著球轉），只有視線看著球
+      cam.dpos.copy(pin).addScaledVector(dir, f.putt ? 0.95 : 1.6).addScaledVector(side, f.putt ? 0.5 : 0.9).add(new THREE.Vector3(0, f.putt ? 0.24 : 0.45, 0));
+      cam.dlook.copy(pin).lerp(ball, f.putt ? 0.4 : 0.3).add(new THREE.Vector3(0, 0.02, 0));
+      k = 30;
     } else if (cam.mode === 'address' || (!f && cam.mode !== 'overview')) {
       const a = this.addressCam(p, d, r);
       cam.dpos.copy(a.pos); cam.dlook.copy(a.look);
