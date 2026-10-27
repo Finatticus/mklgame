@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生涯模式企劃書</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Barlow+Condensed:wght@500;600&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root { --deep:#0e1f17; --forest:#1d3a2a; --moss:#2f5a3f; --jacket:#1f5a3a; --cream:#f2ead8; --paper:#f7f3e9; --ink:#1c1d19; --muted:#6d6a5f; --brass:#a9864a; --brass2:#d6bb82; --flag:#a3302a; --line:rgba(28,29,25,.12); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--paper); color:var(--ink); font-family:"Noto Sans TC",system-ui,sans-serif; line-height:1.8; font-size:15px; }
+img, svg { max-width:100%; }
+header.hero { background:radial-gradient(ellipse at 80% 0%,#24503a 0,#0e1f17 60%); color:var(--cream); border-bottom:3px solid var(--brass); overflow:hidden; }
+header.hero .wrap { padding:44px 16px 36px; display:grid; grid-template-columns:1fr 200px; gap:20px; align-items:center; }
+.wm { font-family:"Cormorant Garamond",serif; font-size:15px; letter-spacing:.42em; color:var(--brass2); }
+header.hero h1 { font:900 36px/1.25 "Noto Serif TC",serif; margin:8px 0 6px; }
+header.hero .sub { color:rgba(242,234,216,.78); font-size:14.5px; }
+header.hero .meta { margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; }
+header.hero .meta span { font-size:12px; border:1px solid rgba(214,187,130,.45); color:var(--brass2); padding:2px 12px; border-radius:14px; }
+.wrap { max-width:1020px; margin:0 auto; padding:0 16px; }
+nav.toc { position:sticky; top:0; z-index:5; background:rgba(247,243,233,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(4px); }
+nav.toc .wrap { display:flex; gap:6px; overflow-x:auto; padding-top:10px; padding-bottom:10px; scrollbar-width:none; }
+nav.toc a { flex:none; font-size:13px; padding:4px 12px; border-radius:14px; text-decoration:none; color:var(--forest); border:1px solid var(--line); background:#fff; white-space:nowrap; }
+nav.toc a.part { background:var(--forest); color:var(--cream); border-color:var(--forest); }
+h1.part { font:700 28px/1.3 "Noto Serif TC",serif; color:var(--forest); margin:68px 0 6px; padding-top:10px; scroll-margin-top:60px; }
+h1.part small { display:block; font:600 13px "Barlow Condensed"; letter-spacing:.24em; color:var(--brass); }
+h2 { font:700 22px/1.4 "Noto Serif TC",serif; margin:46px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--line); scroll-margin-top:60px; }
+h2 .no { font:600 15px "Barlow Condensed"; color:var(--brass); margin-right:8px; letter-spacing:.1em; }
+h3 { font:700 16.5px "Noto Serif TC",serif; margin:26px 0 6px; color:var(--forest); }
+p, li { margin:6px 0; }
+ul, ol { padding-left:22px; }
+code { font-family:Consolas,"Courier New",monospace; font-size:13px; background:#ece5d4; padding:1px 5px; border-radius:4px; word-break:break-word; }
+pre { background:#13261c; color:#e8e2d0; padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; margin:10px 0; }
+pre code { background:none; padding:0; color:inherit; }
+.scroll { overflow-x:auto; margin:10px 0; }
+table { border-collapse:collapse; width:100%; font-size:13.5px; background:#fff; }
+th, td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
+th { background:var(--forest); color:var(--cream); font-weight:500; white-space:nowrap; }
+td.n { font-family:"Barlow Condensed"; font-size:15px; white-space:nowrap; }
+.sev { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:9px; white-space:nowrap; }
+.sev.h { background:#f6dcd8; color:var(--flag); } .sev.m { background:#f3e8cf; color:#7a5f2c; } .sev.l { background:#e1ebe3; color:var(--moss); }
+.note { border-left:4px solid var(--brass); background:#fff; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0; font-size:14px; }
+.warn { border-left:4px solid var(--flag); background:#fbeeea; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0; font-size:14px; }
+.verdict { background:var(--forest); color:var(--cream); border-radius:14px; padding:22px 22px 18px; margin:22px 0; }
+.verdict h3 { color:var(--brass2); margin-top:0; font-size:19px; }
+.verdict li { color:rgba(242,234,216,.9); }
+.verdict b { color:#fff; }
+.verdict code { background:rgba(255,255,255,.14); color:#fff; }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:12px; margin:12px 0; }
+.grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:12px 0; }
+.card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.card h4 { font:700 15.5px "Noto Serif TC",serif; color:var(--forest); margin-bottom:4px; }
+.card .tag { display:inline-block; font-size:11.5px; padding:1px 9px; border-radius:10px; background:rgba(169,134,74,.16); color:#7a5f2c; margin:0 4px 4px 0; }
+.card p, .card li { font-size:14px; }
+.small { font-size:13px; color:var(--muted); }
+.decide { background:#fffaf0; border:2px solid var(--brass); border-radius:12px; padding:14px 18px; margin:14px 0; }
+.decide h4 { font:700 15px "Noto Serif TC"; color:#7a5f2c; }
+/* 生涯路線 */
+.road { position:relative; margin:18px 0; padding-left:28px; }
+.road::before { content:""; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--moss),var(--brass)); }
+.stage { position:relative; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+.stage::before { content:""; position:absolute; left:-25px; top:18px; width:12px; height:12px; border-radius:50%; background:var(--paper); border:3px solid var(--moss); }
+.stage.gold::before { border-color:var(--brass); background:var(--brass2); }
+.stage.green::before { border-color:var(--jacket); background:#4f9a6a; }
+.stage .st-h { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; }
+.stage .st-h b { font:700 17px "Noto Serif TC",serif; color:var(--forest); }
+.stage .st-h .lv { font:600 13px "Barlow Condensed"; letter-spacing:.12em; color:var(--brass); }
+.stage dl { display:grid; grid-template-columns:76px 1fr; gap:2px 10px; margin-top:8px; font-size:14px; }
+.stage dt { color:var(--muted); }
+/* 美術：獎盃 */
+.trophies { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin:16px 0; }
+.trophy { background:linear-gradient(#1a2e23,#0e1f17); border-radius:14px; padding:16px 12px 12px; text-align:center; color:var(--cream); border:1px solid rgba(214,187,130,.25); }
+.trophy svg { height:170px; width:auto; display:block; margin:0 auto 8px; }
+.trophy b { font:700 15px "Noto Serif TC"; display:block; }
+.trophy span { font-size:12px; color:rgba(242,234,216,.6); }
+/* 獎狀 */
+.cert { position:relative; max-width:620px; margin:20px auto; background:radial-gradient(ellipse at 50% 40%,#fffdf6 0,#f6efdc 70%,#eee3c8 100%); border:2px solid #a9864a; outline:6px double #a9864a; outline-offset:-14px; padding:44px 40px 34px; text-align:center; box-shadow:0 14px 30px rgba(14,31,23,.2); }
+.cert::before, .cert::after { content:"❦"; position:absolute; font-size:22px; color:#a9864a; top:22px; }
+.cert::before { left:26px; } .cert::after { right:26px; transform:scaleX(-1); }
+.cert .en { font:700 13px "Cormorant Garamond"; letter-spacing:.5em; color:#8a6a33; }
+.cert h4 { font:900 34px/1.3 "Noto Serif TC",serif; color:#1d3a2a; margin:8px 0 2px; letter-spacing:.3em; }
+.cert .ev { font:700 16px "Noto Serif TC"; color:#7a5f2c; margin-bottom:14px; }
+.cert p { font:500 15px/2 "Noto Serif TC",serif; color:#2a2a22; }
+.cert .name { font:900 26px "Noto Serif TC"; color:#1d3a2a; border-bottom:1px solid #a9864a; display:inline-block; padding:0 18px; margin:6px 0; }
+.cert .sig { display:flex; justify-content:space-between; margin-top:26px; font-size:12px; color:#6d6a5f; gap:16px; }
+.cert .sig div { flex:1; border-top:1px solid #a9864a; padding-top:4px; }
+.seal { position:absolute; right:40px; bottom:26px; width:78px; height:78px; border-radius:50%; border:3px solid #b8322a; color:#b8322a; font:900 15px/1.15 "Noto Serif TC"; display:flex; align-items:center; justify-content:center; text-align:center; transform:rotate(-12deg); opacity:.85; background:rgba(184,50,42,.04); }
+/* 名人堂匾額 */
+.plaque { max-width:440px; margin:20px auto; background:linear-gradient(135deg,#8a5a2a,#c08a4a 35%,#7a4a1e 60%,#b07a3a); border-radius:12px; padding:14px; box-shadow:0 14px 30px rgba(0,0,0,.35); }
+.plaque .in { border:2px solid rgba(255,230,180,.5); border-radius:8px; padding:20px 18px; text-align:center; color:#2a1608; background:linear-gradient(135deg,rgba(255,220,160,.25),rgba(0,0,0,.08)); }
+.plaque .face { width:96px; height:96px; border-radius:50%; margin:0 auto 10px; background:radial-gradient(circle at 40% 35%,#e0aa66,#8a5a2a 70%); box-shadow:inset -6px -8px 14px rgba(0,0,0,.35), inset 4px 4px 10px rgba(255,230,180,.5); position:relative; overflow:hidden; }
+.plaque .face::after { content:""; position:absolute; left:24px; top:16px; width:48px; height:56px; border-radius:50% 50% 45% 45%; background:radial-gradient(circle at 40% 35%,#c98e52,#7a4a1e); box-shadow:inset -3px -4px 6px rgba(0,0,0,.3); }
+.plaque .face::before { content:""; position:absolute; left:8px; right:8px; bottom:-30px; height:56px; border-radius:50%; background:radial-gradient(circle at 40% 30%,#c98e52,#6a3e18); }
+.plaque h5 { font:900 22px "Noto Serif TC"; letter-spacing:.2em; text-shadow:0 1px 0 rgba(255,230,180,.6); }
+.plaque .yr { font:700 13px "Cormorant Garamond"; letter-spacing:.3em; }
+.plaque p { font:500 13px/1.8 "Noto Serif TC"; margin-top:8px; }
+/* 生涯名片 */
+.pcardx { max-width:300px; margin:16px auto; border-radius:16px; overflow:hidden; background:linear-gradient(160deg,#173326,#0e1f17 60%); color:var(--cream); border:2px solid var(--brass); box-shadow:0 12px 26px rgba(0,0,0,.3); }
+.pcardx .top { padding:14px 16px 0; display:flex; justify-content:space-between; font:600 12px "Barlow Condensed"; letter-spacing:.18em; color:var(--brass2); }
+.pcardx .fig { height:150px; position:relative; }
+.pcardx .bot { background:rgba(0,0,0,.25); padding:10px 16px 14px; }
+.pcardx .bot b { font:900 20px "Noto Serif TC"; display:block; }
+.pcardx .bot .t { font-size:12px; color:var(--brass2); }
+.pcardx .st { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-top:8px; text-align:center; font-size:10.5px; color:rgba(242,234,216,.65); }
+.pcardx .st em { display:block; font:600 18px "Barlow Condensed"; font-style:normal; color:#fff; }
+/* 報紙 */
+.paper { max-width:640px; margin:16px auto; background:#f4efe2; border:1px solid #cfc6b0; padding:18px 20px; font-family:"Noto Serif TC",serif; box-shadow:0 8px 20px rgba(0,0,0,.12); }
+.paper .mast { text-align:center; border-bottom:3px double #2a2a22; padding-bottom:6px; font:900 28px "Noto Serif TC"; letter-spacing:.3em; }
+.paper .date { display:flex; justify-content:space-between; font-size:11px; border-bottom:1px solid #2a2a22; padding:2px 0; margin-bottom:10px; color:#4a4a40; }
+.paper h5 { font:900 22px/1.35 "Noto Serif TC"; margin-bottom:6px; }
+.paper .cols { columns:2 220px; column-gap:18px; font-size:13px; line-height:1.85; text-align:justify; }
+/* 手機畫面 */
+.phones { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px 18px; margin:16px 0; }
+.phone { background:#0b1812; border-radius:26px; padding:10px; box-shadow:0 10px 28px rgba(14,31,23,.25); max-width:290px; margin:0 auto; width:100%; }
+.phone .scr { background:var(--paper); border-radius:18px; overflow:hidden; min-height:500px; font-size:12px; line-height:1.5; position:relative; }
+.phone-cap { text-align:center; font-size:12.5px; color:var(--brass); padding:10px 0 0; letter-spacing:.06em; font-weight:500; }
+.phone-cap small { display:block; color:var(--muted); font-size:11.5px; letter-spacing:0; font-weight:400; line-height:1.5; max-width:270px; margin:2px auto 0; }
+.pb { background:var(--deep); color:var(--cream); padding:12px 12px 10px; }
+.pb small { display:block; font:600 10px "Barlow Condensed"; letter-spacing:.2em; color:var(--brass2); }
+.pb b { font:700 15px "Noto Serif TC",serif; }
+.pb .row { display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:rgba(242,234,216,.75); gap:4px; }
+.pb .row b { font:600 14px "Barlow Condensed"; color:#fff; }
+.pc { padding:10px; }
+.pcard { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 10px; margin-bottom:8px; }
+.pcard .t { font-weight:700; color:var(--forest); font-size:12.5px; }
+.pcard .k { color:var(--muted); font-size:11px; }
+.bar { height:6px; border-radius:3px; background:#e6dfcd; overflow:hidden; margin:4px 0 2px; }
+.bar i { display:block; height:100%; background:linear-gradient(90deg,var(--moss),var(--brass)); }
+.pbtn { display:block; text-align:center; background:linear-gradient(#c9a865,#a9864a); color:#1c1408; font-weight:700; border-radius:9px; padding:8px; margin-top:6px; }
+.pbtn.ghost { background:#fff; border:1px solid var(--line); color:var(--forest); font-weight:500; }
+.lb { width:100%; border-collapse:collapse; font-size:11.5px; background:#fff; }
+.lb td { border:none; border-bottom:1px solid var(--line); padding:4px 6px; }
+.lb tr.me td { background:rgba(169,134,74,.16); font-weight:700; }
+.lb tr.fr td { background:rgba(47,90,63,.08); }
+.lb td.r { text-align:right; font-family:"Barlow Condensed"; font-size:13px; }
+.cutline td { border-bottom:2px dashed var(--flag) !important; }
+.phone .scr.game { background:linear-gradient(#7fb0d8 0,#bcd9ea 34%,#4f8a4a 35%,#3d7a3c 100%); }
+.hudl { position:absolute; left:8px; top:8px; background:rgba(14,31,23,.86); color:var(--cream); border-radius:8px; padding:6px 9px; font-size:11px; }
+.hudl b { font:600 18px "Barlow Condensed"; }
+.tick { position:absolute; left:8px; right:8px; top:64px; background:rgba(14,31,23,.86); color:var(--cream); border-radius:8px; padding:6px 9px; font-size:11px; }
+.tick .pos { color:var(--brass2); font:600 15px "Barlow Condensed"; margin-right:6px; }
+.press { position:absolute; inset:0; box-shadow:inset 0 0 70px rgba(163,48,42,.6); pointer-events:none; }
+.feed { position:absolute; left:8px; right:8px; bottom:70px; background:rgba(247,243,233,.94); border-radius:8px; padding:6px 9px; font-size:11px; }
+.pw { position:absolute; right:10px; top:120px; width:10px; height:190px; border-radius:5px; background:rgba(14,31,23,.7); }
+.pw i { position:absolute; bottom:0; left:0; right:0; height:62%; border-radius:5px; background:linear-gradient(#d6bb82,#a3302a); }
+.choice { border:1px solid var(--line); border-radius:9px; background:#fff; padding:7px 9px; margin-bottom:6px; }
+.choice.on { border:2px solid var(--brass); background:#fffaf0; }
+.choice b { color:var(--forest); }
+.statrow { display:flex; align-items:center; gap:6px; font-size:11px; margin:3px 0; }
+.statrow span:first-child { width:58px; color:var(--muted); }
+.statrow .bar { flex:1; margin:0; }
+.statrow em { font-style:normal; font:600 13px "Barlow Condensed"; width:30px; text-align:right; }
+.statrow em.up { color:var(--moss); }
+.chips { display:flex; flex-wrap:wrap; gap:4px; margin:4px 0; }
+.chip { font-size:10.5px; border:1px solid var(--line); border-radius:10px; padding:1px 8px; background:#fff; }
+.chip.on { background:var(--forest); color:var(--cream); border-color:var(--forest); }
+.sw { display:inline-block; width:16px; height:16px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px var(--line); margin-right:3px; vertical-align:middle; }
+.sw.on { box-shadow:0 0 0 2px var(--brass); }
+.cad { display:flex; gap:8px; align-items:center; }
+.cad .av { width:38px; height:38px; border-radius:50%; flex:none; background:radial-gradient(circle at 40% 35%,#e3b58a,#9a6a44); border:2px solid var(--brass2); position:relative; overflow:hidden; }
+.cad .av::after { content:""; position:absolute; left:4px; right:4px; top:-2px; height:14px; border-radius:50% 50% 30% 30%; background:var(--hc,#2a2018); }
+.stars { color:var(--brass); letter-spacing:1px; font-size:11px; }
+.phone .scr.cer { background:radial-gradient(ellipse at 50% 30%,#3a7a52 0,#1d3a2a 55%,#0e1f17 100%); color:var(--cream); }
+.tv { margin:14px auto 8px; width:86%; aspect-ratio:4/3; border-radius:10px; background:#111; border:6px solid #3a3a36; position:relative; overflow:hidden; }
+.tv .glow { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 60%,rgba(120,200,150,.35),transparent 70%); }
+.shelf { border-bottom:8px solid #6a4a2a; box-shadow:0 6px 0 #3a2814; display:flex; justify-content:space-around; align-items:flex-end; padding:8px 6px 0; margin-bottom:16px; min-height:74px; }
+.shelf svg { height:64px; width:auto; }
+.shelf .empty { width:34px; height:46px; border:1px dashed rgba(242,234,216,.25); border-radius:6px; }
+.menu { background:#fffdf6; border:1px solid #d8cba8; margin:10px; padding:14px 12px; text-align:center; font-family:"Noto Serif TC",serif; }
+.menu h6 { font:900 15px "Noto Serif TC"; letter-spacing:.3em; color:var(--forest); }
+.menu .c { font-size:11.5px; line-height:2; color:#3a3a32; }
+.menu .c b { display:block; font-size:10px; letter-spacing:.3em; color:var(--brass); margin-top:6px; }
+/* 時間軸 */
+.tl { list-style:none; padding:0; margin:14px 0; }
+.tl li { display:grid; grid-template-columns:96px 1fr; gap:12px; padding:10px 0; border-bottom:1px dashed var(--line); margin:0; }
+.tl li .h { font:600 14px "Barlow Condensed"; color:var(--brass); letter-spacing:.06em; }
+.tl li b { color:var(--forest); }
+.tech { background:#eef0e9; border-top:3px solid var(--forest); margin-top:70px; padding-bottom:40px; }
+.tech h1.part { margin-top:0; padding-top:40px; }
+footer { text-align:center; color:var(--muted); font-size:12px; padding:44px 0 60px; }
+@media (max-width:640px) {
+  body { font-size:14.5px; }
+  header.hero .wrap { grid-template-columns:1fr; }
+  header.hero .hero-art { display:none; }
+  header.hero h1 { font-size:28px; }
+  h1.part { font-size:23px; }
+  h2 { font-size:19px; }
+  .tl li { grid-template-columns:72px 1fr; }
+  .stage dl { grid-template-columns:64px 1fr; }
+  .cert { padding:38px 20px 30px; outline-offset:-10px; }
+  .cert h4 { font-size:27px; letter-spacing:.15em; }
+  .seal { position:static; margin:16px auto 0; width:64px; height:64px; font-size:12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 共用的 SVG 定義（漸層） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gJacket" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f8456"/><stop offset=".55" stop-color="#1c5a37"/><stop offset="1" stop-color="#0f3a23"/></linearGradient>
+    <linearGradient id="gLapel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a5434"/><stop offset="1" stop-color="#0c301d"/></linearGradient>
+    <radialGradient id="gBtn" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#fff1b8"/><stop offset=".5" stop-color="#d6a840"/><stop offset="1" stop-color="#7a5a18"/></radialGradient>
+    <linearGradient id="gSilver" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d949c"/><stop offset=".22" stop-color="#eef1f4"/><stop offset=".45" stop-color="#b8bec6"/><stop offset=".7" stop-color="#f7f9fb"/><stop offset="1" stop-color="#7d848c"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a6418"/><stop offset=".25" stop-color="#f4d27a"/><stop offset=".5" stop-color="#c8962e"/><stop offset=".75" stop-color="#ffe9a8"/><stop offset="1" stop-color="#7a5612"/></linearGradient>
+    <linearGradient id="gCrystal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f6ff" stop-opacity=".95"/><stop offset=".5" stop-color="#9ad0f0" stop-opacity=".55"/><stop offset="1" stop-color="#e8f6ff" stop-opacity=".9"/></linearGradient>
+    <linearGradient id="gWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a3e1e"/><stop offset="1" stop-color="#3a2010"/></linearGradient>
+    <linearGradient id="gRibbon" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1f5a3a"/><stop offset=".5" stop-color="#f2ead8"/><stop offset="1" stop-color="#1f5a3a"/></linearGradient>
+  </defs>
+</svg>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <div class="wm">DIXEN GOLF · CAREER</div>
+    <h1>生涯模式企劃書<br><span style="font-size:.62em;color:var(--brass2)">第二版 · 目標是那件綠夾克</span></h1>
+    <p class="sub">從家鄉球場的月例賽開始，打進名人邀請賽、穿上綠夾克、走進名人堂，退休後再把夢想交給下一代</p>
+    <div class="meta"><span>企劃版本 2.0</span><span>2026-10-27</span><span>對應遊戲版本 v87</span><span>含第一版審視</span><span>所有檔案放在 Career 資料夾</span></div>
+  </div>
+  <div class="hero-art">
+    <svg viewBox="0 0 220 240" style="height:230px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5))"><use href="#jacketArt"/></svg>
+  </div>
+</div></header>
+
+<!-- 綠夾克圖（後面重複使用） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="jacketArt">
+      <path d="M110 6 q12 0 12 11 q0 8 -12 13" fill="none" stroke="#c8a860" stroke-width="3"/>
+      <path d="M38 54 L110 30 L182 54" fill="none" stroke="#8a6a33" stroke-width="5" stroke-linecap="round"/>
+      <path d="M48 56 L22 122 L16 204 L40 208 L54 132 Z" fill="url(#gLapel)"/>
+      <path d="M172 56 L198 122 L204 204 L180 208 L166 132 Z" fill="url(#gLapel)"/>
+      <path d="M48 56 C70 46 90 42 110 44 C130 42 150 46 172 56 L184 120 L182 226 L114 232 L110 150 L106 232 L38 226 L36 120 Z" fill="url(#gJacket)"/>
+      <path d="M92 46 L110 112 L128 46 Q110 40 92 46 Z" fill="#f4efe2"/>
+      <path d="M106 50 L114 50 L117 98 L110 112 L103 98 Z" fill="#163f28"/>
+      <path d="M92 46 L70 60 L84 98 L110 136 Z" fill="url(#gLapel)"/>
+      <path d="M128 46 L150 60 L136 98 L110 136 Z" fill="url(#gLapel)"/>
+      <path d="M110 136 L110 230" stroke="#0b2a19" stroke-width="1.5"/>
+      <circle cx="116" cy="156" r="4.5" fill="url(#gBtn)"/>
+      <circle cx="116" cy="184" r="4.5" fill="url(#gBtn)"/>
+      <path d="M140 108 L168 106" stroke="#0b2a19" stroke-width="2"/>
+      <circle cx="154" cy="92" r="10" fill="none" stroke="#e0bc6a" stroke-width="1.6"/>
+      <path d="M151 99 L151 85 L159 88 L151 91" fill="#e0bc6a" stroke="#e0bc6a" stroke-width="1.2"/>
+      <path d="M50 186 L86 188 M134 188 L170 186" stroke="#0b2a19" stroke-width="2"/>
+      <path d="M60 70 C66 110 64 160 58 210" stroke="rgba(255,255,255,.08)" stroke-width="6" fill="none"/>
+      <circle cx="30" cy="200" r="2.5" fill="url(#gBtn)"/><circle cx="190" cy="200" r="2.5" fill="url(#gBtn)"/>
+    </g>
+    <g id="jugArt">
+      <ellipse cx="80" cy="224" rx="36" ry="8" fill="#3a2010"/>
+      <rect x="46" y="204" width="68" height="20" rx="3" fill="url(#gWood)"/>
+      <rect x="62" y="210" width="36" height="8" rx="1" fill="url(#gGold)"/>
+      <path d="M62 204 Q80 186 98 204 Z" fill="url(#gSilver)"/>
+      <path d="M80 70 C38 82 34 150 52 186 Q80 200 108 186 C126 150 122 82 80 70 Z" fill="url(#gSilver)"/>
+      <path d="M50 150 Q80 160 110 150" stroke="#8d949c" stroke-width="1.2" fill="none"/>
+      <path d="M48 130 Q80 140 112 130" stroke="#8d949c" stroke-width="1.2" fill="none"/>
+      <path d="M66 74 L61 40 L99 40 L94 74 Z" fill="url(#gSilver)"/>
+      <path d="M56 40 Q80 30 102 40 L122 28 L106 45 Z" fill="url(#gSilver)"/>
+      <ellipse cx="80" cy="38" rx="23" ry="5" fill="#dfe3e8"/>
+      <circle cx="80" cy="28" r="5.5" fill="url(#gSilver)"/>
+      <path d="M98 54 C146 52 146 124 108 154" stroke="url(#gSilver)" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M62 92 C56 120 58 156 66 178" stroke="rgba(255,255,255,.7)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="cupArt">
+      <rect x="40" y="200" width="80" height="26" rx="3" fill="url(#gWood)"/>
+      <rect x="58" y="207" width="44" height="10" rx="1" fill="url(#gGold)"/>
+      <path d="M66 200 L70 170 L90 170 L94 200 Z" fill="url(#gSilver)"/>
+      <path d="M74 170 L76 140 L84 140 L86 170 Z" fill="url(#gSilver)"/>
+      <path d="M34 50 L126 50 Q124 124 80 142 Q36 124 34 50 Z" fill="url(#gSilver)"/>
+      <ellipse cx="80" cy="50" rx="46" ry="8" fill="#dfe3e8" stroke="#9aa0a8"/>
+      <path d="M36 64 C6 64 8 112 50 116" stroke="url(#gSilver)" stroke-width="7" fill="none"/>
+      <path d="M124 64 C154 64 152 112 110 116" stroke="url(#gSilver)" stroke-width="7" fill="none"/>
+      <path d="M50 66 Q52 104 70 124" stroke="rgba(255,255,255,.75)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="bigCupArt">
+      <rect x="34" y="206" width="92" height="22" rx="3" fill="url(#gWood)"/>
+      <path d="M58 206 L64 176 L96 176 L102 206 Z" fill="url(#gSilver)"/>
+      <path d="M30 72 L130 72 Q128 150 80 176 Q32 150 30 72 Z" fill="url(#gSilver)"/>
+      <path d="M28 72 Q80 56 132 72 Q80 84 28 72 Z" fill="#e6e9ed"/>
+      <path d="M50 66 Q80 40 110 66" fill="url(#gSilver)"/>
+      <circle cx="80" cy="40" r="6" fill="url(#gSilver)"/>
+      <path d="M80 34 L80 14 M80 18 L74 30 M80 20 L88 28" stroke="url(#gSilver)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="80" cy="12" r="3.5" fill="url(#gSilver)"/>
+      <path d="M32 84 C0 90 6 140 50 144" stroke="url(#gSilver)" stroke-width="7" fill="none"/>
+      <path d="M128 84 C160 90 154 140 110 144" stroke="url(#gSilver)" stroke-width="7" fill="none"/>
+      <path d="M46 90 Q50 136 70 158" stroke="rgba(255,255,255,.75)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="crystalArt">
+      <rect x="46" y="206" width="68" height="22" rx="3" fill="url(#gWood)"/>
+      <path d="M80 18 L112 70 L100 206 L60 206 L48 70 Z" fill="url(#gCrystal)" stroke="#d8eefc"/>
+      <path d="M80 18 L80 206 M48 70 L112 70 M80 18 L100 206 M80 18 L60 206" stroke="rgba(255,255,255,.55)" stroke-width="1"/>
+      <circle cx="80" cy="96" r="14" fill="url(#gGold)"/>
+      <path d="M72 96 L88 96 M80 88 L80 104" stroke="#7a5612" stroke-width="2"/>
+      <path d="M58 80 L64 190" stroke="rgba(255,255,255,.85)" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g id="teamCupArt">
+      <rect x="30" y="206" width="100" height="22" rx="3" fill="url(#gWood)"/>
+      <rect x="52" y="212" width="56" height="9" rx="1" fill="url(#gGold)"/>
+      <path d="M62 206 L68 168 L92 168 L98 206 Z" fill="url(#gGold)"/>
+      <path d="M36 70 L124 70 Q120 140 80 166 Q40 140 36 70 Z" fill="url(#gGold)"/>
+      <ellipse cx="80" cy="70" rx="44" ry="7" fill="#f4d27a" stroke="#8a6418"/>
+      <path d="M38 80 C10 80 12 124 52 132" stroke="url(#gGold)" stroke-width="7" fill="none"/>
+      <path d="M122 80 C150 80 148 124 108 132" stroke="url(#gGold)" stroke-width="7" fill="none"/>
+      <circle cx="80" cy="30" r="7" fill="url(#gGold)"/>
+      <path d="M80 37 L80 58 M80 44 L68 36 M80 58 L72 68 M80 58 L88 68 M68 36 L60 22" stroke="url(#gGold)" stroke-width="4" stroke-linecap="round"/>
+      <path d="M50 84 Q54 122 70 148" stroke="rgba(255,255,255,.7)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="plateArt">
+      <rect x="40" y="200" width="80" height="26" rx="3" fill="url(#gWood)"/>
+      <path d="M70 200 L76 170 L84 170 L90 200 Z" fill="url(#gSilver)"/>
+      <circle cx="80" cy="100" r="72" fill="url(#gSilver)"/>
+      <circle cx="80" cy="100" r="58" fill="none" stroke="#8d949c" stroke-width="2"/>
+      <circle cx="80" cy="100" r="50" fill="none" stroke="#c8cdd3" stroke-width="1" stroke-dasharray="3 4"/>
+      <path d="M72 124 L72 78 L98 88 L72 98" fill="none" stroke="#7d848c" stroke-width="3"/>
+      <path d="M40 70 Q50 44 80 34" stroke="rgba(255,255,255,.8)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="medalArt">
+      <path d="M52 10 L74 92 L86 92 L64 10 Z" fill="#1f5a3a"/><path d="M108 10 L86 92 L74 92 L96 10 Z" fill="#a3302a"/>
+      <circle cx="80" cy="140" r="52" fill="url(#gGold)"/>
+      <circle cx="80" cy="140" r="40" fill="none" stroke="#8a6418" stroke-width="2"/>
+      <circle cx="80" cy="140" r="8" fill="#fff8e0"/>
+      <path d="M80 104 L84 126 M80 176 L76 154" stroke="#8a6418" stroke-width="2"/>
+    </g>
+  </defs>
+</svg>
+
+<nav class="toc"><div class="wrap">
+  <a class="part" href="#p0">審視</a>
+  <a href="#a1">第一版問題</a>
+  <a href="#a2">第二版改了什麼</a>
+  <a class="part" href="#p1">主遊戲</a>
+  <a href="#b1">互不影響</a>
+  <a href="#b2">共用規則</a>
+  <a href="#b3">成就</a>
+  <a href="#b4">個人紀錄</a>
+  <a href="#b5">連結</a>
+  <a class="part" href="#p2">玩法</a>
+  <a href="#c1">真實對照</a>
+  <a href="#c2">生涯路線</a>
+  <a href="#c3">比賽週</a>
+  <a href="#c4">四大賽</a>
+  <a href="#c5">綠夾克</a>
+  <a href="#c6">名人堂</a>
+  <a href="#c7">退休</a>
+  <a href="#c8">獎金</a>
+  <a href="#c9">桿弟</a>
+  <a href="#c10">成長</a>
+  <a href="#c11">其他</a>
+  <a href="#c12">時間</a>
+  <a class="part" href="#p3">美術</a>
+  <a href="#d1">角色</a>
+  <a href="#d2">獎盃</a>
+  <a href="#d3">獎狀</a>
+  <a href="#d4">畫面</a>
+  <a class="part" href="#p4">程式</a>
+  <a href="#t1">資料夾</a>
+  <a href="#t2">隔離</a>
+  <a href="#t3">存檔</a>
+  <a href="#t4">模擬</a>
+  <a href="#t5">角色程式</a>
+  <a href="#t6">開發階段</a>
+  <a href="#t7">風險</a>
+  <a href="#t8">待決定</a>
+</div></nav>
+
+<main class="wrap">
+
+<!-- ================================================================ -->
+<h1 class="part" id="p0"><small>PART ZERO · REVIEW</small>第三者審視</h1>
+
+<div class="verdict">
+  <h3>總結</h3>
+  <ul>
+    <li>第一版的<b>骨架是對的</b>：從業餘到職業的階梯、技能點、技能卡、宿敵、排行榜、模擬其他洞，這些都做得出來，也確實像 2K 的生涯模式。</li>
+    <li>但第一版有幾個<b>會出問題的地方</b>：終點不明確（沒有綠夾克）、名人堂和退休寫得太簡單、和主遊戲的成就與紀錄怎麼分界沒講清楚、角色外觀以為「沿用就好」但寫實角色其實不能換色也不能捏人、後期獎金沒有地方花、遊戲時間嚴重低估。</li>
+    <li>第二版逐條處理這些問題，加上真實高爾夫的制度對照、大量畫面示意和美術設計，並把所有生涯相關檔案集中到 <code>Career</code> 資料夾。</li>
+    <li>結論不變：<b>可行</b>。但工作量比第一版估的大，第二版把開發拆成六個階段，每個階段都能單獨上線。</li>
+  </ul>
+</div>
+
+<h2 id="a1"><span class="no">A1</span>第一版的問題清單</h2>
+<p>站在第三者的角度，用「玩家會不會不爽」「程式會不會出錯」「主遊戲會不會被弄壞」三個標準檢查。</p>
+<div class="scroll"><table>
+  <tr><th>嚴重度</th><th>問題</th><th>為什麼是問題</th><th>第二版的處理</th></tr>
+  <tr><td><span class="sev h">高</span></td><td>終點不明確</td><td>第一版的最高榮耀是「富士名人賽紫色外套」，名人堂是自創分數。玩家心裡的高爾夫最高榮耀是綠夾克，沒有它就少了一個「夢想」。</td><td>名人邀請賽改成綠夾克，從開場故事就埋下「穿上綠夾克」這個夢想（<a href="#c5">C5</a>）。</td></tr>
+  <tr><td><span class="sev h">高</span></td><td>名人堂門檻不符合現實</td><td>現實的名人堂是看冠軍數與大賽數，還有年齡或退休年數的限制，不是累積分數。</td><td>改成照現實的門檻：15 場正式冠軍或 2 座大賽（含球員錦標賽），並且滿 45 歲或退休滿 3 季（<a href="#c6">C6</a>）。</td></tr>
+  <tr><td><span class="sev h">高</span></td><td>退休只有一行</td><td>生涯最後一段沒有內容，玩家拿到大滿貫後就沒有動力。</td><td>告別賽 + 六條「第二人生」：長青巡迴、洲際盃隊長、榮譽開球、球場設計師、學院、傳承（<a href="#c7">C7</a>）。</td></tr>
+  <tr><td><span class="sev h">高</span></td><td>主遊戲的成就計數會被生涯局灌數字</td><td>現在 <code>game.js</code> 每洞結束會對所有本機玩家 <code>bump('holes')</code>、整場結束 <code>bump('rounds')</code>，生涯局如果直接用 <code>game.start</code>，會自動算進主遊戲的成就與存檔；用技能卡和球具打出來的超遠開球也可能直接解鎖主遊戲的「開球 330 碼」。</td><td>明確的共用 / 不共用規則：數量型成就共用、表現型成就不共用、模擬的洞永遠不算（<a href="#b2">B2</a>）。</td></tr>
+  <tr><td><span class="sev h">高</span></td><td>能力點可以靠生涯刷</td><td>主遊戲打完 9 洞給 1 能力點。如果生涯的比賽也走 <code>saveRound</code>，用全模擬一直跑就能刷主帳號能力點。</td><td>生涯比賽不走 <code>saveRound</code>；主帳號只從生涯成就拿能力點，總量上限 40 點（<a href="#b3">B3</a>）。</td></tr>
+  <tr><td><span class="sev h">高</span></td><td>角色外觀的假設錯誤</td><td>查了程式：只有「經典」內建角色能換 7 個部位的顏色與男女；9 個寫實角色（David、James、Joe、Louise、Ninja、Ross、Sophie、Alien、Kachujin）外觀固定，<code>setLook()</code> 是空的。沒有捏臉、身高、髮型，也沒辦法把綠夾克穿到寫實角色身上。</td><td>角色塑造分三層，說清楚哪些做得到、哪些做不到，並設計替代方案（<a href="#d1">D1</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>後期獎金沒用處</td><td>第一版只有球具、教練、桿弟、旅費，幾季之後錢只會一直累積。</td><td>十幾種用途：訓練基地、旅行等級、經紀人、心理師、慈善基金會、學院、家鄉球場股份、收藏品（<a href="#c8">C8</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>桿弟太簡單</td><td>只有三種，而且直接加讀果嶺，花錢就變強，沒有選擇。</td><td>8 位有個性的桿弟，能力以「情報」為主（落點範圍圈、風的建議、冷靜），數值加成很小，還有默契等級（<a href="#c9">C9</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>遊戲時間嚴重低估</td><td>10～15 季 × 16 場 × 4 輪，就算每輪只花 15 分鐘也要 400 小時以上。</td><td>季長選項、小比賽自動模擬、時間預算表（<a href="#c12">C12</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>沒有年齡</td><td>沒有年齡就沒有「巔峰」「老將」「退休」的節奏，名人堂的年齡條件也無法成立。</td><td>一季 = 一年，有巔峰期、衰退期，50 歲可以打長青巡迴（<a href="#c10">C10</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>加成可以無限疊</td><td>球具 + 手感 + 主場 + 技能卡 + 桿弟，全部疊起來可能 +15 以上，比賽會變太簡單。</td><td>所有暫時加成的總和上限 +8，素質最終值上限 99（<a href="#c10">C10</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>可以關掉 APP 重打壞洞</td><td>第一版是每洞存一次，打壞了關掉 APP 再開，就能重打這一洞。</td><td>每一桿打出去就先存結果（<a href="#t3">T3</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>比賽週太單薄</td><td>現實的比賽週有週一資格賽、職業業餘配對賽、練習輪，大賽還有三桿洞大賽、冠軍晚宴。</td><td>完整的比賽週流程，大部分是可選的小活動（<a href="#c3">C3</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>洲際盃的賽制做不到</td><td>現實的團體賽有「輪流擊同一顆球」的賽制，現在的遊戲是每人一顆球。</td><td>先做「四球賽」（各打各的、取好的成績）和單人比洞賽，這兩種現有程式就能做；輪流擊球放到最後一個階段（<a href="#c4">C4</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>檔案放在主程式的 js 資料夾</td><td>第一版規劃在 <code>js/mycareer/</code>，會和主程式混在一起。</td><td>全部放在 <code>Career/</code>，主程式只改幾個掛勾點（<a href="#t1">T1</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>關鍵時刻的經驗值太多</td><td>關鍵時刻 3 倍經驗，可能變成「每分鐘經驗最高」，大家都只打關鍵時刻。</td><td>改成每種打法的「每分鐘經驗」差不多，自己打完整 18 洞反而多一點完賽獎勵（<a href="#c10">C10</a>）。</td></tr>
+  <tr><td><span class="sev m">中</span></td><td>關鍵時刻的球位可能不合理</td><td>系統自動放球，可能放在樹裡、水邊或很怪的斜坡。</td><td>只放在地圖分類是球道、長草、沙坑的格子，坡度太大就換位置，找不到就改成自己打整洞（<a href="#t4">T4</a>）。</td></tr>
+  <tr><td><span class="sev l">低</span></td><td>沒有難度設定</td><td>朋友程度不同，有人想輕鬆玩、有人想很寫實。</td><td>休閒 / 標準 / 寫實三段（<a href="#c11">C11</a>）。</td></tr>
+  <tr><td><span class="sev l">低</span></td><td>只有一個存檔</td><td>想試另一種球風就要刪掉原本的生涯。</td><td>3 個生涯欄位，已退休的生涯留在名人堂館（<a href="#c11">C11</a>）。</td></tr>
+  <tr><td><span class="sev l">低</span></td><td>只有文字、沒有畫面</td><td>很難想像實際長什麼樣子。</td><td>第二版有 20 張手機畫面示意、8 座獎盃、獎狀、名人堂匾額、生涯名片、報紙版面（<a href="#p3">美術篇</a>）。</td></tr>
+  <tr><td><span class="sev l">低</span></td><td>名人賽沒有適合的球場</td><td>遊戲裡沒有名人賽那座球場。</td><td>三個選項給你決定（<a href="#t8">T8</a>）。</td></tr>
+  <tr><td><span class="sev l">低</span></td><td>朋友世界的資料同步</td><td>朋友的素質一直在變，你的世界裡的他要多久更新一次？</td><td>每週前進時更新一次摘要；朋友沒上線時用最後一次的資料（<a href="#t3">T3</a>）。</td></tr>
+  <tr><td><span class="sev l">低</span></td><td>文字量很大</td><td>新聞、記者會、宿敵對話如果一句一句寫，量非常大。</td><td>模板 + 變數組合，每種情況 5～10 個模板就夠多樣（<a href="#t6">T6</a> 估在工作量裡）。</td></tr>
+</table></div>
+
+<h2 id="a2"><span class="no">A2</span>第二版改了什麼</h2>
+<div class="grid3">
+  <div class="card"><h4>夢想與終點</h4><p>綠夾克是夢想，大滿貫與名人堂是終點，退休後還有六條第二人生。</p></div>
+  <div class="card"><h4>和主遊戲的界線</h4><p>寫清楚每個系統共用或不共用、為什麼，以及 45 個生涯成就和它們給主帳號的獎勵。</p></div>
+  <div class="card"><h4>真實感</h4><p>比賽週的流程、四大賽的傳統、名人堂門檻、長青巡迴、團體賽隊長，都對照真實制度改編。</p></div>
+  <div class="card"><h4>錢與人</h4><p>獎金的十幾種用途；8 位有個性的桿弟；經紀人、心理師、學院。</p></div>
+  <div class="card"><h4>角色與美術</h4><p>捏人系統分三層；獎盃、獎狀、綠夾克、匾額、名片的設計圖；20 張畫面示意。</p></div>
+  <div class="card"><h4>做法</h4><p>Career 資料夾、主程式只動掛勾點、防重打存檔、六個開發階段、需要你決定的事。</p></div>
+</div>
+
+<!-- ================================================================ -->
+<h1 class="part" id="p1"><small>PART ONE · WITH THE MAIN GAME</small>和主遊戲的關係</h1>
+
+<h2 id="b1"><span class="no">B1</span>保證互不影響</h2>
+<p>生涯模式要像一個「外掛」：拿掉它，主遊戲完全照常運作；有它，主遊戲也不會多出奇怪的數字。</p>
+<div class="grid2">
+  <div class="card"><h4>存檔分開</h4><ul><li>生涯存在 GAS 新的「生涯」工作表，不寫進玩家工作表的「素質」「能力點」「成就」欄。</li><li>本機用 <code>dixen.career.*</code>，不用主遊戲中斷接續的 <code>dixen.resume</code>，兩邊互不覆蓋。</li></ul></div>
+  <div class="card"><h4>素質分開</h4><ul><li>生涯球員有自己的 14 項素質（可以低於 50），主帳號的素質、能力點、重新分配次數完全不動。</li><li>生涯的球具、技能卡、手感只存在生涯裡。</li></ul></div>
+  <div class="card"><h4>紀錄分開</h4><ul><li>生涯比賽不寫進「回合紀錄」「排行」工作表，所以主遊戲的最佳 18 洞、排行榜不會混進模擬的洞或有技能卡加成的成績。</li></ul></div>
+  <div class="card"><h4>程式分開</h4><ul><li>生涯的程式全部在 <code>Career/</code>；主程式只在「<code>cfg.career</code> 存在時」才走生涯的分支，沒有這個欄位時程式路徑和現在一模一樣。</li></ul></div>
+  <div class="card"><h4>貨幣分開</h4><ul><li>生涯獎金不能買星星商店的外觀，挑戰星數也不能買生涯球具。兩邊都不會「花錢變強」。</li></ul></div>
+  <div class="card"><h4>連線分開</h4><ul><li>一般連線照舊用主帳號角色。生涯只在洲際盃、好友挑戰時用連線，而且用的是生涯球員。</li></ul></div>
+</div>
+
+<h2 id="b2"><span class="no">B2</span>每個系統共用還是不共用</h2>
+<div class="scroll"><table>
+  <tr><th>系統</th><th>規則</th><th>理由</th></tr>
+  <tr><td>主帳號素質 / 能力點</td><td>不共用。主帳號只會從「生涯成就」拿能力點（總上限 40 點）</td><td>避免用模擬刷能力點</td></tr>
+  <tr><td>數量型成就計數（打了幾洞、幾場、幾隻博蒂、幾次一桿進洞、奇幻機關次數）</td><td><b>共用</b>，但只算「自己實際打的洞」。生涯的一場至少自己打 9 洞，才算主遊戲的 1 場回合</td><td>這些是真的打出來的，算進去合理，也讓生涯玩家的主帳號成就跟著前進</td></tr>
+  <tr><td>表現型成就（開球 330 碼、一場上果嶺 18 洞、單場低於標準桿 5 桿、一場推桿 25 次以內…）</td><td>不共用</td><td>生涯有技能卡、球具、主場加成，成績和主遊戲不是同一個標準</td></tr>
+  <tr><td>球場護照</td><td><b>共用</b>：生涯中自己打完 9 洞以上的球場會蓋章</td><td>護照是「去過哪裡」，跟加成無關</td></tr>
+  <tr><td>排行榜、最佳 18 洞</td><td>不共用</td><td>生涯成績有加成、有模擬</td></tr>
+  <tr><td>回合紀錄、個人紀錄</td><td>分開存；個人紀錄頁多一個「生涯」分頁（<a href="#b4">B4</a>）</td><td>可以一起看，但數字不混在一起</td></tr>
+  <tr><td>挑戰模式、星星商店</td><td>不共用</td><td>兩個不同的成長系統</td></tr>
+  <tr><td>外觀（球具外觀、角色）</td><td><b>共用</b>：主遊戲已解鎖的外觀生涯都能用；生涯解鎖的冠軍外觀也回到主帳號</td><td>外觀不影響數值，越多地方能用越好</td></tr>
+  <tr><td>練習場</td><td>借用：生涯的訓練關卡用練習場的場地與模式</td><td>不用重做</td></tr>
+  <tr><td>實際下場（現實的成績紀錄）</td><td>可選的「現實練球也算數」（<a href="#b5">B5</a>）</td><td>無衝突的連結</td></tr>
+  <tr><td>自製球場 / 編輯器</td><td>退休後的「球場設計師」投稿給管理員（<a href="#c7">C7</a>）</td><td>發布權仍然只有管理員</td></tr>
+</table></div>
+
+<h2 id="b3"><span class="no">B3</span>成就怎麼新增</h2>
+<p>在現有的成就系統（<code>progress.js</code> 的 <code>ACH</code>）新增一個分類「生涯」，格式完全照現有的：代號、分類、等級、一個字的徽章字、名稱、說明、計數、目標、能力點。生涯成就的定義檔放在 <code>Career/js/achievements.js</code>，由 <code>progress.js</code> 合併進來，所以成就頁、解鎖動畫、存回伺服器全部沿用。</p>
+
+<div class="scroll"><table>
+  <tr><th>字</th><th>名稱</th><th>條件</th><th>等級</th><th>主帳號獎勵</th></tr>
+  <tr><td>初</td><td>夢想起點</td><td>建立第一位生涯球員</td><td>銅</td><td>—</td></tr>
+  <tr><td>鳥</td><td>第一隻鳥</td><td>生涯中第一次打出博蒂</td><td>銅</td><td>—</td></tr>
+  <tr><td>月</td><td>月例賽冠軍</td><td>拿下俱樂部月例賽冠軍</td><td>銅</td><td>—</td></tr>
+  <tr><td>鄉</td><td>家鄉之光</td><td>家鄉俱樂部錦標賽冠軍</td><td>銀</td><td>能力點 1</td></tr>
+  <tr><td>業</td><td>業餘之王</td><td>全國業餘錦標賽冠軍</td><td>金</td><td>能力點 1</td></tr>
+  <tr><td>卡</td><td>拿到巡迴卡</td><td>職業資格賽決賽過關</td><td>銀</td><td>能力點 1</td></tr>
+  <tr><td>線</td><td>線上驚魂</td><td>資格賽決賽剛好在晉級線上過關</td><td>銀</td><td>—</td></tr>
+  <tr><td>晉</td><td>週末還在</td><td>職業比賽第一次晉級</td><td>銅</td><td>—</td></tr>
+  <tr><td>勝</td><td>職業首勝</td><td>拿下第一場職業冠軍</td><td>金</td><td>能力點 2</td></tr>
+  <tr><td>歸</td><td>衣錦還鄉</td><td>在家鄉球場拿下職業冠軍</td><td>金</td><td>能力點 1、帽子配色「家鄉色」</td></tr>
+  <tr><td>延</td><td>延長賽勝利</td><td>在延長賽拿下冠軍</td><td>銀</td><td>—</td></tr>
+  <tr><td>逆</td><td>大逆轉</td><td>最後一輪開打時落後 5 桿以上仍奪冠</td><td>金</td><td>能力點 1</td></tr>
+  <tr><td>新</td><td>年度新人王</td><td>職業第一季拿到新人王</td><td>銀</td><td>—</td></tr>
+  <tr><td>三</td><td>帽子戲法</td><td>單季拿下 3 場冠軍</td><td>金</td><td>能力點 1</td></tr>
+  <tr><td>富</td><td>獎金王</td><td>單季獎金榜第一</td><td>金</td><td>能力點 1</td></tr>
+  <tr><td>年</td><td>年度最佳球員</td><td>拿到年度最佳球員</td><td>金</td><td>能力點 2</td></tr>
+  <tr><td>洋</td><td>跨海出擊</td><td>環太平洋巡迴首勝</td><td>金</td><td>—</td></tr>
+  <tr><td>球</td><td>環球冠軍</td><td>環球巡迴首勝</td><td>金</td><td>能力點 2</td></tr>
+  <tr><td>總</td><td>總決賽冠軍</td><td>季末總決賽冠軍</td><td>金</td><td>能力點 1</td></tr>
+  <tr><td>十</td><td>世界前十</td><td>世界排名進入前 10</td><td>金</td><td>—</td></tr>
+  <tr><td>一</td><td>世界第一</td><td>世界排名第 1</td><td>傳說</td><td>能力點 3、球「世界第一」</td></tr>
+  <tr><td>久</td><td>王者之年</td><td>累計世界第一 52 週</td><td>傳說</td><td>—</td></tr>
+  <tr><td>綠</td><td>綠夾克</td><td>名人邀請賽冠軍</td><td>傳說</td><td>能力點 3、上衣「綠夾克」（經典角色有實體外套）</td></tr>
+  <tr><td>衛</td><td>衛冕綠夾克</td><td>連續兩年名人邀請賽冠軍</td><td>傳說</td><td>—</td></tr>
+  <tr><td>壺</td><td>年度冠軍球員</td><td>老球場公開賽冠軍</td><td>傳說</td><td>能力點 3、推桿外觀「銀壺」</td></tr>
+  <tr><td>太</td><td>太平洋王者</td><td>太平洋公開賽冠軍</td><td>傳說</td><td>能力點 3</td></tr>
+  <tr><td>海</td><td>海洋霸主</td><td>海洋錦標賽冠軍</td><td>傳說</td><td>能力點 3</td></tr>
+  <tr><td>島</td><td>島嶼果嶺</td><td>球員錦標賽冠軍</td><td>金</td><td>能力點 2</td></tr>
+  <tr><td>滿</td><td>生涯大滿貫</td><td>四大賽都拿過冠軍</td><td>傳說</td><td>能力點 5、Driver 外觀「大滿貫」</td></tr>
+  <tr><td>盃</td><td>洲際盃勝利</td><td>以球員身分贏得洲際盃</td><td>金</td><td>鐵桿外觀「洲際」</td></tr>
+  <tr><td>帥</td><td>冠軍隊長</td><td>以隊長身分贏得洲際盃</td><td>傳說</td><td>—</td></tr>
+  <tr><td>敵</td><td>宿敵終結者</td><td>對同一位宿敵累計贏 10 次</td><td>金</td><td>—</td></tr>
+  <tr><td>奇</td><td>59 俱樂部</td><td>職業比賽單輪打出 59 桿以下（自己打完 18 洞）</td><td>傳說</td><td>能力點 2</td></tr>
+  <tr><td>穩</td><td>四輪全紅</td><td>一場比賽四輪全部低於標準桿</td><td>金</td><td>—</td></tr>
+  <tr><td>練</td><td>苦練成金</td><td>所有訓練關卡都拿過金牌</td><td>金</td><td>能力點 1</td></tr>
+  <tr><td>伴</td><td>最佳拍檔</td><td>和同一位桿弟默契達到滿級</td><td>銀</td><td>—</td></tr>
+  <tr><td>善</td><td>回饋社會</td><td>成立慈善基金會</td><td>銀</td><td>—</td></tr>
+  <tr><td>老</td><td>十年磨一劍</td><td>生涯滿 10 季</td><td>銀</td><td>—</td></tr>
+  <tr><td>堂</td><td>名人堂</td><td>入選名人堂</td><td>傳說</td><td>能力點 5、球「名人堂」</td></tr>
+  <tr><td>別</td><td>最後一推</td><td>打完告別賽並退休</td><td>銀</td><td>—</td></tr>
+  <tr><td>青</td><td>長青不老</td><td>長青巡迴冠軍</td><td>金</td><td>—</td></tr>
+  <tr><td>開</td><td>榮譽開球</td><td>受邀擔任名人邀請賽的榮譽開球</td><td>金</td><td>—</td></tr>
+  <tr><td>設</td><td>設計師</td><td>退休後投稿的球場被管理員採用</td><td>傳說</td><td>能力點 2</td></tr>
+  <tr><td>徒</td><td>桃李滿門</td><td>學院培養出的新人拿下職業冠軍</td><td>金</td><td>—</td></tr>
+  <tr><td>承</td><td>薪火相傳</td><td>傳承生涯拿下職業首勝</td><td>金</td><td>能力點 1</td></tr>
+</table></div>
+<p class="small">合計主帳號能力點 49 點，超過上限 40 的部分不給（大約要拿到大滿貫才會碰到上限）。等級沿用現有的銅、銀、金、傳說，畫面上一樣不顯示難度。</p>
+
+<h2 id="b4"><span class="no">B4</span>個人紀錄怎麼合併</h2>
+<p>紀錄頁現在有五個分頁：個人紀錄、回合紀錄、成就徽章、球場護照、實際下場。第二版的做法：</p>
+<ul>
+  <li><b>新增第六個分頁「生涯」</b>：生涯名片、本季數據、生涯總數據、獎盃、年表、世界排名走勢。有多個生涯欄位時可以切換。</li>
+  <li><b>個人紀錄分頁</b>多一個篩選「一般 / 生涯 / 全部」，預設是「一般」（維持現在的樣子）。選「全部」時，生涯中自己打的洞會一起算（例如總博蒂數、平均推桿），模擬的洞永遠不算。</li>
+  <li><b>回合紀錄分頁</b>：生涯的回合加上「生涯」標籤，每洞成績中模擬的洞用灰色顯示。</li>
+  <li><b>成就徽章分頁</b>：多一個「生涯」分類（成就頁的分類按鈕自動多一顆）。</li>
+  <li><b>球場護照</b>：照共用規則蓋章，章上不額外標示。</li>
+</ul>
+
+<h2 id="b5"><span class="no">B5</span>和主遊戲沒有衝突的連結</h2>
+<div class="grid2">
+  <div class="card"><h4>大廳的生涯名片與稱號</h4><p>主遊戲大廳的名字旁邊顯示生涯稱號（例如「綠夾克得主」「世界第一」），點開是生涯名片（<a href="#d4">D4</a> 有示意）。連線的遊戲間也看得到彼此的稱號。</p></div>
+  <div class="card"><h4>經典重現</h4><p>生涯裡的重要時刻（例如拿下綠夾克的最後一洞）會存成「經典重現」：同樣的球場、風、旗位和球位，可以在主遊戲用主帳號角色挑戰。純粹好玩，沒有獎勵，所以沒有衝突。</p></div>
+  <div class="card"><h4>捏人選項也給主遊戲</h4><p>第二版要擴充經典角色的捏人選項（身高、體型、髮型、帽子、眼鏡、上衣款式），這些選項主遊戲的角色頁也能用。</p></div>
+  <div class="card"><h4>現實練球也算數（可關閉）</h4><p>在「實際下場」記一場現實的成績，生涯裡多一次免費訓練（每現實週最多一次）。鼓勵真的去打球，不影響主遊戲。</p></div>
+  <div class="card"><h4>朋友當你的桿弟</h4><p>生涯比賽可以開一個「觀戰房」，朋友用驗證碼進來看你打，用現有的對話彈幕給建議。朋友不能操作，只是陪你打大賽的最後一輪。</p></div>
+  <div class="card"><h4>球場護照與奇幻球場</h4><p>生涯會帶你去平常不常打的球場，護照自然蓋得更滿；季外的奇幻表演賽讓奇幻球場也有生涯意義。</p></div>
+  <div class="card"><h4>設計師投稿</h4><p>退休後當球場設計師，用簡化版編輯器設計夢想球場，投稿成「草稿」給管理員（Michael）。被採用的話就會變成主遊戲的自製球場，大家都能打。</p></div>
+  <div class="card"><h4>共用的成就動畫</h4><p>生涯成就解鎖時，用的是主遊戲同一套成就動畫與音效，感覺是同一個遊戲。</p></div>
+</div>
+
+<!-- ================================================================ -->
+<h1 class="part" id="p2"><small>PART TWO · GAMEPLAY</small>玩法篇</h1>
+
+<h2 id="c1"><span class="no">C1</span>和真實高爾夫的對照</h2>
+<p>比賽與巡迴賽的名稱是改編的，但制度盡量照現實，讓懂高爾夫的人覺得「對，就是這樣」。</p>
+<div class="scroll"><table>
+  <tr><th>現實</th><th>遊戲裡</th><th>保留的真實細節</th></tr>
+  <tr><td>名人賽（綠夾克）</td><td><b>名人邀請賽</b></td><td>只邀請、不公開報名；冠軍穿綠夾克，由上屆冠軍為他穿上；冠軍可以把夾克帶回家一年；衛冕冠軍在隔年賽前主辦冠軍晚宴並決定菜單；賽前一天有三桿洞大賽；傳奇球員擔任榮譽開球；冠軍終身擁有參賽資格</td></tr>
+  <tr><td>英國公開賽（葡萄酒壺）</td><td><b>老球場公開賽</b></td><td>在林克斯球場輪流舉辦（聖安德魯斯、皇家特倫、卡努斯蒂、皇家聖喬治）；冠軍稱為「年度冠軍球員」；獎盃是銀色的壺，冠軍名字刻在上面；強風</td></tr>
+  <tr><td>美國公開賽</td><td><b>太平洋公開賽</b>（圓石灘）</td><td>最難的場地設定：果嶺最快、長草最深、旗位最刁；冠軍成績常常接近標準桿</td></tr>
+  <tr><td>PGA 錦標賽</td><td><b>海洋錦標賽</b>（Kiawah）</td><td>最長的場地、大型銀盃</td></tr>
+  <tr><td>球員錦標賽</td><td><b>球員錦標賽</b>（TPC 鋸草）</td><td>俗稱「第五大賽」；17 洞島嶼果嶺；名人堂門檻把它和四大賽一起算</td></tr>
+  <tr><td>萊德盃</td><td><b>洲際盃</b>（馬可西蒙尼）</td><td>兩年一次、兩隊各 12 人；有隊長和副隊長；雙人賽 + 單人比洞賽；總分 28 分，先拿到 14.5 分獲勝</td></tr>
+  <tr><td>資格學校、週一資格賽</td><td><b>職業資格賽</b>、<b>週一資格賽</b></td><td>多關淘汰；沒有全季資格的球員可以在比賽週的週一打一輪資格賽，前幾名才能參加正賽</td></tr>
+  <tr><td>職業業餘配對賽</td><td><b>職業業餘配對賽</b></td><td>正賽前和贊助商、名人搭檔打球，人氣與贊助關係的重要來源</td></tr>
+  <tr><td>季後賽總決賽</td><td><b>季末總決賽</b></td><td>只有積分前 30 名參加，冠軍有巨額獎金</td></tr>
+  <tr><td>世界排名</td><td><b>世界排名</b></td><td>最近兩年的成績，越近權重越高；決定大賽資格</td></tr>
+  <tr><td>長青巡迴（50 歲以上）</td><td><b>長青巡迴</b></td><td>50 歲可以參加，有自己的大賽</td></tr>
+  <tr><td>名人堂</td><td><b>名人堂</b></td><td>15 場正式冠軍或 2 座大賽（四大賽 + 球員錦標賽），而且滿 45 歲或退休滿 3 年；入選有典禮與演說</td></tr>
+  <tr><td>大滿貫</td><td><b>生涯大滿貫</b></td><td>四大賽都拿過冠軍；同一年拿下四座是「年度大滿貫」，現實中從來沒有人做到</td></tr>
+</table></div>
+<p class="small">名人堂門檻以近年的公開資料為準（男子：15 場正式冠軍或 2 座大賽 / 球員錦標賽；45 歲或退休 3 年；早年曾經是 40 歲、50 歲），各來源寫法略有不同，遊戲裡照這個版本做。</p>
+
+<h2 id="c2"><span class="no">C2</span>生涯路線與年齡</h2>
+<p>一季等於一年。起始年齡依出身：大學校隊 19 歲、球僮出身 18 歲、高爾夫世家 17 歲、半路出家 28 歲。</p>
+<div class="road">
+  <div class="stage"><div class="st-h"><b>俱樂部業餘</b><span class="lv">第 1 季前半</span></div>
+    <dl><dt>內容</dt><dd>家鄉球場的月例賽與俱樂部錦標賽；白梯、OK 推 1 碼；業餘不能領獎金</dd><dt>升級</dt><dd>錦標賽前三，或月例賽兩次前三 → 全國業餘</dd></dl></div>
+  <div class="stage"><div class="st-h"><b>全國業餘</b><span class="lv">第 1 季後半</span></div>
+    <dl><dt>內容</dt><dd>業餘系列賽 5 場（藍梯）、全國業餘錦標賽（比洞賽）；業餘宿敵登場；業餘冠軍會收到名人邀請賽的業餘邀請（現實也有這個傳統），提早看到夢想</dd><dt>升級</dt><dd>業餘排名前 10 → 職業資格賽</dd></dl></div>
+  <div class="stage"><div class="st-h"><b>職業資格賽</b><span class="lv">第 2 季開頭</span></div>
+    <dl><dt>內容</dt><dd>三關淘汰；落榜去新秀巡迴，明年再考</dd></dl></div>
+  <div class="stage"><div class="st-h"><b>寶島巡迴</b><span class="lv">第 2～3 季 · 約 20 歲</span></div>
+    <dl><dt>內容</dt><dd>29 座台灣球場輪流當賽場；第一份獎金、第一位桿弟、第一個贊助</dd><dt>升級</dt><dd>獎金榜前 5 → 環太平洋</dd></dl></div>
+  <div class="stage"><div class="st-h"><b>環太平洋巡迴</b><span class="lv">第 4～5 季</span></div>
+    <dl><dt>內容</dt><dd>川奈富士、曼吉勞、皇家墨爾本西場、Cliffhangers 與 9 座自創球場；旅費開始變重要</dd><dt>升級</dt><dd>獎金榜前 10 或世界排名前 80 → 環球巡迴</dd></dl></div>
+  <div class="stage"><div class="st-h"><b>環球巡迴</b><span class="lv">第 5 季起 · 約 24 歲</span></div>
+    <dl><dt>內容</dt><dd>八座國外名場；世界排名前 50 收到四大賽邀請</dd></dl></div>
+  <div class="stage green"><div class="st-h"><b>大賽時代：追綠夾克</b><span class="lv">約 25～38 歲 · 巔峰期</span></div>
+    <dl><dt>內容</dt><dd>四大賽、球員錦標賽、洲際盃；世界第一；生涯大滿貫</dd></dl></div>
+  <div class="stage gold"><div class="st-h"><b>老將與傳奇</b><span class="lv">約 38 歲以後</span></div>
+    <dl><dt>內容</dt><dd>力量和穩定度開始慢慢下降，讀果嶺和抗壓還能成長（老將的智慧）；名人堂；告別賽；第二人生</dd></dl></div>
+</div>
+
+<h3>年齡曲線</h3>
+<div class="scroll"><table>
+  <tr><th>年齡</th><th>變化</th></tr>
+  <tr><td class="n">17～24</td><td>成長期：訓練經驗 +15%</td></tr>
+  <tr><td class="n">25～34</td><td>巔峰期：沒有加減</td></tr>
+  <tr><td class="n">35～42</td><td>每季季末力量、擊球效率各 −0.5（訓練可以抵銷）；讀果嶺、抗壓訓練經驗 +15%</td></tr>
+  <tr><td class="n">43～49</td><td>每季力量、擊球效率、穩定度 −1；體能恢復變慢</td></tr>
+  <tr><td class="n">50 以上</td><td>可以加入長青巡迴（對手也都是 50 歲以上，所以又有競爭力）</td></tr>
+</table></div>
+
+<h2 id="c3"><span class="no">C3</span>一個比賽週</h2>
+<p>現實的比賽不是只有四輪。每個比賽週用一張「週行程」呈現，週一到週三的小活動都是選擇性的，不想做可以一鍵跳過。</p>
+<div class="scroll"><table>
+  <tr><th>日</th><th>一般比賽週</th><th>大賽週（以名人邀請賽為例）</th></tr>
+  <tr><td>週一</td><td>沒有全季資格的話：週一資格賽（1 輪，前 4 名進正賽）</td><td>抵達球場、媒體日（記者會一題）</td></tr>
+  <tr><td>週二</td><td>練習輪：免費打 3 洞，熟悉果嶺（之後在這座球場讀果嶺 +3，這一週有效）</td><td>練習輪；衛冕冠軍主辦<b>冠軍晚宴</b>（如果你是衛冕冠軍，可以選菜單）</td></tr>
+  <tr><td>週三</td><td>職業業餘配對賽：和贊助商或名人打 9 洞（人氣、贊助好感）</td><td><b>三桿洞大賽</b>：9 個三桿洞（從各洞挑出來），好玩的小比賽；傳說拿到冠軍的人那週不會贏綠夾克</td></tr>
+  <tr><td>週四</td><td>第 1 輪</td><td><b>榮譽開球</b>過場（傳奇球員開球）→ 第 1 輪</td></tr>
+  <tr><td>週五</td><td>第 2 輪 → 晉級線</td><td>第 2 輪 → 晉級線（前 50 名含同分）</td></tr>
+  <tr><td>週六</td><td>第 3 輪（旗位變難）</td><td>第 3 輪</td></tr>
+  <tr><td>週日</td><td>最後一輪 → 頒獎</td><td>最後一輪 → <b>綠夾克頒獎</b></td></tr>
+</table></div>
+
+<h2 id="c4"><span class="no">C4</span>四大賽與重要比賽</h2>
+<div class="grid2">
+  <div class="card"><h4>名人邀請賽</h4><span class="tag">綠夾克</span><span class="tag">每年第 15 週</span><p>只邀請：世界前 50、歷屆冠軍、前一年其他大賽冠軍、業餘冠軍。果嶺速度 13，最後九洞有一段被稱為「祈禱角」的連續難洞（球場選擇見 <a href="#t8">T8</a>）。</p></div>
+  <div class="card"><h4>老球場公開賽</h4><span class="tag">銀壺</span><span class="tag">每年第 28 週</span><p>四座林克斯輪流。比賽日有機率是強風日（每洞風速 ×1.4）。有開放資格賽，排名不夠也有機會。</p></div>
+  <div class="card"><h4>太平洋公開賽</h4><span class="tag">銀盃</span><span class="tag">每年第 24 週</span><p>圓石灘；最難的場地設定，冠軍成績常常在 −5 以內。只要排名不夠，一樣可以打資格賽。</p></div>
+  <div class="card"><h4>海洋錦標賽</h4><span class="tag">大銀盃</span><span class="tag">每年第 19 週</span><p>Kiawah；最長的場地，長打球風最有利。</p></div>
+  <div class="card"><h4>球員錦標賽</h4><span class="tag">水晶盃</span><span class="tag">每年第 10 週</span><p>TPC 鋸草；17 洞島嶼果嶺固定是壓力等級 2 以上；名人堂門檻把它算成大賽。</p></div>
+  <div class="card"><h4>洲際盃</h4><span class="tag">金盃</span><span class="tag">兩年一次 · 第 38 週</span><p>馬可西蒙尼。第一階段先做四球賽（兩人各打各的球，取好的成績）和單人比洞賽，現有程式就能做；輪流擊同一顆球的賽制放到最後一個階段。可以和朋友連線組隊。</p></div>
+</div>
+
+<h2 id="c5"><span class="no">C5</span>最高榮耀：綠夾克</h2>
+<p>綠夾克是整個生涯的<b>夢想</b>，用三個時間點把它串起來：</p>
+<ol>
+  <li><b>開場故事</b>：建立球員後的第一個畫面，是小時候的你在電視前看名人邀請賽的頒獎，上屆冠軍為新冠軍穿上綠夾克。旁白：「總有一天，我也要穿上它。」（<a href="#d4">D4</a> 第 1 張）</li>
+  <li><b>第一次收到邀請</b>：世界排名進前 50（或拿到業餘冠軍）時，會收到一封邀請函，這是生涯第一個高潮。</li>
+  <li><b>穿上綠夾克</b>：最後一洞推進後，有一段完整的頒獎：上屆冠軍為你穿上夾克、拿起銀色獎盃、片尾式的生涯回顧（從第一場月例賽開始的年表與照片）。這是一個「片尾」，但生涯繼續。</li>
+</ol>
+<p>拿到之後的延續：</p>
+<ul>
+  <li>綠夾克掛在獎盃室的衣櫃裡，可以帶回家一年（下一屆名人邀請賽前要「歸還」，只有衛冕成功才能繼續）。</li>
+  <li>隔年你是衛冕冠軍：主辦冠軍晚宴、選菜單（家鄉菜，例如牛肉麵、滷肉飯、鳳梨酥），由你在頒獎時為新冠軍穿上夾克（如果是別人贏）。</li>
+  <li>終身參賽資格，老了以後可以受邀當榮譽開球。</li>
+  <li>主帳號解鎖「綠夾克」上衣（經典角色有實體外套模型）。</li>
+</ul>
+<p><b>終點的層次</b>：綠夾克是夢想 → 生涯大滿貫是巔峰 → 名人堂是傳奇 → 傳承是延續。玩家可以在任何一層停下來，都是完整的故事。</p>
+
+<h2 id="c6"><span class="no">C6</span>名人堂</h2>
+<ul>
+  <li><b>門檻（照現實）</b>：職業正式冠軍 15 場（寶島、環太平洋、環球、大賽都算），或大賽 2 座（四大賽 + 球員錦標賽）；並且滿 45 歲或退休滿 3 季。</li>
+  <li><b>評選</b>：符合門檻後，每季季末有一次「評選委員會投票」，得票率 75% 才入選。得票率依冠軍數、大賽數、世界第一週數、洲際盃戰績、年度最佳球員次數計算；條件很好的人第一年就入選，邊緣的人可能等好幾年（AI 球員也會入選，名人堂館裡有他們的匾額）。</li>
+  <li><b>入選典禮</b>：選一位「介紹人」（宿敵、老桿弟、教練或家人），致詞時從三段講稿選一段（感謝、回顧、勉勵後輩），最後掛上銅匾（<a href="#d3">D3</a>）。</li>
+  <li><b>名人堂館</b>：所有入選者的匾額牆，包含 AI 傳奇與你的朋友。你的每一個生涯欄位都會留下自己的匾額。</li>
+</ul>
+
+<h2 id="c7"><span class="no">C7</span>退休與第二人生</h2>
+<p>退休時間由玩家決定（38 歲以後隨時可以），55 歲以後每季會提示。退休前可以安排一場<b>告別賽</b>：在家鄉球場或任何一座大賽的最後一輪，全場觀眾起立，走上 18 洞果嶺時有專屬過場，最後一推無論進不進都會留在年表。</p>
+<div class="grid3">
+  <div class="card"><h4>1. 長青巡迴</h4><p>50 歲以上可以繼續打長青巡迴，有自己的大賽與獎盃。適合還不想放下球桿的人。</p></div>
+  <div class="card"><h4>2. 洲際盃隊長</h4><p>名人堂或大賽冠軍可以受邀當隊長：挑 4 位外卡（AI 或朋友）、決定每天的配對與出賽順序，比賽時看排行或親自打其中一場。純管理的小玩法。</p></div>
+  <div class="card"><h4>3. 榮譽開球</h4><p>綠夾克得主退休後，每年名人邀請賽第一天受邀開球：就是一顆開球，打得好有掌聲。很短，但很有儀式感。</p></div>
+  <div class="card"><h4>4. 球場設計師</h4><p>用簡化版編輯器設計「夢想球場」（每洞選長度、障礙、果嶺形狀），投稿給管理員。被採用就會成為主遊戲的自製球場。</p></div>
+  <div class="card"><h4>5. 青少年學院</h4><p>用生涯獎金成立學院，每季會出現幾位學員（AI），你決定訓練方向；學員長大後會出現在世界裡，拿冠軍會上新聞「名師出高徒」。</p></div>
+  <div class="card"><h4>6. 傳承生涯</h4><p>開一個新的生涯：新球員可以是你的孩子或學院的學員。起點一樣低，但經驗值 +20%、多一格技能卡，你的退休球員變成他的教練（教練加成更高）。</p></div>
+</div>
+<p>退休後生涯欄位不會被刪掉，會變成「已退休」：可以看所有紀錄，也可以隨時回去當隊長、榮譽開球。</p>
+
+<h2 id="c8"><span class="no">C8</span>獎金可以做什麼</h2>
+<p>獎金要讓玩家一直有想買的東西，而且大部分是「讓生涯更順」而不是「直接變強」。後期的花費會跟著收入變大，避免錢多到沒意義。</p>
+<div class="scroll"><table>
+  <tr><th>類別</th><th>項目</th><th>效果</th><th>價格範圍</th></tr>
+  <tr><td>團隊</td><td>桿弟</td><td>比賽情報與小加成（<a href="#c9">C9</a>）；週薪 + 獎金分紅 5～10%</td><td class="n">$ 500 ～ 20,000 / 週</td></tr>
+  <tr><td>團隊</td><td>教練</td><td>某一類訓練經驗 +30～60%</td><td class="n">$ 800 ～ 25,000 / 週</td></tr>
+  <tr><td>團隊</td><td>經紀人</td><td>抽贊助收入 10%，但帶來更高等級的贊助商，並自動安排行程</td><td>抽成</td></tr>
+  <tr><td>團隊</td><td>心理師</td><td>手感下降速度減半、每輪一次「冷靜」（壓力等級 −1，一洞）</td><td class="n">$ 3,000 / 週</td></tr>
+  <tr><td>團隊</td><td>體能教練</td><td>體能恢復 +10 / 週，年老時素質下降減半</td><td class="n">$ 4,000 / 週</td></tr>
+  <tr><td>器材</td><td>球具、試打調整</td><td>球具升級；試打調整讓球具的取捨減半</td><td class="n">$ 2,000 ～ 80,000</td></tr>
+  <tr><td>旅行</td><td>經濟艙 / 商務艙 / 私人飛機</td><td>出國比賽的體能消耗 −0 / −8 / −15；私人飛機一季一次可以連續參賽不累</td><td class="n">$ 1,500 ～ 60,000 / 趟</td></tr>
+  <tr><td>基地</td><td>後院推桿果嶺</td><td>推桿訓練經驗 +20%，休息週也能做 1 個推桿關卡</td><td class="n">$ 120,000</td></tr>
+  <tr><td>基地</td><td>室內模擬器</td><td>任何一週都能額外做 1 個長桿關卡</td><td class="n">$ 350,000</td></tr>
+  <tr><td>基地</td><td>短桿練習區</td><td>短桿訓練經驗 +20%</td><td class="n">$ 500,000</td></tr>
+  <tr><td>基地</td><td>健身房</td><td>休息週體能恢復 +15</td><td class="n">$ 300,000</td></tr>
+  <tr><td>人氣</td><td>慈善基金會</td><td>每季捐款換人氣與形象，季末「年度人道獎」候選</td><td class="n">收入的 1～10%</td></tr>
+  <tr><td>傳承</td><td>青少年學院</td><td>退休後的第二人生；越早蓋，學員越多</td><td class="n">$ 2,000,000 起</td></tr>
+  <tr><td>家鄉</td><td>家鄉球場股份</td><td>分幾次買下，主場加成從 +2 提高到 +3，退休後成為「家鄉球場主人」（年表與稱號）</td><td class="n">$ 1,000,000 × 5</td></tr>
+  <tr><td>收藏</td><td>冠軍複製獎盃、名人簽名球、經典球具</td><td>純收藏，擺在獎盃室</td><td class="n">$ 5,000 ～ 200,000</td></tr>
+  <tr><td>形象</td><td>生涯專屬外觀</td><td>球袋、球的標記、慶祝特效</td><td class="n">$ 1,000 ～ 50,000</td></tr>
+</table></div>
+<p>也有「支出」讓收入不是全部都是淨賺：經紀人與桿弟抽成、稅（獎金的 20%，畫面上顯示「稅後」）。生涯數據裡有「生涯總獎金」和「生涯總收入」兩個數字，前者是排行用的榮譽，後者是可以花的錢。</p>
+
+<h2 id="c9"><span class="no">C9</span>桿弟</h2>
+<p><b>設計原則：桿弟主要給「情報」，數值加成很小。</b>花錢請到好桿弟，是讓你「看得更清楚、做出更好的決定」，揮桿還是要靠自己。每位桿弟有 1 項小加成（+1～+3）和 2 項能力，默契等級越高，能力越完整。</p>
+<div class="scroll"><table>
+  <tr><th>桿弟</th><th>出身</th><th>小加成</th><th>能力 1</th><th>能力 2（默契 3 解鎖）</th><th>週薪</th></tr>
+  <tr><td><b>阿土伯</b></td><td>家鄉球場的老桿弟</td><td>家鄉球場讀果嶺 +3</td><td>告訴你這座球場「容易犯錯的地方」</td><td>壞球後安慰：下一洞手感不下降</td><td class="n">$ 300</td></tr>
+  <tr><td><b>小葉</b></td><td>大學校隊學弟</td><td>沒有</td><td>球桿建議會考慮風與高低差</td><td>每輪顯示一次「這洞的建議打法」</td><td class="n">$ 500</td></tr>
+  <tr><td><b>陳教授</b></td><td>數據分析出身</td><td>穩定度 +1</td><td><b>落點範圍圈</b>：瞄準時顯示你這一桿 70% 機率會落在哪個橢圓（用你的素質誤差算）</td><td>賽後給一份「這一輪少了幾桿」的分析</td><td class="n">$ 2,500</td></tr>
+  <tr><td><b>Mac</b></td><td>林克斯土生土長</td><td>林克斯球場風的影響 −5%</td><td>風的建議：「多拿一支、壓低打」</td><td>強風日誤差 −10%</td><td class="n">$ 4,000</td></tr>
+  <tr><td><b>美玲</b></td><td>前職業推桿教練</td><td>讀果嶺 +2</td><td>果嶺坡度箭頭更清楚、預測線 +1 碼</td><td>3～6 碼推桿顯示「建議力道」</td><td class="n">$ 5,000</td></tr>
+  <tr><td><b>老周</b></td><td>前職業球員</td><td>抗壓 +2</td><td>每輪一次「冷靜」：壓力等級 −1（一洞）</td><td>關鍵時刻前給一句實用建議</td><td class="n">$ 7,000</td></tr>
+  <tr><td><b>Big Joe</b></td><td>名桿弟，揹過三座大賽冠軍</td><td>任選一項 +2</td><td>上面任兩種能力（較弱版本）</td><td>大賽期間所有能力加強</td><td class="n">$ 18,000</td></tr>
+  <tr><td><b>你的朋友</b></td><td>真的朋友（連線）</td><td>沒有</td><td>朋友用觀戰房陪你打，彈幕給建議</td><td>—</td><td>免費</td></tr>
+</table></div>
+<ul>
+  <li><b>默契</b>：1～5 級，一起打的輪數累積；換桿弟默契歸零。默契滿級有成就。</li>
+  <li><b>個性</b>：連續打壞時，有的桿弟會鼓勵、有的會直接說重話；記者會也會問到你和桿弟的關係。</li>
+  <li><b>招募</b>：好的桿弟要排名或人氣夠才願意來；炒掉桿弟會上新聞。</li>
+  <li><b>分紅</b>：獎金的 5～10% 給桿弟，名桿弟抽比較多。</li>
+</ul>
+
+<h2 id="c10"><span class="no">C10</span>成長系統（修正版）</h2>
+<p>第一版的五條成長線保留（經驗值與技能點、訓練、技能卡、球具、手感與體能），修正以下幾點：</p>
+<div class="grid2">
+  <div class="card"><h4>加成上限</h4><p>球具、手感、主場、桿弟、技能卡的「固定加成」加起來，每項素質最多 +8，最終值最高 99。技能卡的「情境效果」（例如最後三洞誤差 −15%）另外算，但同一種誤差最多減到原本的 60%。</p></div>
+  <div class="card"><h4>每分鐘經驗差不多</h4><p>完整 18 洞約 40 分鐘、精華 9 洞約 20 分鐘、關鍵時刻約 8 分鐘、全模擬 10 秒。經驗值按「實際花的時間」平衡，完整打完一輪另外有 +15% 完賽獎勵；全模擬只給一般的 30%。</p></div>
+  <div class="card"><h4>球風上限的突破</h4><p>上限可以靠「突破任務」每次 +3，每項最多突破 3 次，所以重砲手的推桿最後也能到 94。</p></div>
+  <div class="card"><h4>年齡</h4><p>見 <a href="#c2">C2</a> 的年齡曲線。年輕時練得快，老了靠智慧。</p></div>
+</div>
+<p>技能點的花費、訓練關卡、16 張技能卡、球具取捨與第一版相同（見 <code>Career/career-plan-v1.html</code> 第 04、07 節），這裡不重複。</p>
+
+<h2 id="c11"><span class="no">C11</span>其他你可能沒想到的</h2>
+<div class="grid3">
+  <div class="card"><h4>難度三段</h4><ul><li><b>休閒</b>：AI 弱一點、經驗 +30%、可以重打（每輪 1 次）</li><li><b>標準</b>：預設</li><li><b>寫實</b>：AI 強、不能看落點範圍圈、模擬更保守、傷病開啟</li></ul></div>
+  <div class="card"><h4>傷病（可關閉）</h4><p>體能長期太低時有機率小傷，需要休息 1～3 週。預設關閉，只在寫實難度開啟。</p></div>
+  <div class="card"><h4>3 個生涯欄位</h4><p>可以同時有三個生涯（例如一個重砲手、一個推桿名手）。已退休的生涯留在名人堂館。</p></div>
+  <div class="card"><h4>生涯相簿</h4><p>重要時刻自動截圖（一桿進洞、冠軍推桿、頒獎），存在手機裡，退休時做成回顧。</p></div>
+  <div class="card"><h4>招牌慶祝</h4><p>選自己進洞後的慶祝特效（沿用現有的特效：金色亮粉、櫻花、極光…），觀眾聲音跟著人氣變大。</p></div>
+  <div class="card"><h4>球的標記與球袋</h4><p>果嶺上的標記可以選圖案，球袋顏色與贊助商標誌，都是低成本但有歸屬感的細節。</p></div>
+  <div class="card"><h4>自己排賽程</h4><p>季初可以先看全季行事曆，標記「一定要打」的比賽，經紀人自動避開太密的行程。</p></div>
+  <div class="card"><h4>歷史比較</h4><p>生涯數據可以和 AI 傳奇比較：「你 28 歲時的冠軍數，世界上只有 3 個人比你多。」</p></div>
+  <div class="card"><h4>新手引導</h4><p>第一階段用月例賽當新手教學，介紹每週選擇、技能點、排行榜；沿用現有教學系統的提示框。</p></div>
+</div>
+
+<h2 id="c12"><span class="no">C12</span>遊戲時間預算</h2>
+<p>第一版沒算清楚時間。第二版加上「季長」選項，並讓小比賽可以一鍵模擬：</p>
+<div class="scroll"><table>
+  <tr><th>季長</th><th>每季比賽</th><th>每季大約時間（混合打法）</th><th>到第一件綠夾克</th><th>到名人堂</th></tr>
+  <tr><td>短季</td><td>8 場（含當季能打的大賽）</td><td>約 5 小時</td><td>約 40 小時（第 7～9 季）</td><td>約 90 小時</td></tr>
+  <tr><td>標準（預設）</td><td>12 場</td><td>約 8 小時</td><td>約 65 小時</td><td>約 150 小時</td></tr>
+  <tr><td>完整</td><td>18 場</td><td>約 12 小時</td><td>約 100 小時</td><td>約 230 小時</td></tr>
+</table></div>
+<p class="small">「混合打法」假設：大賽與爭冠的最後一輪自己打 18 洞，一般比賽打精華 9 洞或關鍵時刻，小比賽模擬。實際時間依每個人的習慣差很多，這是平衡時的參考。</p>
+
+<!-- ================================================================ -->
+<h1 class="part" id="p3"><small>PART THREE · ART</small>美術篇</h1>
+
+<h2 id="d1"><span class="no">D1</span>人物塑造：程式現在支援什麼、要加什麼</h2>
+<div class="warn"><b>現況（查過程式）：</b>角色有兩種。<b>經典角色</b>是程式畫出來的，可以換膚色、髮色、上衣、褲子、帽子、鞋子、手套 7 個顏色和男女（女生有馬尾、身體 0.95 倍）。<b>寫實角色</b>有 9 個（David、James、Joe、Louise、Ninja、Ross、Sophie、Alien、Kachujin），外觀由模型決定，<code>setLook()</code> 是空的，不能換顏色、不能捏臉。</div>
+<div class="scroll"><table>
+  <tr><th>層次</th><th>內容</th><th>做得到嗎</th><th>工作量</th></tr>
+  <tr><td><b>第 1 層：選角色</b></td><td>從經典 + 9 個寫實角色選一個；經典角色選 7 個顏色</td><td>現在就能做</td><td>不用改</td></tr>
+  <tr><td><b>第 2 層：經典角色捏人</b></td><td>身高（160～195 公分）、體型（瘦 / 標準 / 壯）、髮型 5 種（短髮、平頭、油頭、馬尾、光頭）、帽子 4 種（球帽、遮陽帽、漁夫帽、不戴）、太陽眼鏡、鬍子、上衣款式（Polo、毛衣背心、防風外套）、花紋（條紋、格紋，用畫布貼圖）、胸前與帽子的贊助商標誌、<b>綠夾克外套模型</b>；年紀大了頭髮慢慢變灰</td><td>做得到：經典角色本來就是用幾何形狀組成，可以加零件與縮放</td><td>中（約 400～600 行）</td></tr>
+  <tr><td><b>第 3 層：寫實角色換裝與捏臉</b></td><td>改寫實角色的臉、身材、衣服顏色</td><td><b>做不到</b>：模型檔沒有捏臉用的變形資料，而且大多是一整張貼圖，換衣服顏色會連皮膚一起變色</td><td>—</td></tr>
+</table></div>
+<p><b>第二版的做法：</b></p>
+<ul>
+  <li>生涯建立球員時兩個選擇：「捏一個自己」（經典角色，第 2 層全部可用，<b>推薦</b>），或「選寫實角色」（外觀固定，但動作比較自然）。</li>
+  <li>選寫實角色的人，頒獎、名人堂、生涯名片改用 2D 插畫版（獎盃、綠夾克的插畫 + 名字），一樣好看，只是不是 3D 的自己穿夾克。</li>
+  <li>以後如果要讓寫實角色也能穿綠夾克，需要另外做一個「穿綠夾克的版本」模型檔（每個角色一份，只在頒獎時換上），可以之後再評估。</li>
+  <li>第 2 層的捏人選項主遊戲也能用（<a href="#b5">B5</a>）。</li>
+</ul>
+
+<h2 id="d2"><span class="no">D2</span>獎盃設計</h2>
+<p>每座獎盃都有自己的造型，放在獎盃室時一眼認得出是哪一場。以下是設計稿（實作時用同樣的 SVG 畫在畫面上，3D 頒獎時用簡單的幾何模型 + 金屬材質）。</p>
+<div class="trophies">
+  <div class="trophy"><svg viewBox="0 0 220 240"><use href="#jacketArt"/></svg><b>綠夾克</b><span>名人邀請賽 · 最高榮耀</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#jugArt"/></svg><b>銀壺</b><span>老球場公開賽 · 年度冠軍球員</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#cupArt"/></svg><b>太平洋銀盃</b><span>太平洋公開賽</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#bigCupArt"/></svg><b>海洋大銀盃</b><span>海洋錦標賽</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#crystalArt"/></svg><b>水晶盃</b><span>球員錦標賽 · 第五大賽</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#teamCupArt"/></svg><b>洲際金盃</b><span>洲際盃 · 團體賽</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#plateArt"/></svg><b>巡迴銀盤</b><span>巡迴賽冠軍（顏色依巡迴）</span></div>
+  <div class="trophy"><svg viewBox="0 0 160 240"><use href="#medalArt"/></svg><b>業餘金牌</b><span>業餘錦標賽</span></div>
+</div>
+
+<h2 id="d3"><span class="no">D3</span>獎狀、名人堂匾額、生涯名片、報紙</h2>
+<h3>冠軍證書（每座冠軍一張，可以存成圖片）</h3>
+<div class="cert">
+  <div class="en">CERTIFICATE OF CHAMPIONSHIP</div>
+  <h4>冠軍證書</h4>
+  <div class="ev">第 9 季 名人邀請賽</div>
+  <p>茲證明</p>
+  <div class="name">陳子安</div>
+  <p>於本屆名人邀請賽以七十二洞 279 桿（低於標準桿 9 桿）<br>擊敗全球頂尖好手，榮獲冠軍，特頒此證</p>
+  <div class="seal">DIXEN<br>冠軍<br>之印</div>
+  <div class="sig"><div>大會主席</div><div>第 9 季第 15 週</div><div>上屆冠軍 林逸凡</div></div>
+</div>
+
+<h3>名人堂銅匾</h3>
+<div class="plaque"><div class="in">
+  <div class="face"></div>
+  <h5>陳子安</h5>
+  <div class="yr">INDUCTED · SEASON 21</div>
+  <p>職業冠軍 23 場 · 大賽 4 座 · 綠夾克 2 件<br>世界第一 61 週 · 洲際盃 3 次 · 生涯大滿貫<br>「從東方球場的球僮，走到了世界的頂端。」</p>
+</div></div>
+
+<div class="grid2" style="align-items:start">
+  <div>
+    <h3>生涯名片（大廳、連線、紀錄頁）</h3>
+    <div class="pcardx">
+      <div class="top"><span>CAREER · LV 47</span><span>WR #3</span></div>
+      <div class="fig"><svg viewBox="0 0 300 150" style="width:100%;height:150px">
+        <defs><radialGradient id="cardSky" cx=".5" cy=".9" r=".9"><stop offset="0" stop-color="#3f7a55"/><stop offset="1" stop-color="#0e1f17"/></radialGradient></defs>
+        <rect width="300" height="150" fill="url(#cardSky)"/>
+        <ellipse cx="150" cy="150" rx="160" ry="34" fill="#2f6a45"/>
+        <circle cx="150" cy="42" r="15" fill="#e0ac85"/>
+        <path d="M137 36 Q150 20 164 36 L166 32 Q150 18 134 32 Z" fill="#1d3a2a"/>
+        <path d="M118 150 L124 74 Q150 60 176 74 L182 150 Z" fill="url(#gJacket)"/>
+        <path d="M142 62 L150 92 L158 62 Z" fill="#f4efe2"/>
+        <path d="M140 64 L130 72 L150 110 Z M160 64 L170 72 L150 110 Z" fill="url(#gLapel)"/>
+        <circle cx="153" cy="118" r="2.5" fill="url(#gBtn)"/><circle cx="153" cy="132" r="2.5" fill="url(#gBtn)"/>
+        <g transform="translate(222 56) scale(.38)"><use href="#jugArt"/></g>
+        <g transform="translate(30 60) scale(.36)"><use href="#cupArt"/></g>
+      </svg></div>
+      <div class="bot"><b>陳子安</b><span class="t">綠夾克得主 · 重砲手 · 東方球場</span>
+        <div class="st"><div><em>23</em>冠軍</div><div><em>4</em>大賽</div><div><em>61</em>世界第一週</div><div><em>9</em>季</div></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>賽後報紙（新聞頭條的版面）</h3>
+    <div class="paper">
+      <div class="mast">果嶺日報</div>
+      <div class="date"><span>第 9 季 第 15 週 星期一</span><span>體育版</span></div>
+      <h5>陳子安 最後一洞推進 5 碼博蒂，穿上綠夾克</h5>
+      <div class="cols">
+        <p>從家鄉東方球場的球僮做起，二十七歲的陳子安昨天在名人邀請賽最後一輪交出 67 桿，以一桿之差擊敗宿敵林逸凡，拿下生涯第一座大賽冠軍。</p>
+        <p>第 18 洞果嶺上，他花了將近一分鐘讀線。「我小時候在電視上看過這一幕無數次，」他賽後說，「只是沒想到，有一天會是我。」</p>
+        <p>上屆冠軍林逸凡親手為他穿上綠夾克。兩人從全國業餘時期開始交手，生涯對戰紀錄來到 14 勝 13 負。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 id="d4"><span class="no">D4</span>預計的遊戲畫面</h2>
+<p>沿用主遊戲的深綠、奶油白、黃銅配色與卡片樣式。以下 20 張依照生涯順序排列。</p>
+
+<div class="phones">
+
+  <!-- 1 開場 -->
+  <div><div class="phone"><div class="scr cer">
+    <div style="padding:16px 14px 0;font:600 10px 'Barlow Condensed';letter-spacing:.24em;color:#d6bb82">PROLOGUE</div>
+    <div class="tv"><div class="glow"></div>
+      <svg viewBox="0 0 220 240" style="position:absolute;left:50%;top:50%;height:80%;transform:translate(-50%,-50%)"><use href="#jacketArt"/></svg>
+      <div style="position:absolute;left:6px;bottom:4px;font-size:9px;color:#d6bb82">LIVE · 名人邀請賽 頒獎典禮</div>
+    </div>
+    <p style="padding:6px 16px;font:500 13px/1.9 'Noto Serif TC';text-align:center">那年我九歲，<br>坐在客廳的地板上，<br>看著上屆冠軍為他穿上那件綠夾克。<br><br><b style="color:#d6bb82">「總有一天，我也要穿上它。」</b></p>
+    <div style="padding:10px 14px"><span class="pbtn">開始我的生涯</span></div>
+  </div></div><div class="phone-cap">1 · 開場故事<small>建立球員後的第一個畫面，把綠夾克設成夢想</small></div></div>
+
+  <!-- 2 捏人 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>NEW CAREER · 1 / 4</small><b>外觀</b></div>
+    <div style="height:170px;background:radial-gradient(ellipse at 50% 80%,#d8e6d0,#f7f3e9);position:relative">
+      <svg viewBox="0 0 120 170" style="position:absolute;left:50%;transform:translateX(-50%);height:170px">
+        <ellipse cx="60" cy="164" rx="30" ry="5" fill="rgba(0,0,0,.15)"/>
+        <rect x="46" y="96" width="12" height="64" rx="5" fill="#2a3442"/><rect x="62" y="96" width="12" height="64" rx="5" fill="#2a3442"/>
+        <path d="M40 54 Q60 44 80 54 L84 100 L36 100 Z" fill="#f2ead8"/>
+        <rect x="30" y="56" width="10" height="40" rx="5" fill="#f2ead8"/><rect x="80" y="56" width="10" height="40" rx="5" fill="#f2ead8"/>
+        <circle cx="60" cy="32" r="14" fill="#e0ac85"/>
+        <path d="M45 28 Q60 12 75 28 L78 26 Q60 8 42 26 Z" fill="#1d3a2a"/><path d="M70 26 L86 27" stroke="#1d3a2a" stroke-width="3"/>
+        <rect x="50" y="29" width="20" height="5" rx="2" fill="#2b2b2b" opacity=".85"/>
+      </svg>
+      <div style="position:absolute;right:8px;top:8px;font-size:10px;color:var(--muted)">拖曳旋轉</div>
+    </div>
+    <div class="pc">
+      <div class="k">身高　<b style="color:var(--forest)">178 cm</b></div><div class="bar"><i style="width:52%"></i></div>
+      <div class="k">體型</div><div class="chips"><span class="chip">瘦</span><span class="chip on">標準</span><span class="chip">壯</span></div>
+      <div class="k">髮型</div><div class="chips"><span class="chip on">短髮</span><span class="chip">平頭</span><span class="chip">油頭</span><span class="chip">馬尾</span><span class="chip">光頭</span></div>
+      <div class="k">帽子</div><div class="chips"><span class="chip on">球帽</span><span class="chip">遮陽帽</span><span class="chip">漁夫帽</span><span class="chip">不戴</span></div>
+      <div class="k">配件</div><div class="chips"><span class="chip on">太陽眼鏡</span><span class="chip">鬍子</span></div>
+      <div class="k">上衣</div><div><span class="sw on" style="background:#f2ead8"></span><span class="sw" style="background:#fff"></span><span class="sw" style="background:#1d3a2a"></span><span class="sw" style="background:#20324f"></span><span class="sw" style="background:#a3302a"></span></div>
+    </div>
+  </div></div><div class="phone-cap">2 · 捏人（經典角色）<small>第 2 層捏人：身高、體型、髮型、帽子、配件、花紋</small></div></div>
+
+  <!-- 3 出身球風 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>NEW CAREER · 2 / 4</small><b>出身與球風</b></div>
+    <div class="pc">
+      <div class="k">出身</div>
+      <div class="choice on"><b>球僮出身</b>　<span class="k">18 歲 · 家鄉讀果嶺 +6</span></div>
+      <div class="choice"><b>大學校隊</b>　<span class="k">19 歲 · 業餘積分 +30%</span></div>
+      <div class="choice"><b>高爾夫世家</b>　<span class="k">17 歲 · 起始獎金高</span></div>
+      <div class="choice"><b>半路出家</b>　<span class="k">28 歲 · 經驗值 +15%</span></div>
+      <div class="k" style="margin-top:6px">球風</div>
+      <div class="chips"><span class="chip on">重砲手</span><span class="chip">精準射手</span><span class="chip">短桿魔術師</span><span class="chip">推桿名手</span><span class="chip">全能型</span></div>
+      <div class="pcard">
+        <div class="statrow"><span>力量</span><div class="bar"><i style="width:52%"></i></div><em>52</em></div>
+        <div class="statrow"><span>擊球效率</span><div class="bar"><i style="width:48%"></i></div><em>48</em></div>
+        <div class="statrow"><span>準度</span><div class="bar"><i style="width:42%"></i></div><em>42</em></div>
+        <div class="statrow"><span>推桿距離感</span><div class="bar"><i style="width:41%"></i></div><em>41</em></div>
+        <div class="k">上限：推桿距離感 85、切球 82、曲球 80（可突破）</div>
+      </div>
+      <span class="pbtn">下一步：家鄉球場</span>
+    </div>
+  </div></div><div class="phone-cap">3 · 出身與球風<small>決定起點、上限和故事線</small></div></div>
+
+  <!-- 4 首頁 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>CAREER · 第 3 季 第 7 週 · 21 歲</small><b>陳子安</b> <span style="font-size:11px;opacity:.7">Lv 24 · 重砲手</span>
+      <div class="row"><span>世界排名 <b>186</b></span><span>獎金 <b>$ 84,200</b></span><span>人氣 <b>12.4K</b></span></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">本週：寶島巡迴 第 5 站</div><div class="k">東方球場（主場 +2）· 4 輪 · 總獎金 $ 200,000</div><span class="pbtn">報名參賽</span></div>
+      <div class="pcard"><div class="k">體能 62</div><div class="bar"><i style="width:62%"></i></div><div class="k">手感 +1　經驗 Lv 24 → 25</div><div class="bar"><i style="width:78%"></i></div></div>
+      <div class="pcard"><div class="t">其他選擇</div><span class="pbtn ghost">訓練（推桿教練 +50%）</span><span class="pbtn ghost">休息</span><span class="pbtn ghost">贊助活動：松嶺球具拍攝</span></div>
+      <div class="pcard"><div class="t">動態</div><div class="k">宿敵 林逸凡 上週拿下台中國際冠軍，世界排名升到 142</div></div>
+    </div>
+  </div></div><div class="phone-cap">4 · 生涯首頁<small>每週選一件事：參賽、訓練、休息、贊助</small></div></div>
+
+  <!-- 5 比賽週 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>TOURNAMENT WEEK</small><b>名人邀請賽</b><div class="row"><span>第 9 季 第 15 週</span><span>果嶺 <b>13</b></span></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">週一　媒體日</div><div class="k">記者會一題 · 已完成</div></div>
+      <div class="pcard"><div class="t">週二　練習輪 · 冠軍晚宴</div><div class="k">衛冕冠軍 林逸凡 的菜單：鹽酥雞、珍珠奶茶</div></div>
+      <div class="pcard" style="border:2px solid var(--brass)"><div class="t">週三　三桿洞大賽</div><div class="k">9 個三桿洞 · 小心，拿冠軍的人那週贏不了綠夾克</div><span class="pbtn">參加</span><span class="pbtn ghost">跳過</span></div>
+      <div class="pcard"><div class="t">週四～週日　正賽 4 輪</div><div class="k">週四有榮譽開球過場</div></div>
+    </div>
+  </div></div><div class="phone-cap">5 · 比賽週行程<small>週一到週三的活動都可以跳過</small></div></div>
+
+  <!-- 6 排行榜 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>ROUND 2 · 第 14 洞進行中</small><b>寶島巡迴 第 5 站</b><div class="row"><span>晉級線 <b>+1</b></span><span>你 <b>E</b></span><span>領先 <b>−9</b></span></div></div>
+    <table class="lb">
+      <tr><td>1</td><td>林逸凡</td><td class="r">−9</td><td class="r">F</td></tr>
+      <tr><td>2</td><td>Kenji Mori</td><td class="r">−7</td><td class="r">16</td></tr>
+      <tr class="fr"><td>T3</td><td>Tester（好友）</td><td class="r">−6</td><td class="r">F</td></tr>
+      <tr><td>T3</td><td>David Park</td><td class="r">−6</td><td class="r">13</td></tr>
+      <tr><td colspan="4" style="text-align:center;color:#999">…</td></tr>
+      <tr><td>T48</td><td>吳承恩</td><td class="r">−1</td><td class="r">F</td></tr>
+      <tr class="me"><td>T55</td><td>陳子安</td><td class="r">E</td><td class="r">13</td></tr>
+      <tr class="cutline"><td>T62</td><td>Liam Hart</td><td class="r">+1</td><td class="r">15</td></tr>
+      <tr><td>T66</td><td>許志豪</td><td class="r">+2</td><td class="r">F</td></tr>
+    </table>
+    <div class="pc"><div class="pcard"><div class="k">紅色虛線 = 晉級線。綠底 = 你的朋友（用他真正的生涯球員）。</div></div><span class="pbtn">繼續打第 14 洞</span></div>
+  </div></div><div class="phone-cap">6 · 即時排行榜<small>朋友也在榜上</small></div></div>
+
+  <!-- 7 回合中 -->
+  <div><div class="phone"><div class="scr game">
+    <div class="hudl">HOLE <b>18</b>　PAR 4 · 412 Y</div>
+    <div class="tick"><span class="pos">T1</span>−9　與 林逸凡 同分（已完賽）　推進就是冠軍</div>
+    <svg viewBox="0 0 120 170" style="position:absolute;left:28%;bottom:96px;height:120px"><rect x="46" y="96" width="12" height="64" rx="5" fill="#2a3442"/><rect x="62" y="96" width="12" height="64" rx="5" fill="#2a3442"/><path d="M40 54 Q60 44 80 54 L84 100 L36 100 Z" fill="#f2ead8"/><circle cx="60" cy="32" r="14" fill="#e0ac85"/><path d="M45 28 Q60 12 75 28 L78 26 Q60 8 42 26 Z" fill="#1d3a2a"/><path d="M84 70 L96 160" stroke="#bbb" stroke-width="2"/></svg>
+    <div style="position:absolute;left:62%;bottom:110px;width:9px;height:9px;border-radius:50%;background:#fff"></div>
+    <div class="pw"><i></i></div>
+    <div class="feed"><b>壓力等級 3</b>　抗壓 72　誤差 ×1.12<br>桿弟 美玲：「洞後比較低，寧可推過一點。建議力道 5.4 碼。」<br><span style="color:var(--moss)">心理師：可用「冷靜」1 次</span></div>
+    <div class="press"></div>
+  </div></div><div class="phone-cap">7 · 回合中：名次條與壓力<small>畫面暗角、心跳聲、桿弟建議</small></div></div>
+
+  <!-- 8 賽後結算 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>RESULT</small><b>第 4 名　−11</b><div class="row"><span>獎金 <b>$ 9,800</b></span><span>排名 <b>186 → 151</b></span></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">經驗值 +9,420</div><div class="bar"><i style="width:100%"></i></div><div class="k" style="color:var(--moss)">升級！Lv 25 · 技能點 +5</div></div>
+      <div class="pcard"><div class="t">你變強了</div>
+        <div class="statrow"><span>力量</span><div class="bar"><i style="width:63%"></i></div><em class="up">63 ▲</em></div>
+        <div class="statrow"><span>推桿距離感</span><div class="bar"><i style="width:55%"></i></div><em class="up">55 ▲</em></div>
+        <div class="k">一號木 Carry 221 → 224 碼　3 碼推桿誤差 −1 公分</div></div>
+      <div class="pcard"><div class="t">技能卡進度</div><div class="k">收尾王（銅）最後 3 洞博蒂 18 / 30</div><div class="bar"><i style="width:60%"></i></div></div>
+      <div class="pcard"><div class="t">和巡迴平均比</div><div class="k">上果嶺率 61%（巡迴 66%）← 下週練鐵桿定點</div></div>
+    </div>
+  </div></div><div class="phone-cap">8 · 賽後結算<small>每次成長都寫成「在球場上的差別」</small></div></div>
+
+  <!-- 9 記者會 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>PRESS CONFERENCE</small><b>賽後記者會</b></div>
+    <div style="height:110px;background:linear-gradient(#20324f,#0e1f17);display:flex;align-items:flex-end;justify-content:center;gap:10px;padding-bottom:10px">
+      <div style="width:150px;height:30px;background:#1d3a2a;border-top:3px solid #a9864a;border-radius:4px 4px 0 0;color:#d6bb82;font-size:10px;text-align:center;line-height:28px;letter-spacing:.2em">DIXEN TOUR</div>
+    </div>
+    <div class="pc">
+      <div class="pcard"><div class="t">記者</div><div class="k" style="color:var(--ink);font-size:12px">「在家鄉拿下第一勝，有什麼話想對以前一起工作的球僮夥伴說？」</div></div>
+      <div class="choice"><b>紳士</b>　這座冠軍有一半是他們的，他們教我看懂這裡的每一個果嶺。</div>
+      <div class="choice on"><b>自信</b>　我早就說過，這裡的果嶺沒有人比我熟。</div>
+      <div class="choice"><b>幽默</b>　我會請他們吃飯，但球袋還是要他們幫我揹。</div>
+      <div class="k">形象：紳士 4 · 自信 2 · 幽默 1　→ 宿敵週經驗加倍</div>
+    </div>
+  </div></div><div class="phone-cap">9 · 記者會<small>回答累積形象，影響贊助與宿敵</small></div></div>
+
+  <!-- 10 桿弟 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>TEAM</small><b>招募桿弟</b><div class="row"><span>目前：美玲（默契 3）</span></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="cad"><div class="av" style="--hc:#8c8c8c"></div><div><div class="t">阿土伯</div><div class="stars">默契 ★★★★★</div><div class="k">家鄉讀果嶺 +3 · 壞球後手感不降</div></div></div><div class="k" style="text-align:right">$ 300 / 週</div></div>
+      <div class="pcard"><div class="cad"><div class="av" style="--hc:#1b1511"></div><div><div class="t">陳教授</div><div class="stars">默契 ★☆☆☆☆</div><div class="k">穩定度 +1 · 落點範圍圈</div></div></div><div class="k" style="text-align:right">$ 2,500 / 週</div></div>
+      <div class="pcard"><div class="cad"><div class="av" style="--hc:#b08a5a"></div><div><div class="t">Mac</div><div class="stars">默契 ☆☆☆☆☆</div><div class="k">林克斯風的影響 −5% · 風的建議</div></div></div><div class="k" style="text-align:right">$ 4,000 / 週</div></div>
+      <div class="pcard" style="opacity:.6"><div class="cad"><div class="av" style="--hc:#3b2a1e"></div><div><div class="t">Big Joe</div><div class="k">需要世界排名前 30</div></div></div></div>
+    </div>
+  </div></div><div class="phone-cap">10 · 招募桿弟<small>情報為主、加成很小，有默契等級</small></div></div>
+
+  <!-- 11 落點範圍圈 -->
+  <div><div class="phone"><div class="scr game">
+    <div class="hudl">HOLE <b>7</b>　PAR 4 · 168 Y 第二桿</div>
+    <svg viewBox="0 0 270 500" style="position:absolute;inset:0;width:100%;height:100%">
+      <ellipse cx="140" cy="190" rx="70" ry="26" fill="#6fb36a" opacity=".9"/>
+      <path d="M126 180 L126 160 L140 166 L126 172" fill="#a3302a" stroke="#fff" stroke-width="1"/>
+      <ellipse cx="150" cy="190" rx="44" ry="17" fill="rgba(214,187,130,.22)" stroke="#d6bb82" stroke-width="2" stroke-dasharray="5 4"/>
+      <circle cx="150" cy="190" r="3" fill="#fff"/>
+      <path d="M150 400 Q148 290 150 196" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-dasharray="4 5" fill="none"/>
+      <circle cx="150" cy="404" r="5" fill="#fff"/>
+    </svg>
+    <div class="feed" style="bottom:20px"><b>陳教授</b>：7 號鐵，70% 會落在虛線圈裡（左右 ±9 碼、前後 ±6 碼）。圈的右半邊有沙坑，可以瞄左一點。</div>
+  </div></div><div class="phone-cap">11 · 桿弟能力：落點範圍圈<small>用你的素質誤差算出的真實範圍</small></div></div>
+
+  <!-- 12 獎金 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>MONEY</small><b>可用資金 $ 1,284,000</b><div class="row"><span>生涯總獎金 <b>$ 6.2M</b></span><span>稅後</span></div></div>
+    <div class="pc">
+      <div class="k">訓練基地</div>
+      <div class="pcard"><div class="t">後院推桿果嶺　<span style="color:var(--moss)">已擁有</span></div><div class="k">推桿訓練經驗 +20%</div></div>
+      <div class="pcard"><div class="t">室內模擬器</div><div class="k">每週多 1 個長桿關卡</div><span class="pbtn">$ 350,000 購買</span></div>
+      <div class="k">旅行</div><div class="chips"><span class="chip">經濟艙</span><span class="chip on">商務艙</span><span class="chip">私人飛機</span></div>
+      <div class="k">家鄉球場股份　2 / 5</div><div class="bar"><i style="width:40%"></i></div>
+      <div class="pcard"><div class="t">慈善基金會</div><div class="k">每季捐收入的 5% · 人氣 +8%</div></div>
+    </div>
+  </div></div><div class="phone-cap">12 · 獎金用途<small>讓錢一直有地方花</small></div></div>
+
+  <!-- 13 球具與技能卡 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>LOADOUT</small><b>球具與技能卡</b><div class="row"><span>技能卡 4 / 5 格</span></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">鐵桿　松嶺刀背 Lv 3</div><div class="k">準度 +2 · 曲球 +3 · 擊球效率 −2</div></div>
+      <div class="pcard"><div class="t">推桿　黃銅工房 刀型 Lv 4</div><div class="k">距離感 +4 · 推桿方向 −1</div></div>
+      <div class="k">技能卡（下一場：圓石灘）</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div class="pcard" style="background:linear-gradient(#fff8e0,#f3e2b0);border-color:#c9a865"><div class="t">大心臟</div><div class="k">金 · 關鍵球放大 −40%</div></div>
+        <div class="pcard" style="background:linear-gradient(#f4f6f8,#d8dde2)"><div class="t">救援大師</div><div class="k">銀 · 長草球速 +3%</div></div>
+        <div class="pcard" style="background:linear-gradient(#f4f6f8,#d8dde2)"><div class="t">鐵桿手術刀</div><div class="k">銀 · 鐵桿浮動 −12%</div></div>
+        <div class="pcard" style="background:linear-gradient(#f6e6d6,#e0c0a0)"><div class="t">逆風低飛</div><div class="k">銅 · 逆風 −5%</div></div>
+      </div>
+      <div class="k">加成合計：準度 +5 / 上限 +8</div>
+    </div>
+  </div></div><div class="phone-cap">13 · 球具與技能卡<small>看球場挑裝備，加成有上限</small></div></div>
+
+  <!-- 14 世界排名 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>OFFICIAL WORLD RANKING</small><b>世界排名</b></div>
+    <div class="pc">
+      <div class="pcard"><svg viewBox="0 0 240 90" style="width:100%"><path d="M0 80 L30 76 L60 70 L90 58 L120 50 L150 34 L180 30 L210 16 L240 10" stroke="#a9864a" stroke-width="2.5" fill="none"/><path d="M0 80 L30 76 L60 70 L90 58 L120 50 L150 34 L180 30 L210 16 L240 10 L240 90 L0 90 Z" fill="rgba(169,134,74,.12)"/><text x="4" y="12" font-size="9" fill="#6d6a5f">排名走勢（越高越好）</text></svg></div>
+      <table class="lb">
+        <tr><td>1</td><td>Kenji Mori</td><td class="r">11.82</td></tr>
+        <tr><td>2</td><td>林逸凡</td><td class="r">10.95</td></tr>
+        <tr class="me"><td>3</td><td>陳子安</td><td class="r">10.41</td></tr>
+        <tr><td>4</td><td>David Park</td><td class="r">9.70</td></tr>
+        <tr class="fr"><td>27</td><td>Tester（好友）</td><td class="r">4.12</td></tr>
+      </table>
+      <div class="pcard" style="margin-top:8px"><div class="k">離世界第一還差 1.41 分　下一場：老球場公開賽（冠軍 100 分）</div></div>
+    </div>
+  </div></div><div class="phone-cap">14 · 世界排名<small>爬梯子的主線</small></div></div>
+
+  <!-- 15 綠夾克頒獎 -->
+  <div><div class="phone"><div class="scr cer">
+    <div style="text-align:center;padding:14px 0 0;font:600 10px 'Barlow Condensed';letter-spacing:.3em;color:#d6bb82">CHAMPION</div>
+    <svg viewBox="0 0 270 300" style="width:100%;height:300px">
+      <ellipse cx="135" cy="290" rx="130" ry="20" fill="#2f6a45"/>
+      <g transform="translate(40 110)"><rect x="20" y="96" width="12" height="80" rx="5" fill="#2a3442"/><rect x="36" y="96" width="12" height="80" rx="5" fill="#2a3442"/><path d="M12 46 Q34 34 56 46 L60 100 L8 100 Z" fill="url(#gJacket)"/><circle cx="34" cy="22" r="14" fill="#c98e62"/><path d="M56 56 L86 74" stroke="url(#gJacket)" stroke-width="10" stroke-linecap="round"/></g>
+      <g transform="translate(130 90)"><rect x="20" y="116" width="12" height="80" rx="5" fill="#2a3442"/><rect x="36" y="116" width="12" height="80" rx="5" fill="#2a3442"/><path d="M10 56 Q34 44 58 56 L62 120 L6 120 Z" fill="url(#gJacket)"/><path d="M26 54 L34 82 L42 54 Z" fill="#f4efe2"/><circle cx="34" cy="30" r="15" fill="#e0ac85"/><path d="M19 26 Q34 10 49 26 L52 24 Q34 6 16 24 Z" fill="#1d3a2a"/><path d="M12 60 L-6 44" stroke="url(#gJacket)" stroke-width="10" stroke-linecap="round"/></g>
+      <g fill="#ffe9a8" opacity=".8"><circle cx="40" cy="40" r="2"/><circle cx="230" cy="60" r="2.5"/><circle cx="200" cy="30" r="1.6"/><circle cx="70" cy="80" r="1.6"/><circle cx="120" cy="22" r="2"/></g>
+    </svg>
+    <div style="text-align:center;padding:0 14px"><b style="font:900 19px 'Noto Serif TC'">名人邀請賽冠軍</b><p style="font-size:11.5px;color:rgba(242,234,216,.75)">上屆冠軍 林逸凡 為你穿上綠夾克</p><span class="pbtn" style="margin-top:10px">生涯回顧</span></div>
+  </div></div><div class="phone-cap">15 · 綠夾克頒獎<small>經典角色用 3D；寫實角色改用插畫卡</small></div></div>
+
+  <!-- 16 獎盃室 -->
+  <div><div class="phone"><div class="scr cer">
+    <div class="pb" style="background:transparent"><small>TROPHY ROOM</small><b>獎盃室</b><div class="row"><span>冠軍 23 · 大賽 4</span></div></div>
+    <div style="padding:4px 10px">
+      <div style="font-size:10px;color:#d6bb82;letter-spacing:.2em">MAJORS</div>
+      <div class="shelf"><svg viewBox="0 0 220 240"><use href="#jacketArt"/></svg><svg viewBox="0 0 160 240"><use href="#jugArt"/></svg><svg viewBox="0 0 160 240"><use href="#cupArt"/></svg><svg viewBox="0 0 160 240"><use href="#bigCupArt"/></svg></div>
+      <div style="font-size:10px;color:#d6bb82;letter-spacing:.2em">TOUR &amp; TEAM</div>
+      <div class="shelf"><svg viewBox="0 0 160 240"><use href="#crystalArt"/></svg><svg viewBox="0 0 160 240"><use href="#teamCupArt"/></svg><svg viewBox="0 0 160 240"><use href="#plateArt"/></svg><svg viewBox="0 0 160 240"><use href="#plateArt"/></svg></div>
+      <div style="font-size:10px;color:#d6bb82;letter-spacing:.2em">AMATEUR</div>
+      <div class="shelf"><svg viewBox="0 0 160 240"><use href="#medalArt"/></svg><svg viewBox="0 0 160 240"><use href="#medalArt"/></svg><div class="empty"></div><div class="empty"></div></div>
+      <p style="font-size:11px;color:rgba(242,234,216,.7);text-align:center">點一下獎盃：當場成績卡、最後一桿、新聞與證書</p>
+    </div>
+  </div></div><div class="phone-cap">16 · 獎盃室<small>三層架子，空位會激勵你去拿</small></div></div>
+
+  <!-- 17 名人堂 -->
+  <div><div class="phone"><div class="scr cer">
+    <div style="text-align:center;padding:16px 0 4px;font:600 10px 'Barlow Condensed';letter-spacing:.3em;color:#d6bb82">HALL OF FAME · SEASON 21</div>
+    <div class="plaque" style="margin:8px 16px;padding:8px"><div class="in" style="padding:12px 10px"><div class="face" style="width:64px;height:64px"></div><h5 style="font-size:17px">陳子安</h5><p style="font-size:11px;margin-top:4px">冠軍 23 · 大賽 4 · 綠夾克 2</p></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">評選委員會</div><div class="k">得票率 91%（門檻 75%）</div><div class="bar"><i style="width:91%"></i></div></div>
+      <div class="pcard"><div class="t">選擇介紹人</div><div class="chips"><span class="chip on">阿土伯（老桿弟）</span><span class="chip">林逸凡（宿敵）</span><span class="chip">教練</span></div></div>
+      <span class="pbtn">上台致詞</span>
+    </div>
+  </div></div><div class="phone-cap">17 · 名人堂典禮<small>照現實門檻，委員會投票</small></div></div>
+
+  <!-- 18 退休 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>SECOND ACT · 46 歲</small><b>退休之後</b></div>
+    <div class="pc">
+      <div class="choice on"><b>告別賽</b>　<span class="k">家鄉 東方球場 · 第 26 季第 12 週</span></div>
+      <div class="choice"><b>長青巡迴</b>　<span class="k">50 歲開放（還有 4 季）</span></div>
+      <div class="choice"><b>洲際盃隊長</b>　<span class="k">已受邀 · 第 27 季</span></div>
+      <div class="choice"><b>榮譽開球</b>　<span class="k">綠夾克得主限定</span></div>
+      <div class="choice"><b>球場設計師</b>　<span class="k">投稿給管理員</span></div>
+      <div class="choice"><b>青少年學院</b>　<span class="k">學員 6 人 · 1 人進入寶島巡迴</span></div>
+      <div class="choice"><b>傳承生涯</b>　<span class="k">經驗值 +20% · 你當他的教練</span></div>
+    </div>
+  </div></div><div class="phone-cap">18 · 退休與第二人生<small>退休不是結束</small></div></div>
+
+  <!-- 19 主遊戲大廳 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>GOOD EVENING</small><b>Tester</b> <span style="font-size:10px;border:1px solid #d6bb82;color:#d6bb82;border-radius:8px;padding:0 6px">綠夾克得主</span>
+      <div class="row"><span>能力點 <b>42</b></span><span>回合數 <b>58</b></span></div></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">單人回合</div><div class="k">選球場、梯台、9 / 18 洞</div></div>
+      <div class="pcard" style="background:linear-gradient(135deg,#173326,#0e1f17);color:var(--cream);border-color:var(--brass)"><div class="t" style="color:#d6bb82">生涯模式</div><div class="k" style="color:rgba(242,234,216,.75)">陳子安 · 第 9 季 · 世界第 3 · 下一場：老球場公開賽</div><span class="pbtn">繼續生涯</span></div>
+      <div class="pcard"><div class="t">挑戰模式</div><div class="k">第 1～500 關</div></div>
+      <div class="pcard"><div class="t">建立遊戲間 / 加入遊戲間</div><div class="k">最多 4 人</div></div>
+      <div class="pcard"><div class="t">經典重現</div><div class="k">用主帳號挑戰「綠夾克的最後一洞」</div></div>
+    </div>
+  </div></div><div class="phone-cap">19 · 主遊戲大廳<small>生涯卡片、稱號、經典重現</small></div></div>
+
+  <!-- 20 紀錄頁 -->
+  <div><div class="phone"><div class="scr">
+    <div class="pb"><small>RECORDS</small><b>紀錄</b></div>
+    <div style="display:flex;gap:4px;padding:8px;overflow:hidden;font-size:10.5px"><span class="chip">個人紀錄</span><span class="chip">回合</span><span class="chip">成就</span><span class="chip">護照</span><span class="chip">實際下場</span><span class="chip on">生涯</span></div>
+    <div class="pc">
+      <div class="pcard"><div class="t">陳子安 · 第 9 季</div><div class="k">冠軍 23 · 大賽 4 · 晉級率 88% · 生涯總獎金 $ 41.6M</div></div>
+      <div class="pcard"><div class="t">本季 vs 生涯平均</div>
+        <div class="statrow"><span>開球距離</span><div class="bar"><i style="width:84%"></i></div><em>292</em></div>
+        <div class="statrow"><span>上果嶺率</span><div class="bar"><i style="width:72%"></i></div><em>72%</em></div>
+        <div class="statrow"><span>平均推桿</span><div class="bar"><i style="width:60%"></i></div><em>28.9</em></div></div>
+      <div class="pcard"><div class="t">年表</div><div class="k">S1 第一隻鳥（東方 7 洞）<br>S2 資格賽線上驚魂過關<br>S3 職業首勝（東方球場）<br>S9 綠夾克</div></div>
+      <div class="pcard"><div class="t">成就 · 生涯分類</div><div class="k">已解鎖 31 / 45</div><div class="bar"><i style="width:69%"></i></div></div>
+    </div>
+  </div></div><div class="phone-cap">20 · 紀錄頁的生涯分頁<small>和主遊戲紀錄並排，但數字分開</small></div></div>
+
+</div>
+
+<h3>冠軍晚宴菜單（衛冕冠軍選菜）</h3>
+<div class="grid2" style="align-items:center">
+  <div class="phone" style="max-width:290px"><div class="scr" style="min-height:auto;background:#f4efe2">
+    <div class="menu">
+      <h6>冠軍晚宴</h6>
+      <div style="font:700 10px 'Cormorant Garamond';letter-spacing:.3em;color:#8a6a33">CHAMPIONS DINNER · SEASON 10</div>
+      <div class="c"><b>開胃</b>鹽酥雞佐九層塔<b>湯品</b>四神湯<b>主菜</b>紅燒牛肉麵　或　古早味滷肉飯<b>甜點</b>鳳梨酥與芒果冰<b>飲品</b>凍頂烏龍茶</div>
+      <div style="font-size:10px;color:#6d6a5f;margin-top:8px">衛冕冠軍 陳子安 招待</div>
+    </div>
+  </div></div>
+  <div><p>衛冕冠軍在名人邀請賽週二主辦冠軍晚宴、決定菜單，這是現實中很有名的傳統。遊戲裡讓玩家從家鄉菜清單選 5 道（依出身與家鄉球場的縣市推薦），晚宴上 AI 冠軍們會對菜單發表評論，也會上新聞。純粹是樂趣，但是「我是冠軍」的感覺非常強。</p></div>
+</div>
+
+<!-- ================================================================ -->
+</main>
+
+<section class="tech"><div class="wrap">
+<h1 class="part" id="p4"><small>PART FOUR · IMPLEMENTATION</small>程式篇（實作時給自己看）</h1>
+<p class="small">以 2026-10-27 的程式（v87）為準；函式名稱都是現有的。</p>
+
+<h2 id="t1"><span class="no">T1</span>Career 資料夾</h2>
+<pre><code>Career/
+  career-plan.html        這份企劃書（第二版）
+  career-plan-v1.html     第一版（保留對照）
+  js/
+    boot.js               入口：大廳按「生涯模式」時用 import('../Career/js/boot.js') 動態載入，不用時不下載
+    state.js              存檔：本機 + GAS、版本遷移、每一桿提交
+    create.js             建立球員：外觀、出身、球風、家鄉
+    world.js              AI 球員：產生、成長老化、退休、名人堂投票
+    season.js             賽程與資格、季長選項、週行程
+    event.js              比賽：週一資格賽、練習輪、三桿洞大賽、四輪、晉級線、延長賽、獎金、積分
+    sim.js                模擬引擎、關鍵時刻挑選與放球
+    growth.js             經驗、技能點、訓練、手感、體能、年齡、加成上限
+    perks.js / gear.js    技能卡、球具
+    team.js               桿弟、教練、經紀人、心理師
+    money.js              獎金用途、基地、稅
+    story.js              新聞、記者會、宿敵、冠軍晚宴、名人堂致詞（模板）
+    retire.js             告別賽、長青巡迴、隊長、榮譽開球、學院、傳承、設計師投稿
+    achievements.js       45 個生涯成就（格式同 progress.js 的 ACH）
+    ceremony.js           頒獎、綠夾克、名人堂的 3D 過場與 2D 插畫卡
+    ui/*.js               各畫面
+  css/career.css
+  art/                    獎盃、證書、匾額的 SVG 元件（就是這份企劃書裡的圖）
+  data/
+    calib.json            機器人校正出來的桿數分布
+    names.json            AI 名字庫（自創）
+    menus.json            冠軍晚宴菜單、新聞模板、記者會題庫
+  gas/Career.gs           貼到同一個 Apps Script 專案的第二個檔案
+  tools/calib-bot.html    校正機器人（本機跑，不上傳）</code></pre>
+<p>主程式只動這些地方（每一處都只在 <code>cfg.career</code> 或生涯畫面開啟時才生效）：</p>
+<div class="scroll"><table>
+  <tr><th>檔案</th><th>改什麼</th><th>估計行數</th></tr>
+  <tr><td><code>index.html</code></td><td>大廳多一張卡片、生涯畫面的容器、載入 <code>Career/css/career.css</code></td><td class="n">約 10</td></tr>
+  <tr><td><code>js/main.js</code></td><td>卡片點擊動態載入 <code>boot.js</code>；紀錄頁「生涯」分頁；大廳稱號；經典重現入口</td><td class="n">約 50</td></tr>
+  <tr><td><code>js/game.js</code></td><td>生涯掛勾（見 T2）</td><td class="n">約 80</td></tr>
+  <tr><td><code>js/physics.js</code></td><td><code>makeLaunch</code> 讀 <code>ctx.mods</code></td><td class="n">約 20</td></tr>
+  <tr><td><code>js/stats.js</code></td><td><code>normalizeStats(stats, floor)</code>、<code>derive(stats, opt)</code></td><td class="n">約 6</td></tr>
+  <tr><td><code>js/progress.js</code></td><td><code>ACH_CATS</code> 加「生涯」，合併 <code>Career/js/achievements.js</code>；表現型成就的生涯排除清單</td><td class="n">約 15</td></tr>
+  <tr><td><code>js/hud.js</code></td><td>名次條、跑馬燈、壓力暗角</td><td class="n">約 40</td></tr>
+  <tr><td><code>js/character.js</code></td><td>第 2 層捏人（主遊戲也能用）</td><td class="n">約 400～600</td></tr>
+  <tr><td><code>sw.js</code></td><td>離線快取加上 Career 的檔案</td><td class="n">約 15</td></tr>
+  <tr><td><code>gas/Code.gs</code></td><td>動作分派時，找不到的動作再查 <code>CAREER_ACTIONS</code>（定義在 <code>Career.gs</code>）</td><td class="n">約 2</td></tr>
+</table></div>
+<p class="small">上傳到 GitHub Pages 時整個 <code>Career</code> 資料夾一起上傳（大小寫要一致，GitHub Pages 會分大小寫），<code>tools/</code> 不用上傳。</p>
+
+<h2 id="t2"><span class="no">T2</span>隔離：game.js 的掛勾點</h2>
+<pre><code>// 1. 成就計數：模擬的洞根本不會進 game.js；自己打的洞照共用規則
+trackHole(p) {
+  ...現有的數量型計數照常 bump（holes、birdie、hio、奇幻機關）
+  if (this.cfg.career) { this.cfg.career.onHole(this.k, p, detail); return; }   // 表現型成就不檢查
+  ...現有的表現型成就檢查
+}
+// 2. 回合結束：生涯局不呼叫 saveRound（不給主帳號能力點、不進排行）
+endRound() { if (this.cfg.career) return this.cfg.career.onRoundEnd(this.summary()); ... }
+//    「自己打 9 洞以上才算主遊戲 1 場回合」：bump('rounds') 改成 if (!career || playedHoles >= 9)
+// 3. 中斷接續：生涯用自己的存檔鍵
+saveLocal(turn) { if (this.cfg.career) return this.cfg.career.saveShot(this.serialize(turn)); ... }
+// 4. 只打部分洞：holeList = cfg.career.holes（精華 9 洞 / 關鍵時刻）
+// 5. 情境開局：loadHole 之後 applyState(cfg.career.scenario)
+// 6. 壓力：pressure 改成數字等級 cfg.career.pressureLevel(ctx)，沒有生涯時維持現在的 true / false
+// 7. 素質：players[0].stats 是生涯的有效素質，distanceTable 用它算；normalizeStats 用 floor 30</code></pre>
+<p>測試方法：做一個「沒有生涯」的回歸清單（單人、連線 4 人、挑戰、練習場、中斷接續），每個階段完成都跑一次。</p>
+
+<h2 id="t3"><span class="no">T3</span>存檔（防重打）</h2>
+<ul>
+  <li><b>每一桿提交</b>：揮桿送出後、球還在飛的時候，就把這一桿的結果（落點、桿數）寫進本機存檔。關掉 APP 再開，這一桿已經發生，不能重打。休閒難度另外給「每輪 1 次重打」。</li>
+  <li><b>伺服器</b>：每輪結束、每週前進存 GAS 的「生涯」工作表；存檔帶 <code>rev</code>，只收比較新的，避免兩台手機互相覆蓋。</li>
+  <li><b>格式</b>：第一版的 JSON 格式（見 v1 程式篇 T3）加上：<code>age</code>、<code>slot</code>（1～3）、<code>difficulty</code>、<code>seasonLen</code>、<code>team</code>（桿弟、教練、經紀人、默契）、<code>assets</code>（基地、股份、學院）、<code>hof</code>（名人堂投票紀錄）、<code>retired</code>、<code>legacyOf</code>（傳承自哪個生涯）、<code>photos</code>（只存本機的截圖索引）。</li>
+  <li><b>朋友摘要</b>：每次存檔同時更新一欄「摘要」（名字、等級、稱號、世界排名、素質、外觀），朋友的世界每週讀一次，不讀完整存檔。</li>
+  <li><b>備份</b>：同一列保留最近 3 個版本。</li>
+</ul>
+
+<h2 id="t4"><span class="no">T4</span>模擬與關鍵時刻</h2>
+<p>沿用第一版的做法（機器人校正表 + 備用公式 + 個人修正值），補充：</p>
+<ul>
+  <li><b>關鍵時刻放球</b>：從那一洞的地圖分類找「球道、長草、果嶺邊、沙坑」的格子，距離符合（±5 碼），坡度小於 8°，距離樹木或水邊至少 3 碼；找不到就退回「自己打整洞」。</li>
+  <li><b>三桿洞大賽</b>：從這座球場挑出所有三桿洞，不夠 9 洞就從同球場用短梯台補（<code>holeList</code> 可以重複同一洞，用不同旗位種子）。</li>
+  <li><b>強風日</b>：比賽日種子決定，每洞風速 × 1.4；所有 AI 的模擬分布一起往後移。</li>
+  <li><b>名人堂投票</b>：得票率 = 依冠軍數、大賽數、世界第一週數等算出的分數 → S 形曲線換算成百分比 ± 隨機 5%；AI 也照同一套。</li>
+</ul>
+
+<h2 id="t5"><span class="no">T5</span>角色程式（第 2 層捏人與綠夾克）</h2>
+<ul>
+  <li><b>身高與體型</b>：<code>ProceduralGolfer</code> 的 <code>rig.scale</code> 已經用在男女（0.95），改成依身高（160～195 → 0.89～1.08）；體型縮放軀幹的 x / z。手臂 IK 依長度自動算，揮桿仍然握在桿上（需要測試極端身高時球桿是否碰地正確）。</li>
+  <li><b>髮型、帽子、眼鏡、鬍子</b>：新增幾何零件掛在頭部骨架，<code>setLook</code> 依選項切換顯示；現在的馬尾就是這樣做的。</li>
+  <li><b>花紋與標誌</b>：用畫布畫條紋、格紋、自創品牌標誌，當成上衣與帽子的貼圖。</li>
+  <li><b>綠夾克</b>：一組外套零件（軀幹外層 + 兩隻袖子 + 翻領），掛在上身與上臂，<code>look.jacket</code> 有顏色時顯示。頒獎過場時從另一個角色（上屆冠軍）手上「穿上」：用一個短動畫把外套從透明淡入、袖子從手腕滑到肩膀。</li>
+  <li><b>年齡</b>：頭髮顏色依年齡往灰色插值（40 歲後）。</li>
+  <li><b>寫實角色</b>：維持外觀固定；頒獎改用 2D 插畫卡（<code>Career/art</code> 的 SVG + 玩家名字）。</li>
+  <li><b>頒獎場景</b>：用現有的 3D 世界，在 18 洞果嶺邊放兩個角色（連線模式本來就能同時放多個角色）、固定鏡頭、借用 <code>playCelebration</code> 的粒子。</li>
+</ul>
+
+<h2 id="t6"><span class="no">T6</span>開發階段（修正版）</h2>
+<div class="scroll"><table>
+  <tr><th>階段</th><th>內容</th><th>完成後</th><th>估計</th></tr>
+  <tr><td><b>0. 地基</b></td><td>Career 資料夾、主程式掛勾、隔離測試、存檔（每桿提交）、AI 世界簡化版、備用模擬公式</td><td>還不能玩，但主遊戲確認沒被影響</td><td class="n">約 1,200 行</td></tr>
+  <tr><td><b>1. 業餘之路</b></td><td>建立球員（第 1 層外觀）、開場故事、月例賽到資格賽、排行榜、晉級線、經驗與技能點、生涯成就第一批、大廳卡片、紀錄頁生涯分頁</td><td>可以從零打到拿巡迴卡</td><td class="n">約 2,000 行 + GAS 200</td></tr>
+  <tr><td><b>2. 生涯感</b></td><td>訓練關卡、技能卡、球具、手感體能、年齡、桿弟與教練、新聞與記者會、宿敵、年表、精華打法、關鍵時刻、比賽週行程</td><td>每週都有選擇、比賽有故事</td><td class="n">約 2,800 行</td></tr>
+  <tr><td><b>3. 職業世界與美術</b></td><td>機器人校正、寶島 / 環太平洋 / 環球巡迴、世界排名、贊助、獎金用途、獎盃與證書、獎盃室、第 2 層捏人</td><td>完整的職業生涯，畫面有質感</td><td class="n">約 2,800 行</td></tr>
+  <tr><td><b>4. 大賽與綠夾克</b></td><td>四大賽與球員錦標賽、冠軍晚宴、三桿洞大賽、榮譽開球過場、綠夾克 3D 頒獎與夾克模型、壓力等級、生涯大滿貫、經典重現</td><td>夢想可以實現</td><td class="n">約 1,800 行</td></tr>
+  <tr><td><b>5. 傳奇與傳承</b></td><td>名人堂投票與典禮、告別賽、六條第二人生、長青巡迴、洲際盃（四球賽、比洞賽、隊長）、好友週賽、朋友加入世界、觀戰房、3 個欄位、難度</td><td>可以一直玩下去</td><td class="n">約 2,500 行</td></tr>
+</table></div>
+
+<h2 id="t7"><span class="no">T7</span>風險（新增的部分）</h2>
+<div class="scroll"><table>
+  <tr><th>風險</th><th>對策</th></tr>
+  <tr><td>主遊戲成就被生涯灌數字</td><td>共用規則寫死在 <code>progress.js</code> 的排除清單；回歸測試檢查「打一場生涯全模擬，主帳號計數不變」</td></tr>
+  <tr><td>經典角色極端身高時揮桿穿模</td><td>先限制在 165～190，用練習場實際揮每支桿檢查</td></tr>
+  <tr><td>綠夾克模型跟著揮桿穿出手臂</td><td>夾克只在頒獎與大廳展示時穿；打球時可以選「穿著打」，袖子跟上臂骨架走，穿模可接受</td></tr>
+  <tr><td>文字內容太多寫不完</td><td>模板 + 變數；第 1 階段每種情況 3 個模板，之後慢慢加</td></tr>
+  <tr><td>Career 資料夾載入路徑錯</td><td>所有 import 用相對路徑；GitHub Pages 大小寫一致；離線快取清單用同一份路徑表產生</td></tr>
+  <tr><td>Apps Script 兩個檔案的載入順序</td><td>不在 Career.gs 頂層引用 Code.gs 的變數；分派時才查 <code>CAREER_ACTIONS</code></td></tr>
+  <tr><td>真實名稱</td><td>比賽、巡迴、選手、品牌都改編；綠夾克、冠軍晚宴這些傳統是通用的做法，名稱用「名人邀請賽」</td></tr>
+</table></div>
+
+<h2 id="t8"><span class="no">T8</span>需要你決定的事</h2>
+<div class="decide"><h4>1. 名人邀請賽要在哪座球場？</h4>
+<ul>
+  <li><b>A：川奈富士</b>（推薦先用）。遊戲裡已經有，風景漂亮，最快能做。</li>
+  <li><b>B：自創一座「名人球場」</b>。照名人賽的感覺設計（杜鵑花、祈禱角、16 洞水邊三桿洞），自創的不用官方球道圖，但要花一座球場的工夫。</li>
+  <li><b>C：照官方資料做真實的名人賽球場</b>。照你的規則要找到官方的單洞球道圖才能做，做出來最真實。</li>
+</ul></div>
+<div class="decide"><h4>2. 預設的季長</h4><p>短季（8 場）/ 標準（12 場）/ 完整（18 場）。企劃書預設標準。</p></div>
+<div class="decide"><h4>3. 「現實練球也算數」要不要做？</h4><p>在「實際下場」記一場現實成績，生涯多一次免費訓練。靠誠實，只適合朋友之間玩。</p></div>
+<div class="decide"><h4>4. 捏人選項要不要也開放給主遊戲？</h4><p>企劃書預設開放（主遊戲角色頁也能調身高、髮型、帽子）。</p></div>
+<div class="decide"><h4>5. 傷病系統</h4><p>預設只在寫實難度開啟。要不要完全不做？</p></div>
+
+<footer>DIXEN GOLF · 生涯模式企劃書 2.0 · 2026-10-27<br>比賽、巡迴賽、選手與品牌名稱均為改編或自創；獎盃與證書為原創設計</footer>
+</div></section>
+
+</body>
+</html>

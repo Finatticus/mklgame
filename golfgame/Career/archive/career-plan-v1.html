@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生涯模式企劃書</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&family=Barlow+Condensed:wght@500;600&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+<style>
+:root { --deep:#0e1f17; --forest:#1d3a2a; --moss:#2f5a3f; --cream:#f2ead8; --paper:#f7f3e9; --ink:#1c1d19; --muted:#6d6a5f; --brass:#a9864a; --brass2:#d6bb82; --flag:#a3302a; --line:rgba(28,29,25,.12); }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--paper); color:var(--ink); font-family:"Noto Sans TC",system-ui,sans-serif; line-height:1.8; font-size:15px; }
+header.hero { background:var(--deep); color:var(--cream); border-bottom:3px solid var(--brass); }
+header.hero .wrap { padding:44px 16px 36px; }
+.wm { font-family:"Cormorant Garamond",serif; font-size:15px; letter-spacing:.42em; color:var(--brass2); }
+header.hero h1 { font:700 34px/1.3 "Noto Serif TC",serif; margin:8px 0 6px; }
+header.hero .sub { color:rgba(242,234,216,.75); font-size:14px; }
+header.hero .meta { margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; }
+header.hero .meta span { font-size:12px; border:1px solid rgba(214,187,130,.45); color:var(--brass2); padding:2px 12px; border-radius:14px; }
+.wrap { max-width:1000px; margin:0 auto; padding:0 16px; }
+nav.toc { position:sticky; top:0; z-index:5; background:rgba(247,243,233,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(4px); }
+nav.toc .wrap { display:flex; gap:6px; overflow-x:auto; padding-top:10px; padding-bottom:10px; scrollbar-width:none; }
+nav.toc a { flex:none; font-size:13px; padding:4px 12px; border-radius:14px; text-decoration:none; color:var(--forest); border:1px solid var(--line); background:#fff; white-space:nowrap; }
+nav.toc a.part { background:var(--forest); color:var(--cream); border-color:var(--forest); }
+h1.part { font:700 28px/1.3 "Noto Serif TC",serif; color:var(--forest); margin:64px 0 6px; padding-top:10px; }
+h1.part small { display:block; font:600 13px "Barlow Condensed"; letter-spacing:.24em; color:var(--brass); }
+h2 { font:700 22px/1.4 "Noto Serif TC",serif; margin:44px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--line); scroll-margin-top:60px; }
+h2 .no { font:600 15px "Barlow Condensed"; color:var(--brass); margin-right:8px; letter-spacing:.1em; }
+h3 { font:700 16.5px "Noto Serif TC",serif; margin:24px 0 6px; color:var(--forest); }
+p, li { margin:6px 0; }
+ul, ol { padding-left:22px; }
+code { font-family:Consolas,"Courier New",monospace; font-size:13px; background:#ece5d4; padding:1px 5px; border-radius:4px; }
+pre { background:#13261c; color:#e8e2d0; padding:14px 16px; border-radius:10px; overflow-x:auto; font-size:12.5px; line-height:1.6; margin:10px 0; }
+pre code { background:none; padding:0; color:inherit; }
+.scroll { overflow-x:auto; margin:10px 0; }
+table { border-collapse:collapse; width:100%; font-size:13.5px; background:#fff; }
+th, td { border:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:top; }
+th { background:var(--forest); color:var(--cream); font-weight:500; white-space:nowrap; }
+td.n { font-family:"Barlow Condensed"; font-size:15px; white-space:nowrap; }
+.note { border-left:4px solid var(--brass); background:#fff; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0; font-size:14px; }
+.verdict { background:var(--forest); color:var(--cream); border-radius:14px; padding:22px 22px 18px; margin:22px 0; }
+.verdict h3 { color:var(--brass2); margin-top:0; font-size:19px; }
+.verdict li { color:rgba(242,234,216,.9); }
+.verdict b { color:#fff; }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:12px; margin:12px 0; }
+.grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin:12px 0; }
+.card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.card h4 { font:700 15.5px "Noto Serif TC",serif; color:var(--forest); margin-bottom:4px; }
+.card .tag { display:inline-block; font-size:11.5px; padding:1px 9px; border-radius:10px; background:rgba(169,134,74,.16); color:#7a5f2c; margin:0 4px 4px 0; }
+.card p, .card li { font-size:14px; }
+.small { font-size:13px; color:var(--muted); }
+/* 生涯路線 */
+.road { position:relative; margin:18px 0; padding-left:28px; }
+.road::before { content:""; position:absolute; left:9px; top:6px; bottom:6px; width:2px; background:linear-gradient(var(--moss),var(--brass)); }
+.stage { position:relative; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+.stage::before { content:""; position:absolute; left:-25px; top:18px; width:12px; height:12px; border-radius:50%; background:var(--paper); border:3px solid var(--moss); }
+.stage.gold::before { border-color:var(--brass); background:var(--brass2); }
+.stage .st-h { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; }
+.stage .st-h b { font:700 17px "Noto Serif TC",serif; color:var(--forest); }
+.stage .st-h .lv { font:600 13px "Barlow Condensed"; letter-spacing:.12em; color:var(--brass); }
+.stage dl { display:grid; grid-template-columns:76px 1fr; gap:2px 10px; margin-top:8px; font-size:14px; }
+.stage dt { color:var(--muted); }
+/* 手機畫面示意 */
+.phones { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin:16px 0; }
+.phone { background:#0b1812; border-radius:26px; padding:10px; box-shadow:0 10px 28px rgba(14,31,23,.25); max-width:290px; margin:0 auto; width:100%; }
+.phone .scr { background:var(--paper); border-radius:18px; overflow:hidden; min-height:470px; font-size:12px; line-height:1.5; }
+.phone-cap .cap { color:var(--brass); text-align:center; font-size:12.5px; padding:10px 0 2px; letter-spacing:.08em; font-weight:500; }
+.pb { background:var(--deep); color:var(--cream); padding:12px 12px 10px; }
+.pb small { display:block; font:600 10px "Barlow Condensed"; letter-spacing:.2em; color:var(--brass2); }
+.pb b { font:700 15px "Noto Serif TC",serif; }
+.pb .row { display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:rgba(242,234,216,.75); }
+.pb .row b { font:600 14px "Barlow Condensed"; color:#fff; }
+.pc { padding:10px; }
+.pcard { background:#fff; border:1px solid var(--line); border-radius:10px; padding:8px 10px; margin-bottom:8px; }
+.pcard .t { font-weight:700; color:var(--forest); font-size:12.5px; }
+.pcard .k { color:var(--muted); font-size:11px; }
+.bar { height:6px; border-radius:3px; background:#e6dfcd; overflow:hidden; margin:4px 0 2px; }
+.bar i { display:block; height:100%; background:linear-gradient(90deg,var(--moss),var(--brass)); }
+.pbtn { display:block; text-align:center; background:linear-gradient(#c9a865,#a9864a); color:#1c1408; font-weight:700; border-radius:9px; padding:8px; margin-top:6px; }
+.pbtn.ghost { background:#fff; border:1px solid var(--line); color:var(--forest); font-weight:500; }
+.lb { width:100%; border-collapse:collapse; font-size:11.5px; background:#fff; }
+.lb td { border:none; border-bottom:1px solid var(--line); padding:4px 6px; }
+.lb tr.me td { background:rgba(169,134,74,.16); font-weight:700; }
+.lb td.r { text-align:right; font-family:"Barlow Condensed"; font-size:13px; }
+.cutline td { border-bottom:2px dashed var(--flag) !important; }
+.phone .scr.game { background:linear-gradient(#7fb0d8 0,#bcd9ea 34%,#4f8a4a 35%,#3d7a3c 100%); min-height:470px; position:relative; }
+.game .hudl { position:absolute; left:8px; top:8px; background:rgba(14,31,23,.86); color:var(--cream); border-radius:8px; padding:6px 9px; font-size:11px; }
+.game .hudl b { font:600 18px "Barlow Condensed"; }
+.game .tick { position:absolute; left:8px; right:8px; top:64px; background:rgba(14,31,23,.86); color:var(--cream); border-radius:8px; padding:6px 9px; font-size:11px; }
+.game .tick .pos { color:var(--brass2); font:600 15px "Barlow Condensed"; margin-right:6px; }
+.game .press { position:absolute; inset:0; box-shadow:inset 0 0 60px rgba(163,48,42,.55); border-radius:0; pointer-events:none; }
+.game .feed { position:absolute; left:8px; right:8px; bottom:70px; background:rgba(247,243,233,.94); border-radius:8px; padding:6px 9px; font-size:11px; }
+.game .pw { position:absolute; right:10px; top:120px; width:10px; height:190px; border-radius:5px; background:rgba(14,31,23,.7); }
+.game .pw i { position:absolute; bottom:0; left:0; right:0; height:62%; border-radius:5px; background:linear-gradient(#d6bb82,#a3302a); }
+.game .ball { position:absolute; left:50%; bottom:110px; width:9px; height:9px; margin-left:-4px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.4); }
+.game .golfer { position:absolute; left:calc(50% - 34px); bottom:112px; width:18px; height:62px; border-radius:9px 9px 4px 4px; background:linear-gradient(#f2ead8 0 45%,#2a3442 45%); }
+.choice { border:1px solid var(--line); border-radius:9px; background:#fff; padding:7px 9px; margin-bottom:6px; }
+.choice.on { border:2px solid var(--brass); background:#fffaf0; }
+.choice b { color:var(--forest); }
+.statrow { display:flex; align-items:center; gap:6px; font-size:11px; margin:3px 0; }
+.statrow span:first-child { width:56px; color:var(--muted); }
+.statrow .bar { flex:1; margin:0; }
+.statrow em { font-style:normal; font:600 13px "Barlow Condensed"; width:22px; text-align:right; }
+.statrow .cap { width:4px; height:10px; background:var(--flag); border-radius:2px; }
+/* 時間軸 */
+.tl { list-style:none; padding:0; margin:14px 0; }
+.tl li { display:grid; grid-template-columns:92px 1fr; gap:12px; padding:10px 0; border-bottom:1px dashed var(--line); margin:0; }
+.tl li .h { font:600 14px "Barlow Condensed"; color:var(--brass); letter-spacing:.06em; }
+.tl li b { color:var(--forest); }
+.pill { display:inline-block; font-size:11.5px; padding:1px 9px; border-radius:10px; border:1px solid var(--line); background:#fff; margin:2px 3px 2px 0; }
+.pill.g { border-color:rgba(47,90,63,.4); color:var(--moss); }
+.pill.r { border-color:rgba(163,48,42,.4); color:var(--flag); }
+.tech { background:#eef0e9; border-top:3px solid var(--forest); margin-top:70px; padding-bottom:40px; }
+.tech h1.part { margin-top:0; padding-top:40px; }
+footer { text-align:center; color:var(--muted); font-size:12px; padding:44px 0 60px; }
+@media (max-width:600px) {
+  body { font-size:14.5px; }
+  header.hero h1 { font-size:27px; }
+  h1.part { font-size:23px; }
+  h2 { font-size:19px; }
+  .tl li { grid-template-columns:70px 1fr; }
+  .stage dl { grid-template-columns:64px 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero"><div class="wrap">
+  <div class="wm">DIXEN GOLF</div>
+  <h1>生涯模式企劃書</h1>
+  <p class="sub">從家鄉球場的月例賽開始，一路打到四大賽與名人堂</p>
+  <div class="meta"><span>企劃版本 1.0</span><span>2026-10-27</span><span>對應遊戲版本 v87</span><span>上半部：玩法　下半部：程式做法</span></div>
+</div></header>
+
+<nav class="toc"><div class="wrap">
+  <a class="part" href="#p1">玩法篇</a>
+  <a href="#s0">可行嗎</a>
+  <a href="#s1">核心概念</a>
+  <a href="#s2">生涯路線</a>
+  <a href="#s3">建立球員</a>
+  <a href="#s4">成長系統</a>
+  <a href="#s5">一週節奏</a>
+  <a href="#s6">比賽怎麼打</a>
+  <a href="#s7">獎金球具贊助</a>
+  <a href="#s8">宿敵與媒體</a>
+  <a href="#s9">世界排名</a>
+  <a href="#s10">獎盃與名人堂</a>
+  <a href="#s11">和好友一起</a>
+  <a href="#s12">畫面示意</a>
+  <a href="#s13">前十小時</a>
+  <a href="#s14">與主遊戲</a>
+  <a class="part" href="#p2">程式篇</a>
+  <a href="#t1">可重用</a>
+  <a href="#t2">架構</a>
+  <a href="#t3">存檔</a>
+  <a href="#t4">模擬引擎</a>
+  <a href="#t5">AI 球員</a>
+  <a href="#t6">接進遊戲</a>
+  <a href="#t7">公式表</a>
+  <a href="#t8">開發階段</a>
+  <a href="#t9">風險</a>
+</div></nav>
+
+<main class="wrap">
+
+<h1 class="part" id="p1"><small>PART ONE · GAMEPLAY</small>玩法篇</h1>
+
+<!-- ================================================================ -->
+<h2 id="s0"><span class="no">00</span>結論：可以做，而且很適合這個遊戲</h2>
+
+<div class="verdict">
+  <h3>可行性判斷：可行</h3>
+  <ul>
+    <li><b>素材已經夠一整個生涯</b>：遊戲裡有 29 座台灣球場、12 座國外名場（聖安德魯斯、圓石灘、TPC 鋸草、皇家特倫、卡努斯蒂、Kiawah、皇家聖喬治、皇家墨爾本、馬可西蒙尼、川奈富士……），還有 9 座自創實景球場和 20 座奇幻球場。不用多做一座球場，就能排出業餘、巡迴賽、四大賽的完整賽程。</li>
+    <li><b>成長的底子已經在</b>：14 項素質、能力點、物理公式全部是線性的，素質從 50 往下延伸到 40 也算得出合理的結果（一號木大約 175 碼）。所以「從零開始」不用改物理，只要讓生涯球員的素質可以低於 50。</li>
+    <li><b>最難的部分其實不是技術</b>：是一場比賽太長（四輪 72 洞）和數值平衡。這份企劃用「精華打法 + 模擬其他洞」和「用機器人實際打幾萬洞來校正」兩個方法處理。</li>
+    <li><b>不會影響現有遊戲</b>：生涯球員是另一個角色、另一份存檔，主帳號的素質、成就、挑戰星數都不動；生涯的成就會額外回饋外觀與少量能力點給主帳號。</li>
+    <li><b>工作量</b>：分四個階段，第一階段（能從業餘打到拿到職業卡）就能玩，之後每個階段都是可以單獨上線的完整內容。</li>
+  </ul>
+</div>
+
+<div class="note">參考對象是 2K 系列 PGA TOUR 2K 的 MyCAREER：自己創角、選球風、用技能點升級、裝備技能卡、有宿敵、有贊助、打四大賽。這份企劃保留這些讓人上癮的骨架，但比賽與巡迴賽名稱全部自創，不使用真實巡迴賽與真實職業選手的名字；球場是遊戲裡已經做好的球場。</div>
+
+<!-- ================================================================ -->
+<h2 id="s1"><span class="no">01</span>核心概念</h2>
+
+<p><b>一句話：</b>你是一個沒沒無聞、一號木只打得到 175 碼的新人，從家鄉球場的月例賽打起，靠比賽、訓練、贊助一步一步變強，打進職業、站上世界排名第一、拿下四大賽，最後進入名人堂。</p>
+
+<div class="grid3">
+  <div class="card"><h4>從零開始的成長感</h4><p>初始素質平均只有 44（主遊戲新帳號是 50）。第一季你會明顯感覺到自己打不遠、推不準；每一點素質都是自己賺來的，到了第五季回頭打同一座球場，差距會非常明顯。</p></div>
+  <div class="card"><h4>每一週都有選擇</h4><p>這週要參賽、練球、休息，還是去拍廣告賺錢？體能、手感、獎金、排名互相拉扯，不會只是一直按「下一場」。</p></div>
+  <div class="card"><h4>每一場都有故事</h4><p>排行榜即時更新、晉級線、最後一天的壓力、宿敵的成績、賽後新聞與記者會。讓「打出 68 桿」變成「在台豐的最後一天逆轉宿敵拿下第一勝」。</p></div>
+  <div class="card"><h4>手機也打得完</h4><p>每一輪可以選打完整 18 洞、只打後 9 洞、只打 4 個關鍵時刻，或全部模擬。上班族一天打一輪 9 洞，大約一週就能推進一場比賽。</p></div>
+  <div class="card"><h4>有自己的世界</h4><p>200 位 AI 球員會成長、老化、退休，每一場比賽都有歷屆冠軍名單。十季後回頭看，名單上會有你的名字，也會有你的宿敵。</p></div>
+  <div class="card"><h4>朋友就在賽場上</h4><p>朋友的生涯球員會出現在同一個世界排名、同一個排行榜上；每週還有一場全員同球場、同風向、同旗位的「好友週賽」。</p></div>
+</div>
+
+<h3>設計原則</h3>
+<ol>
+  <li><b>打得好要比模擬好</b>：自己打的洞拿到的經驗值是模擬的三倍以上，也能打出比素質預期更好的成績；模擬只是讓忙的時候能前進。</li>
+  <li><b>成長看得見</b>：每次升級都要能在球場上感覺到（開球多 3 碼、預測線變長、壓力球不再手抖），結算畫面直接寫出「你的 7 號鐵比上一季遠了 6 碼」。</li>
+  <li><b>失敗也是生涯的一部分</b>：沒過晉級線、資格賽落榜、被宿敵逆轉，都會留在生涯年表，而且會給下一次機會（次級巡迴、明年重考）。</li>
+  <li><b>不拖時間</b>：所有「管理」動作一頁完成，主要的時間都花在球場上。</li>
+</ol>
+
+<!-- ================================================================ -->
+<h2 id="s2"><span class="no">02</span>生涯路線：七個階段</h2>
+<p>整個生涯大約 10～15 季，一季對應現實中玩 3～6 週（看每輪打幾洞）。前兩季節奏比較快，讓人很快感受到「升級」；越往後每一場比賽的份量越重。</p>
+
+<div class="road">
+  <div class="stage">
+    <div class="st-h"><b>第一階段・俱樂部業餘</b><span class="lv">STAGE 1 · CLUB AMATEUR · 第 1 季前半</span></div>
+    <dl>
+      <dt>球場</dt><dd>建立球員時選的「家鄉球場」（任一座台灣球場），加上同區域的 2 座球場</dd>
+      <dt>比賽</dt><dd>月例賽（1 輪，40 人）× 4、俱樂部錦標賽（2 輪，60 人）</dd>
+      <dt>梯台</dt><dd>白梯；OK 推 1 碼內</dd>
+      <dt>目標</dt><dd>錦標賽前三名，或月例賽兩次前三 → 拿到「全國業餘系列賽」邀請</dd>
+      <dt>特色</dt><dd>業餘不能領獎金，只拿經驗值、業餘積分和球具店的禮券；教學提示比較多，是生涯版的新手教學</dd>
+    </dl>
+  </div>
+  <div class="stage">
+    <div class="st-h"><b>第二階段・全國業餘</b><span class="lv">STAGE 2 · NATIONAL AMATEUR · 第 1 季後半</span></div>
+    <dl>
+      <dt>球場</dt><dd>北、中、南各挑幾座台灣球場（例如長庚、揚昇、台中國際、嘉南、高雄）</dd>
+      <dt>比賽</dt><dd>業餘系列賽 5 場（2～3 輪，72 人，第 2 輪後晉級線），年底「全國業餘錦標賽」用比洞賽（16 強單淘汰）</dd>
+      <dt>梯台</dt><dd>藍梯</dd>
+      <dt>目標</dt><dd>業餘排名前 10 → 取得職業資格賽報名資格。拿到全國業餘冠軍的話，直接跳過資格賽第一階段</dd>
+      <dt>特色</dt><dd>第一位宿敵登場（同年紀的業餘明星）；開始出現贊助商「觀察名單」</dd>
+    </dl>
+  </div>
+  <div class="stage">
+    <div class="st-h"><b>第三階段・職業資格賽</b><span class="lv">STAGE 3 · QUALIFYING SCHOOL · 第 2 季開頭</span></div>
+    <dl>
+      <dt>比賽</dt><dd>第一關（2 輪，前 40% 晉級）→ 第二關（3 輪，前 30% 晉級）→ 決賽（4 輪，前 20 名拿到巡迴卡）</dd>
+      <dt>梯台</dt><dd>黑梯；沒有 OK 推，每一顆都要推進</dd>
+      <dt>目標</dt><dd>決賽前 20 名 → 寶島職業巡迴全季資格；21～40 名 → 次級巡迴（新秀巡迴）資格</dd>
+      <dt>特色</dt><dd>壓力最大的一週：決賽最後一天，晉級線附近的每一桿都算關鍵球。落榜不會結束生涯，會去打新秀巡迴，明年再考</dd>
+    </dl>
+  </div>
+  <div class="stage">
+    <div class="st-h"><b>第四階段・寶島職業巡迴</b><span class="lv">STAGE 4 · ISLAND TOUR · 第 2～3 季</span></div>
+    <dl>
+      <dt>球場</dt><dd>29 座台灣球場輪流當賽場，一季 14 場，每年賽場會換</dd>
+      <dt>比賽</dt><dd>4 輪 72 洞，第 2 輪後前 65 名（含同分）晉級；季末「巡迴錦標賽」只有獎金榜前 30 名能打</dd>
+      <dt>目標</dt><dd>獎金榜前 5 名 → 環太平洋巡迴資格；拿到第一勝 → 世界排名大躍進</dd>
+      <dt>特色</dt><dd>開始有獎金、贊助合約、教練與桿弟；第一次職業冠軍有專屬的頒獎畫面</dd>
+    </dl>
+  </div>
+  <div class="stage">
+    <div class="st-h"><b>第五階段・環太平洋巡迴</b><span class="lv">STAGE 5 · PACIFIC TOUR · 第 4～5 季</span></div>
+    <dl>
+      <dt>球場</dt><dd>川奈富士、曼吉勞、皇家墨爾本西場、Cliffhangers，加上自創球場棕櫚灣、霧岬斷崖、雪峰松嶺、櫻川庭苑、金沙綠洲、白鹽湖、鷺灣海岸、楓林谷、赤岩峽谷，再加台灣最難的幾座</dd>
+      <dt>比賽</dt><dd>一季 16 場；球場風格差很多（海風、高原、沙漠），開始需要針對球場挑球具</dd>
+      <dt>目標</dt><dd>獎金榜前 10 名，或世界排名前 80 → 環球巡迴資格</dd>
+      <dt>特色</dt><dd>出國比賽要花旅費；高海拔球場（白鹽湖、雪峰松嶺）球會飛比較遠，遊戲已經有空氣密度計算</dd>
+    </dl>
+  </div>
+  <div class="stage">
+    <div class="st-h"><b>第六階段・環球巡迴</b><span class="lv">STAGE 6 · WORLD TOUR · 第 5 季起</span></div>
+    <dl>
+      <dt>球場</dt><dd>TPC 鋸草、圓石灘、Kiawah 海洋球場、馬可西蒙尼、聖安德魯斯老球場、皇家特倫、卡努斯蒂、皇家聖喬治，以及前面階段最難的球場</dd>
+      <dt>比賽</dt><dd>一季 18 場，獎金最高；季末總決賽前 30 名</dd>
+      <dt>目標</dt><dd>世界排名前 50 → 收到四大賽邀請；成為世界第一</dd>
+    </dl>
+  </div>
+  <div class="stage gold">
+    <div class="st-h"><b>第七階段・四大賽與傳奇</b><span class="lv">STAGE 7 · MAJORS &amp; LEGACY · 第 6 季起</span></div>
+    <dl>
+      <dt>四大賽</dt><dd>
+        <b>富士名人賽</b>（川奈富士，只邀請世界前 50 與歷屆冠軍，冠軍穿紫色外套）<br>
+        <b>太平洋公開賽</b>（圓石灘，果嶺速度 13、窄球道、長草加深）<br>
+        <b>海洋錦標賽</b>（Kiawah，強風）<br>
+        <b>老球場公開賽</b>（聖安德魯斯 / 皇家特倫 / 卡努斯蒂 / 皇家聖喬治四座林克斯輪流）
+      </dd>
+      <dt>第五大賽</dt><dd><b>球員錦標賽</b>（TPC 鋸草，島嶼果嶺的 17 洞每年都有故事）</dd>
+      <dt>團體賽</dt><dd><b>洲際盃</b>（馬可西蒙尼，兩年一次，雙人賽 + 單人比洞賽；可以和朋友組隊連線）</dd>
+      <dt>目標</dt><dd>生涯大滿貫、名人堂、退休後開一個新的「傳承」生涯</dd>
+    </dl>
+  </div>
+</div>
+
+<h3>季外：奇幻表演賽</h3>
+<p>每季結束後有兩週「季外期」，可以參加奇幻球場的表演賽（翡翠秘境、蘑菇幻境、熔岩之心、星環浮島……）。不算世界排名、獎金也不多，但人氣大漲，並且是取得「奇幻系技能卡」的唯一來源。讓 20 座奇幻球場在生涯中也有位置，同時給正經比賽之間一點喘息。</p>
+
+<!-- ================================================================ -->
+<h2 id="s3"><span class="no">03</span>建立球員：出身與球風</h2>
+
+<p>建立生涯球員是一次性的儀式感時刻，分四步：<b>外觀 → 出身 → 球風 → 家鄉球場</b>。外觀直接沿用現在的角色編輯（包含 6 個寫實角色與已解鎖的球具外觀）。</p>
+
+<h3>出身（決定起點與故事）</h3>
+<div class="grid2">
+  <div class="card"><h4>球僮出身</h4><span class="tag">起始獎金低</span><span class="tag">脫困 +4</span><span class="tag">家鄉球場 讀果嶺 +6</span><p>從小在家鄉球場揹球袋長大，比誰都熟這裡的果嶺。開場故事：老闆讓你週一休場日免費打球。</p></div>
+  <div class="card"><h4>大學校隊</h4><span class="tag">全素質平均</span><span class="tag">業餘積分 +30%</span><p>受過正規訓練，業餘階段升得最快。開場故事：教練幫你報名第一場月例賽。宿敵是隔壁學校的王牌。</p></div>
+  <div class="card"><h4>高爾夫世家</h4><span class="tag">起始獎金高</span><span class="tag">贊助好感 +</span><span class="tag">抗壓 −4</span><p>家裡有錢有資源，但所有人都在看你是不是只靠家世。記者會的問題比較尖銳。</p></div>
+  <div class="card"><h4>半路出家</h4><span class="tag">起始素質 −2</span><span class="tag">經驗值 +15%</span><p>上班族，三十歲才決定認真打。起點最低、成長最快，故事線是「大器晚成」。</p></div>
+</div>
+
+<h3>球風類型（決定強項與上限）</h3>
+<p>學 2K 的「原型」設計：每種球風有不同的起始素質分配，並且<b>每項素質有上限</b>。上限讓每個球員有個性，也讓「第二個生涯換一種球風」有意義。上限在第七階段可以靠「突破任務」再提高，所以不會永遠卡死。</p>
+
+<div class="scroll"><table>
+  <tr><th>球風</th><th>起始強項</th><th>上限 99</th><th>上限偏低</th><th>適合的球場</th></tr>
+  <tr><td><b>重砲手</b></td><td>力量 52、擊球效率 48</td><td>力量、擊球效率、彈道</td><td>推桿距離感 85、切球 82、曲球 80</td><td>長的球場、五桿洞多（Kiawah、鋸草）</td></tr>
+  <tr><td><b>精準射手</b></td><td>準度 50、穩定度 50</td><td>準度、穩定度、曲球</td><td>力量 84、沙坑 85</td><td>窄球道、樹多（圓石灘、台灣山地球場）</td></tr>
+  <tr><td><b>短桿魔術師</b></td><td>切球 52、旋轉 50、沙坑 50</td><td>切球、旋轉、沙坑、脫困</td><td>力量 82、彈道 85</td><td>果嶺小、障礙多（皇家聖喬治、川奈）</td></tr>
+  <tr><td><b>推桿名手</b></td><td>距離感 52、推桿方向 50、讀果嶺 50</td><td>三項推桿、抗壓</td><td>力量 83、準度 86</td><td>快果嶺（四大賽）</td></tr>
+  <tr><td><b>全能型</b></td><td>全部 45</td><td>沒有任何一項 99</td><td>全部上限 93</td><td>哪裡都行，但永遠沒有最強的武器</td></tr>
+</table></div>
+<p class="small">起始其他素質都是 40～44。初始平均約 44，一號木 Carry 約 175～185 碼，7 號鐵約 100 碼。</p>
+
+<h3>家鄉球場</h3>
+<p>從 29 座台灣球場選一座。第一階段的比賽都在家鄉附近；之後職業巡迴只要在家鄉球場比賽，就會有「主場」加成（全素質 +2、人氣加倍），也是新聞最愛寫的題材（「○○ 衣錦還鄉」）。</p>
+
+<!-- ================================================================ -->
+<h2 id="s4"><span class="no">04</span>成長系統</h2>
+
+<p>成長有五條線，互相獨立又彼此加成。玩家每天都能感覺到其中一條在前進。</p>
+
+<div class="grid2">
+  <div class="card"><h4>1. 生涯經驗值與等級（1～60 級）</h4><p>每一洞、每一輪、每一場都會給經驗值；升級給<b>技能點</b>，用來加素質。升級曲線前快後慢：第 1 季大約升 12 級，第 5 季大約 4 級。</p></div>
+  <div class="card"><h4>2. 訓練經驗（指定素質）</h4><p>練習場的訓練關卡直接累積「某一項素質」的經驗，每 100 點自動 +1，不花技能點。用來補弱點，或衝過技能點最貴的 85～99 區段。</p></div>
+  <div class="card"><h4>3. 技能卡（招牌技能）</h4><p>在特定情況生效的特殊能力，從生涯成就解鎖。欄位從 2 格開始，最多 6 格，要選要帶哪幾張。</p></div>
+  <div class="card"><h4>4. 球具</h4><p>生涯專用的球具有小幅素質加成與取捨（例如刀背鐵桿：準度 +3，擊球效率 −1），用獎金買或贊助商送。</p></div>
+  <div class="card"><h4>5. 狀態：手感與體能</h4><p>手感（−3～+3）看最近三輪表現，體能（0～100）看最近有沒有休息。兩個都只影響一點點，但會讓「這週要不要參賽」變成一個決定。</p></div>
+</div>
+
+<h3>技能點的花費</h3>
+<p>延續主遊戲的花費規則，再往下補一段：</p>
+<div class="scroll"><table style="max-width:560px">
+  <tr><th>素質區間</th><th>升 1 點要花</th><th>說明</th></tr>
+  <tr><td class="n">40 → 49</td><td class="n">1</td><td>生涯專用的新區段，起步很快</td></tr>
+  <tr><td class="n">50 → 69</td><td class="n">1</td><td>同主遊戲</td></tr>
+  <tr><td class="n">70 → 84</td><td class="n">2</td><td>同主遊戲</td></tr>
+  <tr><td class="n">85 → 98</td><td class="n">3</td><td>同主遊戲；建議用訓練補</td></tr>
+</table></div>
+
+<h3>技能點與訓練經驗的來源</h3>
+<div class="scroll"><table>
+  <tr><th>來源</th><th>給什麼</th><th>數量</th></tr>
+  <tr><td>升級</td><td>技能點</td><td>每級 5 點（60 級共 300 點）</td></tr>
+  <tr><td>自己打的每一洞</td><td>生涯經驗</td><td>基本 20；博蒂 +30、老鷹 +80、一桿進洞 +500；上果嶺、上球道各 +5</td></tr>
+  <tr><td>模擬的每一洞</td><td>生涯經驗</td><td>基本 6（自己打的三分之一，不算精彩球加成）</td></tr>
+  <tr><td>比賽名次</td><td>生涯經驗</td><td>晉級 +150；前十 +400；冠軍 +1000；大賽冠軍 +3000</td></tr>
+  <tr><td>訓練關卡</td><td>指定素質的訓練經驗</td><td>銅 10、銀 20、金 35（每項素質每 100 點 +1）</td></tr>
+  <tr><td>生涯里程碑</td><td>技能點</td><td>第一個晉級 +3、第一勝 +10、第一座大賽 +20、世界第一 +20…（約 30 個里程碑）</td></tr>
+  <tr><td>突破任務（第七階段）</td><td>素質上限 +3</td><td>例如「一季平均推桿 28.5 以下」→ 推桿距離感上限 +3</td></tr>
+</table></div>
+
+<h3>預定的成長曲線（平衡目標）</h3>
+<div class="scroll"><table>
+  <tr><th>時間點</th><th>素質平均</th><th>一號木 Carry</th><th>能做到的事</th></tr>
+  <tr><td>剛建立</td><td class="n">44</td><td class="n">約 180 碼</td><td>白梯打 85～90 桿</td></tr>
+  <tr><td>第 1 季結束</td><td class="n">52</td><td class="n">約 205 碼</td><td>藍梯打 70 幾桿、拿業餘冠軍</td></tr>
+  <tr><td>第 2 季結束</td><td class="n">60</td><td class="n">約 225 碼</td><td>黑梯打 75 桿上下、資格賽有機會過關</td></tr>
+  <tr><td>第 4 季結束</td><td class="n">70</td><td class="n">約 245 碼</td><td>寶島巡迴爭冠、環太平洋晉級</td></tr>
+  <tr><td>第 6 季結束</td><td class="n">78</td><td class="n">約 260 碼</td><td>環球巡迴前段、第一次打大賽</td></tr>
+  <tr><td>第 9 季結束</td><td class="n">86</td><td class="n">約 275 碼</td><td>大賽冠軍候選、世界前十</td></tr>
+  <tr><td>第 12 季以後</td><td class="n">90+</td><td class="n">約 285 碼</td><td>名人堂；靠突破任務把強項推到 99</td></tr>
+</table></div>
+<p class="small">碼數用遊戲現有公式推算（一號木 Carry ≈ 195 + (力量 − 50) × 2），並假設力量比平均高一點。這是目標值，實際要用程式篇的模擬機器人校正。</p>
+
+<h3>訓練關卡（練習場的新玩法）</h3>
+<p>直接用現有練習場的三個模式（發球台 / 沙坑 / 果嶺），加上目標與評分。每個訓練週可以做 2 個關卡，每個關卡大約 2～3 分鐘。</p>
+<div class="scroll"><table>
+  <tr><th>關卡</th><th>內容</th><th>練到的素質</th><th>金牌條件（範例）</th></tr>
+  <tr><td>球道靶場</td><td>10 顆開球，落在 30 碼寬的虛擬球道內才算</td><td>準度、力量</td><td>8 顆在球道、平均 Carry 達到自己的 95%</td></tr>
+  <tr><td>鐵桿定點</td><td>150 / 170 / 190 碼三個旗子，各打 3 顆</td><td>穩定度、彈道</td><td>9 顆平均離旗 8 碼內</td></tr>
+  <tr><td>曲球繞樹</td><td>正前方有一棵樹，要用 Draw 或 Fade 繞過去打到目標</td><td>曲球控制</td><td>6 顆中 5 顆繞過且離目標 15 碼內</td></tr>
+  <tr><td>長草脫困</td><td>從長草、深草、荒地各打 3 顆上果嶺</td><td>脫困</td><td>上果嶺 7 顆</td></tr>
+  <tr><td>沙坑救球</td><td>果嶺邊沙坑 8 顆（現有沙坑模式）</td><td>沙坑</td><td>6 顆進 2 碼內</td></tr>
+  <tr><td>切球圈</td><td>果嶺邊不同球位切 8 顆</td><td>切球、旋轉</td><td>平均離洞 1.5 碼內</td></tr>
+  <tr><td>推桿階梯</td><td>3、6、9、12 碼各推 3 顆</td><td>推桿距離感</td><td>停在洞後 0～1 碼的有 10 顆</td></tr>
+  <tr><td>讀線挑戰</td><td>只顯示一半長度的預測線，推大彎的球</td><td>讀果嶺</td><td>8 顆進 5 顆</td></tr>
+  <tr><td>壓力推桿</td><td>從 1 碼開始連續推進，每進一顆往後退半碼，畫面有心跳聲</td><td>抗壓</td><td>連續進 8 顆</td></tr>
+</table></div>
+
+<h3>技能卡（招牌技能）</h3>
+<p>技能卡只在特定情況生效，效果用現有物理公式裡的數字直接調整，所以一定做得出來。每張卡有銅、銀、金三個等級，用同一個條件累積升級。</p>
+<div class="scroll"><table>
+  <tr><th>技能卡</th><th>效果（金卡）</th><th>怎麼解鎖</th></tr>
+  <tr><td>大心臟</td><td>關鍵球的誤差放大倍率少 40%</td><td>最後一輪在領先 2 桿內的情況下拿到冠軍</td></tr>
+  <tr><td>收尾王</td><td>每輪最後 3 洞，所有誤差 −15%</td><td>最後 3 洞累計打出 30 隻博蒂</td></tr>
+  <tr><td>暖身完成</td><td>每輪前 3 洞，所有誤差 −15%</td><td>前 3 洞累計打出 30 隻博蒂</td></tr>
+  <tr><td>發球台霸主</td><td>一號木桿頭速度 +3 mph</td><td>單一賽季開球平均第一名</td></tr>
+  <tr><td>球道獵人</td><td>在球道上擊球，桿面誤差 −12%</td><td>一季球道命中率 75% 以上</td></tr>
+  <tr><td>鐵桿手術刀</td><td>150～200 碼的鐵桿，力道浮動 −20%</td><td>一季上果嶺率 75% 以上</td></tr>
+  <tr><td>救援大師</td><td>長草 / 深草球速保留 +5%</td><td>從長草上果嶺 100 次</td></tr>
+  <tr><td>沙坑專家</td><td>果嶺邊沙坑誤差 −30%</td><td>沙坑救球成功（沙坑後兩桿進洞）50 次</td></tr>
+  <tr><td>三尺必進</td><td>2 碼內推桿方向誤差 −50%</td><td>連續 100 顆 2 碼內推桿全進</td></tr>
+  <tr><td>長推殺手</td><td>10 碼以上推桿力道誤差 −25%</td><td>推進 10 碼以上 25 次</td></tr>
+  <tr><td>小鳥連發</td><td>抓到博蒂後下一洞準度 +4（最多疊 2 層）</td><td>連續 3 洞博蒂 5 次</td></tr>
+  <tr><td>反彈力</td><td>柏忌後下一洞不算關鍵球</td><td>柏忌後下一洞立刻抓鳥 40 次</td></tr>
+  <tr><td>逆風低飛</td><td>逆風 10 mph 以上時，發射角 −1.5°、風的影響 −15%</td><td>在林克斯球場打出低於標準桿 10 輪</td></tr>
+  <tr><td>主場之王</td><td>家鄉球場全素質 +3（取代原本的 +2）</td><td>在家鄉球場拿到職業冠軍</td></tr>
+  <tr><td>大賽氣場</td><td>四大賽期間抗壓 +8</td><td>四大賽晉級 5 次</td></tr>
+  <tr><td>奇幻玩家</td><td>奇幻表演賽中，機關的效果提示更準</td><td>奇幻表演賽前三名 3 次</td></tr>
+</table></div>
+<p>技能卡欄位：一開始 2 格，拿到職業卡 3 格、第一勝 4 格、世界前 50 第 5 格、第一座大賽第 6 格。每場比賽開始前可以換卡，這讓「看球場挑技能」變成賽前的小策略。</p>
+
+<h3>手感與體能</h3>
+<div class="grid2">
+  <div class="card"><h4>手感（−3 ～ +3）</h4><p>最近三輪的成績比素質預期好就上升，差就下降。每一級等於全素質 ±1。手感 +3 時畫面上的球員卡會有金色邊框，手感 −3 時會有教練提醒「要不要休息一週調整？」。</p></div>
+  <div class="card"><h4>體能（0 ～ 100）</h4><p>參加一場 4 輪比賽 −25、訓練週 −15、休息週 +40、贊助活動 −10。體能 30 以下時穩定度與抗壓 −5。連續參賽四週一定會累，迫使玩家安排休息。</p></div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="s5"><span class="no">05</span>一週的生涯節奏</h2>
+
+<p>生涯以「週」前進。每季大約 24 週，有比賽的週大約 14～18 週。生涯首頁顯示本週可以做的事，選一件就前進到下一週（比賽週要打完比賽才前進）。</p>
+
+<div class="grid2">
+  <div class="card"><h4>參賽</h4><p>報名本週的比賽。有資格的比賽才會出現；世界排名不夠的大賽會顯示「還差多少排名」。</p></div>
+  <div class="card"><h4>訓練</h4><p>做 2 個訓練關卡，搭配教練的加成。教練專長不同（長打、短桿、推桿、心理），請哪一位教練就決定哪一類訓練加成 50%。</p></div>
+  <div class="card"><h4>休息</h4><p>體能 +40、手感往 0 回歸一級。重要大賽前休一週是很常見的選擇。</p></div>
+  <div class="card"><h4>贊助活動</h4><p>拍廣告、參加球迷見面會、教業餘客戶打球。拿獎金與人氣，完成贊助合約的條件。</p></div>
+</div>
+
+<h3>賽季行事曆（以寶島巡迴季為例）</h3>
+<div class="scroll"><table>
+  <tr><th>週</th><th>內容</th><th>週</th><th>內容</th></tr>
+  <tr><td class="n">1</td><td>季前訓練營（免費 3 個訓練關卡）</td><td class="n">13</td><td>巡迴第 8 站</td></tr>
+  <tr><td class="n">2–5</td><td>巡迴第 1～4 站</td><td class="n">14</td><td>空檔週</td></tr>
+  <tr><td class="n">6</td><td>空檔週</td><td class="n">15–18</td><td>巡迴第 9～12 站</td></tr>
+  <tr><td class="n">7</td><td>巡迴第 5 站（家鄉附近，主場賽）</td><td class="n">19</td><td>空檔週</td></tr>
+  <tr><td class="n">8</td><td>邀請賽（環太平洋巡迴的外卡，前 10 名才收到）</td><td class="n">20–21</td><td>巡迴第 13～14 站</td></tr>
+  <tr><td class="n">9–12</td><td>巡迴第 6～7 站，中間夾空檔</td><td class="n">22</td><td>巡迴錦標賽（獎金榜前 30）</td></tr>
+  <tr><td></td><td></td><td class="n">23–24</td><td>季外：奇幻表演賽、頒獎典禮、合約續約</td></tr>
+</table></div>
+
+<h3>季末</h3>
+<ul>
+  <li><b>頒獎典禮</b>：年度最佳球員、獎金王、新人王、平均桿最低、最佳推桿手。AI 球員也會得獎，自己沒得獎也看得到誰拿了。</li>
+  <li><b>巡迴卡結算</b>：升級、保級或降級（獎金榜 125 名外要回資格賽）。</li>
+  <li><b>合約</b>：贊助商續約或換約，教練與桿弟續聘。</li>
+  <li><b>世界更新</b>：AI 球員成長或老化、有人退休、新的新秀加入，下一季賽程換球場。</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="s6"><span class="no">06</span>比賽怎麼打</h2>
+
+<h3>每一輪的打法（玩家自己選，可以每輪不同）</h3>
+<div class="scroll"><table>
+  <tr><th>打法</th><th>內容</th><th>大約時間</th><th>經驗值</th></tr>
+  <tr><td><b>完整 18 洞</b></td><td>全部自己打</td><td>35～50 分鐘</td><td>100%</td></tr>
+  <tr><td><b>精華 9 洞</b></td><td>自己打後 9 洞（或前 9），另外 9 洞依素質與手感模擬</td><td>18～25 分鐘</td><td>打的洞 100%、模擬的洞 30%</td></tr>
+  <tr><td><b>關鍵時刻</b></td><td>系統挑出這一輪最關鍵的 4 個情境，直接把你放在那個位置（例如「第 15 洞第二桿，距旗 212 碼，落後 1 桿，五桿洞要不要攻果嶺？」）</td><td>6～10 分鐘</td><td>關鍵時刻 3 倍經驗，其他洞 30%</td></tr>
+  <tr><td><b>全部模擬</b></td><td>直接看結果</td><td>10 秒</td><td>30%，而且成績略保守</td></tr>
+</table></div>
+<p>「關鍵時刻」是讓手機玩家也能有大賽臨場感的關鍵：模擬會先跑出你這一輪的大致過程，再從中挑出名次影響最大的四顆球，把球放在那個位置讓你打。打得好就改寫模擬結果，打不好就照實記錄。</p>
+
+<h3>排行榜與晉級線</h3>
+<ul>
+  <li>每一場有 40～144 位 AI 球員（依比賽等級），每個人的成績在比賽開始時就決定好，隨著你打一洞、排行榜就往前推進一洞，所以<b>排行榜是即時變化的</b>。</li>
+  <li>畫面上方多一條小小的名次條：「T12　−3　領先者 −8（剩 5 洞）」。</li>
+  <li>第 2 輪後的晉級線會用紅色虛線畫在排行榜上；打到第 2 輪最後幾洞時，名次條會顯示「晉級線 +1，你目前 +2」。</li>
+  <li>重要時刻的跑馬燈：「宿敵 林逸凡 在第 16 洞打出老鷹，−9 單獨領先」。</li>
+</ul>
+
+<h3>壓力：生涯版的關鍵球</h3>
+<p>主遊戲已經有「關鍵球」（推 Par 以上、最後三洞、比洞賽），由「抗壓」決定誤差放大多少。生涯加上比賽情境的<b>壓力等級</b>：</p>
+<div class="scroll"><table>
+  <tr><th>壓力等級</th><th>情況</th><th>畫面</th><th>誤差倍率</th></tr>
+  <tr><td class="n">0</td><td>一般情況</td><td>無</td><td>×1</td></tr>
+  <tr><td class="n">1</td><td>現有的關鍵球、晉級線附近</td><td>畫面四周很淡的暗角</td><td>放大量 × 1</td></tr>
+  <tr><td class="n">2</td><td>最後一輪後 9 洞、領先差距 3 桿內</td><td>暗角 + 心跳聲</td><td>放大量 × 1.5</td></tr>
+  <tr><td class="n">3</td><td>大賽最後一洞、資格賽決賽晉級線上、延長賽</td><td>暗角變紅、心跳變快、觀眾安靜</td><td>放大量 × 2</td></tr>
+</table></div>
+<p>「放大量」= 1.6 − 0.0075 × 抗壓 − 1（最少 0）。主遊戲用的是 0.009，抗壓 67 以上就完全不受影響；生涯改成 0.0075，抗壓要到 80 才完全免疫，再乘上壓力等級，所以抗壓 67～99 在生涯裡也有差別。例如抗壓 72：等級 1 誤差 ×1.06、等級 3 ×1.12；抗壓 50：等級 3 ×1.45。</p>
+
+<h3>比賽條件</h3>
+<ul>
+  <li><b>梯台</b>：業餘白梯 / 藍梯，職業一律黑梯。</li>
+  <li><b>果嶺速度</b>：各球場原本的速度，加上比賽等級的加成（巡迴 +0.5、四大賽 +1.5，圓石灘的太平洋公開賽固定 13）。</li>
+  <li><b>旗位</b>：第 1、2 輪普通旗位，週末越來越難（旗位靠近果嶺邊、坡上）。遊戲本來就用種子決定旗位，只要多一個「難度」條件。</li>
+  <li><b>風</b>：沿用現有每洞風的計算；林克斯球場的比賽日會隨機出現強風日，所有人一起受影響。</li>
+  <li><b>沒有重打、OK 推依等級</b>：業餘 1 碼、職業沒有。</li>
+  <li><b>延長賽</b>：同分冠軍時，用 18 洞重複打到分出勝負，壓力等級直接 3。</li>
+</ul>
+
+<h3>賽後</h3>
+<ul>
+  <li>成績卡、名次、獎金、世界排名變化。</li>
+  <li>經驗條往上跑、升級動畫、素質變化對照（「7 號鐵 +4 碼」）。</li>
+  <li>新聞頭條與一題記者會（見第 08 節）。</li>
+  <li>統計：每項數據和巡迴平均比較（開球距離、球道命中、上果嶺率、平均推桿、救球率），找出下週該練什麼。</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="s7"><span class="no">07</span>獎金、球具、贊助、團隊</h2>
+
+<h3>獎金</h3>
+<div class="scroll"><table>
+  <tr><th>比賽等級</th><th>總獎金</th><th>冠軍拿</th><th>晉級最後一名大約</th></tr>
+  <tr><td>寶島巡迴</td><td class="n">$ 200,000</td><td class="n">$ 36,000</td><td class="n">$ 900</td></tr>
+  <tr><td>環太平洋巡迴</td><td class="n">$ 1,500,000</td><td class="n">$ 270,000</td><td class="n">$ 6,500</td></tr>
+  <tr><td>環球巡迴</td><td class="n">$ 8,000,000</td><td class="n">$ 1,440,000</td><td class="n">$ 18,000</td></tr>
+  <tr><td>四大賽 / 球員錦標賽</td><td class="n">$ 15,000,000</td><td class="n">$ 2,700,000</td><td class="n">$ 30,000</td></tr>
+</table></div>
+<p>獎金的用途：球具、教練、桿弟、出國旅費、生涯專屬外觀（例如冠軍外套顏色、球袋）。業餘階段沒有獎金，只有球具店禮券。</p>
+
+<h3>球具（生涯專用，有數值）</h3>
+<p>五個欄位：木桿、鐵桿、挖起桿、推桿、球。每個欄位有 4～6 種，各有取捨，等級 1～5（升級要花錢）。加成之後素質最高還是 99。外觀照樣可以套用主遊戲已解鎖的球具外觀。</p>
+<div class="scroll"><table>
+  <tr><th>欄位</th><th>型號（範例）</th><th>效果（等級 5）</th><th>取捨</th></tr>
+  <tr><td>木桿</td><td>低旋轉大頭</td><td>力量 +4、擊球效率 +2</td><td>準度 −2</td></tr>
+  <tr><td>木桿</td><td>可調重心</td><td>準度 +3、曲球 +3</td><td>力量 +1</td></tr>
+  <tr><td>鐵桿</td><td>刀背</td><td>準度 +3、曲球 +4、旋轉 +2</td><td>擊球效率 −2（打偏時懲罰更大）</td></tr>
+  <tr><td>鐵桿</td><td>凹背寬底</td><td>擊球效率 +3、彈道 +3、脫困 +2</td><td>曲球 −2</td></tr>
+  <tr><td>挖起桿</td><td>高磨紋</td><td>旋轉 +5、切球 +2</td><td>長草中旋轉沒有加成</td></tr>
+  <tr><td>挖起桿</td><td>寬底彈跳角</td><td>沙坑 +5、脫困 +2</td><td>旋轉 −1</td></tr>
+  <tr><td>推桿</td><td>槌型高慣性</td><td>推桿方向 +5</td><td>距離感 −1</td></tr>
+  <tr><td>推桿</td><td>刀型</td><td>距離感 +5</td><td>推桿方向 −1</td></tr>
+  <tr><td>球</td><td>巡迴級三層球</td><td>旋轉 +3、切球 +2</td><td>最貴</td></tr>
+  <tr><td>球</td><td>遠距離雙層球</td><td>力量 +2</td><td>旋轉 −3</td></tr>
+</table></div>
+<p>這讓「下週打圓石灘，要不要把木桿換成準度型？」變成真正的決定。</p>
+
+<h3>贊助商</h3>
+<p>人氣和排名夠了，贊助商就會來談。合約一季一簽，有基本簽約金與「本季目標」，達成就有獎金和專屬外觀。品牌全部自創。</p>
+<div class="grid3">
+  <div class="card"><h4>松嶺球具</h4><p class="small">台灣老牌球具。第 4 階段起</p><p>目標：本季 3 次前十。獎勵：松嶺刀背鐵桿（等級 3 免費）、帽子配色。</p></div>
+  <div class="card"><h4>北岸運動</h4><p class="small">服裝品牌，重視形象</p><p>目標：人氣 50,000、記者會「紳士」回答 5 次。獎勵：服裝配色組、獎金。</p></div>
+  <div class="card"><h4>黃銅工房</h4><p class="small">高級推桿工房，只找頂尖選手</p><p>目標：一季平均推桿 29 以下。獎勵：專屬推桿外觀（發光）、推桿等級 +1。</p></div>
+</div>
+
+<h3>教練與桿弟</h3>
+<div class="grid2">
+  <div class="card"><h4>教練（每週付薪水）</h4><ul><li>長打教練：力量、擊球效率、彈道的訓練經驗 +50%</li><li>短桿教練：切球、旋轉、沙坑、脫困 +50%</li><li>推桿教練：三項推桿 +50%</li><li>心理教練：抗壓 +50%、手感下降速度減半</li></ul></div>
+  <div class="card"><h4>桿弟（比賽時抽獎金 5～10%）</h4><ul><li>新手桿弟：提醒風向與距離</li><li>老練桿弟：讀果嶺 +6、球桿建議考慮風與高低差</li><li>名桿弟：讀果嶺 +10，並且在關鍵球前給一句建議（例如「這個果嶺後面比較好救」）</li><li>桿弟跟久了會有「默契」等級，加成慢慢變大</li></ul></div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="s8"><span class="no">08</span>宿敵、媒體與人氣</h2>
+
+<h3>宿敵</h3>
+<p>整個生涯有三位宿敵，各自在不同階段登場，有自己的名字、出身、球風和個性。宿敵的素質會跟著你成長（永遠在你附近），所以每次同場都有得拚。</p>
+<div class="scroll"><table>
+  <tr><th>宿敵</th><th>登場</th><th>個性</th><th>宿敵週</th></tr>
+  <tr><td>業餘宿敵</td><td>第 2 階段</td><td>同年紀的天才，看不起半路出家的人</td><td>同場時，贏他 +300 經驗</td></tr>
+  <tr><td>巡迴宿敵</td><td>第 4 階段</td><td>老牌職業球員，曾經的世界前十</td><td>同組打最後一輪時有專屬對話</td></tr>
+  <tr><td>傳奇宿敵</td><td>第 7 階段</td><td>現任世界第一</td><td>在大賽擊敗他 → 解鎖技能卡「大賽氣場」升級</td></tr>
+</table></div>
+<p>生涯首頁有「對戰紀錄」：同場次數、贏幾次、最大勝差。打敗宿敵 10 次後，他會在新聞裡承認你（故事結束，留在生涯年表）。如果朋友也有生涯球員，可以把朋友設為「宿敵」，這時用的就是朋友真正的成績。</p>
+
+<h3>新聞頭條</h3>
+<p>每一輪、每一場結束後自動產生 1～3 則新聞，出現在生涯首頁的動態。用模板組合，資料來自真實的比賽紀錄：</p>
+<ul>
+  <li>「新人 陳子安 在台豐打出 65 桿，暫居領先」</li>
+  <li>「家鄉英雄回來了：陳子安 在東方球場拿下職業第一勝」</li>
+  <li>「圓石灘第 18 洞的奇蹟：陳子安 從沙坑切進，以一桿之差擊敗 林逸凡」</li>
+  <li>「連續三場沒有晉級，陳子安 陷入低潮？」</li>
+</ul>
+
+<h3>記者會（一題三選一）</h3>
+<p>重要結果之後，記者問一個問題，三個回答分別偏向<b>紳士、自信、幽默</b>。回答會累積「形象」：紳士型吸引北岸運動這類形象品牌；自信型讓宿敵更想贏你（宿敵週經驗加倍）、人氣漲得快；幽默型讓球迷喜歡你（見面會獎金高）。沒有對錯，只是讓每個人的生涯長得不一樣。</p>
+<div class="card">
+  <p class="small">範例：在家鄉球場拿到第一勝後</p>
+  <p><b>記者：</b>「在家鄉拿下第一勝，有什麼話想對以前一起工作的球僮夥伴說？」</p>
+  <ul>
+    <li><b>紳士：</b>「這座冠軍有一半是他們的，他們教我看這裡的每一個果嶺。」</li>
+    <li><b>自信：</b>「我早就說過，這裡的果嶺沒有人比我熟。」</li>
+    <li><b>幽默：</b>「我會請他們吃飯，但球袋還是要他們幫我揹。」</li>
+  </ul>
+</div>
+
+<h3>人氣</h3>
+<p>人氣（球迷人數）從 0 開始，靠成績、精彩球（一桿進洞、老鷹、切進）、記者會、奇幻表演賽增加。人氣決定贊助商等級、見面會收入，也決定比賽時「觀眾」的聲音大小（遊戲已有音效系統）。人氣達到門檻會解鎖生涯稱號，例如「家鄉英雄」「寶島之光」「林克斯之王」。</p>
+
+<!-- ================================================================ -->
+<h2 id="s9"><span class="no">09</span>世界排名與資格</h2>
+
+<p>世界排名是生涯最主要的「爬梯子」目標。排名用最近兩季的積分計算，越近的比賽權重越高，所以不能停下來吃老本。</p>
+<div class="scroll"><table>
+  <tr><th>比賽等級</th><th>冠軍積分</th><th>前十大約</th><th>晉級最後一名</th></tr>
+  <tr><td>四大賽</td><td class="n">100</td><td class="n">20～60</td><td class="n">1.5</td></tr>
+  <tr><td>球員錦標賽 / 總決賽</td><td class="n">80</td><td class="n">16～48</td><td class="n">1.2</td></tr>
+  <tr><td>環球巡迴</td><td class="n">50</td><td class="n">10～30</td><td class="n">0.8</td></tr>
+  <tr><td>環太平洋巡迴</td><td class="n">24</td><td class="n">5～14</td><td class="n">0.4</td></tr>
+  <tr><td>寶島巡迴</td><td class="n">12</td><td class="n">2～7</td><td class="n">0.2</td></tr>
+  <tr><td>業餘、資格賽、表演賽</td><td class="n">0</td><td class="n">—</td><td class="n">—</td></tr>
+</table></div>
+<div class="grid2">
+  <div class="card"><h4>排名帶來的資格</h4><ul><li>前 200：環太平洋巡迴的邀請賽外卡</li><li>前 80：環球巡迴資格</li><li>前 64：世界比洞錦標賽</li><li>前 50：富士名人賽邀請、所有四大賽</li><li>前 10：贊助商最高等級</li><li>第 1：生涯稱號「世界第一」，每週都記錄在年表</li></ul></div>
+  <div class="card"><h4>排名頁面</h4><ul><li>前 200 名列表，自己和朋友永遠標出來</li><li>自己的排名走勢圖（一季一條線）</li><li>「還差多少積分到下一個門檻」</li><li>每位 AI 球員點開看得到國籍、年紀、球風、本季成績</li></ul></div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="s10"><span class="no">10</span>獎盃室、生涯年表與名人堂</h2>
+
+<div class="grid3">
+  <div class="card"><h4>獎盃室</h4><p>每一座冠軍都有一個獎盃（用球場護照的印章風格畫），點開看得到那一場的成績卡、最後一洞的那一桿、當時的新聞頭條。四大賽獎盃另外放在最上層。</p></div>
+  <div class="card"><h4>生涯年表</h4><p>自動記錄每一個「第一次」：第一次抓鳥、第一次晉級、資格賽落榜、第一勝、第一次進前十、第一座大賽、世界第一的第一週。看年表就是看自己的故事。</p></div>
+  <div class="card"><h4>歷屆冠軍</h4><p>每一場比賽都有自己的歷屆冠軍名單，AI 球員也會拿冠軍。十年後點開「富士名人賽」，看到自己的名字夾在 AI 傳奇中間，生涯感就出來了。</p></div>
+</div>
+
+<h3>名人堂</h3>
+<p>名人堂積分：職業冠軍 1 分、大賽冠軍 5 分、年度最佳球員 3 分、世界第一每 10 週 1 分。累積 40 分可以入選，有一段入選典禮（頒獎畫面 + 生涯數據總結）。入選後：</p>
+<ul>
+  <li>主帳號解鎖「名人堂」系列外觀（球、推桿、帽子配色）。</li>
+  <li>可以選擇<b>繼續打</b>（排名慢慢下滑、開始有「老將」劇情），或<b>退休並開始傳承生涯</b>。</li>
+  <li><b>傳承生涯</b>：新球員起點一樣低，但經驗值 +20%、可以多帶一張技能卡的欄位，第一位宿敵改成「上一代的你的徒弟」。這讓生涯模式可以一直玩下去。</li>
+</ul>
+
+<h3>生涯成就（和主遊戲成就系統共用）</h3>
+<p>在現有的成就分類裡新增「生涯」分類，大約 40 個，例如：業餘冠軍、資格賽一次過關、職業首勝、家鄉奪冠、單季三勝、生涯大滿貫、世界第一 52 週、名人堂、傳承生涯首勝。達成時一樣有動畫提示與能力點獎勵，回饋到主帳號。</p>
+
+<!-- ================================================================ -->
+<h2 id="s11"><span class="no">11</span>和好友一起</h2>
+
+<p>這個遊戲是給自己和一兩個朋友玩的，所以生涯模式要讓朋友彼此「看得到」，但不要求同時上線。</p>
+<div class="grid2">
+  <div class="card"><h4>朋友出現在賽場上</h4><p>朋友的生涯球員會加入你的世界：他的素質、球風、技能卡都是真的。他沒有實際打的比賽用他的素質模擬，所以你在排行榜上會真的跟他競爭。他實際打過的成績會換成真的成績。</p></div>
+  <div class="card"><h4>好友週賽</h4><p>每個現實週有一場固定的週賽：同球場、同梯台、同風向、同旗位（用同一個種子）。每個人打一輪，成績上傳後彼此看得到，前三名生涯經驗加倍。可以順便在主遊戲的排行看到。</p></div>
+  <div class="card"><h4>洲際盃組隊</h4><p>洲際盃那一週，可以用已經做好的連線模式（最多 4 人）和朋友組隊打雙人賽；朋友不在線上時，隊友由 AI 擔任。</p></div>
+  <div class="card"><h4>互相挑戰</h4><p>把自己某一輪的成績「丟給朋友」：朋友在同樣條件下打同一輪，贏的人拿人氣。不用同時在線。</p></div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="s12"><span class="no">12</span>畫面示意（手機）</h2>
+<p>沿用主遊戲的深綠、奶油白、黃銅配色與卡片樣式。以下是四個主要畫面的示意。</p>
+
+<div class="phones">
+  <div>
+    <div class="phone"><div class="scr">
+      <div class="pb"><small>CAREER · 第 3 季 第 7 週</small><b>陳子安</b> <span style="font-size:11px;opacity:.7">Lv 24 · 重砲手</span>
+        <div class="row"><span>世界排名 <b>186</b></span><span>獎金 <b>$ 84,200</b></span><span>人氣 <b>12.4K</b></span></div>
+      </div>
+      <div class="pc">
+        <div class="pcard"><div class="t">本週：寶島巡迴 第 5 站</div><div class="k">東方球場（主場）· 4 輪 · 總獎金 $ 200,000</div><span class="pbtn">報名參賽</span></div>
+        <div class="pcard"><div class="k">體能</div><div class="bar"><i style="width:62%"></i></div><div class="k">手感 +1　經驗 Lv 24 → 25</div><div class="bar"><i style="width:78%"></i></div></div>
+        <div class="pcard"><div class="t">其他選擇</div><span class="pbtn ghost">訓練（推桿教練 +50%）</span><span class="pbtn ghost">休息</span><span class="pbtn ghost">贊助活動：松嶺球具拍攝</span></div>
+        <div class="pcard"><div class="t">動態</div><div class="k">宿敵 林逸凡 上週拿下台中國際冠軍，世界排名升到 142</div></div>
+      </div>
+    </div></div>
+    <div class="phone-cap"><p class="cap">生涯首頁</p></div>
+  </div>
+
+  <div>
+    <div class="phone"><div class="scr">
+      <div class="pb"><small>ROUND 2 · 第 14 洞進行中</small><b>寶島巡迴 第 5 站</b><div class="row"><span>晉級線 <b>+1</b></span><span>你 <b>E</b></span><span>領先 <b>−9</b></span></div></div>
+      <table class="lb">
+        <tr><td>1</td><td>林逸凡</td><td class="r">−9</td><td class="r">F</td></tr>
+        <tr><td>2</td><td>Kenji Mori</td><td class="r">−7</td><td class="r">16</td></tr>
+        <tr><td>T3</td><td>黃柏翰</td><td class="r">−6</td><td class="r">F</td></tr>
+        <tr><td>T3</td><td>David Park</td><td class="r">−6</td><td class="r">13</td></tr>
+        <tr><td colspan="4" style="text-align:center;color:#999">…</td></tr>
+        <tr><td>T48</td><td>吳承恩</td><td class="r">−1</td><td class="r">F</td></tr>
+        <tr class="me"><td>T55</td><td>陳子安</td><td class="r">E</td><td class="r">13</td></tr>
+        <tr class="cutline"><td>T62</td><td>Liam Hart</td><td class="r">+1</td><td class="r">15</td></tr>
+        <tr><td>T66</td><td>許志豪</td><td class="r">+2</td><td class="r">F</td></tr>
+        <tr><td>T66</td><td>Sato Ren</td><td class="r">+2</td><td class="r">12</td></tr>
+      </table>
+      <div class="pc"><div class="pcard"><div class="k">紅色虛線 = 晉級線（前 65 名含同分）。你還剩 5 洞，現在在線上 1 桿。</div></div><span class="pbtn">繼續打第 14 洞</span></div>
+    </div></div>
+    <div class="phone-cap"><p class="cap">即時排行榜</p></div>
+  </div>
+
+  <div>
+    <div class="phone"><div class="scr game">
+      <div class="hudl">HOLE <b>18</b>　PAR 4 · 412 Y</div>
+      <div class="tick"><span class="pos">T2</span>−8　領先者 −9（已完賽）　這顆推進就延長賽</div>
+      <div class="golfer"></div><div class="ball"></div>
+      <div class="pw"><i></i></div>
+      <div class="feed"><b>壓力等級 3</b>　抗壓 72　關鍵球誤差 ×1.12<br>桿弟：「洞後比較低，寧可推過一點。」</div>
+      <div class="press"></div>
+    </div></div>
+    <div class="phone-cap"><p class="cap">回合中：名次條與壓力</p></div>
+  </div>
+
+  <div>
+    <div class="phone"><div class="scr">
+      <div class="pb"><small>NEW CAREER · 2 / 4</small><b>選擇球風</b></div>
+      <div class="pc">
+        <div class="choice on"><b>重砲手</b><div class="k">力量、擊球效率、彈道上限 99</div></div>
+        <div class="choice"><b>精準射手</b><div class="k">準度、穩定度、曲球上限 99</div></div>
+        <div class="choice"><b>短桿魔術師</b><div class="k">切球、旋轉、沙坑、脫困上限 99</div></div>
+        <div class="choice"><b>推桿名手</b><div class="k">推桿三項與抗壓上限 99</div></div>
+        <div class="pcard">
+          <div class="statrow"><span>力量</span><div class="bar"><i style="width:52%"></i></div><em>52</em></div>
+          <div class="statrow"><span>擊球效率</span><div class="bar"><i style="width:48%"></i></div><em>48</em></div>
+          <div class="statrow"><span>準度</span><div class="bar"><i style="width:42%"></i></div><em>42</em></div>
+          <div class="statrow"><span>推桿距離感</span><div class="bar"><i style="width:41%"></i></div><em>41</em></div>
+          <div class="k">上限：推桿距離感 85、切球 82、曲球 80</div>
+        </div>
+        <span class="pbtn">下一步：家鄉球場</span>
+      </div>
+    </div></div>
+    <div class="phone-cap"><p class="cap">建立球員</p></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="s13"><span class="no">13</span>一位新球員的前十小時</h2>
+<p>用一個實際的例子，看看生涯感是怎麼一步步出來的。主角：半路出家、重砲手、家鄉球場選東方。</p>
+
+<ul class="tl">
+  <li><span class="h">0:00</span><div><b>建立球員。</b>開場是一段文字：三十歲的上班族，第一次拿到東方球場的月例賽報名表。素質平均 42，一號木 Carry 179 碼。</div></li>
+  <li><span class="h">0:15</span><div><b>第一場月例賽（白梯）。</b>打了 94 桿，40 人裡第 31 名。但拿到 1,800 經驗，一口氣升到 4 級，15 個技能點全部加在力量和準度。結算畫面：「一號木 +9 碼」。</div></li>
+  <li><span class="h">1:00</span><div><b>第一次訓練週。</b>推桿階梯拿銀牌，第一次發現推桿距離感真的有在漲。教練建議：「你的上果嶺率只有 28%，下週練鐵桿。」</div></li>
+  <li><span class="h">2:30</span><div><b>俱樂部錦標賽。</b>第二輪後 9 洞打出 38 桿，拿到第 3 名，收到全國業餘系列賽邀請。生涯年表第一行：「家鄉錦標賽季軍」。</div></li>
+  <li><span class="h">4:00</span><div><b>全國業餘。</b>業餘宿敵登場（大學校隊王牌），第一場就輸他 11 桿。新聞：「半路出家的挑戰者能撐多久？」</div></li>
+  <li><span class="h">5:30</span><div><b>第一張技能卡升級。</b>從長草上果嶺累積 25 次，「救援大師」升到銅卡，換上它之後長草不再那麼可怕。</div></li>
+  <li><span class="h">6:30</span><div><b>全國業餘錦標賽（比洞賽）。</b>8 強遇到宿敵，第 17 洞推進 5 碼博蒂逆轉。雖然 4 強就輸了，業餘排名還是進入前十，拿到資格賽門票。</div></li>
+  <li><span class="h">8:00</span><div><b>資格賽決賽最後一輪。</b>晉級線上，最後一洞壓力等級 3、心跳聲響起。2 碼推桿推進，第 19 名，剛好拿到巡迴卡。這是整個前十小時最緊張的一顆球。</div></li>
+  <li><span class="h">9:00</span><div><b>職業首戰。</b>第一次領獎金（$ 2,400），請了第一位桿弟。松嶺球具寄來觀察名單通知。</div></li>
+  <li><span class="h">10:00</span><div><b>回到東方球場。</b>寶島巡迴第 5 站在家鄉，主場加成 +2，第三輪打出 67 桿暫居第 4。下一步：職業第一勝。</div></li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="s14"><span class="no">14</span>和主遊戲的關係</h2>
+<div class="scroll"><table>
+  <tr><th>項目</th><th>主遊戲</th><th>生涯模式</th></tr>
+  <tr><td>角色素質</td><td>帳號的素質與能力點</td><td>生涯球員自己的素質（另外一份），不會互相影響</td></tr>
+  <tr><td>外觀</td><td>已解鎖的球具外觀、角色</td><td>全部可以用；生涯另外解鎖的冠軍外觀也會回到主帳號</td></tr>
+  <tr><td>能力點</td><td>打完回合、達成成就</td><td>生涯成就同樣給主帳號能力點（每個 1～3 點）</td></tr>
+  <tr><td>成就與護照</td><td>原本的成就分類</td><td>新增「生涯」成就分類；生涯中打的球場也會蓋護照章</td></tr>
+  <tr><td>挑戰模式、練習場、連線</td><td>不變</td><td>練習場被訓練關卡借用；連線被洲際盃與好友挑戰借用</td></tr>
+  <tr><td>排行</td><td>原本的排行榜</td><td>生涯比賽不進原本的排行（避免模擬的洞混進去），好友週賽另外一個排行</td></tr>
+</table></div>
+<p>大廳新增一個「生涯模式」卡片，放在「單人回合」下面。每個帳號可以有一個進行中的生涯，加上名人堂裡已退休的生涯。</p>
+
+<!-- ================================================================ -->
+</main>
+
+<section class="tech"><div class="wrap">
+<h1 class="part" id="p2"><small>PART TWO · IMPLEMENTATION</small>程式篇（實作時給自己看）</h1>
+<p class="small">以下寫的是如果要做，要怎麼接到現有的程式。所有檔名、函式名稱都是現在專案裡實際存在的（2026-10-27，v87）。</p>
+
+<h2 id="t1"><span class="no">T1</span>現有可以直接用的東西</h2>
+<div class="scroll"><table>
+  <tr><th>需要的功能</th><th>現有的程式</th><th>要改什麼</th></tr>
+  <tr><td>素質 → 物理數字</td><td><code>stats.js</code> 的 <code>derive()</code>，全部線性</td><td><code>normalizeStats</code> 會把素質夾在 50～99；加一個 <code>floor</code> 參數讓生涯可以到 30。公式在 0～99 都不會出現負的誤差（例如 <code>faceSigma = 2.6 − 0.019 × 準度</code>，0 時 2.6°）</td></tr>
+  <tr><td>擊球誤差、關鍵球</td><td><code>physics.js</code> 的 <code>makeLaunch(input, ctx)</code>；<code>game.js</code> 傳 <code>pressure</code></td><td><code>ctx</code> 多一個 <code>mods</code>（技能卡、手感、體能、壓力等級），在 <code>derive</code> 之後乘上去</td></tr>
+  <tr><td>不用畫面也能打球</td><td><code>simulate(launch, env, terrain)</code>、<code>buildHole()</code>、<code>distanceTable()</code> 都是純函式</td><td>寫一個機器人：照 <code>autoClub</code> / <code>defaultAim</code> 的邏輯選桿與瞄準，就能在背景跑幾萬洞校正模擬</td></tr>
+  <tr><td>一輪比賽</td><td><code>game.start(cfg, players)</code>、<code>holeList</code>、<code>endHole</code>、<code>endRound</code></td><td>cfg 加 <code>career</code> 欄位；每洞結束回呼生涯模組；可以指定只打哪幾洞</td></tr>
+  <tr><td>把球放到某個位置（關鍵時刻）</td><td><code>serialize()</code> / <code>applyState()</code> 可以設定每個人的球位、桿數</td><td>新增「情境開局」：載入洞後直接套一個狀態</td></tr>
+  <tr><td>旗位、風、果嶺速度</td><td><code>buildHole(..., { pinSeed })</code>、每洞風的計算、<code>cfg.stimp</code></td><td><code>pinSeed</code> 旁邊加 <code>pinHard</code>（從候選旗位挑坡度大、靠邊的）；比賽日強風倍率</td></tr>
+  <tr><td>中途離開接著打</td><td><code>saveLocal()</code> / <code>dixen.resume</code></td><td>生涯比賽也存（現在連線、練習、挑戰不存）</td></tr>
+  <tr><td>訓練關卡</td><td>練習場三個模式（發球台 / 沙坑 / 果嶺）</td><td>加目標、計分、結算；虛擬球道寬度用地面畫線</td></tr>
+  <tr><td>成就、外觀、動畫提示</td><td><code>progress.js</code> 的 <code>ACH</code>、<code>SKINS</code>、<code>unlock()</code>、<code>bump()</code></td><td><code>ACH_CATS</code> 加 <code>['career', '生涯']</code></td></tr>
+  <tr><td>獎盃圖示</td><td><code>stamps.js</code> 的 <code>stampSvg()</code></td><td>同樣的畫法做獎盃 SVG</td></tr>
+  <tr><td>朋友一起</td><td><code>net.js</code> 最多 4 人、GAS 遊戲間</td><td>洲際盃直接用；好友週賽只需要 GAS 新的工作表</td></tr>
+  <tr><td>統計與比較</td><td><code>career.js</code>（現在是個人紀錄儀表板）</td><td>名稱衝突：生涯模式的檔案放在 <code>js/mycareer/</code> 資料夾，原本的 <code>career.js</code> 不動</td></tr>
+  <tr><td>存檔與帳號</td><td>GAS <code>auth_</code>、<code>withLock_</code>、自製球場的分欄存法（<code>CHUNK</code>）</td><td>新的「生涯」工作表，每個帳號一列，JSON 分欄存</td></tr>
+</table></div>
+
+<h2 id="t2"><span class="no">T2</span>檔案架構</h2>
+<pre><code>js/mycareer/
+  state.js      生涯存檔：讀寫、版本、遷移、本機快取 + GAS 同步
+  create.js     建立球員：出身、球風、起始素質、上限、家鄉球場
+  world.js      AI 球員：用種子產生 200 人、成長老化、退休、新秀、名字產生器
+  season.js     賽程：每個階段的比賽清單、資格條件、每季換球場
+  event.js      比賽：報名、分組、每輪成績、晉級線、延長賽、獎金、排名積分
+  sim.js        模擬引擎：一洞的桿數分布、情境挑選（關鍵時刻）
+  progress.js   經驗值、等級、技能點、訓練經驗、手感、體能、里程碑
+  perks.js      技能卡定義、解鎖條件、轉成 makeLaunch 的 mods
+  gear.js       生涯球具與加成
+  story.js      新聞模板、記者會題庫、宿敵對話
+  drills.js     訓練關卡（借用練習場）
+  ui.js         生涯首頁、排行榜、賽後結算、排名、獎盃室、年表
+assets/career/
+  calib.json    機器人校正出來的桿數分布表
+  names.json    AI 球員名字庫（中、英、日、韓，自創）
+.claude/
+  calib-bot.html  校正機器人（本機跑，不上傳）</code></pre>
+
+<p>現有檔案要改的地方：</p>
+<ul>
+  <li><code>stats.js</code>：<code>normalizeStats(stats, floor = BASE)</code>、<code>derive(stats, opt)</code>。</li>
+  <li><code>physics.js</code>：<code>makeLaunch</code> 讀 <code>ctx.mods</code>（各項誤差倍率、桿頭速度加成、旋轉倍率、風影響倍率）。</li>
+  <li><code>game.js</code>：<code>cfg.career</code>；<code>pressure</code> 改成數字等級；每洞結束呼叫 <code>career.onHole(...)</code>；<code>holeList</code> 可以是任意洞的子集；情境開局。</li>
+  <li><code>hud.js</code>：名次條、跑馬燈、壓力暗角。</li>
+  <li><code>main.js</code> / <code>index.html</code>：大廳卡片與生涯畫面。</li>
+  <li><code>gas/Code.gs</code>：<code>careerLoad</code>、<code>careerSave</code>、<code>weeklySubmit</code>、<code>weeklyBoard</code>、<code>careerPeers</code>（朋友的生涯球員摘要）。</li>
+  <li><code>sw.js</code>：CORE 加上新檔案。</li>
+</ul>
+
+<h2 id="t3"><span class="no">T3</span>存檔格式</h2>
+<p>世界用種子重建，不存 200 位 AI 的全部資料，只存「和種子算出來的不一樣的地方」，所以存檔可以控制在 30 KB 以內。GAS 一格上限 50,000 字，沿用自製球場的分欄存法，超過就切到下一欄。</p>
+<pre><code>{
+  "v": 1,                          // 存檔版本，之後改格式靠它遷移
+  "id": "c_mf3k2a",                // 這個生涯的編號（傳承生涯會有好幾個）
+  "seed": 918273,                  // 世界種子：AI 球員、每季賽程、每場的風與旗位都由它推出
+  "created": "2026-11-02T10:00:00Z",
+  "player": {
+    "name": "陳子安", "look": { ... },          // 外觀沿用主遊戲格式
+    "origin": "late", "style": "power", "home": "orient",
+    "stats": { "power": 61, "contact": 57, ... },  // 已經包含技能點，不含球具 / 手感
+    "caps":  { "touch": 85, "chipping": 82, ... },
+    "train": { "touch": 64, "line": 20, ... },     // 各項訓練經驗（滿 100 進位）
+    "xp": 48210, "level": 24, "sp": 7,
+    "perks": { "owned": { "clutch": 1, "rescue": 2 }, "slots": 3, "equip": ["rescue", "clutch"] },
+    "gear": { "wood": ["lowspin", 2], "iron": ["cavity", 1], ... },
+    "form": 1, "energy": 62, "money": 84200, "fans": 12400, "image": { "gent": 4, "bold": 1, "fun": 2 },
+    "coach": "putt", "caddie": ["vet", 3]
+  },
+  "time": { "season": 3, "week": 7, "stage": 4 },
+  "cards": ["island"],              // 擁有的巡迴資格
+  "ranking": { "pts": [[ "s3w5", 4.2 ], ...] },   // 自己最近兩季每場的積分
+  "worldDelta": { "ai_041": { "r": 2.1, "ret": false }, ... },  // AI 和種子不同的地方（成長偏差、退休）
+  "results": [ { "ev": "s3e05", "course": "orient", "pos": "T4", "rounds": [70, 68, 67, 71], "money": 9800, "pts": 3.1 } ],
+  "winners": { "s3e04": "ai_017", ... },          // 每場冠軍（歷屆冠軍頁用）
+  "rivals": [ { "id": "ai_rv1", "w": 3, "l": 5, "met": 8 } ],
+  "timeline": [ [ "s1w2", "firstBirdie", { "course": "orient", "hole": 7 } ], ... ],
+  "trophies": [ "s3e05" ],
+  "milestones": { "firstCut": "s2w4", ... },
+  "live": null                      // 進行中的比賽：輪次、洞、每洞桿數、AI 成績的種子
+}</code></pre>
+<ul>
+  <li><b>本機</b>：每打完一洞存 localStorage（和現在的 <code>dixen.resume</code> 同樣做法）。</li>
+  <li><b>伺服器</b>：每輪結束、每週前進時存一次。存檔帶 <code>rev</code>（每次 +1），伺服器只收比較新的，避免兩台手機互相蓋掉。</li>
+  <li><b>備份</b>：GAS 保留最近 3 個版本（同一列的後面幾欄），壞掉可以回復。</li>
+</ul>
+
+<h2 id="t4"><span class="no">T4</span>模擬引擎</h2>
+<h3>步驟一：用機器人校正</h3>
+<p>在 <code>.claude/calib-bot.html</code> 跑一個不畫畫面的機器人：</p>
+<ol>
+  <li>對每個「素質等級」（全素質 35、40、45 … 95、99）和每種球風的素質分配，</li>
+  <li>在每座球場的每一洞（黑梯、藍梯、白梯）各打 30 次：用 <code>autoClub</code> 的邏輯選桿、瞄準落點、決定力道；</li>
+  <li>人類的操作誤差用一個常態分布模擬（力道 ±4%、方向 ±1.5°，推桿 ±6%），讓機器人比較像真人；</li>
+  <li>記錄每洞桿數，整理成表：<code>[素質等級][標準桿][長度區間][難度區間] → 機率分布（−2 ～ +4）</code>。</li>
+</ol>
+<p>規模估計：素質 14 級 × 5 球風 × 約 1,200 洞 × 3 梯台 × 30 次 ≈ 750 萬洞，太多。改成每座球場抽 6 洞代表，並用「長度 ÷ 自己的一號木 Carry」當主要變數，大約 20 萬洞，桌機跑一個晚上可以完成。結果約 50 KB 的 JSON。</p>
+
+<h3>步驟二：一洞的桿數</h3>
+<pre><code>// 有效技能：依這一洞的類型給素質不同權重
+S = 0.30·長打組 + 0.25·方向組 + 0.20·短桿組 + 0.25·推桿組         // 四桿洞
+    （三桿洞方向組與推桿組比重提高；五桿洞長打組提高）
+S += 手感 + 球具 + 主場 + 技能卡換算值 − 疲勞
+L = 洞長 ÷ 一號木 Carry                                            // 洞對這個人來說有多長
+分布 = calib[S][標準桿][L 區間][洞的難度]
+       再依當天條件平移：風速 × 0.03、果嶺速度超過 10 的部分 × 0.05、旗位難度 × 0.08（桿）
+桿數 = 依分布抽樣（用這一場的種子，結果可以重現）</code></pre>
+<p>沒有校正表時的備用公式（開發初期先用它）：</p>
+<pre><code>期望 = 標準桿 + 0.42 − 0.0105·(S − 50) + 0.06·max(0, 50 − S)
+       + 0.55·max(0, L − 1.6)·[五桿洞] + 0.35·max(0, L − 1.05)·[四桿洞]
+標準差 = 0.78 − 0.004·(S − 50)
+桿數 = round(期望 + 標準差 · N(0,1))，至少 標準桿 − 2（一桿進洞另外用小機率抽）</code></pre>
+<p class="small">這個公式在素質 44 約每洞 +0.84（白梯 18 洞約 87 桿），素質 50 約 +0.42（約 +7.5），素質 70 約 +0.21，素質 90 約 0（平標準桿）。AI 和玩家用同一個公式，所以名次是公平的；之後由校正表取代。</p>
+
+<h3>步驟三：玩家自己的修正</h3>
+<p>模擬玩家時，額外加上「個人修正值」：最近 20 輪自己打的洞，實際桿數和模擬期望的平均差（上限 ±0.25 桿 / 洞）。打得比素質好的人，模擬也會比較好；這讓模擬更像「自己」。全模擬的輪次再加 +0.05 桿 / 洞的保守偏差，鼓勵自己打。</p>
+
+<h3>關鍵時刻的挑法</h3>
+<ol>
+  <li>先把整輪模擬出來，每洞記下「過程」（開球落點類型、第二桿距離、推桿距離），用分布裡的典型情況產生。</li>
+  <li>用排行榜試算每一洞多一桿或少一桿會讓名次變多少，挑出影響最大的 4 個「擊球」。</li>
+  <li>把球放在那個位置：從球道或長草的實際區域裡，找符合距離的點（洞的地圖已經有每格的地面類型）。</li>
+  <li>玩家打完這一洞，用真實結果取代模擬的這一洞。</li>
+</ol>
+
+<h2 id="t5"><span class="no">T5</span>AI 球員與排行榜</h2>
+<ul>
+  <li><b>產生</b>：用世界種子產生 200 位：名字（名字庫隨機組合，全部自創）、國籍、年紀 19～45、球風、評分 55～92（常態分布，頂尖少）、成長曲線（25～32 歲巔峰）、穩定度（成績的波動大小）。</li>
+  <li><b>評分 → 素質</b>：依球風把評分展開成 14 項素質，模擬和玩家用同一張校正表，公平。</li>
+  <li><b>每場成績</b>：比賽開始時用（世界種子 + 比賽編號 + 球員編號）抽出每人每洞的桿數，所以排行榜可以重現、可以存成一個數字。</li>
+  <li><b>即時排行</b>：每位 AI 有一個開球時間偏移（前段班晚出發），依你打到第幾洞，換算每位 AI 打到第幾洞，排行就跟著推進。</li>
+  <li><b>宿敵</b>：特殊的 AI，評分每週調整成「你的有效技能 ±3」，所以永遠是對手。</li>
+  <li><b>季末更新</b>：評分依年紀成長或下滑 ±0～3，40 歲以上有機率退休，補 15 位新秀（其中幾位是天才）。</li>
+  <li><b>朋友</b>：GAS 的 <code>careerPeers</code> 回傳朋友生涯球員的素質摘要，直接當成評分特別的 AI 放進世界。</li>
+  <li><b>效能</b>：一場 144 人 × 72 洞 ≈ 1 萬次抽樣，手機上不到 10 毫秒。</li>
+</ul>
+
+<h2 id="t6"><span class="no">T6</span>接進遊戲的細節</h2>
+<h3>開一輪生涯比賽</h3>
+<pre><code>game.start({
+  courseId, tee: 'black', holes: 'all', mode: 'stroke', gimme: 0, mulligans: 0,
+  seed: eventSeed + round, stimp: course.stimp + tierStimp,
+  career: {
+    holes: [9,10,...,17],          // 精華 9 洞：只打這些（holeList 改成這個）
+    scenario: null,                // 關鍵時刻：{ hole, ball:[x,y,z], lie, strokes }
+    pinHard: round / 4,            // 旗位難度 0～1
+    stats: effectiveStats,         // 已加上球具、手感、體能，允許低於 50
+    mods: perkMods,                // 技能卡（依情況判斷的函式）
+    pressure: ctx => level 0~3,    // 依排行榜情況決定壓力等級
+    onHole: (k, strokes, detail) => event.record(...),
+    onRoundEnd: () => ui.showRoundResult(...)
+  }
+}, [{ ...careerPlayer, local: true }]);</code></pre>
+
+<h3>技能卡轉成數字</h3>
+<pre><code>// perks.js：每張卡是一個函式，拿到這一桿的情況，回傳要乘上的倍率
+clutch:  (c, tier) => c.pressure > 0 ? { pressureK: 1 - [0.15, 0.25, 0.4][tier] } : null
+closer:  (c, tier) => c.holeNo >= 16 ? { allSigma: 1 - [0.05, 0.1, 0.15][tier] } : null
+lagger:  (c, tier) => c.putter && c.dist > 9.1 ? { touchSigma: 1 - [0.1, 0.18, 0.25][tier] } : null
+// makeLaunch 裡：d = derive(stats)；再把所有生效的倍率乘到 d 對應的欄位</code></pre>
+
+<h3>壓力等級</h3>
+<p>現在是 <code>const pressure = (果嶺推 Par) || holeNo &gt;= 16 || 比洞賽</code>，物理裡用 <code>pressureMul = max(1, 1.6 − 0.009 × 抗壓)</code>。生涯改成：</p>
+<pre><code>壓力倍率 = 1 + (1.6 − 0.0075 × 抗壓 − 1) × [0, 1, 1.5, 2][等級]，最小 1
+// 抗壓 50：等級 3 ×1.45；抗壓 72：等級 1 ×1.06、等級 3 ×1.12；抗壓 80 以上：任何等級都是 ×1</code></pre>
+
+<h3>畫面</h3>
+<ul>
+  <li>名次條放在現在的計分板下面，連線模式的玩家名單位置（<code>h-players</code>）在生涯時改成名次條。</li>
+  <li>壓力暗角用一層 CSS 的 <code>box-shadow: inset</code>，心跳聲加在 <code>audio.js</code>。</li>
+  <li>生涯畫面全部是一般的 HTML 畫面（和大廳一樣），不需要 3D；頒獎畫面可以借用現在的慶祝動畫（<code>playCelebration</code>）加一個獎盃。</li>
+</ul>
+
+<h2 id="t7"><span class="no">T7</span>公式與表格</h2>
+<h3>經驗值曲線</h3>
+<pre><code>升到 L 級需要的累計經驗 = 600 · L^1.55
+// 第 5 級 7,200、第 10 級 21,300、第 24 級 83,400、第 40 級 182,000、第 60 級 341,000
+// 一場 4 輪完整打完約 8,000～12,000 經驗（含名次），精華 9 洞約 5,000</code></pre>
+
+<h3>獎金分配（前 10 名，佔總獎金的百分比）</h3>
+<pre><code>1: 18.0   2: 10.9   3: 6.9   4: 4.9   5: 4.1   6: 3.6   7: 3.35   8: 3.1   9: 2.9   10: 2.7
+11 名以後：2.5% 起每名 × 0.955，直到晉級最後一名；同分的名次平分這幾個名次的總和</code></pre>
+
+<h3>排名積分</h3>
+<pre><code>名次積分 = 冠軍積分 × 名次比例（1: 1.00、2: 0.60、3: 0.40、4: 0.30、5: 0.24 … 依 1/名次^0.85 遞減）
+世界排名 = Σ 積分 × 時間權重 ÷ max(30, 參賽場數)
+時間權重：最近 26 週 1.0，之後每週 −1/26，52 週後歸零（遊戲裡一季 24 週）</code></pre>
+
+<h3>手感</h3>
+<pre><code>每輪差距 = 模擬期望桿數 − 實際桿數
+最近 3 輪平均差距 ≥ +2 → 手感 +1；≤ −2 → 手感 −1；每週沒比賽往 0 回 1 級
+效果：全素質 + 手感（−3 ～ +3）</code></pre>
+
+<h2 id="t8"><span class="no">T8</span>開發階段</h2>
+<div class="scroll"><table>
+  <tr><th>階段</th><th>內容</th><th>完成後可以玩到</th><th>估計程式量</th></tr>
+  <tr><td><b>1. 骨架</b></td><td>建立球員、存檔、AI 世界（簡化）、備用模擬公式、比賽流程（排行榜、晉級線、獎金）、經驗與技能點、第 1～3 階段賽程、大廳入口</td><td>從月例賽打到資格賽拿巡迴卡</td><td>約 2,000 行 + GAS 150 行</td></tr>
+  <tr><td><b>2. 生涯感</b></td><td>訓練關卡、技能卡、手感體能、球具、教練桿弟、新聞與記者會、業餘宿敵、生涯年表、精華打法與關鍵時刻</td><td>每週都有選擇，比賽有故事</td><td>約 2,500 行</td></tr>
+  <tr><td><b>3. 職業世界</b></td><td>機器人校正表、第 4～6 階段、世界排名、贊助商、AI 成長老化、季末頒獎、歷屆冠軍、獎盃室、壓力等級與暗角</td><td>完整的職業生涯</td><td>約 2,000 行 + 校正機器人</td></tr>
+  <tr><td><b>4. 傳奇</b></td><td>四大賽、洲際盃（連線）、好友週賽、朋友加入世界、名人堂、傳承生涯、突破任務、生涯成就回饋主帳號</td><td>可以一直玩下去</td><td>約 1,800 行</td></tr>
+</table></div>
+<p>每個階段完成後都更新 <code>README.html</code>（說明文件）、版本號，並在本機用「全模擬十季」的自動測試確認成長曲線符合第 04 節的目標。</p>
+
+<h2 id="t9"><span class="no">T9</span>風險與對策</h2>
+<div class="scroll"><table>
+  <tr><th>風險</th><th>為什麼會發生</th><th>對策</th></tr>
+  <tr><td>比賽太長，玩不下去</td><td>72 洞全部自己打要 3 小時以上</td><td>四種打法每輪可選；關鍵時刻讓一輪 10 分鐘內完成；預設推薦精華 9 洞</td></tr>
+  <tr><td>模擬和自己打差太多</td><td>機器人和真人操作不一樣</td><td>校正時加入人類操作誤差；個人修正值；上線後統計「自己打 vs 模擬」差距，季中可以調參數（放在 calib.json，不用改程式）</td></tr>
+  <tr><td>成長太快或太慢</td><td>經驗值、技能點、訓練三條線疊在一起</td><td>寫一個「全模擬十季」的測試，輸出每季平均素質，對照第 04 節的表；數字都放在一個設定檔</td></tr>
+  <tr><td>存檔壞掉或被覆蓋</td><td>兩台手機、網路斷線</td><td>版本號 rev 只收較新的；GAS 保留 3 個備份；本機也留一份</td></tr>
+  <tr><td>素質低於 50 時物理怪怪的</td><td>原本只測過 50～99</td><td>第一階段就用機器人跑素質 30、35、40，檢查距離、誤差、推桿都合理；不合理就把生涯下限定在 40</td></tr>
+  <tr><td>和主遊戲混在一起出錯</td><td>共用 game.js</td><td>所有生涯行為都在 <code>cfg.career</code> 存在時才啟動；沒有 career 的路徑完全不變，原本的測試照跑</td></tr>
+  <tr><td>名字、比賽像真的</td><td>參考真實巡迴賽</td><td>巡迴賽、比賽、選手、品牌全部自創；只有球場是遊戲裡已經有的</td></tr>
+  <tr><td>GAS 配額</td><td>朋友多、存檔頻繁</td><td>一輪存一次、一次一個請求；幾個人用遠低於每日配額</td></tr>
+  <tr><td>內容做不完</td><td>企劃很大</td><td>四個階段都能單獨上線；第一階段完成就是一個可以玩的生涯</td></tr>
+</table></div>
+
+<h3>測試清單</h3>
+<ul>
+  <li>建立五種球風 × 四種出身，檢查起始素質、上限、起始獎金。</li>
+  <li>全模擬十季：成長曲線、獎金、排名是否合理；AI 世界不會全部退休或全部變強。</li>
+  <li>同一場比賽用同一個種子跑兩次，排行榜完全相同。</li>
+  <li>每一種打法都打一輪：完整、精華、關鍵時刻、全模擬；中途關掉 APP 再開能接著打。</li>
+  <li>壓力等級 0～3 時的誤差倍率和公式一致。</li>
+  <li>主遊戲的單人、連線、挑戰、練習場都沒有被影響。</li>
+  <li>手機寬度（375px）所有生涯畫面不會左右捲動。</li>
+</ul>
+
+<footer>DIXEN GOLF · 生涯模式企劃書 1.0 · 2026-10-27<br>巡迴賽、比賽、選手與品牌名稱均為自創</footer>
+</div></section>
+
+</body>
+</html>
