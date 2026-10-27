@@ -1,0 +1,1538 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>生涯模式企劃書</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Barlow+Condensed:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#16181a; --paper:#f6f3ec; --card:#ffffff; --muted:#6b6a64; --line:rgba(22,24,26,.10);
+  --augusta:#00553a; --augusta2:#0a6b4a; --deep:#06150f; --gold:#c5a253; --gold2:#e3c98a; --cream:#f3ecdc; --flag:#b3261e; --yellow:#f2c230;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { background:var(--paper); color:var(--ink); font:400 15.5px/1.85 "Noto Sans TC",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+img { max-width:100%; display:block; }
+a { color:var(--augusta2); }
+.wrap { max-width:1080px; margin:0 auto; padding:0 16px; }
+/* 封面 */
+.cover { position:relative; min-height:88vh; color:#fff; display:flex; align-items:flex-end; background:#06150f url(img/augusta-10.jpg) center 40%/cover; }
+.cover::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(4,14,10,.15) 0%,rgba(4,14,10,.25) 40%,rgba(4,14,10,.92) 100%); }
+.cover .wrap { position:relative; padding-bottom:64px; width:100%; }
+.cover .eyebrow { font:600 13px "Barlow Condensed"; letter-spacing:.42em; color:var(--gold2); }
+.cover h1 { font:900 clamp(38px,6vw,68px)/1.12 "Noto Serif TC",serif; margin:14px 0 12px; letter-spacing:.04em; text-shadow:0 4px 30px rgba(0,0,0,.4); }
+.cover h1 em { font-style:normal; color:var(--gold2); }
+.cover p.lead { max-width:640px; font-size:16.5px; color:rgba(255,255,255,.86); }
+.cover .meta { display:flex; flex-wrap:wrap; gap:22px; margin-top:30px; font:500 12.5px "Noto Sans TC"; color:rgba(255,255,255,.7); }
+.cover .meta b { display:block; font:600 22px "Barlow Condensed"; color:#fff; letter-spacing:.04em; }
+.cover .credit { position:absolute; right:16px; bottom:10px; font-size:10.5px; color:rgba(255,255,255,.45); }
+/* 導覽 */
+nav.toc { position:sticky; top:0; z-index:20; background:rgba(6,21,15,.96); backdrop-filter:blur(8px); }
+nav.toc .wrap { display:flex; gap:4px; overflow-x:auto; padding:9px 16px; scrollbar-width:none; }
+nav.toc a { flex:none; color:rgba(243,236,220,.78); text-decoration:none; font-size:13px; padding:4px 11px; border-radius:20px; white-space:nowrap; }
+nav.toc a:hover { background:rgba(255,255,255,.08); color:#fff; }
+/* 章節 */
+section.ch { padding:70px 0 10px; scroll-margin-top:40px; }
+.chead { display:grid; grid-template-columns:auto 1fr; gap:4px 18px; align-items:end; margin-bottom:22px; }
+.chead .num { font:700 64px/0.9 "Barlow Condensed"; color:var(--gold); grid-row:span 2; }
+.chead small { font:600 12px "Barlow Condensed"; letter-spacing:.3em; color:var(--muted); text-transform:uppercase; }
+.chead h2 { font:900 30px/1.25 "Noto Serif TC",serif; color:var(--deep); }
+h3 { font:700 18px/1.45 "Noto Serif TC",serif; color:var(--augusta); margin:30px 0 8px; }
+h4 { font:700 15.5px "Noto Serif TC",serif; color:var(--deep); margin-bottom:4px; }
+p { margin:7px 0; }
+ul, ol { padding-left:22px; margin:6px 0; }
+li { margin:4px 0; }
+.lede { font-size:16.5px; color:#33352f; max-width:820px; }
+.small { font-size:13px; color:var(--muted); }
+code { font:13px Consolas,monospace; background:#ebe6da; padding:1px 5px; border-radius:4px; }
+pre { background:#0c1d16; color:#e6e1d3; padding:14px 16px; border-radius:10px; overflow-x:auto; font:12.5px/1.65 Consolas,monospace; margin:10px 0; }
+.scroll { overflow-x:auto; margin:12px 0; border-radius:10px; box-shadow:0 1px 0 var(--line); }
+table { border-collapse:collapse; width:100%; font-size:13.8px; background:var(--card); }
+th, td { padding:9px 11px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); }
+th { background:var(--deep); color:var(--cream); font-weight:500; white-space:nowrap; font-size:13px; letter-spacing:.03em; }
+tr:last-child td { border-bottom:none; }
+td.n { font:600 15px "Barlow Condensed"; white-space:nowrap; }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:14px; margin:14px 0; }
+.grid2x2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:14px 0; }
+.grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:14px 0; }
+.card { background:var(--card); border-radius:14px; padding:16px 18px; box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(6,21,15,.05); }
+.card p, .card li { font-size:14.3px; }
+.tag { display:inline-block; font-size:11.5px; padding:1px 9px; border-radius:20px; background:rgba(0,85,58,.09); color:var(--augusta); margin:0 4px 5px 0; }
+.tag.g { background:rgba(197,162,83,.18); color:#7d5f1c; }
+.note { border-left:3px solid var(--gold); background:#fffdf7; padding:11px 15px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14.3px; }
+.kpi { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0; }
+.kpi div { background:var(--deep); color:var(--cream); border-radius:14px; padding:14px 16px; }
+.kpi b { display:block; font:600 32px/1.1 "Barlow Condensed"; color:var(--gold2); }
+.kpi span { font-size:12.5px; color:rgba(243,236,220,.75); }
+/* 照片帶 */
+.band { position:relative; margin:34px 0; border-radius:18px; overflow:hidden; min-height:320px; display:flex; align-items:flex-end; color:#fff; background:#0c1d16 center/cover; }
+.band::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(4,14,10,.88)); }
+.band .in { position:relative; padding:26px 28px; max-width:720px; }
+.band .in small { font:600 12px "Barlow Condensed"; letter-spacing:.3em; color:var(--gold2); }
+.band .in h3 { color:#fff; font-size:24px; margin:4px 0 4px; }
+.band .in p { color:rgba(255,255,255,.85); font-size:14.5px; }
+.band .cr { position:absolute; right:12px; top:10px; font-size:10px; color:rgba(255,255,255,.55); }
+.figrow { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin:16px 0; }
+.fig { position:relative; border-radius:14px; overflow:hidden; background:#0c1d16; aspect-ratio:4/3; }
+.fig img { width:100%; height:100%; object-fit:cover; }
+.fig figcaption { position:absolute; left:0; right:0; bottom:0; padding:22px 12px 9px; font-size:12.5px; color:#fff; background:linear-gradient(transparent,rgba(0,0,0,.78)); }
+/* 生涯地圖 */
+.path { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin:18px 0; }
+.path div { position:relative; border-radius:14px; padding:14px 14px 12px; color:#fff; min-height:150px; background:#0c1d16 center/cover; overflow:hidden; }
+.path div::before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(4,14,10,.25),rgba(4,14,10,.9)); }
+.path div > * { position:relative; }
+.path small { font:600 12px "Barlow Condensed"; letter-spacing:.2em; color:var(--gold2); }
+.path b { display:block; font:700 17px "Noto Serif TC"; margin:2px 0; }
+.path span { font-size:12px; color:rgba(255,255,255,.8); line-height:1.6; display:block; }
+.path .goal { outline:2px solid var(--gold); }
+/* 時間軸 */
+.tl { list-style:none; padding:0; margin:16px 0; border-left:2px solid rgba(0,85,58,.25); }
+.tl li { position:relative; padding:4px 0 14px 22px; margin:0; }
+.tl li::before { content:""; position:absolute; left:-7px; top:11px; width:12px; height:12px; border-radius:50%; background:var(--paper); border:3px solid var(--augusta); }
+.tl li .h { font:600 14px "Barlow Condensed"; letter-spacing:.08em; color:var(--gold); margin-right:8px; }
+/* 手機畫面 */
+.phones { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:30px 20px; margin:20px 0; }
+.ph { width:100%; max-width:292px; margin:0 auto; border-radius:34px; padding:9px; background:linear-gradient(145deg,#2a2d30,#0a0b0c); box-shadow:0 22px 50px rgba(6,21,15,.32), inset 0 0 0 1px rgba(255,255,255,.08); }
+.ph .s { position:relative; aspect-ratio:9/19.5; border-radius:26px; overflow:hidden; background:#0c1d16 center/cover; color:#fff; font-size:11.5px; line-height:1.5; }
+.ph .s::after { content:""; position:absolute; top:7px; left:50%; width:74px; height:20px; margin-left:-37px; border-radius:12px; background:#000; z-index:9; }
+.ph .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.62) 0,rgba(0,0,0,.2) 20%,rgba(0,0,0,0) 30%,rgba(0,0,0,0) 45%,rgba(3,12,8,.92) 100%); }
+.ph .shade.full { background:rgba(3,12,8,.72); }
+.ph .top { position:absolute; left:12px; right:12px; top:36px; display:flex; justify-content:space-between; align-items:flex-start; z-index:2; }
+.ph .bot { position:absolute; left:12px; right:12px; bottom:14px; z-index:2; }
+.ph .mid { position:absolute; left:12px; right:12px; top:50%; transform:translateY(-50%); z-index:2; }
+.glass { background:rgba(10,22,17,.55); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px 12px; margin-top:8px; }
+.glass.light { background:rgba(255,255,255,.82); color:var(--ink); border-color:rgba(255,255,255,.6); }
+.eyeb { font:600 10px "Barlow Condensed"; letter-spacing:.28em; color:var(--gold2); }
+.big { font:700 22px/1.2 "Noto Serif TC"; }
+.mono { font:600 13px "Barlow Condensed"; letter-spacing:.04em; }
+.btn { display:block; text-align:center; border-radius:12px; padding:10px; margin-top:8px; font-weight:700; font-size:12.5px; background:linear-gradient(180deg,#e5cc8e,#c5a253); color:#1d1606; }
+.btn.o { background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.25); font-weight:500; }
+.rowx { display:flex; justify-content:space-between; gap:6px; align-items:center; }
+.bar { height:5px; border-radius:3px; background:rgba(255,255,255,.16); overflow:hidden; margin:4px 0 2px; }
+.bar i { display:block; height:100%; background:linear-gradient(90deg,#7fc49b,var(--gold2)); }
+.glass.light .bar { background:#e6e1d3; }
+.chipx { display:inline-block; white-space:nowrap; font-size:10px; border:1px solid rgba(255,255,255,.3); border-radius:20px; padding:1px 8px; margin:2px 2px 0 0; }
+.chipx.on { background:var(--gold); color:#1d1606; border-color:var(--gold); }
+/* 轉播圖卡 */
+.bug { display:flex; align-items:stretch; font:600 12px "Barlow Condensed"; letter-spacing:.04em; border-radius:6px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,.35); }
+.bug .a { background:var(--augusta); padding:4px 8px; color:#fff; }
+.bug .b { background:#fff; color:var(--deep); padding:4px 8px; }
+.bug .c { background:var(--yellow); color:#111; padding:4px 8px; }
+.lt { border-radius:8px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.4); }
+.lt .n { background:#fff; color:var(--deep); padding:6px 10px; font:700 14px "Noto Serif TC"; display:flex; justify-content:space-between; }
+.lt .d { background:var(--augusta); color:#fff; padding:5px 10px; font-size:11px; display:flex; justify-content:space-between; }
+.lbx { width:100%; border-collapse:collapse; font:600 12.5px "Barlow Condensed"; background:transparent; }
+.lbx td { padding:4px 6px; border-bottom:1px solid rgba(255,255,255,.1); color:#fff; }
+.lbx td.r { text-align:right; }
+.lbx td.red { color:#ff6b5e; }
+.lbx tr.me td { background:rgba(197,162,83,.28); }
+.lbx tr.cut td { border-bottom:2px dashed #ff6b5e; }
+.cap { text-align:center; margin-top:12px; font:700 14px "Noto Serif TC"; color:var(--deep); }
+.cap small { display:block; font:400 12.5px "Noto Sans TC"; color:var(--muted); margin-top:2px; }
+.paperdoc { background:#fbf7ee; color:#2a2418; border-radius:6px; padding:18px 16px; font-family:"Noto Serif TC",serif; box-shadow:0 10px 30px rgba(0,0,0,.45); text-align:center; }
+.paperdoc .crest { width:42px; height:42px; border-radius:50%; margin:0 auto 6px; border:2px solid var(--augusta); display:flex; align-items:center; justify-content:center; font:700 10px "Cormorant Garamond"; color:var(--augusta); }
+/* 獎狀 */
+.cert { position:relative; max-width:680px; margin:24px auto; background:#fbf6e9 radial-gradient(ellipse at 50% 35%,#fffdf6 0,#f4ead0 85%); padding:52px 46px 40px; text-align:center; box-shadow:0 20px 50px rgba(6,21,15,.22); }
+.cert::before { content:""; position:absolute; inset:12px; border:1px solid #b59443; outline:1px solid #b59443; outline-offset:5px; pointer-events:none; }
+.cert .en { font:500 13px "Cormorant Garamond"; letter-spacing:.5em; color:#8c6d26; text-transform:uppercase; }
+.cert h4 { font:900 36px/1.3 "Noto Serif TC"; color:var(--augusta); margin:8px 0 0; letter-spacing:.28em; }
+.cert .ev { font:italic 500 18px "Cormorant Garamond"; color:#6f5a24; margin-bottom:16px; }
+.cert p { font:500 15px/2 "Noto Serif TC"; }
+.cert .name { font:900 28px "Noto Serif TC"; color:var(--deep); display:inline-block; padding:0 24px 2px; border-bottom:1px solid #b59443; margin:4px 0 6px; }
+.cert .sig { display:flex; gap:18px; margin-top:28px; font-size:12px; color:#6b6a64; }
+.cert .sig div { flex:1; border-top:1px solid #b59443; padding-top:4px; }
+.seal { width:84px; height:84px; margin:18px auto 0; border-radius:50%; background:radial-gradient(circle at 35% 30%,#d24a3c,#8e1c14 70%); color:#fbe7c8; display:flex; align-items:center; justify-content:center; font:700 12px/1.25 "Noto Serif TC"; text-align:center; box-shadow:inset 0 0 0 3px rgba(251,231,200,.35), 0 4px 8px rgba(0,0,0,.2); }
+footer { background:var(--deep); color:rgba(243,236,220,.6); font-size:12.5px; padding:40px 0 60px; margin-top:80px; }
+footer a { color:var(--gold2); }
+@media (max-width:640px) {
+  .grid2x2 { grid-template-columns:1fr; }
+  body { font-size:15px; }
+  .chead .num { font-size:46px; }
+  .chead h2 { font-size:23px; }
+  .cover { min-height:78vh; }
+  .band { min-height:260px; }
+  .band .in { padding:20px; }
+  .cert { padding:44px 22px 32px; }
+  .cert h4 { font-size:28px; letter-spacing:.16em; }
+}
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="wrap">
+    <div class="eyebrow">DIXEN GOLF · MY CAREER · GAME DESIGN DOCUMENT</div>
+    <h1>從八歲的第一次揮桿<br>到奧古斯塔的<em>綠夾克</em></h1>
+    <p class="lead">Dixen Golf 生涯模式企劃書。玩家從一個第一次拿球桿的孩子開始，經歷童年、青少年、大學、職業資格賽、巡迴賽，最後站上名人賽的第 18 洞果嶺。</p>
+    <div class="meta">
+      <div><b>200～300</b>小時 拿到綠夾克</div>
+      <div><b>8 → 60+</b>歲 完整人生</div>
+      <div><b>9</b>個章節</div>
+      <div><b>120+</b>項真實賽事</div>
+      <div><b>test · Michael</b>開放對象</div>
+    </div>
+  </div>
+  <span class="credit">Augusta National Golf Club, Hole 10 · Public domain</span>
+</header>
+
+<nav class="toc"><div class="wrap">
+  <a href="#s1">產品概要</a><a href="#s0m">說明書</a><a href="#s2">開放權限</a><a href="#s3">生涯全貌</a><a href="#s4">序章與劇情</a><a href="#s5">童年</a><a href="#s6">青少年</a><a href="#s7">大學與業餘</a><a href="#s8">職業之路</a><a href="#s9">PGA TOUR</a><a href="#s10">名人賽</a><a href="#s11">大賽與團體賽</a><a href="#s11c">球場規劃</a><a href="#s12">比賽系統</a><a href="#s13">成長系統</a><a href="#s14">經濟</a><a href="#s15">團隊</a><a href="#s16">人際與媒體</a><a href="#s16b">獎盃室</a><a href="#s17">傳奇與退休</a><a href="#s18">系統選項</a><a href="#s19">與主遊戲</a><a href="#s20">美術方向</a><a href="#s21">角色與裝備</a><a href="#s22">遊戲畫面</a><a href="#s23">技術規劃</a><a href="#s24">開發排程</a><a href="#s25">素材授權</a>
+</div></nav>
+
+<main class="wrap">
+
+<!-- ===================================================== 1 -->
+<section class="ch" id="s1">
+  <div class="chead"><div class="num">01</div><small>Executive Summary</small><h2>產品概要</h2></div>
+  <p class="lede">「生涯模式」是 Dixen Golf 的長篇單人模式。玩家建立一位球員，從 8 歲第一次走進練習場開始，一年一年長大：在家鄉的兒童盃拿到第一座獎盃、高中拜師、到美國打大學聯賽、考進職業、在 Korn Ferry Tour 熬過一季又一季，最後收到那封來自奧古斯塔的邀請函。</p>
+
+  <div class="kpi">
+    <div><b>250</b><span>小時：拿到第一件綠夾克的平衡目標（中位數）</span></div>
+    <div><b>9</b><span>章節：序章到傳奇</span></div>
+    <div><b>14</b><span>項素質：沿用主遊戲，起點從兒童的 15～25 開始</span></div>
+    <div><b>200</b><span>位會成長、老化、退休的 AI 球員</span></div>
+    <div><b>150</b><span>座球場（現有 70 + 非真實球場 80，已完成，見球場規劃）</span></div>
+    <div><b>0</b><span>主遊戲受到的影響（完全隔離）</span></div>
+  </div>
+
+  <h3>設計支柱</h3>
+  <div class="grid3">
+    <div class="card"><h4>從零開始的人生</h4><p>不是從「職業新人」開始，而是從「第一次握桿」開始。8 歲的一號木只打得到 90 碼，用兒童梯台打半場；身體會隨年齡長大，球也會越打越遠。</p></div>
+    <div class="card"><h4>真實的高爾夫世界</h4><p>賽事、巡迴賽、獎盃、資格制度全部照真實世界：PGA TOUR、Korn Ferry Tour、亞巡、四大賽、聯邦快遞盃、總統盃、奧運、世界業餘排名、名人堂。</p></div>
+    <div class="card"><h4>每一週都是選擇</h4><p>練球、比賽、打工、念書、陪家人、休息、拍廣告。體能、手感、成績、存款、人際關係互相拉扯。</p></div>
+    <div class="card"><h4>每一桿都有故事</h4><p>即時排行榜、晉級線、壓力、宿敵、桿弟的一句話、賽後新聞與記者會。72 洞變成一段可以記住的故事。</p></div>
+    <div class="card"><h4>手機打得完</h4><p>每一輪都可以選完整 18 洞、精華 9 洞、關鍵時刻或模擬。通勤時打一個關鍵時刻，週末打大賽的最後一輪。</p></div>
+    <div class="card"><h4>看起來像專業遊戲</h4><p>電視轉播風格的介面、實景攝影質感、隨年齡長大、穿上裝備的角色，以及可以走進去的 3D 獎盃室（見 <a href="#s20">美術方向</a>、<a href="#s21">角色與裝備</a>、<a href="#s16b">獎盃室</a>）。</p></div>
+  </div>
+
+  <h3>遊玩份量</h3>
+  <div class="scroll"><table>
+    <tr><th>章節</th><th>年齡</th><th>遊戲中年數</th><th>大約時間</th><th>累計</th></tr>
+    <tr><td>序章與第一章 · 童年（新手引導）</td><td class="n">8～12</td><td class="n">5 個關鍵時刻</td><td class="n">3 h</td><td class="n">3 h</td></tr>
+    <tr><td>第二章 · 青少年（主要玩法開始）</td><td class="n">13～17</td><td class="n">5</td><td class="n">40 h</td><td class="n">43 h</td></tr>
+    <tr><td>第三章 · 大學與業餘</td><td class="n">18～21</td><td class="n">4</td><td class="n">40 h</td><td class="n">83 h</td></tr>
+    <tr><td>第四章 · 職業之路</td><td class="n">21～24</td><td class="n">3～4</td><td class="n">45 h</td><td class="n">128 h</td></tr>
+    <tr><td>第五章 · PGA TOUR 新人</td><td class="n">24～27</td><td class="n">3</td><td class="n">55 h</td><td class="n">183 h</td></tr>
+    <tr><td>第六章 · 大賽挑戰者</td><td class="n">27～33</td><td class="n">3～6</td><td class="n">40～115 h</td><td class="n">223～298 h</td></tr>
+    <tr><td>第七章 · 綠夾克</td><td colspan="4">第一次在名人賽奪冠的那一年（平衡目標：大約 29～33 歲、第 250 小時左右）</td></tr>
+    <tr><td>第八章 · 傳奇（之後）</td><td class="n">33～60+</td><td colspan="3">衛冕、大滿貫、名人堂、退休、第二人生、傳承；不計入上面的時數，可以一直玩</td></tr>
+  </table></div>
+  <p class="small">時數假設的打法：大賽與爭冠的最後一輪自己打 18 洞，一般比賽打精華 9 洞或關鍵時刻，小比賽模擬。只打完整 18 洞的玩家時間會更長；「生涯長度」選項（<a href="#s18">系統選項</a>）可以縮短或拉長。</p>
+</section>
+
+
+<!-- ===================================================== 說明書 -->
+<section class="ch" id="s0m">
+  <div class="chead"><div class="num">00</div><small>Manual · v92</small><h2>說明書：已經做好的內容與怎麼玩</h2></div>
+  <p class="lede">這份企劃書的六個階段都已經做進遊戲（版本 v92）。這一章是「說明書」：每個系統在遊戲的哪裡、怎麼操作；做的時候和原本企劃不一樣的地方，也都寫在這裡，之後各章的內容以這一章為準。</p>
+
+  <h3>開始</h3>
+  <div class="grid3">
+    <div class="card"><h4>入口</h4><p>大廳最上面的「生涯模式（測試中）」卡片，只有 <code>test</code> 與 <code>Michael</code> 看得到（名單在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>）。紀錄頁多一個「生涯」分頁，大廳名字旁會顯示生涯稱號。</p></div>
+    <div class="card"><h4>3 個生涯欄位</h4><p>每個欄位一段獨立的人生；存檔放在手機（每一桿、每一週）與試算表的「生涯_帳號」工作頁（每一輪、每一週同步，版本號比較新的才收）。第二個以後的欄位可以選「直接從 13 歲開始」。</p></div>
+    <div class="card"><h4>建立球員</h4><p>外觀（性別、8 種膚色、10 種髮型、10 種髮色、6 種眼睛、4 種眉毛、體型、成年身高 160~195）→ 國籍、家鄉、家庭背景 → 名字 → 難度、生涯長度、傷病。之後進入序章。</p></div>
+  </div>
+
+  <h3>序章與童年（約 3 小時的新手引導）</h3>
+  <div class="scroll"><table>
+    <tr><th>時間點</th><th>遊戲裡做什麼</th><th>選擇的影響</th></tr>
+    <tr><td>序章 · 8 歲 4 月</td><td>電視上的名人賽（2026 年的名人賽由世界模擬出冠軍）→ 啟蒙契機三選一</td><td>爺爺（大心臟、讀線高手）、電視（基本功扎實、長打天賦）、小型高爾夫（天生推桿手、短桿魔術）</td></tr>
+    <tr><td>關鍵時刻 1 · 8 歲</td><td>練習場打一籃球（10 球）</td><td>揮桿教學；飛過 50 碼的球數給經驗</td></tr>
+    <tr><td>關鍵時刻 2 · 9 歲</td><td>練習果嶺推 12 球（讀線、坡度）</td><td>認真練推桿（推桿距離感 +3）或和朋友玩（心情、玩伴關係）</td></tr>
+    <tr><td>關鍵時刻 3 · 10 歲</td><td>和家人在家鄉的球場打 9 洞兒童梯（OK 推 1 碼、可以重打 3 次）</td><td>聽導師的建議（抗壓 +3）或自己決定（讀果嶺 +3）</td></tr>
+    <tr><td>關鍵時刻 4 · 11 歲</td><td>家鄉兒童盃：9 洞、轉播名次條、每洞成績卡、沒有 OK 推</td><td>名次決定全國兒童排名；冠軍是第一座獎盃</td></tr>
+    <tr><td>關鍵時刻 5 · 12 歲</td><td>練習場的訓練關卡（鐵桿打進目標區）</td><td>夏令營（基本功扎實）/ U.S. Kids 世界錦標賽（大心臟，−$800）/ 留在家鄉（家鄉通）</td></tr>
+  </table></div>
+  <p class="small">兒童梯：沿洞線往前移，8 歲約黑梯的 45%、12 歲約 70%。APP 中途關掉，回來會從記下的關鍵時刻接著走。</p>
+
+  <h3>每一週（第二章以後）</h3>
+  <div class="grid2">
+    <div class="card"><h4>首頁</h4><ul><li>上方：年 / 週 / 章節、年齡、排名（青少年看國內排名、業餘看世界業餘排名、職業看世界排名）、資金。</li><li>體能、心情、手感三條；實力、技能點、學業、追蹤數。</li><li>這一週的安排：上學期間 2 個行動、假期 3 個、職業 3 個。行動：練球（選項目，或打「訓練關卡」拿更多經驗）、休息、念書、打工、陪家人、社群發文、贊助活動、企業球敘（佔整週）、球迷營隊。</li><li>「開始這一週」或「快轉」（照安排一直過，遇到比賽、主線事件、隨機事件就停，最多 8 週）。</li></ul></div>
+    <div class="card"><h4>賽程</h4><ul><li>全年行事曆（我的比賽 / 全部、今年 / 明年），每一場寫清楚資格與為什麼不能打。</li><li>自動報名：巡迴卡的比賽（只限主要巡迴）、免資格的大賽、邀請、國內青少年排名賽、大學球隊的比賽、職業選手過了上一關的 Q-School。其他比賽手動報名或取消。</li><li>經紀人避開太密的行程：連續打 4 週之後，一般比賽自動休息一週（大賽、Signature、季後賽、團體賽照打）。</li><li>沒有 PGA TOUR 卡：可以報週一資格賽（前 4 名進正賽）、申請贊助外卡（每季 7 次，機率看人氣、排名、經紀人）。</li></ul></div>
+  </div>
+
+  <h3>比賽週</h3>
+  <div class="grid2">
+    <div class="card"><h4>週一到週三</h4><ul><li>週一：付旅費（依基地與比賽地區、機票艙等、住宿）與報名費；週一資格賽 / 大賽資格賽在這天打。</li><li>週二：練習輪（打 3 洞，或快速完成）→ 這週讀果嶺 +3；名人賽的衛冕冠軍在週二晚上主辦冠軍晚宴。</li><li>週三：Pro-Am（人氣、贊助商好感）、贊助拍攝、或休息；名人賽是三桿洞大賽（家人當白衣桿弟）。</li></ul></div>
+    <div class="card"><h4>每一輪的打法</h4><ul><li>完整 18 洞、精華 9 洞（前九或後九）、關鍵時刻（系統挑 4 洞，四桿洞從第二桿、五桿洞依距離決定兩桿上果嶺或第三桿開始）、模擬（略保守）。</li><li>畫面左上的轉播名次條（名次、總成績、領先者、剩幾洞），右上的「排行榜」按鈕看即時排行。每洞結束有成績卡（前五名）。</li><li>壓力等級 0~3：推 Par 以上、晉級線附近、最後一輪後九爭冠、大賽最後一洞、延長賽、Q-School 決賽線上；畫面暗角跟著變深。</li><li>中途離開：沒打的洞用模擬完成。APP 被關掉：揮出去的那一桿已經算數，回來直接播放（不能重打）。</li></ul></div>
+  </div>
+  <p>第 2 輪後晉級線、同分爭冠的延長賽（第 18 洞驟死，自己打）、頒獎、冠軍證書、記者會（三選一累積個性）、新聞。比洞賽：U.S. Amateur / The Amateur（36 洞比桿資格 → 64 強）、萊德盃 / 總統盃 / 沃克盃 / Palmer Cup / 青少年盃（三天：四球賽自己打或模擬、輪流擊球由隊友上場、單人賽）、Skins Game。</p>
+
+  <h3>成長</h3>
+  <ul>
+    <li>素質 14 項，兒童從 15~25 開始；年齡曲線（發育期力量長最快、13~14 歲協調期穩定度掉）、訓練經驗（越高越難）、經驗值 → 等級 → 技能點（越高越貴）。</li>
+    <li>成長速度依年紀：青少年 ×0.85、22~29 歲 ×1.8（職業的黃金成長期）、30~34 ×1.3、35 歲以後 ×0.7。訓練關卡（練習場）比一般練球多一倍經驗。</li>
+    <li>球風（17 歲決定）決定每項上限；天賦 9 種；技能卡 12 種（欄位 2~6 格，同一種誤差最多減到 60%）；裝備（服裝 + 球具，5 種稀有度、升級 1~5 級、同品牌 3 件抗壓 +1、可以只換外觀）。固定加成每項最多 +8。</li>
+    <li>手感 ±3、體能低於 30 才扣素質；心情好壞影響手感。</li>
+  </ul>
+  <h4 style="margin-top:10px">「全模擬三十年」的實測（每週、每場比賽都模擬，時間照企劃書的打法假設）</h4>
+  <div class="scroll"><table>
+    <tr><th>年紀</th><th>實力</th><th>一號木 Carry</th><th>實際情況（其中一次測試）</th></tr>
+    <tr><td>13</td><td>39</td><td>約 170 碼</td><td>國內青少年排名前 10</td></tr>
+    <tr><td>17</td><td>53</td><td>約 225 碼</td><td>進美國大學</td></tr>
+    <tr><td>21</td><td>64</td><td>約 245 碼</td><td>PGA TOUR University → Korn Ferry 卡</td></tr>
+    <tr><td>24</td><td>73</td><td>約 265 碼</td><td>PGA TOUR Americas → Korn Ferry</td></tr>
+    <tr><td>26~27</td><td>77~81</td><td>約 280 碼</td><td>拿到 PGA TOUR 卡</td></tr>
+    <tr><td>28~29</td><td>81~84</td><td>約 287 碼</td><td>PGA TOUR 首勝、第一座大賽、THE PLAYERS</td></tr>
+    <tr><td>30~34</td><td>84~88</td><td>約 290 碼</td><td>世界第一、四大賽多座</td></tr>
+  </table></div>
+  <p class="small">實力的尺度：60 = 黑梯平標準桿、70 = Korn Ferry 爭冠、73 = PGA TOUR 平均、80 = PGA TOUR 冠軍、86 = 綠夾克候選、88 = 世界第一。推估時數：29 歲約 145 小時、34 歲約 250 小時（只打關鍵時刻會更短、每輪都打 18 洞會長很多）。綠夾克是運氣與實力的結合，大約在 29~35 歲之間。</p>
+
+  <h3>其他畫面</h3>
+  <div class="grid3">
+    <div class="card"><h4>球員</h4><p>素質（上限直線、訓練經驗、上場值）與技能點、技能卡、裝備（穿戴、升級、只換外觀）、球具店、天賦與球風。</p></div>
+    <div class="card"><h4>團隊 · 財務</h4><p>教練（四種專長 × 三個等級）、8 位桿弟（默契每 6 場升一級、3 級解鎖能力）、經紀人、專業團隊、人際關係；收支、贊助合約、資產、獎盃室升級、旅行方式、收支明細。</p></div>
+    <div class="card"><h4>獎盃 · 更多</h4><p>2D 獎盃櫃、可以走進去的 3D 獎盃室（拖曳轉頭、點地板走路、點獎盃拉近）；新聞、年表、成績、世界排名、生涯名片（含歷史比較）、相簿、知識卡、好友週賽、系統選項、管理員的測試員摘要。</p></div>
+  </div>
+
+  <h3>和原本企劃不一樣的地方</h3>
+  <div class="scroll"><table>
+    <tr><th>項目</th><th>原本</th><th>實作</th></tr>
+    <tr><td>名人賽場地</td><td>依官網單洞圖另外做奧古斯塔，完成前在川奈富士</td><td>固定在<b>奧古斯塔國家@C</b>；其他三大賽照「球場規劃」的輪替（真實 + @C）</td></tr>
+    <tr><td>實力尺度</td><td>—</td><td>真實球員的實力統一換算（PGA TOUR 平均 73、Scheffler 88），和玩家的成長表一致</td></tr>
+    <tr><td>開放名單</td><td><code>Career/access.js</code></td><td><code>js/config.js</code> 的 <code>CAREER_USERS</code>（主程式要先知道名單才決定要不要顯示入口；名單外的人不會下載 <code>Career/</code> 的任何檔案）</td></tr>
+    <tr><td>童年的小型高爾夫</td><td>借用奇幻球場的短洞</td><td>練習場的推桿練習（不需要先載入奇幻球場）</td></tr>
+    <tr><td>輪流擊球（Foursomes）</td><td>新的輪替邏輯</td><td>由隊友上場、以模擬完成；玩家打四球賽與單人賽</td></tr>
+    <tr><td>隨機事件</td><td>約 200 個</td><td>144 個（依階段：青少年、大學、職業之路、PGA TOUR、傳奇）</td></tr>
+    <tr><td>成就</td><td>60 個、能力點 1~5</td><td>63 個（「韓」改成「晉」、「年滿」改成「霸」）、能力點 1~3（伺服器每個成就最多加 3 點），合計 40 點</td></tr>
+    <tr><td>個人紀錄的篩選（一般 / 生涯 / 全部）</td><td>個人紀錄分頁加篩選</td><td>沒有做：個人紀錄只算一般回合；生涯的數據在紀錄頁的「生涯」分頁</td></tr>
+    <tr><td>觀戰房</td><td>朋友用驗證碼進來陪打、彈幕</td><td>沒有做（需要主遊戲的連線加一個觀戰身分）；改成「好友週賽」：每週一座球場，用生涯球員打，排行榜共用</td></tr>
+    <tr><td>經典重現</td><td>用主帳號重打生涯的關鍵一桿</td><td>沒有做</td></tr>
+    <tr><td>朋友參觀獎盃室</td><td>唯讀參觀</td><td>沒有做（只能看自己的；生涯名片可以截圖分享）</td></tr>
+    <tr><td>相簿</td><td>自動截下遊戲畫面</td><td>重要時刻自動留一張（用授權的實景照片 + 說明）</td></tr>
+    <tr><td>招牌慶祝、球標與球袋自訂</td><td>可以自選</td><td>沒有做（沿用主遊戲的特效與外觀）</td></tr>
+    <tr><td>場景升級（寫實樹木、草葉、觀眾、HDR 天空）</td><td>第三階段</td><td>沒有做（會影響主遊戲的效能與所有球場，之後另外評估）</td></tr>
+    <tr><td>角色</td><td>升級內建角色</td><td>完成（臉、10 種髮型、帽型、眼鏡、鬍子、長袖 / 背心 / 短褲 / 裙子、兒童比例、40 歲後白髮）；只在生涯模式使用（<code>look.v2</code>），主遊戲的經典外觀不變。寫實角色可以戴帽子、太陽眼鏡</td></tr>
+    <tr><td>球場設計師</td><td>簡化版編輯器、投稿、採用後成為自製球場</td><td>選風格與名字就產生 18 洞的設計並投稿；管理員在測試員頁看得到，採用要手動做成自製球場</td></tr>
+    <tr><td>團體賽隊長</td><td>挑外卡、配對、可以親自打</td><td>挑外卡的方式（狀態 / 經驗）→ 模擬結果</td></tr>
+  </table></div>
+
+  <h3>部署（給管理員）</h3>
+  <ol>
+    <li>上傳網站檔案：<code>index.html</code>、<code>css/style.css</code>、<code>js/</code> 裡改過的檔案、<code>version.js</code>、<code>README.html</code>，以及整個 <code>Career/js/</code>、<code>Career/css/</code>、<code>Career/img/s/</code>。</li>
+    <li>Apps Script：把 <code>gas/Code.gs</code> 整份換成新版；按「＋ → 指令碼」新增 <code>Career</code>，貼上 <code>Career/gas/Career.gs</code>。</li>
+    <li>部署 → 管理部署作業 → 編輯（鉛筆）→ 版本選「新版本」→ 部署（網址不變）。</li>
+  </ol>
+</section>
+
+<!-- ===================================================== 2 -->
+<section class="ch" id="s2">
+  <div class="chead"><div class="num">02</div><small>Access Control</small><h2>開放權限：只有測試員與管理員</h2></div>
+  <p class="lede">生涯模式在開發期間只開放給測試員帳號 <code>test</code> 與管理員 <code>Michael</code>。其他玩家完全看不到入口，也不會下載任何生涯模式的程式與圖片。</p>
+  <div class="grid2">
+    <div class="card"><h4>畫面上</h4><ul><li>大廳的「生涯模式」卡片、紀錄頁的「生涯」分頁、大廳名字旁的生涯稱號，只有名單內的帳號才會出現。</li><li>帳號比對分大小寫（和現在的帳號規則一樣），名單是 <code>test</code> 與 <code>Michael</code>。</li></ul></div>
+    <div class="card"><h4>程式上</h4><ul><li>生涯的程式放在 <code>Career/</code>，只有名單內的帳號按下卡片時才動態載入；其他人的手機不會下載。</li><li>名單寫在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>，之後要加測試員只改這兩處。</li></ul></div>
+    <div class="card"><h4>伺服器上</h4><ul><li>GAS 的所有生涯動作（讀存檔、存檔、好友週賽）都會先檢查帳號是否在名單內，不在就拒絕，所以就算有人知道網址也無法使用。</li><li>每個帳號一張 <code>生涯_帳號</code> 工作頁（例如 <code>生涯_test</code>），主遊戲的個人工作頁不會多任何列（見 <a href="#s23">技術規劃</a>）。</li></ul></div>
+    <div class="card"><h4>管理員</h4><ul><li>管理員可以玩自己的生涯，也可以在管理頁看到測試員的生涯摘要（等級、年齡、章節、排名），方便一起測試平衡。</li><li>正式開放給所有人時，只要把名單改成「全部」。</li></ul></div>
+  </div>
+</section>
+
+<!-- ===================================================== 3 -->
+<section class="ch" id="s3">
+  <div class="chead"><div class="num">03</div><small>The Journey</small><h2>生涯全貌</h2></div>
+  <p class="lede">一季等於一年。童年是五個關鍵時刻的新手引導，青少年以後用「週」前進。每個章節有自己的節奏、目標、賽事與人物。</p>
+  <div class="path">
+    <div style="background-image:url(img/boy-flag.jpg)"><small>PROLOGUE · 8</small><b>序章</b><span>電視上的名人賽、第一次走進練習場</span></div>
+    <div style="background-image:url(img/kids-camp.jpg)"><small>CH.1 · 8–12</small><b>童年</b><span>新手引導：五個關鍵時刻決定天賦與起點</span></div>
+    <div style="background-image:url(img/young-putting.jpg)"><small>CH.2 · 13–17</small><b>青少年</b><span>拜師、校隊、青少年排名、國手、AJGA</span></div>
+    <div style="background-image:url(img/pebble-coast.jpg)"><small>CH.3 · 18–21</small><b>大學與業餘</b><span>NCAA、美國業餘賽、亞太業餘賽、世界業餘排名</span></div>
+    <div style="background-image:url(img/range-holma.jpg)"><small>CH.4 · 21–24</small><b>職業之路</b><span>資格賽、台巡、亞巡、Korn Ferry Tour</span></div>
+    <div style="background-image:url(img/sawgrass-17.jpg)"><small>CH.5 · 24–27</small><b>PGA TOUR</b><span>新人王、首勝、聯邦快遞盃季後賽</span></div>
+    <div style="background-image:url(img/swilcan.jpg)"><small>CH.6 · 27–33</small><b>大賽挑戰者</b><span>四大賽、奧運、總統盃、世界第一</span></div>
+    <div class="goal" style="background-image:url(img/augusta-10.jpg)"><small>CH.7 · GOAL</small><b>綠夾克</b><span>名人賽冠軍</span></div>
+    <div style="background-image:url(img/hof-main.jpg)"><small>CH.8 · 33+</small><b>傳奇</b><span>大滿貫、名人堂、長青巡迴、傳承</span></div>
+  </div>
+  <p class="small">照片來源見 <a href="#s25">素材授權</a>。</p>
+</section>
+
+<!-- ===================================================== 4 -->
+<section class="ch" id="s4">
+  <div class="chead"><div class="num">04</div><small>Prologue &amp; Narrative</small><h2>序章與劇情系統</h2></div>
+
+  <div class="band" style="background-image:url(img/masters-gallery.jpg)">
+    <span class="cr">Masters Tournament 2015 · Shannon McGee · CC BY-SA 2.0</span>
+    <div class="in"><small>PROLOGUE</small><h3>那年四月，我八歲</h3><p>客廳的電視正在轉播名人賽最後一輪。奧古斯塔的松樹、白色的沙坑、安靜得聽得見呼吸的果嶺。上屆冠軍把綠夾克披到新冠軍的肩上，爺爺說：「那件衣服，全世界只有幾十個人穿過。」</p></div>
+  </div>
+
+  <h3>序章流程（約 30 分鐘，也是新手教學的開頭）</h3>
+  <ol>
+    <li><b>建立球員</b>：國籍與家鄉、家庭背景、外觀（膚色、髮型、髮色、眼睛、體型，見 <a href="#s21">角色與裝備</a>）。</li>
+    <li><b>選擇啟蒙契機</b>（三選一，影響第一位導師與起始素質）：
+      <ul><li><b>爺爺的球袋</b>：爺爺是老球友，週末帶你去練習場。導師：爺爺（抗壓、讀果嶺起點較高）。</li>
+      <li><b>電視上的名人賽</b>：自己對著電視模仿揮桿，媽媽帶你報名兒童課程。導師：兒童班教練（基本動作扎實）。</li>
+      <li><b>夜市旁的小型高爾夫</b>：在家附近的小型高爾夫場一玩就停不下來。導師：場主阿伯（推桿與距離感起點較高）。</li></ul></li>
+    <li><b>第一次揮桿</b>：在練習場打一籃球，學會揮桿操作。</li>
+    <li><b>第一次推桿</b>：小型高爾夫三個洞，學會推桿與讀線。</li>
+    <li><b>名人賽之夜</b>：看完轉播，定下夢想。章節目標第一次出現：「穿上綠夾克」。</li>
+  </ol>
+
+  <h3>劇情系統</h3>
+  <div class="grid2">
+    <div class="card"><h4>主線事件</h4><p>每個章節有 8～15 個固定的主線事件（第一支自己的球桿、第一次破百、拜師、大學錄取、轉職業、第一張巡迴卡、第一勝、收到名人賽邀請函），用插畫卡 + 對話呈現，可以跳過。</p></div>
+    <div class="card"><h4>隨機事件</h4><p>144 個小事件，依年齡、章節、人際關係觸發：同學邀你週末去看電影（放棄練球）、球具店老闆讓你試打新桿、颱風停課、家人生病、球迷寫信。每個事件 2～3 個選項。</p></div>
+    <div class="card"><h4>關係</h4><p>重要人物都有「關係值」：家人、導師、童年玩伴、宿敵、教練、桿弟、經紀人、贊助商、隊友。關係影響支持（資金、心情）、特殊事件、名人堂介紹人人選。</p></div>
+    <div class="card"><h4>個性</h4><p>對話選擇累積三種個性傾向：<b>紳士</b>、<b>自信</b>、<b>幽默</b>。個性影響贊助商類型、宿敵的態度、球迷的組成、記者會的題目。</p></div>
+  </div>
+
+  <h3>主要人物</h3>
+  <div class="scroll"><table>
+    <tr><th>人物</th><th>登場</th><th>角色</th></tr>
+    <tr><td>家人（父母、爺爺奶奶、兄弟姊妹）</td><td>序章</td><td>童年到大學的資金與心情來源；重要比賽會到場加油；人生事件（升學、搬家、家人生病）</td></tr>
+    <tr><td>啟蒙導師</td><td>序章</td><td>童年的教練；之後變成「回家時可以找的人」，名人堂的介紹人候選</td></tr>
+    <tr><td>童年玩伴</td><td>第一章</td><td>一起長大、一起比賽，青少年時期變成第一位宿敵，職業之後可能是朋友也可能是對手</td></tr>
+    <tr><td>青少年教練</td><td>第二章</td><td>可以選擇的三位教練（技術派、數據派、心理派），決定成長方向</td></tr>
+    <tr><td>大學教練與隊友</td><td>第三章</td><td>NCAA 球隊的教練與四位隊友（團體賽、宿舍事件）</td></tr>
+    <tr><td>經紀人</td><td>第四章</td><td>安排贊助、行程與合約，抽成；可以換人</td></tr>
+    <tr><td>桿弟</td><td>第二章打工 / 第四章起</td><td>見 <a href="#s15">團隊</a></td></tr>
+    <tr><td>宿敵（三位）</td><td>第二、五、六章</td><td>童年玩伴、PGA 同期新人、現任世界第一</td></tr>
+    <tr><td>名人賽上屆冠軍</td><td>第七章</td><td>為你穿上綠夾克的人（AI 或你的宿敵）</td></tr>
+  </table></div>
+</section>
+
+<!-- ===================================================== 5 -->
+<section class="ch" id="s5">
+  <div class="chead"><div class="num">05</div><small>Chapter 1 · Age 8–12 · Tutorial</small><h2>第一章　童年：新手引導</h2></div>
+  <div class="figrow">
+    <figure class="fig"><img src="img/kids-camp.jpg" alt=""><figcaption>第一次揮桿</figcaption></figure>
+    <figure class="fig"><img src="img/minigolf.jpg" alt=""><figcaption>小型高爾夫</figcaption></figure>
+    <figure class="fig"><img src="img/boy-flag.jpg" alt=""><figcaption>第一座兒童盃</figcaption></figure>
+  </div>
+  <p class="lede">童年不做長期的經營，而是一段<b>大約 3 小時的新手引導</b>：用五個「關鍵時刻」帶過 8～12 歲。每一個時刻是一小段劇情 + 一個教學活動 + 一個會影響起點的選擇。真正的經營玩法從第二章青少年開始。</p>
+  <div class="scroll"><table>
+    <tr><th>年齡</th><th>關鍵時刻</th><th>教學活動</th><th>選擇與影響</th></tr>
+    <tr><td class="n">8</td><td>名人賽之夜 · 第一次走進練習場</td><td>揮桿操作（下拉、上推、瞄準），打一籃球</td><td>啟蒙契機三選一（爺爺 / 電視 / 小型高爾夫）→ 第一位導師與兩項起始天賦</td></tr>
+    <tr><td class="n">9</td><td>夜市旁的小型高爾夫</td><td>推桿、讀線、果嶺坡度箭頭（用積木樂園等奇幻球場的短洞）</td><td>認真練推桿 / 和朋友玩 → 推桿距離感或心情</td></tr>
+    <tr><td class="n">10</td><td>第一次和家人下場</td><td>9 洞兒童梯：選桿、切球、沙坑、OK 推</td><td>聽爺爺的建議或自己決定 → 抗壓或讀果嶺</td></tr>
+    <tr><td class="n">11</td><td>家鄉兒童盃</td><td>第一場比賽：排行榜、晉級線、名次的意義</td><td>名次決定全國兒童排名與第二章的起點；第一座獎盃放在童年書桌</td></tr>
+    <tr><td class="n">12</td><td>暑假的十字路口</td><td>練習場的訓練關卡（成長系統的教學）</td><td>夏令營 / 挑戰 U.S. Kids Golf 世界錦標賽 / 留在家鄉陪爺爺 → 第二章的教練人選、家人關係與存款</td></tr>
+  </table></div>
+  <div class="grid3">
+    <div class="card"><h4>天賦</h4><p>童年的選擇累積成 2～3 個「天賦」，例如「天生推桿手」（推桿起點 +4）、「大心臟」（抗壓起點 +4）、「家鄉通」（家鄉球場讀果嶺加成）。天賦跟著球員一輩子。</p></div>
+    <div class="card"><h4>兒童梯</h4><p>球場長度依年齡縮短（8 歲約黑梯的 45%、12 歲約 70%），小孩的距離也能打得像樣。</p></div>
+    <div class="card"><h4>可以跳過</h4><p>每個關鍵時刻都可以快轉；第二個以後的生涯欄位可以直接「從 13 歲開始」，用預設天賦。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 6 -->
+<section class="ch" id="s6">
+  <div class="chead"><div class="num">06</div><small>Chapter 2 · Age 13–17</small><h2>第二章　青少年</h2></div>
+  <div class="band" style="background-image:url(img/young-putting.jpg)">
+    <span class="cr">U.S. Navy photo · Public domain</span>
+    <div class="in"><small>CHAPTER 2</small><h3>拜師</h3><p>國一那年，三位教練看了你的比賽。技術派要你重新打掉揮桿、數據派給你一份三年的訓練表、心理派只問了一句：「你為什麼打球？」</p></div>
+  </div>
+  <p class="lede">改成用「週」前進。上學期間每週末 1～2 次行動，寒暑假每週 3 次。目標是打進國家青少年代表隊、拿到大學獎學金或是直接轉職業的實力。</p>
+
+  <h3>新的系統</h3>
+  <div class="grid2">
+    <div class="card"><h4>拜師（三選一，可以中途換）</h4><ul><li><b>技術派</b>：揮桿相關素質訓練 +40%，但前半年要「重建揮桿」（穩定度暫時 −5）</li><li><b>數據派</b>：解鎖落點範圍圈與賽後分析</li><li><b>心理派</b>：抗壓訓練 +40%、心情不容易掉</li></ul></div>
+    <div class="card"><h4>學業</h4><p>學業成績影響第三章能申請的大學。考試週不能比賽；成績太差家人會限制練球。可以選擇「體育班」（練球時間多、學業上限低）。</p></div>
+    <div class="card"><h4>桿弟打工</h4><p>在家鄉球場當桿弟：每次打工學到球場的一洞（家鄉球場讀果嶺加成）、拿到小費，偶爾遇到職業球員給建議（隨機事件）。</p></div>
+    <div class="card"><h4>發育期</h4><p>13～16 歲身高與力量快速成長（每年力量自然 +4～6），但「協調期」會讓穩定度短暫下降，要靠訓練補回來。很真實，也讓每一年的手感都不一樣。</p></div>
+    <div class="card"><h4>國家代表隊</h4><p>全國青少年排名前 6 名入選國家代表隊：可以參加國際青少年賽事，代表隊集訓是大量經驗的來源。</p></div>
+    <div class="card"><h4>社群帳號</h4><p>15 歲可以開社群帳號，開始累積追蹤數（之後的贊助與 NIL 收入基礎）。發文是一個小選擇（練球影片、生活、比賽心得）。</p></div>
+  </div>
+
+  <h3>青少年賽事</h3>
+  <div class="scroll"><table>
+    <tr><th>賽事</th><th>等級</th><th>說明</th></tr>
+    <tr><td>全國青少年高爾夫排名賽</td><td>國內</td><td>每年 6～8 站，累計全國青少年排名（國手選拔依據）</td></tr>
+    <tr><td>全國中等學校運動會 / 校際聯賽</td><td>國內</td><td>學校團體賽，和隊友一起拿團體獎牌</td></tr>
+    <tr><td>全國業餘公開賽</td><td>國內</td><td>和成人業餘一起比，17 歲之前拿到冠軍是很大的成就</td></tr>
+    <tr><td>AJGA 美國青少年巡迴賽</td><td>國際</td><td>美國大學教練看選手的主要舞台；成績影響 NCAA 獎學金</td></tr>
+    <tr><td>IMG Academy Junior World Championships</td><td>國際</td><td>每年夏天在聖地牙哥舉行的世界青少年錦標賽</td></tr>
+    <tr><td>Junior Presidents Cup / Junior Ryder Cup</td><td>國際團體</td><td>依國籍：國際隊對美國隊（總統盃）或歐洲對美國（萊德盃）；入選是青少年的最高榮譽</td></tr>
+    <tr><td>亞運（業餘）</td><td>國際</td><td>每四年；國家代表隊才能參加</td></tr>
+  </table></div>
+
+  <h3>章節結束：三條路</h3>
+  <div class="grid3">
+    <div class="card"><span class="tag">穩健</span><h4>國內大學</h4><p>體育保送國內大學，比賽多在台灣與亞洲，家人關係好、花費少；之後走亞巡路線為主。</p></div>
+    <div class="card"><span class="tag g">推薦</span><h4>美國 NCAA 一級大學</h4><p>需要 AJGA 成績 + 學業成績。打 NCAA 聯賽，畢業前有機會透過 PGA TOUR University 直接拿到巡迴資格。</p></div>
+    <div class="card"><span class="tag">冒險</span><h4>直接轉職業</h4><p>17 歲就轉職業，跳過第三章。不能再打業餘賽（也就拿不到業餘冠軍的名人賽邀請），但提早進入職業世界。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 7 -->
+<section class="ch" id="s7">
+  <div class="chead"><div class="num">07</div><small>Chapter 3 · Age 18–21</small><h2>第三章　大學與業餘</h2></div>
+  <div class="figrow">
+    <figure class="fig"><img src="img/pebble-18.jpg" alt=""><figcaption>美國業餘賽的舞台</figcaption></figure>
+    <figure class="fig"><img src="img/augusta-clubhouse.jpg" alt=""><figcaption>業餘冠軍收到的名人賽邀請</figcaption></figure>
+    <figure class="fig"><img src="img/ra-clubhouse.jpg" alt=""><figcaption>英國業餘錦標賽</figcaption></figure>
+  </div>
+  <p class="lede">大學時期是整個生涯第一次「離家」。一年分成秋季賽季、春季賽季與暑假的業餘大賽。這一章最大的獎勵是：<b>業餘大賽冠軍可以拿到名人賽邀請，以業餘身分第一次走進奧古斯塔</b>。</p>
+
+  <h3>大學生活</h3>
+  <ul>
+    <li><b>NCAA 賽季</b>：秋季 4～5 場、春季 5～6 場大學錦標賽（團體 + 個人），春季最後是聯盟錦標賽與 NCAA Championship。</li>
+    <li><b>學業與宿舍</b>：選修、期中期末考、室友事件；學業太差會被禁賽。</li>
+    <li><b>隊友</b>：四位隊友有個性與關係值，團體賽要五個人一起拿分。</li>
+    <li><b>NIL 收入</b>：依照現行業餘身分規則，業餘選手可以用自己的名字與形象賺錢（社群、代言），但比賽獎金仍然受到業餘獎品上限的限制。</li>
+    <li><b>Palmer Cup</b>：大學生的國際團體賽（美國對國際）。</li>
+  </ul>
+
+  <h3>業餘大賽與獎勵</h3>
+  <div class="scroll"><table>
+    <tr><th>賽事</th><th>冠軍獎勵（照真實制度）</th></tr>
+    <tr><td>U.S. Amateur（美國業餘錦標賽）</td><td>Havemeyer 獎盃；名人賽、美國公開賽、英國公開賽邀請</td></tr>
+    <tr><td>The Amateur Championship（英國業餘錦標賽）</td><td>名人賽、英國公開賽、美國公開賽邀請</td></tr>
+    <tr><td>Asia-Pacific Amateur Championship（亞太業餘錦標賽）</td><td>名人賽邀請、英國公開賽資格；亞洲選手最重要的業餘賽</td></tr>
+    <tr><td>Eisenhower Trophy（世界業餘隊際錦標賽）</td><td>偶數年；國家代表隊</td></tr>
+    <tr><td>Walker Cup</td><td>英國與愛爾蘭對美國的業餘團體賽（依國籍）</td></tr>
+    <tr><td>World Amateur Golf Ranking</td><td>世界業餘排名第一可以拿到 McCormack 獎章</td></tr>
+  </table></div>
+
+  <div class="note"><b>業餘身分走進名人賽</b>：業餘選手住在會館頂樓的 Crow's Nest、和職業選手同場、成績最好的業餘選手頒發銀盃。這段「預習」會讓第七章的綠夾克更有份量。</div>
+
+  <h3>轉職業的時機</h3>
+  <ul>
+    <li><b>PGA TOUR University</b>：大四時大學排名前段的選手，畢業可以直接拿到 Korn Ferry Tour 或 PGA TOUR Americas 的資格（真實的升級管道）。</li>
+    <li><b>提早轉職業</b>：拿到大賽邀請或贊助外卡時，可以在大二、大三提早轉職業。</li>
+    <li><b>畢業後再轉</b>：走資格賽。</li>
+  </ul>
+</section>
+
+<!-- ===================================================== 8 -->
+<section class="ch" id="s8">
+  <div class="chead"><div class="num">08</div><small>Chapter 4 · Age 21–24</small><h2>第四章　職業之路</h2></div>
+  <div class="band" style="background-image:url(img/range-puttenham.jpg)">
+    <span class="cr">Puttenham Golf Club · Mertbiol · CC0</span>
+    <div class="in"><small>CHAPTER 4</small><h3>沒有人認識你的週一</h3><p>週一資格賽，早上六點半開球。一百五十個人搶四個正賽名額。你的車停在停車場最遠的角落，後車廂是全部家當。</p></div>
+  </div>
+  <p class="lede">職業之路是整個生涯「最辛苦」的章節：獎金少、旅費高、沒有保障。目標是拿到 PGA TOUR 的全季資格卡。</p>
+
+  <h3>可以走的巡迴賽</h3>
+  <div class="scroll"><table>
+    <tr><th>巡迴賽</th><th>地區</th><th>升級到上一層</th></tr>
+    <tr><td>台灣 PGA 巡迴賽（TPGA）</td><td>台灣</td><td>獎金榜前段 → 亞巡資格賽免前段</td></tr>
+    <tr><td>Asian Tour（亞洲巡迴賽）</td><td>亞洲、中東</td><td>獎金榜冠軍可以拿到其他大型巡迴賽資格；亞巡賽事是亞洲選手累積世界排名的主要來源</td></tr>
+    <tr><td>Japan Golf Tour（日巡）</td><td>日本</td><td>獎金榜前段有大賽邀請</td></tr>
+    <tr><td>PGA TOUR Americas</td><td>美洲</td><td>積分前段 → Korn Ferry Tour</td></tr>
+    <tr><td>Korn Ferry Tour</td><td>美國</td><td>積分榜前 20 名 → PGA TOUR 全季資格（近年制度）</td></tr>
+    <tr><td>DP World Tour（歐巡）</td><td>歐洲、全球</td><td>積分前段 → PGA TOUR 資格</td></tr>
+  </table></div>
+
+  <h3>資格賽（Q-School）</h3>
+  <ul>
+    <li><b>PGA TOUR Q-School</b>：預選賽 → 第一關 → 第二關 → 決賽。決賽前 5 名直接拿到 PGA TOUR 資格，其餘依名次分到 Korn Ferry Tour 或 PGA TOUR Americas。</li>
+    <li><b>Asian Tour Q-School</b>、<b>DP World Tour Q-School</b>：可以同一年分開報名，但報名費與旅費都很重。</li>
+    <li>資格賽決賽最後一天，晉級線附近的每一桿都是最高壓力。</li>
+  </ul>
+
+  <h3>這一章的生活</h3>
+  <div class="grid3">
+    <div class="card"><h4>週一資格賽</h4><p>沒有資格的比賽可以打週一資格賽搶最後幾個名額。</p></div>
+    <div class="card"><h4>贊助商外卡</h4><p>人氣夠或贊助商支持，可以拿到單場外卡。</p></div>
+    <div class="card"><h4>搬家</h4><p>選擇基地：留在台灣（家人近、出國比賽累）或搬到美國佛州（旅程短、離家遠，佛州沒有州所得稅）。</p></div>
+    <div class="card"><h4>第一位經紀人</h4><p>談第一份球具合約，開始有固定收入。</p></div>
+    <div class="card"><h4>第一位全職桿弟</h4><p>從朋友兼職到全職桿弟，開始累積默契。</p></div>
+    <div class="card"><h4>存款壓力</h4><p>存款低於下季旅費時，要接教學、打工或少打幾站，這是現實職業選手真正的煩惱。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 9 -->
+<section class="ch" id="s9">
+  <div class="chead"><div class="num">09</div><small>Chapter 5 · Age 24–27</small><h2>第五章　PGA TOUR</h2></div>
+  <div class="figrow">
+    <figure class="fig"><img src="img/sawgrass-17.jpg" alt=""><figcaption>THE PLAYERS · TPC Sawgrass 17th</figcaption></figure>
+    <figure class="fig"><img src="img/sawgrass-17b.jpg" alt=""><figcaption>島嶼果嶺空拍</figcaption></figure>
+    <figure class="fig"><img src="img/kiawah-18.jpg" alt=""><figcaption>Kiawah Ocean Course</figcaption></figure>
+  </div>
+  <p class="lede">PGA TOUR 的一季從一月到八月是聯邦快遞盃賽季，八月是季後賽，秋季還有幾場決定下一季資格的比賽。</p>
+  <div class="scroll"><table>
+    <tr><th>月份</th><th>內容</th></tr>
+    <tr><td>1～2 月</td><td>夏威夷開幕戰、西岸賽程（包含圓石灘的 AT&amp;T Pebble Beach Pro-Am）</td></tr>
+    <tr><td>3 月</td><td>佛州賽程、<b>THE PLAYERS Championship</b>（TPC 鋸草）</td></tr>
+    <tr><td>4 月</td><td><b>Masters Tournament</b>（奧古斯塔）</td></tr>
+    <tr><td>5 月</td><td><b>PGA Championship</b></td></tr>
+    <tr><td>6 月</td><td><b>U.S. Open</b></td></tr>
+    <tr><td>7 月</td><td><b>The Open Championship</b></td></tr>
+    <tr><td>8 月</td><td>FedEx Cup Playoffs：FedEx St. Jude Championship → BMW Championship → TOUR Championship</td></tr>
+    <tr><td>9 月</td><td>總統盃 / 萊德盃（各隔年舉行）</td></tr>
+    <tr><td>9～11 月</td><td>秋季賽：積分榜邊緣的選手爭取下季資格</td></tr>
+    <tr><td>12 月</td><td>季末邀請賽、休賽、合約續約、頒獎（年度最佳球員、新人王 Arnold Palmer Award）</td></tr>
+  </table></div>
+  <h3>關鍵規則（照真實制度改編）</h3>
+  <ul>
+    <li><b>Signature Events</b>：總獎金最高的幾場邀請性賽事，前一季積分前段才能參加。</li>
+    <li><b>拿到冠軍</b>：兩年全季資格、名人賽邀請（積分全額的正式賽事）、Signature Events 資格。</li>
+    <li><b>保卡</b>：季末聯邦快遞盃積分前段班保住下一季資格，其餘要靠秋季賽或回到 Korn Ferry。</li>
+    <li><b>聯邦快遞盃</b>：季後賽三場，總冠軍拿到巨額獎金與聯邦快遞盃獎盃。</li>
+  </ul>
+</section>
+
+<!-- ===================================================== 10 -->
+<section class="ch" id="s10">
+  <div class="chead"><div class="num">10</div><small>Chapter 7 · The Masters</small><h2>名人賽與綠夾克</h2></div>
+  <div class="band" style="background-image:url(img/hogan-bridge.jpg);min-height:380px">
+    <span class="cr">Augusta National, 12th hole · Florian Fritsch · CC BY-SA 3.0</span>
+    <div class="in"><small>THE GOAL</small><h3>Amen Corner</h3><p>第 11、12、13 洞。名人賽常常在星期天的這三個洞決定冠軍。第 12 洞前面是 Rae's Creek，後面是杜鵑花，風從松樹梢上轉向，沒有人知道它下一秒往哪裡吹。</p></div>
+  </div>
+
+  <h3>怎麼拿到邀請</h3>
+  <p>名人賽是邀請賽。遊戲照真實的邀請類別給資格（每年 12 月與賽前一週檢查），收到時有一封邀請函的專屬畫面：</p>
+  <div class="grid2">
+    <div class="card"><ul><li>歷屆名人賽冠軍（終身）</li><li>最近幾年的美國公開賽、英國公開賽、PGA 錦標賽冠軍</li><li>最近幾年的 THE PLAYERS 冠軍</li><li>前一年名人賽前 12 名（含同分）</li><li>前一年其他三大賽前 4 名（含同分）</li></ul></div>
+    <div class="card"><ul><li>前一年 TOUR Championship 參賽者</li><li>PGA TOUR 積分全額賽事的冠軍</li><li>年底與賽前一週世界排名前 50</li><li>業餘：美國業餘冠軍與亞軍、英國業餘冠軍、亞太業餘冠軍等</li><li>主辦單位的特別邀請（國際選手）</li></ul></div>
+  </div>
+
+  <h3>名人賽週</h3>
+  <div class="scroll"><table>
+    <tr><th>日</th><th>內容</th></tr>
+    <tr><td>週日</td><td>Drive, Chip and Putt 全國決賽（如果你在童年參加過，會有回憶事件）</td></tr>
+    <tr><td>週一～週二</td><td>練習輪；週二晚上 <b>冠軍晚宴</b>：衛冕冠軍決定菜單，只有歷屆冠軍可以出席</td></tr>
+    <tr><td>週三</td><td><b>三桿洞大賽</b>：會內的九洞三桿洞球場，家人可以穿白色連身服當桿弟；傳說拿到冠軍的人那週不會贏名人賽</td></tr>
+    <tr><td>週四</td><td><b>榮譽開球</b>：傳奇球員在第 1 洞開球 → 第 1 輪</td></tr>
+    <tr><td>週五</td><td>第 2 輪 → 晉級線（前 50 名含同分）</td></tr>
+    <tr><td>週六</td><td>第 3 輪 · Moving Day</td></tr>
+    <tr><td>週日</td><td>最後一輪 → <b>Butler Cabin</b> 的電視頒獎（上屆冠軍為你穿上綠夾克）→ 練習果嶺上的戶外頒獎</td></tr>
+  </table></div>
+
+  <div class="grid2">
+    <figure class="fig"><img src="img/augusta-leaderboard.jpg" alt=""><figcaption>奧古斯塔的手動計分板 · Ryan Schreiber · CC BY 2.0</figcaption></figure>
+    <figure class="fig"><img src="img/augusta-aerial.jpg" alt=""><figcaption>會館（早期明信片）· Boston Public Library · Public domain</figcaption></figure>
+  </div>
+
+  <h3>拿到綠夾克之後</h3>
+  <ul>
+    <li>冠軍可以把綠夾克帶回家一年，之後掛回會館的冠軍更衣室；遊戲裡的獎盃室有一個「冠軍更衣櫃」（見 <a href="#s16b">獎盃室</a>）。</li>
+    <li>隔年你是衛冕冠軍：主辦冠軍晚宴、決定菜單（例如牛肉麵、滷肉飯、芒果冰），在 Butler Cabin 為新冠軍穿上夾克。</li>
+    <li>終身擁有名人賽參賽資格；老了以後可以受邀擔任榮譽開球。</li>
+    <li>生涯片尾：從 8 歲的練習場開始的年表與照片回顧，然後生涯繼續。</li>
+  </ul>
+
+  <h3>球場</h3>
+  <p>名人賽固定在<b>奧古斯塔國家@C</b>（非真實球場，標準桿與碼數照真實計分卡，阿們角、Rae's Creek、杜鵑與火炬松照公開描述做出特徵）。</p>
+</section>
+
+<!-- ===================================================== 11 -->
+<section class="ch" id="s11">
+  <div class="chead"><div class="num">11</div><small>Majors, Team Events &amp; Olympics</small><h2>四大賽、團體賽與奧運</h2></div>
+  <div class="scroll"><table>
+    <tr><th>賽事</th><th>月份</th><th>遊戲內場地</th><th>獎盃 / 傳統</th></tr>
+    <tr><td><b>Masters Tournament</b></td><td>4 月</td><td>奧古斯塔國家@C（固定）</td><td>綠夾克、冠軍晚宴、三桿洞大賽、榮譽開球</td></tr>
+    <tr><td><b>PGA Championship</b></td><td>5 月</td><td>8 座輪替：Aronimink@C（2026）、Quail Hollow@C、Southern Hills@C、Valhalla@C、Bethpage@C、Kiawah、Oak Hill@C、Whistling Straits@C</td><td>Wanamaker Trophy</td></tr>
+    <tr><td><b>U.S. Open</b></td><td>6 月</td><td>8 座輪替：Shinnecock@C（2026）、圓石灘、Winged Foot@C、Pinehurst No.2@C、Oakmont@C、LACC@C、Oakland Hills@C、Torrey Pines South@C</td><td>U.S. Open Trophy；最難的場地設定，冠軍常常接近標準桿</td></tr>
+    <tr><td><b>The Open Championship</b></td><td>7 月</td><td>9 座輪替：Birkdale@C（2026）、聖安德魯斯、Lytham@C、皇家特倫、Portrush@C、卡努斯蒂、Hoylake@C、皇家聖喬治、Muirfield@C</td><td>Claret Jug；冠軍稱為 Champion Golfer of the Year；業餘最佳有銀牌</td></tr>
+    <tr><td><b>THE PLAYERS Championship</b></td><td>3 月</td><td>TPC 鋸草</td><td>常被稱為第五大賽；17 洞島嶼果嶺</td></tr>
+    <tr><td><b>TOUR Championship</b></td><td>8 月</td><td>（借用遊戲內球場）</td><td>FedEx Cup 總冠軍</td></tr>
+    <tr><td><b>Presidents Cup</b></td><td>偶數年 9 月</td><td>皇家墨爾本等</td><td>美國隊對國際隊（歐洲以外）；12 人一隊</td></tr>
+    <tr><td><b>Ryder Cup</b></td><td>奇數年 9 月</td><td>馬可西蒙尼（2023 年真實主辦場地）等</td><td>歐洲隊對美國隊；國籍是歐洲或美國時參加</td></tr>
+    <tr><td><b>Olympic Games</b></td><td>每四年</td><td>借用遊戲內球場</td><td>依世界排名，每國最多 2 人（世界前 15 名最多 4 人）；金牌</td></tr>
+  </table></div>
+  <div class="figrow">
+    <figure class="fig"><img src="img/swilcan.jpg" alt=""><figcaption>The Open · Swilcan Bridge · CC BY-SA 4.0</figcaption></figure>
+    <figure class="fig"><img src="img/render-jug.jpg" alt=""><figcaption>銀壺（遊戲內 3D 模型）</figcaption></figure>
+    <figure class="fig"><img src="img/render-shelf.jpg" alt=""><figcaption>巡迴賽獎盃層架（遊戲內 3D 模型）</figcaption></figure>
+  </div>
+  <h3>團體賽的賽制</h3>
+  <ul>
+    <li><b>四球賽（Four-ball）</b>：兩人各打各的球，取好的成績。現有程式（每人一顆球）就能做。</li>
+    <li><b>單人比洞賽（Singles）</b>：現有的比洞賽。</li>
+    <li><b>輪流擊球（Foursomes）</b>：兩人輪流擊同一顆球；由隊友上場、以模擬完成（玩家打四球賽與單人賽）。</li>
+    <li>朋友有生涯球員時，可以用現有的連線模式（最多 4 人）組隊。</li>
+  </ul>
+  <h3>生涯大滿貫</h3>
+  <p>四大賽都拿過冠軍就是生涯大滿貫，現實中男子只有極少數人做到；同一年拿下四座的「年度大滿貫」在男子職業高爾夫從來沒有人做到，遊戲裡是最高難度的成就。</p>
+</section>
+
+<section class="ch" id="s11c">
+  <div class="chead"><div class="num">11+</div><small>Course Library</small><h2>球場規劃：80 座非真實球場（@C）</h2></div>
+  <p class="lede">現有 70 座球場（台灣 29、國外真實 12、自創寫實 9、奇幻 20）再加上 80 座<b>非真實球場</b>，總共 150 座。非真實球場的名稱照真實球場、後面加「@C」；每洞的標準桿與冠軍梯碼數照公開的真實計分卡（查不到的標「約略」），知名的洞照公開描述做出特徵，其他洞依當地的地形、樹種、沙坑與水的特色設計。80 座都已經做進遊戲（版本 v91），在選擇球場的「非真實球場」分頁，比照一般球場：計入排行、可以蓋章，另有一組非真實球場的成就。</p>
+  <div class="note"><b>固定場地每年回去、輪替場地 8～9 年一次</b>：PGA TOUR 一般賽事照真實傳統每年同一週回到同一座球場；三大賽在 8～9 座之間輪替；業餘、大學、Korn Ferry、亞巡的比賽每年從該層級的球場裡挑選，同一座大約 3～5 年才遇到一次。</div>
+  <div class="grid3">
+    <div class="card"><h4>每座都不一樣</h4><p>每座球場有自己的特色設定：狗腿角度、直洞比例、起伏、沙坑多寡與型式、水的位置與機率、果嶺大小與坡度（龜背、碗形、雙層）、樹種、海岸、荒地。同一層級裡也刻意拉開難度（★1～5）。</p></div>
+    <div class="card"><h4>依當地特色</h4><p>新增 8 種地區樹種：喬治亞火炬松與杜鵑、北卡長葉松與鐵線草、美東橡樹林、英國石南荒原、太平洋西北花旗松、索諾拉沙漠、美東南低地活橡樹、南加州尤加利；地形新增乾河床（barranca）、龜背 / 碗形果嶺。</p></div>
+    <div class="card"><h4>測試</h4><p>80 座 × 18 洞都自動檢查過：梯台、果嶺、旗桿位置、球道比例、每個開球距離都有落點；越水的短三桿洞水面比例高是設計如此。</p></div>
+  </div>
+  <h3>四大賽輪替場地（20 座）</h3><p class="small">第六章「大賽挑戰者」起：名人賽（4 月）、PGA 錦標賽（5 月）、美國公開賽（6 月）、英國公開賽（7 月）。名人賽固定在奧古斯塔國家@C；其他三大賽和現有的真實球場一起輪替：英國公開賽 9 座（真實 4 + @C 5）、美國公開賽 8 座（圓石灘 + @C 7）、PGA 錦標賽 8 座（Kiawah + @C 7），同一座大約 8～9 年才輪到一次。業餘冠軍在第三章也會以業餘身分打名人賽。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>奧古斯塔國家@C</b><br><span class="small">Augusta National Golf Club @C</span></td><td>美國喬治亞州奧古斯塔</td><td>名人賽（Masters，每年 4 月第 2 週）</td><td class="n">★★★★★</td><td class="n">Par 72<br>7,565 Y</td><td>喬治亞州丘陵上的舊苗圃：高聳的火炬松、杜鵑與山茱萸，地形大上大下；幾乎沒有長草（只有一小段第二刀草），靠又大又快又斜的果嶺與 Rae&#x27;s Creek 防守。第 11~13 洞是 Amen Corner。</td><td>真實</td></tr><tr><td><b>派恩赫斯特 2 號@C</b><br><span class="small">Pinehurst No. 2 @C</span></td><td>美國北卡羅來納州派恩赫斯特</td><td>美國公開賽輪替（6 月）· 也是 U.S. Kids Golf 世界錦標賽的所在地</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,548 Y</td><td>北卡沙丘地（Sandhills）：沙質土壤、長葉松、沒有長草，球道外是沙地與一叢叢鐵線草；Donald Ross 的龜背果嶺四周往外掉，短桿最考驗。</td><td>真實</td></tr><tr><td><b>奧克蒙@C</b><br><span class="small">Oakmont Country Club @C</span></td><td>美國賓州匹茲堡</td><td>美國公開賽輪替（6 月）</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,372 Y</td><td>賓州阿勒格尼河谷旁的農地，幾乎砍光了樹，一眼望穿；約 170 個沙坑、深長草、超快且往外傾的果嶺；第 3、4 洞之間有一整片條狀的「教堂座椅」沙坑。</td><td>真實</td></tr><tr><td><b>辛納科克山@C</b><br><span class="small">Shinnecock Hills Golf Club @C</span></td><td>美國紐約州長島南岸</td><td>美國公開賽輪替（6 月）</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,440 Y</td><td>長島南岸，夾在大西洋與皮科尼克灣之間的沙質丘陵：羊茅草長草、風從各個方向吹，球洞朝不同方向排列；第 7 洞是 Redan 式三桿洞，第 9 洞上坡到會館。</td><td>真實</td></tr><tr><td><b>翼足西場@C</b><br><span class="small">Winged Foot Golf Club (West) @C</span></td><td>美國紐約州馬馬羅內克</td><td>美國公開賽輪替（6 月）</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,368 Y</td><td>Tillinghast 1923 年的設計：成熟的樹林、又深又陡的沙坑緊緊包住梨形果嶺，長草很深；美國公開賽時第 9、16 洞改成超長四桿洞。</td><td>真實</td></tr><tr><td><b>托里松南場@C</b><br><span class="small">Torrey Pines (South) @C</span></td><td>美國加州聖地牙哥</td><td>Farmers Insurance Open（1 月）· 美國公開賽輪替</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,802 Y</td><td>聖地牙哥拉荷亞的太平洋海崖上：托里松、峽谷切進球場邊緣，長草是又粗又黏的奇庫猶草；全長超過 7,800 碼。</td><td>真實</td></tr><tr><td><b>洛杉磯鄉村北場@C</b><br><span class="small">Los Angeles Country Club (North) @C</span></td><td>美國加州洛杉磯</td><td>美國公開賽輪替（6 月）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,423 Y</td><td>洛杉磯比佛利山旁：一條乾河床（barranca）在好幾洞橫越或沿著球道，背景是市區天際線；球道寬、地面硬，有超長三桿洞（290 碼）與只有百來碼的短三桿洞。</td><td>真實</td></tr><tr><td><b>奧克蘭山南場@C</b><br><span class="small">Oakland Hills (South) @C</span></td><td>美國密西根州布盧姆菲爾德</td><td>美國公開賽輪替（6 月）</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,509 Y</td><td>密西根起伏的舊農地，外號「怪獸（The Monster）」：大而起伏劇烈的果嶺、整修後砍掉不少樹；第 16 洞狗腿右繞著池塘、果嶺緊貼水邊。</td><td>真實</td></tr><tr><td><b>皇家伯克戴爾@C</b><br><span class="small">Royal Birkdale Golf Club @C</span></td><td>英國英格蘭紹斯波特</td><td>英國公開賽輪替（7 月）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,176 Y</td><td>英格蘭西北海岸的大沙丘之間：球道走在沙丘之間的平谷裡（少有盲打），兩旁是柳樹叢與海濱草；第 15 洞是以會館為背景的三桿洞。</td><td>真實</td></tr><tr><td><b>皇家利物浦@C</b><br><span class="small">Royal Liverpool Golf Club (Hoylake) @C</span></td><td>英國英格蘭霍伊萊克</td><td>英國公開賽輪替（7 月）</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,383 Y</td><td>迪河河口旁幾乎全平的林克斯：球場內有界外（練習場周圍），靠近海的幾洞穿過沙丘；第 17 洞是迷你三桿洞「Little Eye」，背景是河口與小島。</td><td>真實</td></tr><tr><td><b>皇家波特拉什@C</b><br><span class="small">Royal Portrush (Dunluce) @C</span></td><td>英國北愛爾蘭波特拉什</td><td>英國公開賽輪替（7 月）</td><td class="n">★★★★★</td><td class="n">Par 71<br>7,344 Y</td><td>北愛爾蘭巨人堤道海岸：巨大的沙丘與海崖，鄧路斯古堡遺跡在遠處；第 5 洞果嶺就在崖邊，第 16 洞「Calamity Corner」要越過深谷。</td><td>真實</td></tr><tr><td><b>繆菲爾德@C</b><br><span class="small">Muirfield @C</span></td><td>英國蘇格蘭格蘭（福斯灣）</td><td>英國公開賽輪替（7 月）</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,245 Y</td><td>福斯灣南岸：前九洞順時針、後九洞逆時針兩個圈，風從每個角度吹；沙坑是陡峭的草皮砌壁（revetted）壺穴，幾乎沒有盲打，被認為最公平的林克斯。</td><td>真實</td></tr><tr><td><b>皇家萊瑟姆@C</b><br><span class="small">Royal Lytham &amp; St Annes @C</span></td><td>英國英格蘭聖安妮斯</td><td>英國公開賽輪替（7 月）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,086 Y</td><td>被住宅與鐵路圍繞、看不到海的「內陸林克斯」：前幾洞右側是鐵路（界外），將近 170 個沙坑；以三桿洞開局是英國公開賽唯一。</td><td>真實</td></tr><tr><td><b>呢喃海峽@C</b><br><span class="small">Whistling Straits (Straits) @C</span></td><td>美國威斯康辛州科勒</td><td>PGA 錦標賽輪替（5 月）</td><td class="n">★★★★★</td><td class="n">Par 72<br>7,501 Y</td><td>密西根湖岸兩英里長、人工堆出的愛爾蘭風林克斯：上千個沙坑（很多是荒地沙地）、羊茅草、沙丘；四個三桿洞都沿著湖邊。</td><td>真實</td></tr><tr><td><b>瓦爾哈拉@C</b><br><span class="small">Valhalla Golf Club @C</span></td><td>美國肯塔基州路易斯維爾</td><td>PGA 錦標賽輪替（5 月）</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,609 Y</td><td>Nicklaus 設計的肯塔基草原：弗洛伊茲溪（Floyds Fork）貫穿，第 13 洞「石灰岩洞」果嶺在溪中的石灰岩島上；第 7 洞是分岔球道的五桿洞。</td><td>真實</td></tr><tr><td><b>鵪鶉谷@C</b><br><span class="small">Quail Hollow Club @C</span></td><td>美國北卡羅來納州夏洛特</td><td>PGA 錦標賽輪替（5 月）· Truist Championship</td><td class="n">★★★★★</td><td class="n">Par 71<br>7,626 Y</td><td>夏洛特起伏的林地：最後三洞被稱為「綠色一英里（Green Mile）」——第 16 洞果嶺左邊是湖、第 17 洞三桿洞果嶺突出在湖中、第 18 洞左邊一路是小溪。</td><td>真實</td></tr><tr><td><b>南山@C</b><br><span class="small">Southern Hills Country Club @C</span></td><td>美國奧克拉荷馬州土爾沙</td><td>PGA 錦標賽輪替（5 月）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,556 Y</td><td>奧克拉荷馬夏天的炎熱丘陵：小溪在球場裡穿梭（第 12 洞果嶺前是溪）、Perry Maxwell 的起伏球道，果嶺周圍的短草區把球帶走。</td><td>真實</td></tr><tr><td><b>橡樹山東場@C</b><br><span class="small">Oak Hill Country Club (East) @C</span></td><td>美國紐約州羅徹斯特</td><td>PGA 錦標賽輪替（5 月）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,390 Y</td><td>羅徹斯特郊外的舊農地，種滿了上萬棵橡樹：艾倫溪（Allen Creek）在 8 個洞成為側邊水障礙；第 14 洞是可以一桿上果嶺的短四桿洞，第 15 洞三桿洞越過池塘。</td><td>真實</td></tr><tr><td><b>貝斯佩奇黑場@C</b><br><span class="small">Bethpage Black @C</span></td><td>美國紐約州長島法明代爾</td><td>PGA 錦標賽輪替（5 月）· 萊德盃</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,459 Y</td><td>長島的公眾球場，第 1 洞旁的牌子警告「只建議非常有技術的球員」：Tillinghast 的巨大沙坑橫在山坡上，果嶺多在高處；第 4 洞五桿洞的沙坑一層一層疊上坡。</td><td>真實</td></tr><tr><td><b>阿羅尼明克@C</b><br><span class="small">Aronimink Golf Club @C</span></td><td>美國賓州費城郊區</td><td>PGA 錦標賽輪替（5 月）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,267 Y</td><td>Donald Ross 在費城郊外的起伏地形上設計：傾斜的球道、很多狗腿、約 75 個沙坑，果嶺多架高；Ross 說這是他最好的作品之一。</td><td>真實</td></tr></table></div><h3>PGA TOUR 賽事場地（20 座）</h3><p class="small">第五章「PGA TOUR」起，照真實賽程每年同一週回到同一座球場（固定場地是真實傳統）。和現有的真實球場 TPC 鋸草（THE PLAYERS，3 月）、圓石灘（AT&T Pro-Am，2 月）一起排成完整的一季。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>卡帕魯亞種植園@C</b><br><span class="small">Kapalua Plantation Course @C</span></td><td>美國夏威夷茂宜島</td><td>The Sentry 開幕戰（1 月）</td><td class="n">★★★☆☆</td><td class="n">Par 73<br>7,596 Y</td><td>茂宜島西北的山坡舊鳳梨田：大落差、超寬球道與超大果嶺、強勁的信風；第 18 洞是一路下坡往海的 670 碼五桿洞，標準桿 73。</td><td>真實</td></tr><tr><td><b>懷阿萊@C</b><br><span class="small">Waialae Country Club @C</span></td><td>美國夏威夷歐胡島檀香山</td><td>Sony Open（1 月）</td><td class="n">★★☆☆☆</td><td class="n">Par 70<br>7,062 Y</td><td>檀香山海邊的平坦球場：一排排椰子樹、鑽石頭山在背景、信風從海上吹來；狗腿多、球道窄。</td><td>約略</td></tr><tr><td><b>PGA 西部體育場球場@C</b><br><span class="small">PGA West (Stadium Course) @C</span></td><td>美國加州拉昆塔</td><td>The American Express（1 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,334 Y</td><td>加州沙漠的 Pete Dye 作品：枕木護岸的水池、深沙坑、荒地；第 16 洞果嶺左邊是將近 6 公尺深的沙坑，第 17 洞「惡魔島」是孤島果嶺，背景是聖哈辛托山。</td><td>約略</td></tr><tr><td><b>TPC 斯科茨代爾體育場@C</b><br><span class="small">TPC Scottsdale (Stadium) @C</span></td><td>美國亞利桑那州斯科茨代爾</td><td>WM 鳳凰城公開賽（2 月）</td><td class="n">★★★☆☆</td><td class="n">Par 71<br>7,261 Y</td><td>索諾拉沙漠：球道外是沙漠荒地與仙人掌；第 15 洞五桿洞孤島果嶺、第 16 洞是被看台完全包圍的三桿洞、第 17 洞可一桿上果嶺的短四桿洞左邊是水。</td><td>真實</td></tr><tr><td><b>里維埃拉@C</b><br><span class="small">Riviera Country Club @C</span></td><td>美國加州太平洋帕利塞德</td><td>Genesis Invitational（2 月）· 2028 奧運</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,322 Y</td><td>洛杉磯西邊的峽谷裡：乾河床（barranca）穿過球場、奇庫猶草與尤加利樹；第 6 洞果嶺中間有一個沙坑，第 10 洞是可以一桿上的短四桿洞，第 18 洞上坡打向圓形劇場般的會館。</td><td>真實</td></tr><tr><td><b>貝山@C</b><br><span class="small">Bay Hill Club &amp; Lodge @C</span></td><td>美國佛州奧蘭多</td><td>Arnold Palmer Invitational（3 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,381 Y</td><td>奧蘭多巴特勒湖群旁：第 6 洞五桿洞繞著湖、第 16 洞果嶺前是水、第 17 洞三桿洞越過水、第 18 洞果嶺右邊是水池與石牆。</td><td>真實</td></tr><tr><td><b>PGA 國家冠軍球場@C</b><br><span class="small">PGA National (Champion) @C</span></td><td>美國佛州棕櫚灘花園</td><td>Cognizant Classic（2 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,048 Y</td><td>佛州東南的平坦水鄉：Nicklaus 重新設計，第 15~17 洞「熊陷阱」——第 15 洞三桿洞越過水、第 16 洞狗腿右越過水、第 17 洞三桿洞右邊是水，加上南佛州的強風。</td><td>真實</td></tr><tr><td><b>茵尼斯布魯克銅頭蛇@C</b><br><span class="small">Innisbrook (Copperhead) @C</span></td><td>美國佛州帕姆港</td><td>Valspar Championship（3 月）</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,209 Y</td><td>佛州少見的起伏丘陵：高大的松樹夾道、狗腿多；最後三洞叫「蛇窟（Snake Pit）」，第 16 洞狗腿右越過水。</td><td>真實</td></tr><tr><td><b>海港城@C</b><br><span class="small">Harbour Town Golf Links @C</span></td><td>美國南卡羅來納州希爾頓黑德島</td><td>RBC Heritage（4 月，名人賽隔週）</td><td class="n">★★★☆☆</td><td class="n">Par 71<br>7,099 Y</td><td>南卡羅來納低地：活橡樹的枝葉垂到球道上、窄球道、全巡迴賽最小的果嶺；第 17、18 洞沿著卡利博格灣，背景是紅白條紋燈塔。</td><td>真實</td></tr><tr><td><b>TPC 聖安東尼奧橡樹@C</b><br><span class="small">TPC San Antonio (Oaks) @C</span></td><td>美國德州聖安東尼奧</td><td>Valero Texas Open（4 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,435 Y</td><td>德州丘陵地（Hill Country）：石灰岩、矮橡樹與杜松、強風；Greg Norman 設計，球道邊是灌木與石塊，全長超過 7,400 碼。</td><td>真實</td></tr><tr><td><b>殖民地@C</b><br><span class="small">Colonial Country Club @C</span></td><td>美國德州沃斯堡</td><td>Charles Schwab Challenge（5 月）</td><td class="n">★★★☆☆</td><td class="n">Par 70<br>7,176 Y</td><td>沃斯堡三一河畔：Ben Hogan 的主場，第 3~5 洞叫「可怕的馬蹄鐵（Horrible Horseshoe）」，第 5 洞右邊就是三一河；樹林夾道、果嶺小。</td><td>約略</td></tr><tr><td><b>繆菲爾德村@C</b><br><span class="small">Muirfield Village Golf Club @C</span></td><td>美國俄亥俄州都柏林</td><td>Memorial Tournament（6 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,559 Y</td><td>Jack Nicklaus 在家鄉蓋的球場：小溪在山谷間穿梭，第 12 洞三桿洞越過池塘、第 16 洞三桿洞也是過水；果嶺又快又硬。</td><td>真實</td></tr><tr><td><b>TPC 河流高地@C</b><br><span class="small">TPC River Highlands @C</span></td><td>美國康乃狄克州克倫威爾</td><td>Travelers Championship（6 月）</td><td class="n">★★☆☆☆</td><td class="n">Par 70<br>6,841 Y</td><td>康乃狄克河谷：短、起伏、抓鳥大賽；第 15 洞可一桿上果嶺的短四桿洞左邊是池塘，第 16 洞三桿洞越過水，第 17 洞開球要越過水。</td><td>真實</td></tr><tr><td><b>底特律北場@C</b><br><span class="small">Detroit Golf Club (North) @C</span></td><td>美國密西根州底特律</td><td>Rocket Classic（6 月）</td><td class="n">★★☆☆☆</td><td class="n">Par 72<br>7,314 Y</td><td>Donald Ross 在底特律市區設計的平坦林木球場：大樹成林、果嶺不大，第 14~16 洞「313 區」（底特律的電話區號）是決勝段，第 16 洞旁邊是水。</td><td>約略</td></tr><tr><td><b>TPC 迪爾溪@C</b><br><span class="small">TPC Deere Run @C</span></td><td>美國伊利諾州錫爾維斯</td><td>John Deere Classic（7 月）</td><td class="n">★★☆☆☆</td><td class="n">Par 71<br>7,258 Y</td><td>密西西比河支流岩石河（Rock River）旁的峭壁與山谷：橡樹林、溝壑穿插；第 16 洞是越過水的短三桿洞，第 18 洞左邊是水。</td><td>真實</td></tr><tr><td><b>TPC 南風@C</b><br><span class="small">TPC Southwind @C</span></td><td>美國田納西州曼非斯</td><td>FedEx St. Jude Championship（8 月，季後賽第一戰）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,244 Y</td><td>曼非斯的平坦低地：10 個水障礙、94 個沙坑，百慕達草與結縷草；第 11 洞是幾乎被水包圍的三桿洞，第 14 洞是又長又難的三桿洞，第 18 洞左邊是水。</td><td>真實</td></tr><tr><td><b>東湖@C</b><br><span class="small">East Lake Golf Club @C</span></td><td>美國喬治亞州亞特蘭大</td><td>TOUR Championship（8 月，聯邦快遞盃總決賽）</td><td class="n">★★★★☆</td><td class="n">Par 70<br>7,346 Y</td><td>Bobby Jones 的家鄉球場：球場中央一座湖，第 15 洞三桿洞越過湖，第 18 洞是沿著湖的五桿洞收尾。</td><td>真實</td></tr><tr><td><b>塞奇菲爾德@C</b><br><span class="small">Sedgefield Country Club @C</span></td><td>美國北卡羅來納州格林斯伯勒</td><td>Wyndham Championship（8 月，例行賽最後一站）</td><td class="n">★★☆☆☆</td><td class="n">Par 70<br>7,131 Y</td><td>Donald Ross 的起伏球場：松樹林、小而突起的果嶺（Ross 招牌的龜背），第 16 洞三桿洞越過水。</td><td>真實</td></tr><tr><td><b>望遠鏡山@C</b><br><span class="small">Spyglass Hill Golf Course @C</span></td><td>美國加州圓石灘</td><td>AT&amp;T Pebble Beach Pro-Am（2 月，和圓石灘一起使用）</td><td class="n">★★★★★</td><td class="n">Par 72<br>6,960 Y</td><td>前五洞在太平洋邊的白色沙丘（洞名取自《金銀島》），第 6 洞起進入高聳的蒙特利松林；公認圓石灘一帶最難的球場。</td><td>約略</td></tr><tr><td><b>TPC 雙子城@C</b><br><span class="small">TPC Twin Cities @C</span></td><td>美國明尼蘇達州布萊恩</td><td>3M Open（7 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,513 Y</td><td>明尼蘇達的湖泊與濕地：27 個水障礙、15 個洞有水；沙質地，第 18 洞五桿洞左邊一路是湖。</td><td>真實</td></tr></table></div><h3>歐洲巡迴賽場地（6 座）</h3><p class="small">國籍是歐洲、或選擇走歐巡路線時（第四章起）；萊德盃年份的歐洲場地也會用到。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>溫特沃斯西場@C</b><br><span class="small">Wentworth Club (West) @C</span></td><td>英國英格蘭薩里郡</td><td>BMW PGA 錦標賽（9 月，歐巡旗艦賽）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,284 Y</td><td>薩里郡的石南荒原（heathland）：歐洲赤松、白樺、杜鵑與紫色石南；以兩個五桿洞收尾，第 18 洞果嶺前有水。</td><td>真實</td></tr><tr><td><b>瓦爾德拉馬@C</b><br><span class="small">Real Club Valderrama @C</span></td><td>西班牙安達魯西亞索托格蘭德</td><td>Andalucía Masters（10 月）</td><td class="n">★★★★★</td><td class="n">Par 71<br>6,972 Y</td><td>安達魯西亞的軟木橡樹林：樹枝垂到球道上、球道窄、果嶺小又快；第 4 洞「瀑布（La Cascada）」五桿洞果嶺右邊是瀑布水池，第 17 洞五桿洞果嶺前是池塘。</td><td>約略</td></tr><tr><td><b>鐘樓布拉巴宗@C</b><br><span class="small">The Belfry (Brabazon) @C</span></td><td>英國英格蘭沃里克郡</td><td>英國公開賽資格賽 · 萊德盃歷史場地</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,253 Y</td><td>英格蘭中部平原上的公園球場，四次舉辦萊德盃：第 10 洞是越過水、可以一桿上果嶺的短四桿洞（Seve 的經典一擊），第 18 洞開球與第二桿都要越過湖、三層果嶺。</td><td>約略</td></tr><tr><td><b>阿岱爾莊園@C</b><br><span class="small">Adare Manor @C</span></td><td>愛爾蘭利默里克郡</td><td>萊德盃（2027 年場地）· 愛爾蘭公開賽</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,605 Y</td><td>利默里克郡的莊園庭園：梅格河（River Maigue）穿過，古樹參天，背景是哥德式莊園大宅；球道寬闊、地面整理得像地毯。</td><td>約略</td></tr><tr><td><b>格倫伊格爾斯 PGA 百年@C</b><br><span class="small">Gleneagles (PGA Centenary) @C</span></td><td>英國蘇格蘭珀斯郡</td><td>蘇格蘭公開賽（7 月）· 2014 萊德盃場地</td><td class="n">★★★☆☆</td><td class="n">Par 73<br>7,320 Y</td><td>蘇格蘭高地邊緣的荒原（moorland）：遠處是奧克爾丘陵，溪流（burn）穿過，Nicklaus 設計、地形起伏大，標準桿 73。</td><td>約略</td></tr><tr><td><b>皇家郡唐@C</b><br><span class="small">Royal County Down @C</span></td><td>英國北愛爾蘭紐卡索</td><td>愛爾蘭公開賽輪替 · 沃克盃場地</td><td class="n">★★★★★</td><td class="n">Par 71<br>7,186 Y</td><td>莫恩山脈下、鄧德拉姆灣旁的林克斯：黃色金雀花、紫色石南、很多盲打的開球要越過沙丘；沙坑邊緣垂著濱草，像眉毛一樣。</td><td>真實</td></tr></table></div><h3>團體賽與奧運場地（2 座）</h3><p class="small">總統盃 / 萊德盃（9 月，各隔年）與奧運（每四年）輪流使用，和現有的皇家墨爾本、馬可西蒙尼一起。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>國家高爾夫信天翁@C</b><br><span class="small">Le Golf National (L&#x27;Albatros) @C</span></td><td>法國巴黎近郊</td><td>萊德盃（2018）· 2024 奧運 · 法國公開賽</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,333 Y</td><td>巴黎近郊用土堆出的體育場球場：觀眾坐在土丘上，水在最後四洞包圍；第 15 洞果嶺幾乎被水包圍、第 16 洞三桿洞越過水、第 18 洞左邊是水、果嶺在半島上。</td><td>約略</td></tr><tr><td><b>霞關東場@C</b><br><span class="small">Kasumigaseki Country Club (East) @C</span></td><td>日本埼玉縣川越</td><td>2020 東京奧運 · 亞太業餘錦標賽</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,466 Y</td><td>東京近郊的日本松林球場：赤松夾道、修剪整齊的日式庭園感；為了奧運由 Fazio 改造，果嶺改成一洞一個大果嶺。</td><td>真實</td></tr></table></div><h3>亞洲巡迴賽場地（2 座）</h3><p class="small">第四章「職業之路」走亞巡、日巡時；和現有的川奈富士、曼吉勞、自創寫實球場一起排成亞洲賽程。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>聖淘沙塞拉彭@C</b><br><span class="small">Sentosa Golf Club (Serapong) @C</span></td><td>新加坡聖淘沙島</td><td>新加坡公開賽（亞巡）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,380 Y</td><td>新加坡南端的熱帶島嶼：海邊、潟湖、熱帶雨林與起伏的沙坑；遠處是港口的貨輪與市區天際線。</td><td>約略</td></tr><tr><td><b>太平洋俱樂部御殿場@C</b><br><span class="small">Taiheiyo Club (Gotemba) @C</span></td><td>日本靜岡縣御殿場</td><td>三井住友 VISA 太平洋名人賽（日巡，11 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,262 Y</td><td>富士山腳下的高原球場：富士山在每一洞的背景，日本松與楓樹，秋天楓紅；第 18 洞果嶺前是池塘。</td><td>約略</td></tr></table></div><h3>業餘大賽場地（4 座）</h3><p class="small">第三章「大學與業餘」：美國業餘錦標賽（8 月）每年換一座，和現有的林克斯、圓石灘等一起輪替。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>錢伯斯灣@C</b><br><span class="small">Chambers Bay @C</span></td><td>美國華盛頓州大學城（普吉特灣）</td><td>美國業餘錦標賽輪替（8 月）· 2015 美國公開賽</td><td class="n">★★★★★</td><td class="n">Par 71<br>7,874 Y</td><td>普吉特灣旁的舊砂石採石場：全是羊茅草、落差極大的人工沙丘，整座球場只有一棵樹（第 15 洞果嶺後的孤松）；湖邊有火車經過。</td><td>真實</td></tr><tr><td><b>艾林山@C</b><br><span class="small">Erin Hills @C</span></td><td>美國威斯康辛州艾林</td><td>美國業餘錦標賽輪替（8 月）· 2017 美國公開賽</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,772 Y</td><td>威斯康辛冰河留下的壺穴地形（kettle moraine）：起伏的草原、羊茅草、沒有樹、天然風蝕沙坑，球道很寬但長草很深。</td><td>真實</td></tr><tr><td><b>奧林匹克俱樂部湖場@C</b><br><span class="small">The Olympic Club (Lake) @C</span></td><td>美國加州舊金山</td><td>美國業餘錦標賽輪替（8 月）· 美國公開賽歷史場地</td><td class="n">★★★★★</td><td class="n">Par 70<br>7,170 Y</td><td>舊金山西南的山坡：柏樹與松樹夾道、球道向莫塞德湖方向斜（球會往一邊滾）、常有海霧；幾乎沒有球道沙坑，果嶺小；第 18 洞短而上坡。</td><td>真實</td></tr><tr><td><b>梅里恩東場@C</b><br><span class="small">Merion Golf Club (East) @C</span></td><td>美國賓州阿德莫爾</td><td>美國業餘錦標賽輪替（8 月）· 2013 美國公開賽</td><td class="n">★★★★☆</td><td class="n">Par 70<br>6,996 Y</td><td>費城郊外的經典老球場：旗桿上是柳條編的籃子而不是旗子、白色沙面的沙坑叫「梅里恩的白臉」；第 11 洞果嶺前是小溪，第 16~18 洞要越過舊採石場。</td><td>真實</td></tr></table></div><h3>Korn Ferry Tour 場地（10 座）</h3><p class="small">第四章「職業之路」：Korn Ferry Tour 一季的主要場地，最後一站維多利亞國家@C 決定 PGA TOUR 卡。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>維多利亞國家@C</b><br><span class="small">Victoria National Golf Club @C</span></td><td>美國印第安納州紐堡</td><td>Korn Ferry Tour 錦標賽（9 月，決定 PGA TOUR 卡的最後一站）</td><td class="n">★★★★★</td><td class="n">Par 72<br>7,350 Y</td><td>舊露天煤礦挖出的坑變成一個個深水湖：球道夾在湖與挖土堆起的高岡之間，幾乎每洞都有水，被稱為美國最難的球場之一。</td><td>約略</td></tr><tr><td><b>法式舔石皮特戴@C</b><br><span class="small">French Lick (Pete Dye Course) @C</span></td><td>美國印第安納州法式舔石</td><td>Korn Ferry Tour（7 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,578 Y</td><td>印第安納南部的山頂：Pete Dye 把球場蓋在全州第二高的山頭，每一洞都看得到 40 英里外的丘陵；落差大、深沙坑、硬果嶺。</td><td>約略</td></tr><tr><td><b>俄亥俄州立大學猩紅@C</b><br><span class="small">Ohio State University (Scarlet) @C</span></td><td>美國俄亥俄州哥倫布</td><td>Nationwide Children&#x27;s Hospital Championship（8 月）</td><td class="n">★★★★☆</td><td class="n">Par 71<br>7,444 Y</td><td>Alister MacKenzie 原設計、Nicklaus（俄亥俄州立大學校友）改造：起伏的草原地形、長而難的四桿洞、果嶺大而有層次。</td><td>真實</td></tr><tr><td><b>巴拿馬高爾夫俱樂部@C</b><br><span class="small">Panama Golf Club @C</span></td><td>巴拿馬巴拿馬市</td><td>Panama Championship（2 月）</td><td class="n">★★★☆☆</td><td class="n">Par 71<br>7,204 Y</td><td>熱帶都市旁的球場：熱帶雨林、棕櫚與巨大的榕樹，濕熱多雨、草很軟；水道在球場裡蜿蜒。</td><td>約略</td></tr><tr><td><b>波哥大鄉村俱樂部@C</b><br><span class="small">Country Club de Bogotá @C</span></td><td>哥倫比亞波哥大</td><td>Astara Championship（4 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,350 Y</td><td>安地斯山上海拔 2,600 公尺的高原：空氣稀薄、球飛得遠很多，四周是尤加利樹與高山，涼爽多雲。</td><td>約略</td></tr><tr><td><b>翡翠灣@C</b><br><span class="small">Sandals Emerald Bay @C</span></td><td>巴哈馬大埃克蘇馬島</td><td>The Bahamas Great Exuma Classic（1 月）</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,335 Y</td><td>巴哈馬的半島球場：綠松石色的海、珊瑚岩海岸，好幾洞直接沿著海邊；海風強，第 15 洞果嶺在突出的岬角上。</td><td>約略</td></tr><tr><td><b>希爾克雷斯特@C</b><br><span class="small">Hillcrest Country Club @C</span></td><td>美國愛達荷州波夕</td><td>Albertsons Boise Open（9 月）</td><td class="n">★★☆☆☆</td><td class="n">Par 72<br>7,022 Y</td><td>愛達荷州高原（海拔約 830 公尺）的老牌林木球場：大樹、緩坡，球在稀薄空氣裡飛得遠，常打出很低的桿數。</td><td>約略</td></tr><tr><td><b>印第安溪@C</b><br><span class="small">The Club at Indian Creek @C</span></td><td>美國內布拉斯加州奧馬哈</td><td>Pinnacle Bank Championship（8 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,415 Y</td><td>內布拉斯加的大平原：起伏的草原、強風、幾乎沒有樹，小溪在低處蜿蜒。</td><td>約略</td></tr><tr><td><b>克雷斯特維尤@C</b><br><span class="small">Crestview Country Club @C</span></td><td>美國堪薩斯州威奇托</td><td>Wichita Open（6 月）</td><td class="n">★★☆☆☆</td><td class="n">Par 72<br>6,973 Y</td><td>堪薩斯州的平原：南風又熱又強，球道兩旁是成排的大樹與小水塘。</td><td>約略</td></tr><tr><td><b>TPC 糖塊@C</b><br><span class="small">TPC Sugarloaf @C</span></td><td>美國喬治亞州杜盧斯</td><td>Korn Ferry Tour（5 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,303 Y</td><td>亞特蘭大北邊的丘陵林地：Greg Norman 設計，起伏大、溪流與湖泊、喬治亞的松樹與杜鵑。</td><td>約略</td></tr></table></div><h3>大學聯賽場地（10 座）</h3><p class="small">第三章「大學與業餘」：NCAA 秋季與春季賽、聯盟賽與 NCAA 錦標賽（5 月）。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>灰鷹猛禽@C</b><br><span class="small">Grayhawk Golf Club (Raptor) @C</span></td><td>美國亞利桑那州斯科茨代爾</td><td>NCAA 錦標賽（5 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,137 Y</td><td>索諾拉沙漠的大學決賽場地：仙人掌、沙漠荒地、大起伏的果嶺，夏天極熱。</td><td>約略</td></tr><tr><td><b>拉科斯塔北場@C</b><br><span class="small">Omni La Costa (North) @C</span></td><td>美國加州卡爾斯巴德</td><td>NCAA 錦標賽（5 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,162 Y</td><td>南加州海岸的度假球場：溫和的海風、小溪、棕櫚與尤加利，地面硬、果嶺快。</td><td>約略</td></tr><tr><td><b>卡斯滕溪@C</b><br><span class="small">Karsten Creek Golf Club @C</span></td><td>美國奧克拉荷馬州斯蒂爾沃特</td><td>大學秋季賽 · NCAA 區域賽</td><td class="n">★★★★★</td><td class="n">Par 72<br>7,366 Y</td><td>奧克拉荷馬州立大學的主場：Tom Fazio 在湖邊與橡樹林中設計，球道窄、水多，被稱為大學球隊最難的主場。</td><td>約略</td></tr><tr><td><b>祝福@C</b><br><span class="small">Blessings Golf Club @C</span></td><td>美國阿肯色州約翰遜</td><td>大學春季賽 · NCAA 錦標賽歷史場地</td><td class="n">★★★★★</td><td class="n">Par 72<br>7,710 Y</td><td>阿肯色州的溪谷：一條小溪貫穿整座球場、落差大，Robert Trent Jones Jr. 的超長設計（超過 7,600 碼）。</td><td>約略</td></tr><tr><td><b>豐收農場@C</b><br><span class="small">Rich Harvest Farms @C</span></td><td>美國伊利諾州蘇格爾格羅夫</td><td>NCAA 錦標賽歷史場地</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,275 Y</td><td>芝加哥西邊的私人農場球場：濃密的橡樹林、窄球道、湖泊，前任索爾海姆盃場地。</td><td>約略</td></tr><tr><td><b>南方高地@C</b><br><span class="small">Southern Highlands Golf Club @C</span></td><td>美國內華達州拉斯維加斯</td><td>大學冬季邀請賽（2 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,361 Y</td><td>拉斯維加斯南邊的沙漠山坡：俯瞰賭城大道，沙漠荒地、大落差、水景瀑布。</td><td>約略</td></tr><tr><td><b>草原沙丘@C</b><br><span class="small">Prairie Dunes Country Club @C</span></td><td>美國堪薩斯州哈欽森</td><td>大學秋季邀請賽 · 美國業餘賽歷史場地</td><td class="n">★★★★★</td><td class="n">Par 70<br>6,742 Y</td><td>堪薩斯大平原中間的沙丘地：Perry Maxwell 的「內陸林克斯」，沙丘上長滿野李子叢與絲蘭、果嶺起伏劇烈、強風。</td><td>約略</td></tr><tr><td><b>櫻桃山@C</b><br><span class="small">Cherry Hills Country Club @C</span></td><td>美國科羅拉多州丹佛</td><td>美國業餘賽歷史場地 · 大學邀請賽</td><td class="n">★★★☆☆</td><td class="n">Par 71<br>7,247 Y</td><td>丹佛高原（海拔 1,600 公尺）：落基山脈在背景、球飛得遠；第 1 洞是 Arnold Palmer 1960 年一桿上果嶺的短四桿洞，第 17、18 洞旁邊是湖。</td><td>約略</td></tr><tr><td><b>史丹佛@C</b><br><span class="small">Stanford Golf Course @C</span></td><td>美國加州帕羅奧圖</td><td>大學春季邀請賽</td><td class="n">★★★☆☆</td><td class="n">Par 71<br>7,055 Y</td><td>史丹佛大學後山的橡樹丘陵：加州橡樹散布、起伏的金黃色山坡，第 12 洞果嶺前有一棵大橡樹擋路。</td><td>約略</td></tr><tr><td><b>耶魯@C</b><br><span class="small">The Course at Yale @C</span></td><td>美國康乃狄克州紐哈芬</td><td>大學秋季邀請賽</td><td class="n">★★★★☆</td><td class="n">Par 72<br>7,208 Y</td><td>Macdonald 與 Raynor 的經典「模板洞」：第 9 洞是 Biarritz 式三桿洞（果嶺中間有一道深溝）、還有 Redan、Cape、Road 等模板；起伏劇烈的林地。</td><td>約略</td></tr></table></div><h3>青少年賽事場地（6 座）</h3><p class="small">第一章童年（U.S. Kids Golf 世界錦標賽）與第二章青少年（IMG 世界青少年錦標賽、AJGA）。</p><div class="scroll"><table><tr><th>球場</th><th>地點</th><th>生涯中的賽事與時間</th><th>難度</th><th>Par / 碼數</th><th>設計依據</th><th>計分卡</th></tr><tr><td><b>托里松北場@C</b><br><span class="small">Torrey Pines (North) @C</span></td><td>美國加州聖地牙哥</td><td>IMG Academy 世界青少年錦標賽（7 月）· Farmers Insurance Open</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,258 Y</td><td>和南場相鄰的海崖球場，比較短、海景更多；Tom Weiskopf 改造後果嶺更有起伏。</td><td>真實</td></tr><tr><td><b>派恩赫斯特 4 號@C</b><br><span class="small">Pinehurst No. 4 @C</span></td><td>美國北卡羅來納州派恩赫斯特</td><td>U.S. Kids Golf 世界錦標賽 · 美國業餘賽資格賽</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,210 Y</td><td>和 2 號同一片沙丘地：Gil Hanse 改造，沙地荒地與鐵線草、長葉松；起伏比 2 號大、果嶺比較寬容。</td><td>約略</td></tr><tr><td><b>派恩赫斯特 8 號@C</b><br><span class="small">Pinehurst No. 8 @C</span></td><td>美國北卡羅來納州派恩赫斯特</td><td>U.S. Kids Golf 世界錦標賽（8 月）</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>7,091 Y</td><td>派恩赫斯特百年紀念時開的球場：濕地與沼澤、長葉松林，比 2 號多了水。</td><td>約略</td></tr><tr><td><b>海島海濱@C</b><br><span class="small">Sea Island (Seaside) @C</span></td><td>美國喬治亞州聖西蒙斯島</td><td>AJGA 青少年賽 · RSM Classic</td><td class="n">★★★☆☆</td><td class="n">Par 70<br>7,042 Y</td><td>喬治亞外海的沼澤島：鹽沼與潮汐溪、活橡樹、海風；平坦但風很強，像美國版的林克斯。</td><td>約略</td></tr><tr><td><b>使命客棧冠軍@C</b><br><span class="small">Mission Inn (El Campeón) @C</span></td><td>美國佛州霍伊島</td><td>佛州青少年巡迴賽 · 大學冬季賽</td><td class="n">★★★☆☆</td><td class="n">Par 72<br>6,902 Y</td><td>佛州少見的起伏丘陵（約 25 公尺落差）：湖泊、柑橘園、苔蘚垂掛的橡樹，西班牙風格的度假村。</td><td>約略</td></tr><tr><td><b>卡梅爾谷牧場@C</b><br><span class="small">Carmel Valley Ranch @C</span></td><td>美國加州卡梅爾谷</td><td>AJGA 青少年賽</td><td class="n">★★☆☆☆</td><td class="n">Par 70<br>6,516 Y</td><td>蒙特雷半島內陸的山谷：葡萄園、橡樹散布的山坡，後九洞爬上山腰、俯瞰整個山谷。</td><td>約略</td></tr></table></div>
+  <p class="small">共 80 座。資料檔：<code>js/courses-creative.js</code>；計分卡「真實」= 照公開的冠軍梯計分卡，「約略」= 查不到逐洞資料，依公開的總長度與標準桿推估。</p>
+</section>
+
+<!-- ===================================================== 12 -->
+<section class="ch" id="s12">
+  <div class="chead"><div class="num">12</div><small>Tournament System</small><h2>比賽系統</h2></div>
+  <h3>每一輪的打法</h3>
+  <div class="scroll"><table>
+    <tr><th>打法</th><th>內容</th><th>時間</th><th>經驗值</th></tr>
+    <tr><td><b>完整 18 洞</b></td><td>全部自己打</td><td>35～50 分鐘</td><td>100% + 完賽獎勵 15%</td></tr>
+    <tr><td><b>精華 9 洞</b></td><td>自己打其中 9 洞，其他依素質與手感模擬</td><td>18～25 分鐘</td><td>打的洞 100%，模擬 30%</td></tr>
+    <tr><td><b>關鍵時刻</b></td><td>系統挑出這一輪最關鍵的 4 顆球，直接把球放在那個位置</td><td>6～10 分鐘</td><td>依實際花的時間平衡</td></tr>
+    <tr><td><b>模擬</b></td><td>直接看結果</td><td>10 秒</td><td>30%，成績略保守</td></tr>
+  </table></div>
+
+  <h3>比賽週</h3>
+  <div class="scroll"><table>
+    <tr><th>日</th><th>內容</th></tr>
+    <tr><td>週一</td><td>週一資格賽（沒有正賽資格時）、媒體日</td></tr>
+    <tr><td>週二</td><td>練習輪（打 3 洞熟悉果嶺，這週讀果嶺 +3）、贊助活動</td></tr>
+    <tr><td>週三</td><td>Pro-Am（和贊助商、名人搭檔打 9 洞：人氣與贊助好感）</td></tr>
+    <tr><td>週四～週日</td><td>四輪，第 2 輪後晉級線（PGA TOUR 一般是前 65 名含同分）、週末旗位變難</td></tr>
+    <tr><td>週日</td><td>頒獎、記者會、新聞、積分與獎金結算</td></tr>
+  </table></div>
+
+  <h3>排行榜、晉級線與壓力</h3>
+  <ul>
+    <li>每場有 40～156 位 AI 球員，每位的成績在比賽開始時用種子決定，隨著你打一洞、排行榜往前推進一洞：排行榜是即時的。</li>
+    <li>畫面上方是轉播風格的名次條：「T12　−3　領先者 −8　剩 5 洞」。</li>
+    <li><b>壓力等級 0～3</b>：一般 → 推 Par、晉級線附近 → 最後一輪後九洞爭冠 → 大賽最後一洞、資格賽決賽線上、延長賽。等級越高誤差越大，畫面暗角、心跳聲、觀眾變安靜；抗壓素質與技能卡可以抵銷。</li>
+    <li><b>延長賽</b>：同分爭冠用指定的洞重複打，壓力等級直接 3。</li>
+  </ul>
+
+  <h3>比賽條件</h3>
+  <ul>
+    <li>梯台：童年兒童梯、青少年依年齡、業餘藍梯到黑梯、職業黑梯。</li>
+    <li>果嶺速度：大賽比一般賽事快，美國公開賽與名人賽最快。</li>
+    <li>旗位：週末越來越難；名人賽週日有傳統的星期天旗位。</li>
+    <li>天氣：林克斯球場有強風日；風向沿用現有每洞的風計算。</li>
+    <li>OK 推：童年與家人下場可以，比賽一律沒有。</li>
+  </ul>
+</section>
+
+<!-- ===================================================== 13 -->
+<section class="ch" id="s13">
+  <div class="chead"><div class="num">13</div><small>Progression</small><h2>成長系統</h2></div>
+  <h3>素質</h3>
+  <p>沿用主遊戲的 14 項素質（力量、擊球效率、彈道、準度、穩定度、曲球、旋轉、切球、沙坑、脫困、推桿距離感、推桿方向、讀果嶺、抗壓），但生涯的素質可以低於 50：8 歲平均約 20（一號木約 90～110 碼），成年前自然成長到 40 上下，之後靠訓練與比賽。</p>
+
+  <div class="scroll"><table>
+    <tr><th>成長來源</th><th>說明</th></tr>
+    <tr><td>年齡成長</td><td>8～18 歲力量、擊球效率自然成長（發育期最快）；25～34 歲巔峰；35 歲後力量慢慢下降，讀果嶺與抗壓還能成長</td></tr>
+    <tr><td>經驗值 → 等級 → 技能點</td><td>自己打的每一洞、名次、里程碑給經驗；每次升級給技能點加在素質上</td></tr>
+    <tr><td>訓練關卡</td><td>練習場的訓練關卡直接累積指定素質的訓練經驗（每 100 點 +1）</td></tr>
+    <tr><td>教練</td><td>某一類素質的訓練加成</td></tr>
+    <tr><td>技能卡</td><td>特定情況生效的招牌技能（例如「最後三洞誤差 −15%」「2 碼內推桿方向誤差 −50%」），從生涯成就解鎖，欄位 2～6 格</td></tr>
+    <tr><td>球具</td><td>生涯專用的球具有小幅加成與取捨（例如刀背鐵桿：準度 +3、擊球效率 −2）</td></tr>
+    <tr><td>手感與體能</td><td>手感 −3～+3、體能 0～100，影響這一週的表現</td></tr>
+  </table></div>
+
+  <h3>球風與上限</h3>
+  <p>青少年結束時決定球風（重砲手、精準射手、短桿魔術師、推桿名手、全能型），每種球風有不同的素質上限；傳奇章節可以用「突破任務」把上限往上推，每項最多 +9。</p>
+
+  <h3>平衡規則</h3>
+  <ul>
+    <li>球具、手感、主場、桿弟、技能卡的固定加成合計每項最多 +8，素質最高 99。</li>
+    <li>同一種誤差被技能卡減少，最多減到原本的 60%。</li>
+    <li>每種打法的「每分鐘經驗」接近，不會逼玩家只用一種打法。</li>
+  </ul>
+
+  <h3>成長曲線目標</h3>
+  <div class="scroll"><table>
+    <tr><th>年齡</th><th>素質平均</th><th>一號木 Carry</th><th>典型成績</th></tr>
+    <tr><td class="n">8</td><td class="n">20</td><td class="n">約 100 碼</td><td>兒童梯 9 洞 55 桿</td></tr>
+    <tr><td class="n">12</td><td class="n">32</td><td class="n">約 170 碼</td><td>兒童梯 18 洞 85 桿</td></tr>
+    <tr><td class="n">17</td><td class="n">48</td><td class="n">約 225 碼</td><td>藍梯 75 桿</td></tr>
+    <tr><td class="n">21</td><td class="n">60</td><td class="n">約 255 碼</td><td>黑梯 72 桿</td></tr>
+    <tr><td class="n">24</td><td class="n">70</td><td class="n">約 275 碼</td><td>Korn Ferry 爭冠</td></tr>
+    <tr><td class="n">28</td><td class="n">80</td><td class="n">約 290 碼</td><td>PGA TOUR 冠軍、大賽前十</td></tr>
+    <tr><td class="n">31</td><td class="n">86</td><td class="n">約 300 碼</td><td>綠夾克候選</td></tr>
+  </table></div>
+  <p class="small">碼數用現有物理公式推算，實際由機器人實際打球校正（見 <a href="#s23">技術規劃</a>）。</p>
+</section>
+
+<!-- ===================================================== 14 -->
+<section class="ch" id="s14">
+  <div class="chead"><div class="num">14</div><small>Economy</small><h2>經濟系統：收入與支出</h2></div>
+  <div class="figrow">
+    <figure class="fig"><img src="img/bag-scottish.jpg" alt=""><figcaption>球袋上的每一個標誌都是一份合約 · CC0</figcaption></figure>
+    <figure class="fig"><img src="img/bag-clubs.jpg" alt=""><figcaption>球具合約與試打調整 · CC0</figcaption></figure>
+    <figure class="fig"><img src="img/pebble-coast.jpg" alt=""><figcaption>Pro-Am 與企業邀約 · CC BY-SA 3.0</figcaption></figure>
+  </div>
+  <p class="lede">錢從童年的零用錢開始，到職業巔峰的數千萬美元。每個階段都有「想買卻買不起」的東西，也有讓存款歸零的風險。</p>
+
+  <h3>收入來源</h3>
+  <div class="scroll"><table>
+    <tr><th>階段</th><th>來源</th><th>說明</th></tr>
+    <tr><td rowspan="4">童年</td><td>零用錢</td><td>每月固定，學業與家事表現好會多</td></tr>
+    <tr><td>家人資助</td><td>課程、比賽報名、出國比賽；依家庭背景與家人關係</td></tr>
+    <tr><td>撿球打工</td><td>練習場撿球、清洗球具</td></tr>
+    <tr><td>比賽獎品</td><td>兒童盃的球具禮券、獎盃</td></tr>
+    <tr><td rowspan="5">青少年</td><td>桿弟打工</td><td>家鄉球場桿弟：時薪 + 小費，順便學球場</td></tr>
+    <tr><td>球具店兼職</td><td>週末工作，員工價買球具</td></tr>
+    <tr><td>獎學金</td><td>學校體育獎學金、地方企業青少年獎學金</td></tr>
+    <tr><td>地方贊助</td><td>家鄉企業的小額贊助（帽子上的第一個標誌）</td></tr>
+    <tr><td>業餘獎品</td><td>受業餘身分規則限制的獎品上限</td></tr>
+    <tr><td rowspan="4">大學</td><td>運動獎學金</td><td>NCAA 學費全額或部分獎學金</td></tr>
+    <tr><td>NIL 收入</td><td>業餘也能用名字與形象賺錢：社群貼文、在地廣告</td></tr>
+    <tr><td>夏令營助教</td><td>暑假教小朋友打球</td></tr>
+    <tr><td>國家隊津貼</td><td>代表隊比賽補助</td></tr>
+    <tr><td rowspan="16">職業</td><td>比賽獎金</td><td>依巡迴賽與名次；冠軍約總獎金的 18%</td></tr>
+    <tr><td>季末積分獎金</td><td>聯邦快遞盃、各巡迴賽年度積分的獎金池</td></tr>
+    <tr><td>出場費</td><td>知名選手在部分海外賽事可以拿出場費（大賽與 PGA TOUR 沒有）</td></tr>
+    <tr><td>服裝合約</td><td>簽約金 + 達標獎金（例如冠軍、大賽前十、世界排名）</td></tr>
+    <tr><td>球具合約</td><td>整袋合約最高；也可以只簽球、推桿或手套</td></tr>
+    <tr><td>球袋與帽子標誌</td><td>銀行、航空、汽車、手錶、飲料：每個位置一份合約</td></tr>
+    <tr><td>廣告拍攝</td><td>一天的工作換一筆收入與人氣</td></tr>
+    <tr><td>Pro-Am 與企業球敘</td><td>企業邀約陪打，收入高但佔掉一週</td></tr>
+    <tr><td>表演賽與季末邀請賽</td><td>Skins Game、季末邀請賽、慈善表演賽</td></tr>
+    <tr><td>教學與夏令營</td><td>開班授課、球迷營隊</td></tr>
+    <tr><td>社群與影音頻道</td><td>依追蹤數與發布頻率；精彩球會讓追蹤數暴增</td></tr>
+    <tr><td>Podcast 與節目</td><td>名氣夠時受邀上節目、開自己的節目</td></tr>
+    <tr><td>自傳出版</td><td>拿到大賽冠軍後可以出書</td></tr>
+    <tr><td>個人品牌產品線</td><td>聯名服裝、球具、球場用品</td></tr>
+    <tr><td>球場設計費</td><td>傳奇章節的設計師身分</td></tr>
+    <tr><td>投資收益</td><td>球場股份、球具公司、學院（遊戲內的虛構投資）</td></tr>
+  </table></div>
+
+  <h3>支出</h3>
+  <div class="scroll"><table>
+    <tr><th>類別</th><th>項目</th><th>說明</th></tr>
+    <tr><td rowspan="6">團隊</td><td>揮桿教練、短桿教練、推桿教練</td><td>週薪；越有名越貴，訓練加成越高</td></tr>
+    <tr><td>心理師</td><td>手感下降減半、每輪一次「冷靜」</td></tr>
+    <tr><td>體能教練與營養師</td><td>體能恢復加快、老化變慢</td></tr>
+    <tr><td>物理治療師</td><td>降低傷病機率、縮短復原時間</td></tr>
+    <tr><td>桿弟</td><td>週薪 + 獎金分紅（一般名次約 5～7%、冠軍約 10%）</td></tr>
+    <tr><td>經紀人</td><td>抽贊助收入的一定比例</td></tr>
+    <tr><td rowspan="5">比賽</td><td>報名費</td><td>青少年賽、業餘賽、資格賽（資格賽很貴）</td></tr>
+    <tr><td>機票</td><td>經濟艙、商務艙、私人飛機（影響體能消耗）</td></tr>
+    <tr><td>住宿</td><td>汽車旅館、飯店、大賽週租房（真實職業選手的習慣）</td></tr>
+    <tr><td>租車與交通</td><td>美國賽程必備</td></tr>
+    <tr><td>家人同行</td><td>家人陪同比賽：心情加成，但花費加倍</td></tr>
+    <tr><td rowspan="3">器材</td><td>球具與耗材</td><td>球、手套、鞋；生涯專用球具升級</td></tr>
+    <tr><td>試打調整（fitting）</td><td>讓球具的取捨減半</td></tr>
+    <tr><td>成長換桿</td><td>童年與青少年長高時要換桿</td></tr>
+    <tr><td rowspan="3">生活</td><td>學費與生活費</td><td>國內或美國大學</td></tr>
+    <tr><td>房子與搬家</td><td>基地的租金或房貸</td></tr>
+    <tr><td>家人照顧</td><td>職業成功後回饋家人（關係與劇情）</td></tr>
+    <tr><td rowspan="5">資產</td><td>訓練基地</td><td>後院推桿果嶺、室內模擬器、短桿區、健身房</td></tr>
+    <tr><td>球場會籍</td><td>私人球場會籍：可以在那裡練習與舉辦活動</td></tr>
+    <tr><td>家鄉球場股份</td><td>分五次買下，主場加成提高，退休後成為球場主人</td></tr>
+    <tr><td>慈善基金會</td><td>每季捐款：人氣、形象、年度人道獎</td></tr>
+    <tr><td>青少年學院</td><td>傳奇章節的第二人生與傳承</td></tr>
+    <tr><td rowspan="3">稅與保險</td><td>所得稅</td><td>依基地所在地；佛州沒有州所得稅</td></tr>
+    <tr><td>賽事所在地稅</td><td>在美國各州、各國比賽的獎金在當地課稅（職業選手真實的煩惱）</td></tr>
+    <tr><td>保險</td><td>傷病保險（寫實難度）</td></tr>
+    <tr><td rowspan="2">個人</td><td>收藏品</td><td>冠軍複製獎盃、經典球具、名人簽名球</td></tr>
+    <tr><td>外觀與生活品味</td><td>球袋、球標、慶祝特效、車子（展示用）</td></tr>
+  </table></div>
+  <div class="note"><b>平衡</b>：童年與青少年錢很少（體驗「拜託家人」的感覺）；職業前三年最窮（旅費與資格賽報名費常常超過獎金）；PGA TOUR 之後收入暴增，但開銷與稅也一起變大，大額資產讓錢一直有地方用。生涯數據裡有「生涯總獎金」（排行榮譽）與「可用資金」兩個數字。</div>
+</section>
+
+<!-- ===================================================== 15 -->
+<section class="ch" id="s15">
+  <div class="chead"><div class="num">15</div><small>Team</small><h2>團隊：教練、桿弟、經紀人</h2></div>
+  <div class="band" style="background-image:url(img/caddies-vintage.jpg);background-position:center 30%">
+    <span class="cr">Caddies for golf, Baltusrol · Bain News Service · Public domain</span>
+    <div class="in"><small>CADDIES</small><h3>球袋的另一頭</h3><p>好的桿弟不會幫你揮桿，但會在你想打旗桿的時候說：「這個果嶺後面比較好救。」</p></div>
+  </div>
+  <p class="lede">桿弟主要提供「情報」，數值加成很小（+1～+3）：花錢請到好桿弟，是讓你看得更清楚、決定得更好，揮桿還是靠自己。每位桿弟有個性與默契等級（1～5），默契越高能力越完整。</p>
+  <div class="scroll"><table>
+    <tr><th>桿弟</th><th>背景</th><th>小加成</th><th>能力</th><th>默契 3 解鎖</th><th>費用</th></tr>
+    <tr><td><b>阿土伯</b></td><td>家鄉球場的老桿弟</td><td>家鄉讀果嶺 +3</td><td>提醒球場「容易犯錯的地方」</td><td>打壞後安慰：下一洞手感不下降</td><td class="n">$300/週</td></tr>
+    <tr><td><b>大學隊友</b></td><td>大學時的室友</td><td>—</td><td>球桿建議考慮風與高低差</td><td>每輪一次「這洞建議打法」</td><td class="n">$500/週</td></tr>
+    <tr><td><b>陳教授</b></td><td>數據分析出身</td><td>穩定度 +1</td><td>落點範圍圈：顯示這一桿 70% 會落在哪個橢圓</td><td>賽後「少了幾桿」分析</td><td class="n">$2,500/週</td></tr>
+    <tr><td><b>Mac</b></td><td>蘇格蘭林克斯土生土長</td><td>林克斯風的影響 −5%</td><td>風的建議：「多拿一支、壓低打」</td><td>強風日誤差 −10%</td><td class="n">$4,000/週</td></tr>
+    <tr><td><b>美玲</b></td><td>前職業推桿教練</td><td>讀果嶺 +2</td><td>果嶺坡度更清楚、預測線 +1 碼</td><td>3～6 碼推桿顯示建議力道</td><td class="n">$5,000/週</td></tr>
+    <tr><td><b>老周</b></td><td>前職業球員</td><td>抗壓 +2</td><td>每輪一次「冷靜」：壓力等級 −1</td><td>關鍵時刻前一句實用建議</td><td class="n">$7,000/週</td></tr>
+    <tr><td><b>Big Joe</b></td><td>揹過三座大賽冠軍</td><td>任選一項 +2</td><td>上面任兩種能力（較弱版本）</td><td>大賽期間所有能力加強</td><td class="n">$18,000/週</td></tr>
+    <tr><td><b>家人</b></td><td>爸爸或兄弟姊妹</td><td>心情 +</td><td>大賽週日加油事件</td><td>名人賽三桿洞大賽的白衣桿弟</td><td class="n">免費</td></tr>
+    <tr><td><b>朋友（連線）</b></td><td>真的朋友</td><td>—</td><td>觀戰房：朋友用驗證碼進來陪你打，用對話彈幕給建議</td><td>—</td><td class="n">免費</td></tr>
+  </table></div>
+  <div class="grid3">
+    <div class="card"><h4>教練</h4><p>揮桿、短桿、推桿、心理四種專長，各有三個等級（新秀、名師、傳奇），加成 +30% 到 +60%。名師需要排名或人氣才願意收你。</p></div>
+    <div class="card"><h4>經紀人</h4><p>談合約、排行程、處理媒體；不同經紀人擅長的贊助類型不同（運動品牌、精品、科技）。合約到期可以換人。</p></div>
+    <div class="card"><h4>專業團隊</h4><p>體能教練、營養師、物理治療師、心理師，職業後期一一加入，每位都有薪水與明確效果。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 16 -->
+<section class="ch" id="s16">
+  <div class="chead"><div class="num">16</div><small>Rivals, Media &amp; Fans</small><h2>宿敵、媒體與人氣</h2></div>
+  <div class="grid2">
+    <div class="card"><h4>三位宿敵</h4><ul><li><b>童年玩伴</b>（第二章）：一起長大的朋友變成對手，劇情可能和好也可能決裂</li><li><b>PGA 同期新人</b>（第五章）：新人王、首勝的競爭對手</li><li><b>現任世界第一</b>（第六章）：你在大賽要打倒的那個人，也可能是為你穿上綠夾克的上屆冠軍</li></ul><p>宿敵的素質會跟著你成長，永遠在你附近；生涯首頁有對戰紀錄。朋友的生涯球員可以設為宿敵。</p></div>
+    <div class="card"><h4>新聞與記者會</h4><p>每輪、每場結束後自動產生新聞頭條（依真實成績組合）；重要結果之後有一題三選一的記者會，回答累積個性（紳士 / 自信 / 幽默），影響贊助商類型與宿敵態度。</p></div>
+    <div class="card"><h4>人氣與球迷</h4><p>人氣（追蹤數）從青少年的社群帳號開始累積，影響贊助等級、球迷見面會收入、觀眾聲音大小。人氣門檻解鎖生涯稱號（例如「台灣之光」「林克斯之王」「綠夾克得主」）。</p></div>
+    <div class="card"><h4>社群經營</h4><p>每週可以發一則貼文（練球、生活、比賽、慈善），不同內容吸引不同球迷；精彩球（一桿進洞、切進、老鷹）會自動變成爆紅影片。</p></div>
+  </div>
+</section>
+
+<section class="ch" id="s16b">
+  <div class="chead"><div class="num">16+</div><small>Trophy Room</small><h2>獎盃室與冠軍更衣櫃</h2></div>
+  <p class="lede">獎盃室是一個<b>真的可以走進去的 3D 房間</b>：深色胡桃木牆板、綠色布面牆、天花板格柵與黃銅崁燈、玻璃展示櫃、一路鋪到底的綠色地毯。最深處是冠軍更衣櫃，綠夾克掛在裡面，櫃上的黃銅名牌刻著你的名字與年份。以下是用遊戲引擎（Three.js）直接算出來的原型畫面，所有模型都由程式產生，沒有使用外部模型。</p>
+  <div class="grid2x2">
+    <figure class="fig" style="aspect-ratio:16/10"><img src="img/render-room.jpg" alt=""><figcaption>獎盃室全景：地毯一路通往冠軍更衣櫃</figcaption></figure>
+    <figure class="fig" style="aspect-ratio:16/10"><img src="img/render-jacket.jpg" alt=""><figcaption>冠軍更衣櫃與綠夾克</figcaption></figure>
+    <figure class="fig" style="aspect-ratio:16/10"><img src="img/render-jug.jpg" alt=""><figcaption>展示櫃裡的銀壺</figcaption></figure>
+    <figure class="fig" style="aspect-ratio:16/10"><img src="img/render-shelf.jpg" alt=""><figcaption>巡迴賽與兒童盃的層架</figcaption></figure>
+  </div>
+  <p class="small">原型檔：<code>Career/prototype/trophy-room.html</code>（網址後面加 <code>#wide</code>、<code>#jacket</code>、<code>#trophies</code>、<code>#shelf</code> 切換鏡頭）。正式版會再加上材質細節、更柔和的光影與更多獎盃。</p>
+
+  <h3>在房間裡可以做什麼</h3>
+  <div class="grid3">
+    <div class="card"><h4>走動與觀看</h4><p>手指拖曳轉頭、點地板走過去；點一座獎盃就拉近鏡頭，可以用手指轉動獎盃，旁邊出現那一場的成績卡、最後一洞的那一桿、新聞頭條與冠軍證書。</p></div>
+    <div class="card"><h4>冠軍更衣櫃</h4><p>名人賽冠軍的綠夾克掛在更衣櫃裡（現實中冠軍的夾克也存放在奧古斯塔會館的冠軍更衣室）。點櫃門會打開，可以「穿上」夾克回到大廳。</p></div>
+    <div class="card"><h4>照片與證書</h4><p>牆上的畫框是生涯相簿的照片（自動截下的冠軍推桿、頒獎），證書會裱框掛在牆上。</p></div>
+    <div class="card"><h4>自動擺設</h4><p>四大賽放在中央的展示櫃，巡迴賽獎盃上牆面層架，兒童盃與業餘獎牌放在獨立的小櫃；拿到新獎盃時有一段放上去的動畫。</p></div>
+    <div class="card"><h4>房間會長大</h4><p>五個等級：童年書桌 → 家裡的玻璃櫃 → 獎盃室 → 私人展覽館（兩層樓）→ 名人堂館。升級要花獎金，也是後期重要的花錢地方。</p></div>
+    <div class="card"><h4>朋友參觀</h4><p>朋友可以從生涯名片進入你的獎盃室參觀（唯讀）。</p></div>
+  </div>
+
+  <h3>獎盃模型</h3>
+  <p>杯身用「旋轉體」（把剖面曲線繞中心轉一圈）做出來，再加上把手、蓋子、底座，材質用金屬反射。造型參考真實獎盃的特徵，但都是原創模型：</p>
+  <div class="scroll"><table>
+    <tr><th>賽事</th><th>模型特徵</th></tr>
+    <tr><td>Masters</td><td>綠夾克（衣架、翻領、金扣、胸前徽章）+ 會館造型的銀色紀念獎座</td></tr>
+    <tr><td>The Open</td><td>細頸、單把手、帶蓋的銀壺</td></tr>
+    <tr><td>PGA Championship</td><td>雙把手、帶蓋的大銀盃</td></tr>
+    <tr><td>U.S. Open</td><td>高腳、雙把手的銀盃</td></tr>
+    <tr><td>THE PLAYERS、FedEx Cup、TOUR Championship</td><td>各自不同的金屬或水晶造型</td></tr>
+    <tr><td>Presidents Cup / Ryder Cup</td><td>金色團體盃</td></tr>
+    <tr><td>奧運</td><td>金牌裝在木框與玻璃盒裡</td></tr>
+    <tr><td>一般巡迴賽、大學、業餘</td><td>依賽事等級的銀盤、銀盃、水晶盃；兒童盃是小金盃</td></tr>
+  </table></div>
+  <p>手機效能：房間與獎盃大約 5～8 萬面、6～10 盞聚光燈；手機上只讓最近的 3 盞燈投射陰影，其他用預先算好的光影，維持流暢。</p>
+</section>
+
+<!-- ===================================================== 17 -->
+<section class="ch" id="s17">
+  <div class="chead"><div class="num">17</div><small>Legacy</small><h2>傳奇、名人堂與退休</h2></div>
+  <div class="band" style="background-image:url(img/hof-main.jpg)">
+    <span class="cr">World Golf Hall of Fame · Michael Rivera · CC BY-SA 4.0</span>
+    <div class="in"><small>WORLD GOLF HALL OF FAME</small><h3>名人堂</h3><p>門檻照真實制度：15 場正式冠軍，或 2 座大賽（四大賽 + THE PLAYERS），並且滿 45 歲或退休滿 3 年。符合門檻後每年由委員會投票。</p></div>
+  </div>
+  <h3>綠夾克之後</h3>
+  <ul>
+    <li><b>衛冕</b>：名人賽連霸是傳說等級的成就。</li>
+    <li><b>生涯大滿貫</b>：四大賽都拿過冠軍。</li>
+    <li><b>世界第一</b>：累計週數排行。</li>
+    <li><b>聯邦快遞盃總冠軍、奧運金牌、團體賽勝利</b>。</li>
+  </ul>
+  <h3>名人堂</h3>
+  <ul>
+    <li>委員會得票率 75% 入選；得票率依冠軍數、大賽數、世界第一週數、團體賽戰績、年度最佳球員次數計算。</li>
+    <li>入選典禮：選介紹人（啟蒙導師、童年玩伴、家人、老桿弟），從三段講稿選一段致詞，掛上自己的銅匾。</li>
+    <li>名人堂館有所有入選者的牆，包括 AI 傳奇與朋友。</li>
+  </ul>
+  <h3>退休與第二人生</h3>
+  <p>退休時間由玩家決定（38 歲以後隨時可以）。退休前可以安排<b>告別賽</b>：在家鄉球場或任何一座大賽（老球場公開賽在聖安德魯斯時，走過 Swilcan Bridge 是傳統的告別畫面）。</p>
+  <div class="grid3">
+    <div class="card"><h4>PGA TOUR Champions</h4><p>50 歲以上的長青巡迴，有自己的大賽，對手都是同年紀的選手，又有競爭力。</p></div>
+    <div class="card"><h4>團體賽隊長</h4><p>總統盃或萊德盃隊長：挑外卡、決定配對與出賽順序，比賽時看排行或親自打其中一場。</p></div>
+    <div class="card"><h4>名人賽榮譽開球</h4><p>綠夾克得主退休後，每年名人賽第一天受邀開球。</p></div>
+    <div class="card"><h4>球場設計師</h4><p>用簡化版編輯器設計夢想球場，投稿給管理員；被採用就成為主遊戲的自製球場。</p></div>
+    <div class="card"><h4>青少年學院</h4><p>用獎金成立學院，每年有學員（AI），學員長大後出現在世界裡。</p></div>
+    <div class="card"><h4>傳承生涯</h4><p>新的生涯：孩子或學院學員從 8 歲開始，你的退休球員變成他的啟蒙導師；經驗值 +20%、多一格技能卡。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 18 -->
+<section class="ch" id="s18">
+  <div class="chead"><div class="num">18</div><small>Game Options</small><h2>系統選項</h2></div>
+  <div class="grid3">
+    <div class="card"><h4>難度三段</h4><ul><li><b>休閒</b>：AI 弱一點、經驗 +30%、每輪 1 次重打</li><li><b>標準</b>：預設</li><li><b>寫實</b>：AI 強、不能看落點範圍圈、模擬更保守、傷病開啟</li></ul></div>
+    <div class="card"><h4>傷病</h4><p>體能長期太低時有機率小傷，休息 1～3 週；物理治療師與傷病保險可以降低影響。預設只在寫實難度開啟，也可以單獨關閉。</p></div>
+    <div class="card"><h4>3 個生涯欄位</h4><p>同時保留三個生涯（例如一個重砲手、一個推桿名手）；退休的生涯留在名人堂館，隨時可以回去看紀錄、當隊長、榮譽開球。</p></div>
+    <div class="card"><h4>生涯相簿</h4><p>重要時刻自動截圖（第一隻鳥、第一座獎盃、冠軍推桿、頒獎），存在手機裡；名人堂典禮與退休時做成回顧。</p></div>
+    <div class="card"><h4>招牌慶祝</h4><p>選自己進洞後的慶祝方式與特效（沿用現有特效：金色亮粉、櫻花、極光…），大賽冠軍可以解鎖新的慶祝。</p></div>
+    <div class="card"><h4>球標與球袋</h4><p>果嶺上的球標圖案、球袋顏色與標誌、球上的號碼與記號，都可以自訂。</p></div>
+    <div class="card"><h4>自己排賽程</h4><p>季初看全年行事曆，標記「一定要打」的比賽；經紀人自動避開太密的行程，並提醒資格與報名截止。</p></div>
+    <div class="card"><h4>歷史比較</h4><p>生涯數據可以和 AI 傳奇比較：「你 28 歲時的冠軍數，世界上只有 3 個人比你多。」</p></div>
+    <div class="card"><h4>新手引導</h4><p>序章就是新手教學；每個新系統第一次出現時有一張說明卡，沿用現有教學系統的提示框。</p></div>
+    <div class="card"><h4>生涯長度</h4><p>快速（約 120 小時到綠夾克）/ 標準（約 250 小時）/ 完整（約 350 小時）：調整每季比賽數與童年、青少年的節奏。</p></div>
+    <div class="card"><h4>自動存檔與防重打</h4><p>每一桿打出去就先存結果；關掉 APP 再開，這一桿已經發生。休閒難度另外有重打次數。</p></div>
+    <div class="card"><h4>國籍</h4><p>建立球員時選國籍與家鄉：台灣、日本、韓國、美國、歐洲各國等。國籍決定團體賽（總統盃或萊德盃）、奧運代表權與兒童、青少年的賽事。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 19 -->
+<section class="ch" id="s19">
+  <div class="chead"><div class="num">19</div><small>Integration</small><h2>和主遊戲的關係</h2></div>
+  <p class="lede">生涯模式像一個外掛：拿掉它，主遊戲完全照常；有它，主遊戲的數字也不會被弄亂。</p>
+  <div class="scroll"><table>
+    <tr><th>系統</th><th>規則</th></tr>
+    <tr><td>主帳號素質、能力點</td><td>完全分開。主帳號只從「生涯成就」拿能力點，合計上限 40 點</td></tr>
+    <tr><td>數量型成就計數（幾洞、幾場、幾隻鳥、一桿進洞、奇幻機關）</td><td>共用，但只算自己實際打的洞；一場自己打 9 洞以上才算主遊戲的 1 場回合</td></tr>
+    <tr><td>表現型成就（開球 330 碼、單場上果嶺 18 洞、單場低於標準桿 5 桿…）</td><td>不共用：生涯有技能卡與球具加成</td></tr>
+    <tr><td>球場護照</td><td>共用：生涯中自己打 9 洞以上的球場會蓋章</td></tr>
+    <tr><td>排行榜、最佳 18 洞、回合紀錄</td><td>不共用：生涯成績有加成與模擬</td></tr>
+    <tr><td>挑戰模式、星星商店</td><td>不共用</td></tr>
+    <tr><td>外觀</td><td>共用：主遊戲解鎖的外觀生涯都能用，生涯的冠軍外觀也回到主帳號</td></tr>
+    <tr><td>練習場</td><td>生涯的訓練關卡借用練習場</td></tr>
+    <tr><td>連線</td><td>團體賽與觀戰房使用；一般連線不變</td></tr>
+  </table></div>
+
+  <h3>成就</h3>
+  <p>在現有成就系統新增「生涯」分類，格式照現有的（代號、等級、一個字的徽章、名稱、說明、計數、目標、能力點），解鎖動畫與存檔沿用。共 63 個，以下是全部清單：</p>
+  <div class="scroll"><table>
+    <tr><th>章節</th><th>成就（徽章字 · 名稱 · 條件）</th></tr>
+    <tr><td>序章・童年</td><td>夢 夢想起點（看完名人賽之夜）· 揮 第一次揮桿 · 鳥 第一隻鳥 · 百 破百 · 盃 第一座兒童盃 · 全 全國兒童冠軍 · 世 U.S. Kids 世界錦標賽 · 桿 第一套成人球桿 · 知 知識卡收集 40 張</td></tr>
+    <tr><td>青少年</td><td>師 拜師 · 校 校隊團體金牌 · 國 入選國家代表隊 · 青 全國青少年排名第一 · 美 AJGA 冠軍 · 隊 Junior 總統盃 / 萊德盃 · 亞 亞運獎牌 · 獎 拿到大學獎學金</td></tr>
+    <tr><td>大學・業餘</td><td>學 NCAA 冠軍 · 業 美國業餘冠軍 · 英 英國業餘冠軍 · 太 亞太業餘冠軍 · 銀 名人賽最佳業餘 · 冠 世界業餘排名第一 · 轉 轉職業</td></tr>
+    <tr><td>職業之路</td><td>一 週一資格賽過關 · 線 資格賽線上驚魂 · 卡 拿到 PGA TOUR 卡 · 亞 亞巡冠軍 · 晉 Korn Ferry 冠軍 · 家 衣錦還鄉（在家鄉拿職業冠軍）</td></tr>
+    <tr><td>PGA TOUR</td><td>新 新人王 · 勝 PGA TOUR 首勝 · 三 單季三勝 · 延 延長賽勝利 · 逆 大逆轉 · 奇 59 俱樂部 · 島 THE PLAYERS 冠軍 · 快 聯邦快遞盃總冠軍 · 年 年度最佳球員 · 十 世界前十 · 王 世界第一 · 久 世界第一 52 週</td></tr>
+    <tr><td>大賽・團體</td><td>綠 綠夾克 · 衛 名人賽衛冕 · 壺 英國公開賽冠軍 · 美 美國公開賽冠軍 · 杯 PGA 錦標賽冠軍 · 滿 生涯大滿貫 · 霸 年度大滿貫 · 金 奧運金牌 · 盟 總統盃 / 萊德盃勝利</td></tr>
+    <tr><td>傳奇</td><td>堂 名人堂 · 帥 冠軍隊長 · 開 榮譽開球 · 長 長青巡迴冠軍 · 別 告別賽 · 設 設計師 · 徒 桃李滿門 · 承 傳承生涯首勝 · 善 成立慈善基金會 · 伴 和桿弟默契滿級 · 敵 宿敵終結者 · 老 生涯滿 30 年</td></tr>
+  </table></div>
+  <p class="small">每個成就的等級（銅、銀、金、傳說）與主帳號獎勵（能力點 1～3，合計 40 點、外觀）在實作時依難度分配；綠夾克、生涯大滿貫、名人堂解鎖主帳號的專屬外觀（綠夾克上衣、大滿貫 Driver、名人堂球）。</p>
+
+  <h3>個人紀錄</h3>
+  <ul>
+    <li>紀錄頁新增「生涯」分頁：生涯名片、本季與生涯數據、獎盃室、年表、世界排名走勢、相簿。</li>
+    <li>「個人紀錄」分頁多一個篩選：一般 / 生涯 / 全部（預設一般）。選全部時，生涯中自己打的洞一起算，模擬的洞永遠不算。</li>
+    <li>「成就徽章」多一個「生涯」分類。</li>
+  </ul>
+
+  <h3>和主遊戲的連結</h3>
+  <div class="grid3">
+    <div class="card"><h4>大廳稱號與名片</h4><p>名字旁顯示生涯稱號，點開是生涯名片；連線遊戲間也看得到。</p></div>
+    <div class="card"><h4>經典重現</h4><p>生涯的重要時刻（例如綠夾克的最後一洞）存成挑戰，用主帳號重打同樣的球位、風與旗位。</p></div>
+    <div class="card"><h4>捏人系統共用</h4><p>新的寫實角色與捏人系統主遊戲也能用。</p></div>
+    <div class="card"><h4>現實練球也算數</h4><p>在「實際下場」記一場現實成績，生涯多一次免費訓練（每現實週一次，可關閉）。</p></div>
+    <div class="card"><h4>奇幻球場</h4><p>童年的小型高爾夫、季外的表演賽使用奇幻球場。</p></div>
+    <div class="card"><h4>設計師投稿</h4><p>退休後設計的球場投稿給管理員，採用後成為主遊戲的自製球場。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 20 -->
+<section class="ch" id="s20">
+  <div class="chead"><div class="num">20</div><small>Art Direction</small><h2>美術方向</h2></div>
+  <p class="lede">整個遊戲朝「電視轉播 + 實景攝影」的質感升級：介面像高爾夫轉播的圖卡，場景用寫實的材質與植物，人物用真實比例、乾淨的材質與可以替換的服裝零件。生涯模式先做，主遊戲同步受益。</p>
+
+  <div class="grid2">
+    <div class="card"><h4>介面語言：轉播圖卡</h4><ul><li>名次條、選手名牌、排行榜塔都參考高爾夫轉播的圖卡設計：白底深綠字、名次方塊、黃色紅字的低於標準桿數字。</li><li>主色：奧古斯塔綠（大賽與冠軍）、深松綠（一般介面）、香檳金（獎勵與按鈕）、奶油白（文件與證書）。</li><li>字型：中文標題用宋體系（Noto Serif TC），數字用窄體（Barlow Condensed），英文用襯線體（Cormorant Garamond）。</li><li>毛玻璃面板疊在 3D 畫面上，讓球場永遠是主角。</li></ul></div>
+    <div class="card"><h4>場景升級</h4><ul><li><b>樹</b>：現在是簡單的幾何樹，改用寫實的樹木模型與遠景替身卡（遠處用一張貼圖，近處用模型），松樹、橡樹、棕櫚、杜鵑分球場使用。</li><li><b>草</b>：近處加草葉、果嶺加割草紋與光澤；沙坑加耙痕。</li><li><b>觀眾</b>：大賽有沿球道的觀眾群（替身卡動畫）與看台、計分板。</li><li><b>光線</b>：每洞依時段（早上、午後、黃昏）換 HDR 天空，最後一輪是夕陽。</li></ul></div>
+    <div class="card"><h4>插畫與文件</h4><ul><li>獎盃與綠夾克是 3D 模型，放在可以走進去的獎盃室裡（見 <a href="#s16b">獎盃室</a>）；證書、邀請函、名人堂匾額用紙張纖維、燙金、浮雕的材質。</li><li>劇情插畫卡用實景照片 + 色調處理（統一偏暖、加顆粒），不用卡通插畫。</li></ul></div>
+    <div class="card"><h4>聲音</h4><ul><li>觀眾的掌聲與歡呼依人氣與名次變化；遠處其他洞的歡呼聲（名人賽的招牌氣氛）。</li><li>鳥叫、風聲、旗子聲、擊球聲依球桿不同；頒獎有專屬配樂。</li><li>音效使用 CC0 授權的音效庫。</li></ul></div>
+  </div>
+
+  <h3>現況與目標</h3>
+  <div class="grid2">
+    <figure class="fig" style="aspect-ratio:auto"><img src="img/game-current.jpg" alt="" style="max-height:520px;object-fit:cover"><figcaption>目前的遊戲畫面（經典角色、幾何樹）</figcaption></figure>
+    <figure class="fig" style="aspect-ratio:auto"><img src="img/augusta-10.jpg" alt="" style="max-height:520px;object-fit:cover"><figcaption>目標質感參考：寫實的松樹、草地光澤與景深</figcaption></figure>
+  </div>
+</section>
+
+<!-- ===================================================== 21 -->
+<section class="ch" id="s21">
+  <div class="chead"><div class="num">21</div><small>Characters &amp; Gear</small><h2>角色與裝備</h2></div>
+  <p class="lede">角色不做捏臉，而是提供清楚的基礎選項，再用「裝備」讓球員越來越有個人風格，而且裝備會加能力。全部用程式直接做在遊戲裡，不需要安裝任何軟體、不使用付費或外部模型。</p>
+
+  <h3>做法</h3>
+  <div class="grid2">
+    <div class="card"><h4>升級內建角色</h4><p>現在的「經典」內建角色是程式用幾何形狀組成的，所以可以直接擴充：身體改成更圓滑的曲面（軀幹、肩、脖子、手臂），加上臉部（眼睛、眉毛、鼻子、嘴、耳朵），衣服做成獨立的外層零件，布料、針織、毛料的紋理用程式畫在畫布上當貼圖。整體走「風格化寫實」：比例真實、材質乾淨，和獎盃室原型同一套做法與質感。</p></div>
+    <div class="card"><h4>零件化</h4><p>頭髮、帽子、眼鏡、上衣、下身、鞋子、手套、球袋都是可以替換的零件，掛在角色的骨架上，跟著揮桿動作移動。新增一件衣服只要加一個零件定義，不用重做角色。</p></div>
+    <div class="card"><h4>寫實角色也能用</h4><p>現有的 9 個寫實角色保留。它們的身體不能換衣服，但帽子、太陽眼鏡、手套可以掛在頭部與手部骨架上；裝備的能力加成一樣有效。</p></div>
+    <div class="card"><h4>年齡</h4><p>同一個角色依年齡自動調整比例：童年頭比較大、身體比較小，青少年長高，40 歲後頭髮慢慢變灰。</p></div>
+  </div>
+
+  <h3>基礎選項（建立球員時）</h3>
+  <div class="scroll"><table>
+    <tr><th>項目</th><th>選項</th></tr>
+    <tr><td>性別</td><td>男、女</td></tr>
+    <tr><td>膚色</td><td>8 種</td></tr>
+    <tr><td>髮型</td><td>10 種：短髮、平頭、油頭、旁分、捲髮、綁馬尾、短鮑伯、長直髮、丸子頭、光頭</td></tr>
+    <tr><td>髮色</td><td>10 種（黑、深棕、棕、栗、金、紅、灰、白…）</td></tr>
+    <tr><td>眼睛顏色</td><td>6 種</td></tr>
+    <tr><td>眉毛</td><td>4 種（細、自然、濃、粗直）</td></tr>
+    <tr><td>鬍子</td><td>5 種（無、短鬍渣、山羊鬍、八字鬍、落腮鬍），成年後可以換</td></tr>
+    <tr><td>身高</td><td>160～195 公分；越高揮桿弧度越大：力量略高、準度略低（各最多 ±2，平衡用）</td></tr>
+    <tr><td>體型</td><td>瘦、標準、壯</td></tr>
+  </table></div>
+
+  <h3>裝備系統</h3>
+  <p>裝備分成「服裝」與「球具」兩大類。服裝加的是小幅、有個性的能力，球具加的是主要的距離與控制；所有裝備的加成都算在「每項最多 +8」的上限裡。</p>
+  <div class="scroll"><table>
+    <tr><th>欄位</th><th>範例</th><th>能力（範例）</th></tr>
+    <tr><td>帽子</td><td>球帽、遮陽帽、漁夫帽</td><td>遮陽帽：晴天讀果嶺 +1；漁夫帽：強風日抗壓 +1</td></tr>
+    <tr><td>上衣</td><td>Polo、長袖、毛衣背心、防風外套</td><td>機能 Polo：體能消耗 −5%；防風外套：強風日穩定度 +1</td></tr>
+    <tr><td>下身</td><td>長褲、短褲、裙子</td><td>彈性長褲：彈道 +1</td></tr>
+    <tr><td>鞋子</td><td>有釘、無釘、復古皮鞋</td><td>有釘：斜坡站位的脫困 +2；無釘：體能消耗 −5%</td></tr>
+    <tr><td>手套</td><td>真皮、合成皮、雨天手套</td><td>真皮：擊球效率 +1；雨天手套：濕地誤差 −10%</td></tr>
+    <tr><td>配件</td><td>太陽眼鏡、手錶、球標</td><td>太陽眼鏡：讀果嶺 +1</td></tr>
+    <tr><td>一號木、球道木 / 混血</td><td>低旋轉大頭、可調重心</td><td>力量 +4、準度 −2；或準度 +3、曲球 +3</td></tr>
+    <tr><td>鐵桿</td><td>刀背、凹背寬底</td><td>準度 +3、曲球 +4、擊球效率 −2；或擊球效率 +3、彈道 +3、曲球 −2</td></tr>
+    <tr><td>挖起桿</td><td>高磨紋、寬底彈跳角</td><td>旋轉 +5（長草沒有加成）；或沙坑 +5、旋轉 −1</td></tr>
+    <tr><td>推桿</td><td>槌型、刀型</td><td>推桿方向 +5、距離感 −1；或距離感 +5、推桿方向 −1</td></tr>
+    <tr><td>球</td><td>三層巡迴球、雙層遠距離球</td><td>旋轉 +3、切球 +2；或力量 +2、旋轉 −3</td></tr>
+  </table></div>
+  <div class="grid3">
+    <div class="card"><h4>稀有度與等級</h4><p>一般、精良、稀有、傳奇、冠軍五種稀有度（顏色不同）；每件可以花錢升級 1～5 級，加成跟著變大。</p></div>
+    <div class="card"><h4>套裝效果</h4><p>同一個品牌穿滿 3 件有小加成（例如抗壓 +1）；贊助合約會要求穿該品牌，選贊助商也就是選套裝。</p></div>
+    <div class="card"><h4>取得方式</h4><p>商店（獎金購買）、贊助商贈送、比賽獎品、成就獎勵、冠軍專屬（例如名人賽的綠夾克，純外觀、象徵最高榮譽）。</p></div>
+    <div class="card"><h4>外觀與能力分開</h4><p>可以「穿 A 的外觀、用 B 的能力」，好看和好用不用二選一。</p></div>
+    <div class="card"><h4>主遊戲</h4><p>新的角色與服裝外觀主遊戲也能用；裝備的能力加成只在生涯模式有效，不影響主遊戲的平衡。</p></div>
+    <div class="card"><h4>製作順序</h4><p>先做角色本體與基礎選項，接著每一類先做 2～3 件，之後再陸續增加款式。開發前會先做一個角色原型（像獎盃室一樣）確認質感。</p></div>
+  </div>
+</section>
+
+<!-- ===================================================== 22 -->
+<section class="ch" id="s22">
+  <div class="chead"><div class="num">22</div><small>Screens</small><h2>遊戲畫面</h2></div>
+  <p class="lede">以下是主要畫面的示意。背景使用實景照片，表示目標的 3D 畫面質感；介面元件就是實作時的設計。</p>
+
+  <div class="phones">
+
+    <!-- 1 序章 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/augusta-10.jpg);background-position:60% center">
+        <div class="shade"></div>
+        <div class="top"><span class="eyeb">PROLOGUE · 8 歲</span></div>
+        <div class="bot">
+          <p style="font:500 14px/1.9 'Noto Serif TC';text-shadow:0 2px 10px rgba(0,0,0,.6)">電視裡的松樹很高，<br>果嶺安靜得聽得見呼吸。<br>爺爺說，那件綠色的衣服，<br>全世界只有幾十個人穿過。</p>
+          <p style="font:700 15px 'Noto Serif TC';color:#e3c98a;margin-top:10px">「總有一天，我也要穿上它。」</p>
+          <span class="btn">開始我的人生</span>
+        </div>
+      </div></div>
+      <div class="cap">序章<small>名人賽之夜，定下夢想</small></div>
+    </div>
+
+    <!-- 2 建立球員 -->
+    <div>
+      <div class="ph"><div class="s" style="background:radial-gradient(ellipse at 50% 35%,#3a4a42 0,#0d1612 70%)">
+        <div class="top"><span class="eyeb">CREATE PLAYER · 1 / 4</span><span class="mono" style="color:#e3c98a">外觀</span></div>
+        <div style="position:absolute;left:0;right:0;top:64px;height:240px;background:url(img/swing-sunset.jpg) center 30%/cover;mask-image:radial-gradient(ellipse at 50% 50%,#000 40%,transparent 72%);-webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 40%,transparent 72%);opacity:.9"></div>
+        <div class="bot"><div class="glass">
+          <div class="rowx"><span class="chipx on">外觀</span><span class="chipx">髮型</span><span class="chipx">體型</span><span class="chipx">服裝</span></div>
+          <div style="margin-top:8px">膚色</div><div style="display:flex;gap:5px;margin-top:4px"><span style="width:18px;height:18px;border-radius:50%;background:#f1c9a5"></span><span style="width:18px;height:18px;border-radius:50%;background:#e0ac85;outline:2px solid #e3c98a"></span><span style="width:18px;height:18px;border-radius:50%;background:#c98e62"></span><span style="width:18px;height:18px;border-radius:50%;background:#a46b45"></span><span style="width:18px;height:18px;border-radius:50%;background:#6f4428"></span></div>
+          <div style="margin-top:6px">眼睛</div><div style="display:flex;gap:5px;margin-top:4px"><span style="width:16px;height:16px;border-radius:50%;background:#3a2414;outline:2px solid #e3c98a"></span><span style="width:16px;height:16px;border-radius:50%;background:#6a4a22"></span><span style="width:16px;height:16px;border-radius:50%;background:#3a6a8a"></span><span style="width:16px;height:16px;border-radius:50%;background:#4a6a3a"></span><span style="width:16px;height:16px;border-radius:50%;background:#6a6a6a"></span></div>
+          <div style="margin-top:6px">髮型</div><div><span class="chipx on">短髮</span><span class="chipx">油頭</span><span class="chipx">旁分</span><span class="chipx">捲髮</span></div>
+          <div style="margin-top:4px">身高 178 cm</div><div class="bar"><i style="width:52%"></i></div>
+          <span class="btn">下一步：國籍與家庭</span>
+        </div></div>
+      </div></div>
+      <div class="cap">建立球員<small>基礎選項：膚色、髮型、眼睛、體型</small></div>
+    </div>
+
+    <!-- 3 童年月份 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/kids-camp.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">CHAPTER 1 · 關鍵時刻 5 / 5 · 12 歲</div><div class="big" style="margin-top:2px">暑假的十字路口</div></div></div>
+        <div class="bot">
+          <div class="glass"><div style="color:rgba(255,255,255,.85)">媽媽說：「今年暑假，你想怎麼過？」</div></div>
+          <div class="glass"><b>參加兒童夏令營</b><div style="color:rgba(255,255,255,.75)">天賦：基本功扎實 · 第二章可以選技術派教練</div></div>
+          <div class="glass" style="border-color:#e3c98a"><b>挑戰 U.S. Kids Golf 世界錦標賽</b><div style="color:rgba(255,255,255,.75)">天賦：大心臟 · 存款 −$800</div></div>
+          <div class="glass"><b>留在家鄉陪爺爺打球</b><div style="color:rgba(255,255,255,.75)">天賦：家鄉通 · 家人關係 +</div></div>
+        </div>
+      </div></div>
+      <div class="cap">童年的關鍵時刻<small>一個選擇決定天賦與第二章的起點</small></div>
+    </div>
+
+    <!-- 4 兒童盃 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/boy-flag.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div class="bug"><span class="a">HOLE 9</span><span class="b">PAR 3 · 86 Y</span><span class="c">−1</span></div></div>
+        <div class="bot">
+          <div class="lt"><div class="n"><span>家鄉兒童盃</span><span style="color:#00553a">冠軍</span></div><div class="d"><span>9～10 歲組 · 9 洞 34 桿</span><span>第一座獎盃</span></div></div>
+          <div class="glass"><div class="eyeb">MILESTONE</div><b>第一座兒童盃</b><div style="color:rgba(255,255,255,.75)">爸爸把獎盃放在電視旁邊，就在當年看名人賽的位置。</div></div>
+          <span class="btn">放進獎盃室</span>
+        </div>
+      </div></div>
+      <div class="cap">童年的里程碑<small>每個「第一次」都有專屬畫面</small></div>
+    </div>
+
+    <!-- 5 拜師 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/young-putting.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">CHAPTER 2 · 13 歲</div><div class="big" style="margin-top:2px">選擇你的教練</div></div></div>
+        <div class="bot">
+          <div class="glass"><div class="rowx"><b>技術派 · 林教練</b><span class="chipx">揮桿 +40%</span></div><div style="color:rgba(255,255,255,.75)">「先把揮桿打掉重練，半年後你會感謝我。」</div></div>
+          <div class="glass" style="border-color:#e3c98a"><div class="rowx"><b>數據派 · 陳博士</b><span class="chipx on">落點範圍圈</span></div><div style="color:rgba(255,255,255,.75)">「我們用數字說話。這是你三年的訓練表。」</div></div>
+          <div class="glass"><div class="rowx"><b>心理派 · 吳老師</b><span class="chipx">抗壓 +40%</span></div><div style="color:rgba(255,255,255,.75)">「你為什麼打球？」</div></div>
+        </div>
+      </div></div>
+      <div class="cap">拜師<small>決定青少年的成長方向</small></div>
+    </div>
+
+    <!-- 6 生涯首頁 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/pebble-coast.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">2041 SEASON · WEEK 6 · 25 歲</div><div class="big" style="margin-top:2px">陳子安</div><div style="color:rgba(255,255,255,.8)">PGA TOUR · 世界排名 86</div></div></div>
+        <div class="bot">
+          <div class="glass"><div class="eyeb">THIS WEEK</div><b style="font-size:14px">AT&amp;T Pebble Beach Pro-Am</b><div style="color:rgba(255,255,255,.75)">Signature Event · 總獎金 $20,000,000</div><span class="btn">進入比賽週</span></div>
+          <div class="glass"><div class="rowx"><span>體能 74</span><span>手感 +1</span><span>FedEx 41 名</span></div><div class="bar"><i style="width:74%"></i></div></div>
+          <div class="glass"><div class="rowx"><span>可用資金</span><b class="mono" style="font-size:15px">$ 1,284,500</b></div></div>
+        </div>
+      </div></div>
+      <div class="cap">生涯首頁<small>每週的選擇與目前的狀態</small></div>
+    </div>
+
+    <!-- 7 比賽週 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/sawgrass-17b.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">TOURNAMENT WEEK</div><div class="big" style="margin-top:2px">THE PLAYERS</div><div style="color:rgba(255,255,255,.8)">TPC Sawgrass · 3 月</div></div></div>
+        <div class="bot">
+          <div class="glass"><div class="rowx"><b>週一　媒體日</b><span class="chipx on">完成</span></div></div>
+          <div class="glass"><div class="rowx"><b>週二　練習輪</b><span class="chipx">3 洞</span></div><div style="color:rgba(255,255,255,.75)">熟悉果嶺：這週讀果嶺 +3</div></div>
+          <div class="glass"><div class="rowx"><b>週三　贊助拍攝</b><span class="chipx">+$40,000</span></div><div style="color:rgba(255,255,255,.75)">球具合約的廣告，體能 −8</div></div>
+          <div class="glass"><b>週四～週日　正賽 4 輪</b><div style="color:rgba(255,255,255,.75)">晉級線：前 65 名含同分</div></div>
+        </div>
+      </div></div>
+      <div class="cap">比賽週<small>週一到週三的活動可以跳過</small></div>
+    </div>
+
+    <!-- 8 回合中 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/sawgrass-17.jpg);background-position:40% center">
+        <div class="shade"></div>
+        <div class="top" style="flex-direction:column;gap:6px;align-items:stretch">
+          <div class="bug"><span class="a">17</span><span class="b">PAR 3 · 137 Y</span><span class="c" style="margin-left:auto">T3　−9</span></div>
+          <div class="glass" style="margin:0;padding:6px 10px"><span style="color:#e3c98a" class="mono">LEADER</span>　Kenji Mori　−11　已完賽</div>
+        </div>
+        <div class="bot">
+          <div class="glass" style="border-color:rgba(255,107,94,.6)"><div class="rowx"><b style="color:#ff8f84">壓力等級 2</b><span>抗壓 78　誤差 ×1.06</span></div><div style="margin-top:4px;color:rgba(255,255,255,.85)">桿弟 Mac：「風從右後方轉到右邊，9 號鐵打果嶺中間，不要攻旗。」</div></div>
+          <div class="lt" style="margin-top:8px"><div class="n"><span>陳子安</span><span>9 IRON</span></div><div class="d"><span>距旗 137 碼 · 實際 141 碼</span><span>風 9 mph →</span></div></div>
+        </div>
+      </div></div>
+      <div class="cap">回合中<small>轉播風格的名次條、壓力與桿弟建議</small></div>
+    </div>
+
+    <!-- 9 果嶺 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/putting-canberra.jpg);background-position:55% center">
+        <div class="shade"></div>
+        <div class="top"><div class="bug"><span class="a">18</span><span class="b">PAR 4</span><span class="c">−10</span></div></div>
+        <svg viewBox="0 0 270 585" style="position:absolute;inset:0;width:100%;height:100%" preserveAspectRatio="none">
+          <path d="M150 420 C 158 370, 176 330, 166 286" stroke="#fff" stroke-width="2.4" stroke-dasharray="6 6" fill="none" opacity=".95"/>
+          <circle cx="166" cy="284" r="5" fill="none" stroke="#e3c98a" stroke-width="2"/>
+        </svg>
+        <div class="bot">
+          <div class="glass"><div class="rowx"><b>推進就是冠軍</b><span class="mono" style="color:#e3c98a">4.6 Y</span></div><div style="color:rgba(255,255,255,.8)">上坡 7 cm · 左邊高 · 讀果嶺 82：預測線 12.6 碼</div></div>
+          <div class="glass"><div class="rowx"><span>美玲：「比洞口右邊一顆球，力道 5.1 碼。」</span></div></div>
+        </div>
+      </div></div>
+      <div class="cap">冠軍推<small>坡度流動箭頭、預測線與桿弟建議</small></div>
+    </div>
+
+    <!-- 10 排行榜 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/augusta-leaderboard.jpg);background-position:center 20%">
+        <div class="shade full"></div>
+        <div class="top"><div><div class="eyeb">MASTERS TOURNAMENT · FINAL ROUND</div><div class="big" style="margin-top:2px">LEADERS</div></div></div>
+        <div class="mid" style="top:54%">
+          <table class="lbx">
+            <tr><td>1</td><td>Kenji Mori</td><td class="r red">−11</td><td class="r">F</td></tr>
+            <tr class="me"><td>T2</td><td>陳子安</td><td class="r red">−10</td><td class="r">16</td></tr>
+            <tr><td>T2</td><td>林逸凡</td><td class="r red">−10</td><td class="r">15</td></tr>
+            <tr><td>4</td><td>Liam Hart</td><td class="r red">−8</td><td class="r">F</td></tr>
+            <tr><td>5</td><td>David Park</td><td class="r red">−7</td><td class="r">17</td></tr>
+            <tr><td>T6</td><td>Sato Ren</td><td class="r red">−6</td><td class="r">F</td></tr>
+            <tr><td>T6</td><td>Marco Bellini</td><td class="r red">−6</td><td class="r">14</td></tr>
+            <tr><td>8</td><td>許志豪</td><td class="r red">−5</td><td class="r">F</td></tr>
+          </table>
+          <div class="glass" style="margin-top:10px"><div class="rowx"><span>剩 2 洞 · 落後 1 桿</span><span style="color:#e3c98a">勝率 31%</span></div></div>
+          <span class="btn">打第 17 洞</span>
+        </div>
+      </div></div>
+      <div class="cap">即時排行榜<small>紅字為低於標準桿，比照奧古斯塔計分板</small></div>
+    </div>
+
+    <!-- 11 記者會 -->
+    <div>
+      <div class="ph"><div class="s" style="background:linear-gradient(180deg,#10233a 0,#0a1420 60%,#060b12 100%)">
+        <div style="position:absolute;left:0;right:0;top:70px;height:180px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 40px,transparent 40px 80px)"></div>
+        <div style="position:absolute;left:50%;top:150px;width:200px;margin-left:-100px;height:60px;border-radius:6px 6px 0 0;background:linear-gradient(#0a6b4a,#00553a);border-top:3px solid #c5a253;text-align:center;font:600 11px 'Barlow Condensed';letter-spacing:.3em;line-height:56px;color:#e3c98a">PRESS CONFERENCE</div>
+        <div class="top"><span class="eyeb">AFTER ROUND 4</span></div>
+        <div class="bot">
+          <div class="glass light"><b style="color:#00553a">記者</b><div style="margin-top:2px">「從 8 歲在電視前看名人賽，到今天站在這裡，你最想感謝誰？」</div></div>
+          <div class="glass"><b>紳士</b>　爺爺。他帶我去的第一個練習場，就在家旁邊。</div>
+          <div class="glass" style="border-color:#e3c98a"><b>自信</b>　我自己。這件夾克，我等了二十年。</div>
+          <div class="glass"><b>幽默</b>　我的桿弟。他說今天如果沒贏，就要換老闆。</div>
+        </div>
+      </div></div>
+      <div class="cap">記者會<small>回答累積個性，影響贊助與宿敵</small></div>
+    </div>
+
+    <!-- 12 桿弟 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/bag-scottish.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">TEAM · CADDIE</div><div class="big" style="margin-top:2px">招募桿弟</div></div></div>
+        <div class="bot">
+          <div class="glass"><div class="rowx"><b>Mac</b><span class="mono" style="color:#e3c98a">$4,000 / 週</span></div><div style="color:rgba(255,255,255,.75)">林克斯土生土長 · 風的建議 · 強風日誤差 −10%</div><div class="rowx" style="margin-top:4px"><span>默契</span><span style="color:#e3c98a">●●●○○</span></div></div>
+          <div class="glass"><div class="rowx"><b>美玲</b><span class="mono" style="color:#e3c98a">$5,000 / 週</span></div><div style="color:rgba(255,255,255,.75)">前推桿教練 · 讀果嶺 +2 · 建議力道</div></div>
+          <div class="glass" style="opacity:.6"><div class="rowx"><b>Big Joe</b><span>需要世界排名前 30</span></div></div>
+          <span class="btn">簽下 Mac</span>
+        </div>
+      </div></div>
+      <div class="cap">桿弟<small>情報為主，每位有個性與默契</small></div>
+    </div>
+
+    <!-- 13 資產 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/ra-clubhouse.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">FINANCE</div><div class="big" style="margin-top:2px">$ 18,640,000</div><div style="color:rgba(255,255,255,.8)">本季收入（稅後）$ 6.2M</div></div></div>
+        <div class="bot">
+          <div class="glass"><div class="rowx"><span>獎金</span><b class="mono">$ 4.1M</b></div><div class="rowx"><span>贊助與合約</span><b class="mono">$ 3.6M</b></div><div class="rowx"><span>Pro-Am、表演賽</span><b class="mono">$ 0.4M</b></div><div class="rowx" style="color:#ff8f84"><span>稅、抽成、團隊</span><b class="mono">−$ 1.9M</b></div></div>
+          <div class="glass"><div class="rowx"><b>室內模擬器</b><span class="mono" style="color:#e3c98a">$ 350,000</span></div><div style="color:rgba(255,255,255,.75)">每週多一個長桿訓練關卡</div></div>
+          <div class="glass"><div class="rowx"><b>家鄉球場股份</b><span>2 / 5</span></div><div class="bar"><i style="width:40%"></i></div></div>
+        </div>
+      </div></div>
+      <div class="cap">財務與資產<small>收入、支出與可以買的東西</small></div>
+    </div>
+
+    <!-- 14 邀請函 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/augusta-clubhouse.jpg);background-position:center 80%">
+        <div class="shade full"></div>
+        <div class="mid">
+          <div class="paperdoc">
+            <div class="crest">ANGC</div>
+            <div style="font:500 10px 'Cormorant Garamond';letter-spacing:.3em;color:#6f5a24">INVITATION</div>
+            <div style="font:900 17px/1.5 'Noto Serif TC';color:#00553a;margin:6px 0">誠摯邀請您參加<br>名人賽</div>
+            <div style="font-size:11px;line-height:1.9;color:#3a3428">陳子安 先生<br>本會謹邀請您出席<br>四月於奧古斯塔舉行之<br>名人賽</div>
+            <div style="margin-top:10px;font:italic 500 13px 'Cormorant Garamond';color:#6f5a24">Augusta National Golf Club</div>
+          </div>
+          <span class="btn" style="margin-top:14px">接受邀請</span>
+        </div>
+      </div></div>
+      <div class="cap">名人賽邀請函<small>生涯第一個高潮</small></div>
+    </div>
+
+    <!-- 15 綠夾克 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/augusta-10.jpg);background-position:50% center;filter:saturate(1.05)">
+        <div class="shade"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,200,120,.25),transparent 60%)"></div>
+        <div class="top"><span class="eyeb">BUTLER CABIN</span></div>
+        <div class="bot">
+          <div class="eyeb" style="text-align:center">MASTERS TOURNAMENT CHAMPION</div>
+          <div style="text-align:center;font:900 30px/1.2 'Noto Serif TC';margin:6px 0;text-shadow:0 2px 18px rgba(0,0,0,.6)">陳子安</div>
+          <div style="text-align:center;color:rgba(255,255,255,.85)">72 洞 277 桿 · −11 · 31 歲</div>
+          <div class="glass" style="text-align:center">上屆冠軍 林逸凡 為你穿上綠夾克<br><span style="color:#e3c98a">從 8 歲的那個晚上，已經過了 23 年</span></div>
+          <span class="btn">生涯回顧</span>
+        </div>
+      </div></div>
+      <div class="cap">綠夾克<small>Butler Cabin 頒獎與生涯回顧</small></div>
+    </div>
+
+    <!-- 16 獎盃室 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/render-room.jpg);background-position:52% center">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">TROPHY ROOM · 3D</div><div class="big" style="margin-top:2px">獎盃室</div></div></div>
+        <div class="bot">
+          <div class="glass"><div class="rowx"><b>冠軍更衣櫃</b><span class="mono" style="color:#e3c98a">MASTERS 2041</span></div><div style="color:rgba(255,255,255,.75)">點一下走過去，打開櫃門看綠夾克</div></div>
+          <div class="glass"><div class="rowx"><span>冠軍 19</span><span>大賽 3</span><span>兒童盃 6</span></div></div>
+          <span class="btn">走進獎盃室</span>
+        </div>
+      </div></div>
+      <div class="cap">獎盃室<small>真的可以走進去的 3D 房間</small></div>
+    </div>
+
+    <!-- 17 名人堂 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/hof-main.jpg)">
+        <div class="shade"></div>
+        <div class="top"><span class="eyeb">WORLD GOLF HALL OF FAME · 2063</span></div>
+        <div class="bot">
+          <div class="glass"><div class="eyeb">VOTE</div><div class="rowx"><b>得票率 91%</b><span>門檻 75%</span></div><div class="bar"><i style="width:91%"></i></div></div>
+          <div class="glass"><b>選擇介紹人</b><div style="margin-top:4px"><span class="chipx on">爺爺（啟蒙導師）</span><span class="chipx">林逸凡</span><span class="chipx">Mac</span></div></div>
+          <span class="btn">上台致詞</span>
+        </div>
+      </div></div>
+      <div class="cap">名人堂典禮<small>照真實門檻與委員會投票</small></div>
+    </div>
+
+    <!-- 18 告別 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/swilcan.jpg)">
+        <div class="shade"></div>
+        <div class="top"><span class="eyeb">THE OPEN · FAREWELL</span></div>
+        <div class="bot">
+          <p style="font:500 14px/1.9 'Noto Serif TC';text-shadow:0 2px 10px rgba(0,0,0,.6)">最後一次走過 Swilcan Bridge。<br>全場觀眾起立。</p>
+          <div class="glass"><b>第二人生</b><div style="margin-top:4px"><span class="chipx">長青巡迴</span><span class="chipx on">總統盃隊長</span><span class="chipx">設計師</span><span class="chipx">學院</span><span class="chipx">傳承</span></div></div>
+          <span class="btn">告別賽最後一洞</span>
+        </div>
+      </div></div>
+      <div class="cap">告別與退休<small>第二人生的選擇</small></div>
+    </div>
+
+    <!-- 19 大廳 -->
+    <div>
+      <div class="ph"><div class="s" style="background-image:url(img/swing-sunset.jpg)">
+        <div class="shade"></div>
+        <div class="top"><div><div class="eyeb">GOOD EVENING</div><div class="big" style="margin-top:2px">test <span style="font:600 10px 'Noto Sans TC';border:1px solid #e3c98a;color:#e3c98a;border-radius:10px;padding:1px 7px;vertical-align:middle">綠夾克得主</span></div></div></div>
+        <div class="bot">
+          <div class="glass"><b>單人回合</b><div style="color:rgba(255,255,255,.7)">選球場、梯台、9 / 18 洞</div></div>
+          <div class="glass" style="border-color:#e3c98a;background:rgba(0,85,58,.55)"><div class="eyeb">MY CAREER · 測試中</div><b>陳子安 · 31 歲 · 世界第 2</b><div style="color:rgba(255,255,255,.75)">下一場：PGA Championship</div><span class="btn">繼續生涯</span></div>
+          <div class="glass"><b>經典重現</b><div style="color:rgba(255,255,255,.7)">用主帳號挑戰「綠夾克的最後一推」</div></div>
+        </div>
+      </div></div>
+      <div class="cap">主遊戲大廳<small>只有 test 與管理員看得到生涯卡片</small></div>
+    </div>
+
+    <!-- 20 紀錄 -->
+    <div>
+      <div class="ph"><div class="s" style="background:#f6f3ec;color:#16181a">
+        <div style="background:#06150f;color:#f3ecdc;padding:40px 12px 12px"><div class="eyeb">RECORDS</div><div class="big">紀錄 · 生涯</div></div>
+        <div style="padding:10px 12px">
+          <div style="display:flex;gap:4px;overflow:hidden"><span class="chipx" style="color:#16181a;border-color:#ccc">個人紀錄</span><span class="chipx" style="color:#16181a;border-color:#ccc">成就</span><span class="chipx" style="color:#16181a;border-color:#ccc">護照</span><span class="chipx on">生涯</span></div>
+          <div class="glass light" style="box-shadow:0 2px 10px rgba(0,0,0,.06)"><b>陳子安</b><div style="color:#6b6a64">8 歲起 · 職業 9 年 · 冠軍 19 · 大賽 3</div></div>
+          <div class="glass light"><b>年表</b><div style="color:#3a3a32;line-height:1.9;font-size:11px">8 歲　名人賽之夜<br>9 歲　第一座兒童盃<br>13 歲　拜師陳博士<br>19 歲　亞太業餘冠軍、名人賽最佳業餘<br>22 歲　Q-School 線上過關<br>26 歲　PGA TOUR 首勝<br>31 歲　綠夾克</div></div>
+          <div class="glass light"><div class="rowx"><b>生涯成就</b><span>41 / 60</span></div><div class="bar"><i style="width:68%"></i></div></div>
+        </div>
+      </div></div>
+      <div class="cap">紀錄頁的生涯分頁<small>和主遊戲紀錄並排，數字分開</small></div>
+    </div>
+
+  </div>
+
+  <h3>冠軍證書</h3>
+  <div class="cert">
+    <div class="en">Certificate of Championship</div>
+    <h4>冠軍證書</h4>
+    <div class="ev">Masters Tournament</div>
+    <p>茲證明</p>
+    <div class="name">陳子安</div>
+    <p>於名人賽以七十二洞二百七十七桿（低於標準桿十一桿）<br>榮獲冠軍，特頒此證，以資表揚</p>
+    <div class="seal">冠軍<br>之證</div>
+    <div class="sig"><div>大會主席</div><div>奧古斯塔 · 四月</div><div>上屆冠軍</div></div>
+  </div>
+  <p class="small" style="text-align:center">每座冠軍都有一張證書，可以存成圖片；實作時加上紙張纖維與燙金的材質貼圖。</p>
+</section>
+
+<!-- ===================================================== 23 -->
+<section class="ch" id="s23">
+  <div class="chead"><div class="num">23</div><small>Technical Plan</small><h2>技術規劃</h2></div>
+  <h3>Career 資料夾</h3>
+<pre>Career/
+  career-plan.html      本企劃書（也是說明書）
+  DEV-NOTES.md          開發筆記（本機用，不上傳）
+  img/                  企劃書用的照片（授權記錄在 img/credits.json）；img/s/ = 遊戲用的縮小版
+  css/career.css        生涯的畫面樣式（轉播圖卡風格）
+  js/
+    boot.js             入口：名單內的帳號按下卡片時才由 js/main.js 動態載入；生涯欄位
+    state.js            存檔：本機（每一桿、每一週）+ GAS（每一輪、每一週），版本號比較新的才收
+    util.js             亂數、日期、金額
+    sim.js              模擬引擎：實力 → 一輪的期望 → 每洞抽樣（AI 與模擬的洞共用）
+    growth.js           年齡曲線、經驗、技能點、訓練、天賦、球風與上限、技能卡、上場的素質
+    world.js            AI 世界：真實球員、各巡迴的虛構球員、同儕；老化、退休、升降、世界排名
+    tours.js            資格（巡迴卡、大賽邀請類別、Signature、季後賽、團體賽與奧運選拔）、積分、Q-School、季末保卡
+    event.js            比賽：參賽名單、每輪成績、即時排行榜、晉級線、延長賽、獎金、世界排名積分、背景賽事
+    life.js             建立生涯、每週的行動、金錢、每週的世界、比賽結算、年底（長大、升降、獎項）
+    story.js            主線事件的觸發、隨機事件、記者會、宿敵
+    childhood.js        序章與童年的五個關鍵時刻、訓練關卡
+    legacy.js           名人堂、告別賽、退休、第二人生、傳承
+    achievements.js     63 個生涯成就（加進主遊戲的成就系統）、技能卡的解鎖
+    data/               真實球員、名字庫、賽程、裝備與團隊目錄、劇情、知識卡
+    ui/                 各畫面：shell（框架）、create、home、calendar、eventview、match（比洞賽與團體賽）、
+                        player、team（含財務）、trophy、more、ingame（比賽中的名次條、壓力、桿弟建議、成績卡）
+    trophy/room.js      3D 獎盃室（依存檔擺設）
+  gas/Career.gs         貼到同一個 Apps Script 專案的第二個檔案
+  prototype/            原型（trophy-room.html：獎盃室）
+  tools/autosim.js      「全模擬三十年」的平衡測試（本機用，不上傳）</pre>
+
+  <h3>主程式的接點</h3>
+  <div class="scroll"><table>
+    <tr><th>檔案</th><th>內容</th></tr>
+    <tr><td><code>index.html</code> / <code>js/main.js</code></td><td>名單內帳號才顯示的大廳卡片、紀錄頁分頁、稱號；動態載入 <code>Career/js/boot.js</code></td></tr>
+    <tr><td><code>js/game.js</code></td><td>只在 <code>cfg.career</code> 存在時：每洞回呼、只打部分洞、情境開局、壓力等級、成就計數規則、不呼叫 <code>saveRound</code>、生涯專用的中斷存檔</td></tr>
+    <tr><td><code>js/stats.js</code> / <code>js/physics.js</code></td><td>素質下限可以到 10（兒童）；擊球誤差讀取技能卡等倍率</td></tr>
+    <tr><td><code>js/terrain.js</code></td><td>兒童梯與年齡梯台：沿球道把發球位置往前移</td></tr>
+    <tr><td><code>js/progress.js</code></td><td>成就分類加「生涯」，表現型成就的生涯排除清單</td></tr>
+    <tr><td><code>js/hud.js</code></td><td>轉播風格名次條、壓力暗角</td></tr>
+    <tr><td><code>js/character.js</code> / <code>js/mixamo.js</code></td><td>內建角色升級（臉、身體、基礎選項、服裝零件）；寫實角色掛帽子、眼鏡、手套（主遊戲也能用）</td></tr>
+    <tr><td><code>sw.js</code></td><td>離線快取加上 Career 檔案（只有名單內帳號會用到）</td></tr>
+    <tr><td><code>gas/Code.gs</code></td><td>動作分派時查詢 <code>Career.gs</code> 的生涯動作；所有生涯動作先檢查開放名單</td></tr>
+  </table></div>
+
+  <h3>存檔：每個帳號一張「生涯」工作頁</h3>
+  <p>後端資料依帳號分開：生涯的一切放在 <code>生涯_帳號</code> 工作頁（例如 <code>生涯_test</code>）；只有「會影響主遊戲」的東西才寫進原本的個人工作頁（例如 <code>test</code>）。</p>
+  <div class="scroll"><table>
+    <tr><th>工作頁</th><th>放什麼</th></tr>
+    <tr><td><code>生涯_test</code></td><td>第 1 個生涯欄位的全部資料（見下方版面）</td></tr>
+    <tr><td><code>生涯_test_2</code>、<code>生涯_test_3</code></td><td>第 2、3 個生涯欄位（有用到才建立）</td></tr>
+    <tr><td><code>test</code>（原本的個人工作頁）</td><td>只更新現有欄位：<b>能力點 / 累計獲得點數</b>（生涯成就給的點數）、<b>成就</b>（生涯成就、共用的數量計數、球場護照章）、<b>外觀</b>（生涯解鎖的外觀與稱號）。不新增列（第 14 列以下是回合紀錄），生涯的回合也不寫進這裡的回合紀錄</td></tr>
+    <tr><td><code>生涯週賽</code>（共用）</td><td>好友週賽的成績（每人每週一列）</td></tr>
+  </table></div>
+  <h4 style="margin-top:14px">生涯_test 的版面（打開試算表就看得懂）</h4>
+  <div class="scroll"><table>
+    <tr><th>區塊</th><th>位置</th><th>內容</th></tr>
+    <tr><td>基本資料</td><td>A～B 欄上方</td><td>帳號、欄位、球員名、國籍與家鄉、年齡、章節、季、週、等級、經驗值、技能點、世界排名、可用資金、生涯總獎金、冠軍數、大賽數、難度、存檔版本、最後更新</td></tr>
+    <tr><td>素質</td><td>D～G 欄</td><td>14 項素質：目前值、上限、訓練經驗、裝備加成</td></tr>
+    <tr><td>裝備</td><td>I～M 欄</td><td>每個欄位：名稱、稀有度、等級、能力、外觀</td></tr>
+    <tr><td>團隊與人際</td><td>O～R 欄</td><td>桿弟、教練、經紀人、贊助商、家人與宿敵的關係值</td></tr>
+    <tr><td>賽事紀錄</td><td>第 30 列以下</td><td>每場一列：季、週、年齡、賽事、巡迴、球場、名次、四輪成績、總桿、獎金、積分、打法（自己打 / 模擬的洞數）</td></tr>
+    <tr><td>獎盃、年表、成就</td><td>賽事紀錄右側</td><td>獎盃清單、生涯年表、生涯成就與達成時間</td></tr>
+    <tr><td>完整資料</td><td>最右邊的「資料」欄</td><td>程式讀寫用的完整存檔（分欄存，保留最近 3 個版本）；上面的表格都從它整理出來，方便直接在試算表看</td></tr>
+  </table></div>
+  <ul>
+    <li>本機每一桿提交，伺服器每輪、每週同步；存檔有版本號，只收比較新的，兩台手機不會互相覆蓋。</li>
+    <li>AI 世界用種子重建，只存和種子不同的部分。</li>
+    <li>管理員的管理頁讀取每張 <code>生涯_帳號</code> 的基本資料區塊，顯示所有測試員的生涯摘要。</li>
+  </ul>
+
+  <h3>模擬與平衡</h3>
+  <ul>
+    <li>現有的擊球物理、球場建構、距離表都是純函式，可以在背景跑：寫一個「校正機器人」實際打數十萬洞，建立「素質 × 洞長 × 標準桿 → 桿數分布」表，AI 球員與模擬的洞都用同一張表，名次公平。</li>
+    <li>模擬玩家時加上「個人修正值」：最近 20 輪自己打的成績和預期的差，模擬更像你自己。</li>
+    <li>「全模擬三十年」的自動測試：每次調整數字後跑一次，確認成長曲線與第一件綠夾克的時間落在 200～300 小時。</li>
+  </ul>
+
+  <h3>開放名單的實作</h3>
+<pre>// js/config.js
+export const CAREER_USERS = ['test', 'Michael'];          // 分大小寫；正式開放時改成 null = 所有人
+export const careerAllowed = user => !!user &amp;&amp; (CAREER_USERS === null || CAREER_USERS.includes(user));
+
+// gas/Career.gs
+const CAREER_ACCESS = ['test', 'Michael'];
+function careerAuth_(req) { const acc = auth_(req); if (CAREER_ACCESS.indexOf(acc.user) &lt; 0) throw new Error('生涯模式尚未開放'); return acc; }</pre>
+</section>
+
+<!-- ===================================================== 24 -->
+<section class="ch" id="s24">
+  <div class="chead"><div class="num">24</div><small>Roadmap</small><h2>開發排程</h2></div>
+  <div class="scroll"><table>
+    <tr><th>階段</th><th>內容</th><th>狀態（v92）</th></tr>
+    <tr><td><b>1. 地基</b></td><td>Career 資料夾、開放名單、主程式接點與隔離測試、存檔、AI 世界、模擬公式、轉播風格介面元件</td><td>完成</td></tr>
+    <tr><td><b>2. 童年與青少年</b></td><td>序章、建立球員、月 / 週前進、心情、學業、關係、事件、兒童梯、童年與青少年賽事、拜師、經驗與技能點、生涯成就第一批</td><td>完成</td></tr>
+    <tr><td><b>3. 角色、裝備、獎盃室與場景</b></td><td>升級內建角色（臉、身體曲面、基礎選項、年齡比例）、服裝零件與裝備系統、3D 獎盃室與冠軍更衣櫃、獎盃模型；樹木、草地、觀眾、光線升級；第一批新球場</td><td>完成（場景升級沒有做，見說明書）</td></tr>
+    <tr><td><b>4. 大學、職業、名人賽</b></td><td>NCAA、業餘大賽、資格賽、各巡迴賽、PGA TOUR 賽季、世界排名、經濟系統、團隊、宿敵與媒體；奧古斯塔球場（依官方球道圖）、名人賽週全部傳統、綠夾克頒獎</td><td>完成（名人賽在奧古斯塔國家@C）</td></tr>
+    <tr><td><b>5. 大賽與團體賽</b></td><td>其他三大賽、THE PLAYERS、聯邦快遞盃、奧運、總統盃 / 萊德盃（含輪流擊球賽制）、生涯大滿貫</td><td>完成（輪流擊球以模擬完成）</td></tr>
+    <tr><td><b>6. 傳奇</b></td><td>名人堂、告別賽、長青巡迴、隊長、榮譽開球、設計師投稿、學院、傳承、相簿、系統選項全部、好友週賽與觀戰房</td><td>完成（觀戰房沒有做，改成好友週賽）</td></tr>
+  </table></div>
+  <p>每個階段完成後更新說明文件與版本號，並跑一次「主遊戲回歸測試」（單人、連線 4 人、挑戰、練習場、中斷接續）與「全模擬三十年」平衡測試。</p>
+</section>
+
+<!-- ===================================================== 25 -->
+<section class="ch" id="s25">
+  <div class="chead"><div class="num">25</div><small>Credits</small><h2>素材來源與授權</h2></div>
+  <p>本企劃書的照片全部來自 Wikimedia Commons，使用公有領域、CC0 或 Creative Commons 姓名標示授權，檔案放在 <code>Career/img/</code>，完整資料在 <code>Career/img/credits.json</code>。照片僅用於本企劃書與遊戲示意；比賽與組織名稱屬於各自的擁有者，本遊戲為私人、非營利用途。</p>
+  <div class="scroll"><table>
+    <tr><th>檔案</th><th>作者</th><th>授權</th></tr>
+    <tr><td>augusta-10.jpg</td><td>Mbrooks</td><td>Public domain</td></tr>
+    <tr><td>augusta-aerial.jpg · augusta-clubhouse.jpg</td><td>Boston Public Library</td><td>Public domain</td></tr>
+    <tr><td>masters-gallery.jpg</td><td>Shannon McGee</td><td>CC BY-SA 2.0</td></tr>
+    <tr><td>augusta-leaderboard.jpg</td><td>Ryan Schreiber</td><td>CC BY 2.0</td></tr>
+    <tr><td>hogan-bridge.jpg</td><td>Florian Fritsch, assisted by Mark Anderson</td><td>CC BY-SA 3.0</td></tr>
+    <tr><td>swilcan.jpg</td><td>Standrewslinks</td><td>CC BY-SA 4.0</td></tr>
+    <tr><td>ra-clubhouse.jpg</td><td>Optograph</td><td>CC BY-SA 3.0</td></tr>
+    <tr><td>pebble-18.jpg</td><td>WilliamFMeyer</td><td>CC BY-SA 4.0</td></tr>
+    <tr><td>pebble-coast.jpg</td><td>Bernard Gagnon</td><td>CC BY-SA 3.0</td></tr>
+    <tr><td>kiawah-18.jpg</td><td>N75746</td><td>CC BY-SA 4.0</td></tr>
+    <tr><td>sawgrass-17.jpg</td><td>Active Magazine</td><td>CC BY 2.0</td></tr>
+    <tr><td>sawgrass-17b.jpg</td><td>—</td><td>Public domain</td></tr>
+    <tr><td>hof-main.jpg · minigolf.jpg</td><td>Michael Rivera</td><td>CC BY-SA 4.0</td></tr>
+    <tr><td>range-puttenham.jpg</td><td>Mertbiol</td><td>CC0</td></tr>
+    <tr><td>range-holma.jpg</td><td>W.carter</td><td>CC0</td></tr>
+    <tr><td>putting-canberra.jpg</td><td>Neuroxic</td><td>CC BY 4.0</td></tr>
+    <tr><td>green-sun.jpg</td><td>Janbaby</td><td>CC0</td></tr>
+    <tr><td>bag-scottish.jpg</td><td>Don Maclean</td><td>CC0</td></tr>
+    <tr><td>bag-clubs.jpg</td><td>Alejandrocuadro</td><td>CC0</td></tr>
+    <tr><td>ball-tee.jpg</td><td>Stefanschenkon</td><td>CC0</td></tr>
+    <tr><td>caddies-vintage.jpg</td><td>Bain News Service</td><td>Public domain</td></tr>
+    <tr><td>kids-camp.jpg · kids-camp2.jpg</td><td>U.S. Air Force, Staff Sgt. Amber Grimm</td><td>Public domain</td></tr>
+    <tr><td>young-putting.jpg</td><td>U.S. Navy</td><td>Public domain</td></tr>
+    <tr><td>swing-sunset.jpg</td><td>Tourmandarin</td><td>CC0</td></tr>
+    <tr><td>boy-flag.jpg</td><td>Tim Evanson</td><td>CC BY-SA 2.0</td></tr>
+    <tr><td>game-current.jpg</td><td>Dixen Golf 遊戲截圖</td><td>—</td></tr>
+    <tr><td>render-room / jacket / jug / shelf.jpg</td><td>獎盃室原型的渲染圖（程式產生的模型）</td><td>—</td></tr>
+  </table></div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  DIXEN GOLF · 生涯模式企劃書 · 2026<br>
+  開放對象：test、Michael（開發測試期間）· 私人非營利用途
+</div></footer>
+
+</body>
+</html>
