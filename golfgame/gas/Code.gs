@@ -297,7 +297,8 @@ const ACTIONS = {
         code = String(Math.floor(100000 + Math.random() * 900000));
         if (!cache.get('room_' + code)) break;
       }
-      const room = { code: code, host: acc.user, offer: req.offer || null, answer: null, guest: null, created: Date.now(), config: req.config || null };
+      // guests：加入的玩家（最多 3 位，連主機共 4 人）；sig：每位客人的直連資料（客人的 offer、主機回的 answer）
+      const room = { code: code, host: acc.user, guest: null, guests: [], sig: {}, started: false, created: Date.now(), config: req.config || null };
       cache.put('room_' + code, JSON.stringify(room), 21600);
       cache.put('msgs_' + code, '[]', 21600);
       return room;
@@ -316,21 +317,38 @@ const ACTIONS = {
     return withLock_(() => {
       const room = getRoom_(req.code);
       if (!room) throw new Error('驗證碼錯誤或遊戲間已關閉');
-      if (room.guest && room.guest !== acc.user) throw new Error('遊戲間已滿');
-      room.guest = acc.user;
-      if (req.answer) room.answer = req.answer;
+      room.guests = room.guests || [];
+      room.sig = room.sig || {};
+      if (acc.user === room.host) throw new Error('這是你自己開的遊戲間');
+      if (room.guests.indexOf(acc.user) < 0) {
+        if (room.started) throw new Error('比賽已經開始，無法加入');
+        if (room.guests.length >= 3) throw new Error('遊戲間已滿（最多 4 人）');
+        room.guests.push(acc.user);
+      }
+      room.guest = room.guests[0];
+      room.sig[acc.user] = { offer: req.offer || null, answer: null };
       putRoom_(room);
       return room;
     });
   },
 
+  // 主機：回覆某位客人的直連資料（answerFor + answer）、開打（started）、離開大廳的客人（drop）
   updateRoom(req) {
     const acc = auth_(req);
     return withLock_(() => {
       const room = getRoom_(req.code);
       if (!room) throw new Error('遊戲間已關閉');
-      if (room.host !== acc.user && room.guest !== acc.user) throw new Error('不在此遊戲間');
-      ['offer', 'answer', 'config'].forEach(k => { if (req[k] !== undefined) room[k] = req[k]; });
+      room.guests = room.guests || [];
+      room.sig = room.sig || {};
+      if (room.host !== acc.user && room.guests.indexOf(acc.user) < 0) throw new Error('不在此遊戲間');
+      if (req.config !== undefined) room.config = req.config;
+      if (acc.user === room.host) {
+        if (req.answerFor && room.sig[req.answerFor]) room.sig[req.answerFor].answer = req.answer || null;
+        if (req.started) room.started = true;
+      }
+      // 開打前離開大廳：從名單拿掉（自己離開，或主機看到他離開）
+      const drop = acc.user === room.host ? req.drop : (req.leave ? acc.user : null);
+      if (drop && !room.started) { room.guests = room.guests.filter(g => g !== drop); delete room.sig[drop]; room.guest = room.guests[0] || null; }
       putRoom_(room);
       return room;
     });

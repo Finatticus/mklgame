@@ -150,14 +150,16 @@ export class Game {
     this.running = true;
     this.hud.show(true);
     this.pendingState = null;
-    this.pendingResume = null;
-    this.servedRj = null;
+    this.servedRj = new Set();
     this.roundOver = false;
     this.startedAt = Date.now();
     clearInterval(this.hbTimer);
+    this.authUser = this.players[0].user;     // 負責判定的人：主機；主機離開後換成還在的人裡排最前面的
+    this.pendingResume = [];
     if (net) {
       net.on(m => { if (this.net === net) this.onNet(m); });     // 離開後又回來時，舊連線的訊息不處理
-      this.lastHeard = this.lastTick = Date.now();
+      this.lastTick = Date.now();
+      this.heardAll();
       this.hbTimer = setInterval(() => this.heartbeat(), 4000);
     }
     if (resume && resume.local) {
@@ -183,50 +185,64 @@ export class Game {
 
   // 目前還在遊戲裡的玩家（對方離開後就不算）
   present() { return this.players.filter(p => !p.away); }
-  remote() { return this.players.find(p => !p.local); }
+  me() { return this.players.find(p => p.local) || this.players[0]; }
+
+  // 每位玩家最後一次有消息的時間（直接收到他的訊息，或主機的招呼說他還在）
+  heard(user) { if (this.lastHeardBy) this.lastHeardBy[user] = Date.now(); }
+  heardAll() { const now = Date.now(); this.lastHeardBy = {}; for (const p of this.players) this.lastHeardBy[p.user] = now; }
 
   // ---------------- 連線：離開 / 斷線 / 重新連回 ----------------
-  // 每 4 秒打一次招呼（直連時每次都送、轉送時 8 秒一次）；30 秒沒收到對方任何訊息就當作離開
+  // 每 4 秒打一次招呼（直連時每次都送、轉送時 8 秒一次）；30 秒沒有某個人的任何消息就當作他離開
+  //   主機的招呼帶著「最近有聽到誰」，客人之間沒有直連也能知道彼此還在
   heartbeat() {
     if (!this.net || !this.running) return;
     const now = Date.now();
-    // 自己的手機剛從休眠醒來（計時器停過）：不能拿這段時間判斷對方斷線
-    if (now - this.lastTick > 10000) this.lastHeard = now;
+    // 自己的手機剛從休眠醒來（計時器停過）：不能拿這段時間判斷別人斷線
+    if (now - this.lastTick > 10000) this.heardAll();
     this.lastTick = now;
     this.hbN = (this.hbN || 0) + 1;
-    const r = this.remote();
-    if (r && !r.away) {
-      if (this.net.mode === 'p2p' || this.hbN % 2 === 0) this.net.send({ t: 'ping' }, { volatile: this.net.mode === 'p2p' });
-      if (now - this.lastHeard > 30000) this.markAway(r, '連線中斷');
+    const rs = this.players.filter(p => !p.local && !p.away);
+    if (rs.length) {
+      const alive = this.net.isHost ? rs.filter(p => now - (this.lastHeardBy[p.user] || 0) < 12000).map(p => p.user) : undefined;
+      if (this.net.mode === 'p2p' || this.hbN % 2 === 0) this.net.send({ t: 'ping', alive }, { volatile: this.net.mode === 'p2p' });
+      for (const r of rs) if (now - (this.lastHeardBy[r.user] || 0) > 30000) this.markAway(r, '連線中斷');
     }
-    if (this.pendingResume) this.trySendResume();
+    if (this.pendingResume.length) this.trySendResume();
   }
 
-  // 對方離開：改成自己一個人打完；對方的洞數之後比照自己的桿數
+  // 有人離開：其他人繼續打；他的洞數之後比照還在的人的桿數。離開的是負責判定的人，就換還在的人裡排最前面的
   markAway(p, why) {
     if (p.away) return;
     p.away = true;
-    const code = this.net && this.net.code ? `，對方可以用驗證碼 ${this.net.code} 回來接續` : '';
-    this.hud.toast(`<b>${escapeHtml(p.user)} ${why}</b><small>改為單人繼續${code}</small>`, 4500);
-    this.authority = true;               // 剩下的人自己判定
+    const code = this.net && this.net.code ? `，可以用驗證碼 ${this.net.code} 回來接續` : '';
+    const left = this.present().length;
+    this.hud.toast(`<b>${escapeHtml(p.user)} ${why}</b><small>${left > 1 ? `其他 ${left} 人繼續` : '改為單人繼續'}${code}</small>`, 4500);
+    const au = this.players.find(q => q.user === this.authUser);
+    if (!au || au.away) {
+      const lead = this.present()[0];
+      if (lead) this.authUser = lead.user;
+    }
+    this.authority = this.authUser === this.me().user;
     this.updatePlayersHud();
+    if (!this.authority) { if (this.ready && !this.holeDone) this.refreshHud(); return; }
     if (this.holeDone) this.ui.enableHoleNext();
     else if (this.players[this.cur] === p && !this.flight && !this.swingAnim && this.ready) this.nextTurn();
     else if (this.ready) this.refreshHud();
   }
 
-  // 對方用驗證碼回來：等目前這一桿 / 這一洞結束後，把進度整個傳給他
+  // 有人用驗證碼回來：等目前這一桿 / 這一洞結束後，把進度整個傳給他（只有負責判定的人做）
   trySendResume() {
-    const user = this.pendingResume;
-    const p = this.players.find(q => q.user === user && !q.local);
-    if (!p) { this.pendingResume = null; return; }
     if (!this.ready || this.flight || this.swingAnim || this.holeDone || !this.authority) return;
-    this.pendingResume = null;
-    p.away = false;
-    this.lastHeard = Date.now();
-    const state = this.serialize(this.cur ?? this.pickNext());
-    this.net.send({ t: 'resume', to: user, cfg: this.cfg, players: this.players.map(q => ({ user: q.user, stats: q.stats, look: q.look })), state });
-    this.hud.toast(`<b>${escapeHtml(user)} 回來了</b><small>繼續兩人比賽</small>`, 3000);
+    for (const user of this.pendingResume.splice(0)) {
+      const p = this.players.find(q => q.user === user && !q.local);
+      if (!p) continue;
+      p.away = false;
+      this.heard(user);
+      const state = this.serialize(this.cur ?? this.pickNext());
+      this.net.send({ t: 'resume', to: user, cfg: this.cfg, players: this.players.map(q => ({ user: q.user, stats: q.stats, look: q.look })), state });
+      this.hud.toast(`<b>${escapeHtml(user)} 回來了</b><small>繼續 ${this.present().length} 人比賽</small>`, 3000);
+      this.net.send({ t: 'back', user });       // 其他人也要知道他回來了
+    }
     this.updatePlayersHud();
     this.refreshHud();
   }
@@ -239,7 +255,8 @@ export class Game {
     this.holeDone = false;
     this.pendingState = null;
     this.ui.closeHoleResult();
-    this.lastHeard = Date.now();
+    this.heardAll();
+    if (m.state.auth) this.authUser = m.state.auth;
     await this.loadHole(m.state.k);
     this.pendingState = null;
     this.applyState(m.state);
@@ -366,7 +383,7 @@ export class Game {
 
   serialize(turn) {
     return {
-      k: this.k, turn, shotNo: this.shotNo, matchStatus: this.matchStatus, undoP: this.lastShotUndo ? this.lastShotUndo.p : -1,
+      k: this.k, turn, shotNo: this.shotNo, matchStatus: this.matchStatus, undoP: this.lastShotUndo ? this.lastShotUndo.p : -1, auth: this.authUser,
       players: this.players.map(p => ({ ball: p.ball, lie: p.lie, strokes: p.strokes, holed: p.holed, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, scores: p.scores, putts: p.putts, fwHit: p.fwHit, fwTotal: p.fwTotal, gir: p.gir, fwH: p.fwH || [], girH: p.girH || [], mulligans: p.mulligans, picked: p.picked, away: p.away, pars: p.pars, copied: p.copied || [] })),
     };
   }
@@ -376,6 +393,8 @@ export class Game {
     this.shotNo = s.shotNo;
     this.matchStatus = s.matchStatus;
     this.undoP = s.undoP ?? -1;
+    // 連線：狀態是負責判定的人送來的，跟著他的名單（誰離開、誰負責判定）
+    if (this.net && s.auth) { this.authUser = s.auth; this.authority = s.auth === this.me().user; }
     s.players.forEach((q, i) => Object.assign(this.players[i], q));
     if (s.turn < 0) { this.endHole(); return; }
     this.beginTurn(s.turn);
@@ -1528,23 +1547,29 @@ export class Game {
   // ---------------- 連線訊息 ----------------
   onNet(m) {
     if (!this.running) return;
-    if (m.t[0] !== '_') this.lastHeard = Date.now();
-    const r = this.remote();
-    // 對方回來（重新輸入驗證碼）或從休眠醒來：把目前進度傳給他
+    // r：送出這則訊息的玩家（自己以外）
+    const r = m.u ? this.players.find(p => p.user === m.u && !p.local) : null;
+    if (m.t[0] !== '_' && m.u) { this.heard(m.u); if (Array.isArray(m.alive)) m.alive.forEach(u => this.heard(u)); }
+    // 有人回來（重新輸入驗證碼）或從休眠醒來：負責判定的人把目前進度傳給他
     // （剛開局的 15 秒內是加入時重送的招呼，不算；同一次重新加入只處理一次）
     if (m.t === 'hello') {
-      if (!m.rj || !m.player || !r || m.player.user !== r.user || m.rj === this.servedRj) return;
+      if (!this.authority || !m.rj || !m.player || !r || m.player.user !== r.user || this.servedRj.has(m.rj)) return;
       if (!r.away && Date.now() - this.startedAt < 15000) return;
       if (!r.away) this.markAway(r, '重新連線中');
-      this.servedRj = m.rj;
-      this.pendingResume = r.user;
+      this.servedRj.add(m.rj);
+      if (!this.pendingResume.includes(r.user)) this.pendingResume.push(r.user);
       this.trySendResume();
       return;
     }
-    if (r && r.away && m.t === 'ping' && this.authority) { this.pendingResume = r.user; this.trySendResume(); return; }
+    if (r && r.away && m.t === 'ping' && this.authority) { if (!this.pendingResume.includes(r.user)) this.pendingResume.push(r.user); this.trySendResume(); return; }
     switch (m.t) {
+      case 'back': {
+        const b = this.players.find(p => p.user === m.user && !p.local);
+        if (b && b.away) { b.away = false; this.heard(b.user); this.hud.toast(`<b>${escapeHtml(b.user)} 回來了</b>`, 2600); this.updatePlayersHud(); }
+        break;
+      }
       case 'resume':
-        if (m.to === (this.players.find(p => p.local) || {}).user) this.applyResume(m);
+        if (m.to === this.me().user) this.applyResume(m);
         break;
       case 'mulligan':
         if (this.authority && !this.players[m.p].local) this.doMulligan(m.p);

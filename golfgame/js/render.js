@@ -1679,7 +1679,8 @@ export class World {
     this.greenGrid.visible = false;
     // 坡度箭頭：每 1.6 公尺一個「往下坡」的箭頭，越陡越長、顏色越暖（< 1% 白、1~2% 黃、2~3% 橘、> 3% 紅）；
     //   格線顏色是整個果嶺的相對高低，箭頭是腳下的坡，兩個一起看才知道球會往哪邊轉
-    const ap = [], ac = [], st2 = 1.6, e = 0.3;
+    //   箭頭本身不動，箭身上的亮點像水一樣往低處流：越斜流越快（1% 約每秒 0.3 公尺、3% 約 0.8 公尺）
+    const ap = [], ac = [], aa = [], st2 = 1.6, e = 0.3;
     const slopeCol = s => s < 0.01 ? [0.92, 0.95, 0.98] : s < 0.02 ? [1, 0.9, 0.25] : s < 0.03 ? [1, 0.55, 0.12] : [1, 0.18, 0.12];
     for (let a = -R; a <= R; a += st2) for (let b2 = -R; b2 <= R; b2 += st2) {
       const u = gr.u + a, v = gr.v + b2;
@@ -1693,14 +1694,43 @@ export class World {
       const c = Math.cos(2.6), sn = Math.sin(2.6);
       const w1 = [tip[0] + (du * c - dv * sn) * w, tip[1] + (du * sn + dv * c) * w], w2 = [tip[0] + (du * c + dv * sn) * w, tip[1] + (-du * sn + dv * c) * w];
       const [r0, g0, b0] = slopeCol(s);
-      for (const [p0, p1] of [[tail, tip], [tip, w1], [tip, w2]]) { ap.push(...pt(...p0), ...pt(...p1)); ac.push(r0, g0, b0, r0, g0, b0); }
+      // 箭身切成小段（才能貼著果嶺起伏），每個點記下「沿箭身的距離」和流速；箭頭兩撇的距離記 -1 = 不流動、一直亮著
+      const spd = 0.1 + s * 22, ph = (Math.sin(u * 12.9898 + v * 78.233) * 43758.5453 % 1 + 1) % 1 * 0.4;
+      const n = Math.max(2, Math.round(L / 0.12));
+      for (let j = 0; j < n; j++) {
+        const f0 = j / n, f1 = (j + 1) / n;
+        ap.push(...pt(tail[0] + du * L * f0, tail[1] + dv * L * f0), ...pt(tail[0] + du * L * f1, tail[1] + dv * L * f1));
+        ac.push(r0, g0, b0, r0, g0, b0);
+        aa.push(L * f0 + ph, spd, L * f1 + ph, spd);
+      }
+      for (const p1 of [w1, w2]) { ap.push(...pt(...tip), ...pt(...p1)); ac.push(r0, g0, b0, r0, g0, b0); aa.push(-1, 0, -1, 0); }
     }
     if (ap.length) {
       const ag = new THREE.BufferGeometry();
       ag.setAttribute('position', new THREE.Float32BufferAttribute(ap, 3));
       ag.setAttribute('color', new THREE.Float32BufferAttribute(ac, 3));
-      this.greenGrid.add(new THREE.LineSegments(ag, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false })));
-    }
+      ag.setAttribute('flow', new THREE.Float32BufferAttribute(aa, 2));
+      this.slopeFlow = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, uniforms: { uTime: { value: 0 } },
+        vertexShader: `attribute vec3 color; attribute vec2 flow; varying vec3 vC; varying vec2 vF;
+          void main() { vC = color; vF = flow; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `uniform float uTime; varying vec3 vC; varying vec2 vF;
+          void main() {
+            float a = 0.95;
+            vec3 c = vC;
+            if (vF.x >= 0.0) {
+              // 每 0.3 公尺一顆亮點，隨時間往箭頭方向移動（偏白、比較醒目）；亮點之間保留淡淡的箭身
+              float k = fract((vF.x - uTime * vF.y) / 0.3);
+              float b = smoothstep(0.0, 0.2, k) * (1.0 - smoothstep(0.4, 0.55, k));
+              a = 0.18 + 0.82 * b;
+              c = mix(vC, vec3(1.0), 0.45 * b);
+            }
+            gl_FragColor = vec4(c, a);
+            #include <colorspace_fragment>
+          }`,
+      });
+      this.greenGrid.add(new THREE.LineSegments(ag, this.slopeFlow));
+    } else this.slopeFlow = null;
     g.add(this.greenGrid);
   }
 
@@ -2119,7 +2149,10 @@ export class World {
       this.flagCloth.computeVertexNormals();
       if (ws > 0.1) this.flagMesh.rotation.y = Math.atan2(-windVec[1], windVec[0]);
     }
-    if (this.greenGrid && this.greenGrid.visible) this.greenGrid.material.opacity = 0.68 + 0.1 * Math.sin(this.time * 2);
+    if (this.greenGrid && this.greenGrid.visible) {
+      this.greenGrid.material.opacity = 0.68 + 0.1 * Math.sin(this.time * 2);
+      if (this.slopeFlow) this.slopeFlow.uniforms.uTime.value = this.time;
+    }
     // 落點白點依距離放大，在畫面上大約維持同樣大小
     if (this.target.visible) this.target.scale.setScalar(Math.max(0.3, this.camera.position.distanceTo(this.target.position) * 0.011));
     this.updateBursts(dt);

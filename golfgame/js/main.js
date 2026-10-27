@@ -9,7 +9,7 @@ import { Hud } from './hud.js';
 import { Game } from './game.js';
 import { initEditor, resumeCanvas } from './editor.js';
 import { refreshCustom, customCourses, store as customStore, previewCourse, PREVIEW_ID } from './custom.js';
-import { Net } from './net.js';
+import { Net, MAX_PLAYERS } from './net.js';
 import { ProceduralGolfer } from './character.js';
 import { MixamoGolfer } from './mixamo.js';
 import { escapeHtml, fmtToPar } from './util.js';
@@ -596,49 +596,65 @@ function initSetup() {
 }
 
 // ---------------- 遊戲間 ----------------
-let net = null, guestInfo = null;
+let net = null;
 async function hostRoom() {
   const cfg = roundCfg();
   show('scr-room');
   $('rm-code').innerHTML = '<span class="small">建立中…</span>';
-  $('rm-guest').innerHTML = '<div class="avatar wait">?</div><div><b class="small">等待玩家加入…</b></div><span class="st wt">等待中</span>';
   $('rm-host').innerHTML = `<div class="avatar">${escapeHtml(session.user[0])}</div><div><b>${escapeHtml(session.user)}</b><div class="small">主機</div></div><span class="st ok">已就緒</span>`;
   const c = courseById(cfg.courseId);
-  $('rm-set').innerHTML = `<dt>球場</dt><dd>${c.name}</dd><dt>洞數</dt><dd>${{ all: '18 洞', front: '前 9', back: '後 9' }[cfg.holes]}</dd><dt>梯台</dt><dd>${TEE_SETS.find(t => t.id === cfg.tee).name}</dd><dt>賽制</dt><dd>${cfg.mode === 'match' ? '比洞賽' : '比桿賽'}</dd><dt>OK 推</dt><dd>${cfg.gimme ? cfg.gimme + ' 碼內' : '無'}</dd>`;
-  $('rm-start').disabled = true;
-  guestInfo = null;
+  $('rm-set').innerHTML = `<dt>球場</dt><dd>${c.name}</dd><dt>洞數</dt><dd>${{ all: '18 洞', front: '前 9', back: '後 9' }[cfg.holes]}</dd><dt>梯台</dt><dd>${TEE_SETS.find(t => t.id === cfg.tee).name}</dd><dt>賽制</dt><dd>${cfg.mode === 'match' ? '比洞賽（3 人以上改比桿）' : '比桿賽'}</dd><dt>OK 推</dt><dd>${cfg.gimme ? cfg.gimme + ' 碼內' : '無'}</dd>`;
+  // 客人名單（照加入順序）：player = 對方傳來的角色資料，收到才算就緒
+  const guests = [];
+  const renderGuests = () => {
+    const rows = guests.map(g => g.player
+      ? `<div class="player"><div class="avatar">${escapeHtml(g.user[0])}</div><div><b>${escapeHtml(g.user)}</b><div class="small">已加入</div></div><span class="st ok">已就緒</span></div>`
+      : `<div class="player"><div class="avatar wait">${escapeHtml(g.user[0])}</div><div><b>${escapeHtml(g.user)}</b><div class="small">連線中…</div></div><span class="st wt">連線中</span></div>`);
+    if (guests.length < MAX_PLAYERS - 1) rows.push(`<div class="player"><div class="avatar wait">?</div><div><b class="small">等待玩家加入…（還可以 ${MAX_PLAYERS - 1 - guests.length} 人）</b></div><span class="st wt">等待中</span></div>`);
+    $('rm-guests').innerHTML = rows.join('');
+    const n = guests.filter(g => g.player).length;
+    $('rm-start').disabled = !n;
+    $('rm-start').textContent = n ? `開始回合（${n + 1} 人）` : '開始回合';
+  };
+  renderGuests();
   if (net) net.close();
   net = new Net();
+  const hostNet = net;
   let hostStarted = false;
+  const roster = () => [session.user, ...guests.filter(g => g.player).map(g => g.user)];
   net.on(m => {
     if (hostStarted) return;          // 開打後的訊息交給遊戲處理
-    if (m.t === '_guest') $('rm-guest').querySelector('.st').textContent = '連線中';
-    if (m.t === 'hello' && !m.host) {
-      guestInfo = m.player;
-      $('rm-guest').innerHTML = `<div class="avatar">${escapeHtml(m.player.user[0])}</div><div><b>${escapeHtml(m.player.user)}</b><div class="small">已加入</div></div><span class="st ok">已就緒</span>`;
-      $('rm-start').disabled = false;
-      net.send({ t: 'hello', host: true, player: me(), cfg });
+    if (m.t === '_guest' && !guests.some(g => g.user === m.user)) { guests.push({ user: m.user, player: null }); renderGuests(); }
+    if (m.t === 'hello' && !m.host && m.player) {
+      let g = guests.find(x => x.user === m.player.user);
+      if (!g) { if (guests.length >= MAX_PLAYERS - 1) return; guests.push(g = { user: m.player.user }); }
+      g.player = m.player;
+      renderGuests();
+      hostNet.send({ t: 'hello', host: true, player: me(), cfg, roster: roster() });
     }
-    if (m.t === '_status') $('rm-link').textContent = m.mode === 'p2p' ? '直連（WebRTC）' : 'GAS 轉送';
+    if (m.t === 'bye' && m.u && guests.some(g => g.user === m.u)) hostNet.dropGuest(m.u);
+    if (m.t === '_drop') { const i = guests.findIndex(g => g.user === m.user); if (i >= 0) { guests.splice(i, 1); renderGuests(); hostNet.send({ t: 'hello', host: true, player: me(), cfg, roster: roster() }); } }
+    if (m.t === '_status') $('rm-link').textContent = m.mode === 'p2p' ? '直連（WebRTC）' : '有人走 GAS 轉送';
     if (m.t === '_error') $('rm-link').textContent = m.error;
   });
   try {
-    const code = await net.host(cfg);
+    const code = await net.host(cfg, session.user);
     $('rm-code').innerHTML = code.split('').map((d, i) => (i === 3 ? '<span class="gap"></span>' : '') + `<span>${d}</span>`).join('');
   } catch (e) {
     $('rm-code').innerHTML = `<span class="small err">${escapeHtml(e.message)}</span>`;
   }
   $('rm-start').onclick = () => {
-    const players = [{ ...me(), local: true }, { ...guestInfo, local: false }];
+    const players = [{ ...me(), local: true }, ...guests.filter(g => g.player).map(g => ({ ...g.player, local: false }))];
     hostStarted = true;
-    net.send({ t: 'start', cfg, players: players.map(p => ({ user: p.user, stats: p.stats, look: p.look })) });
-    startGame(cfg, players, net, true);
+    hostNet.markStarted();
+    hostNet.send({ t: 'start', cfg, players: players.map(p => ({ user: p.user, stats: p.stats, look: p.look })) });
+    startGame(cfg, players, hostNet, true);
   };
 }
 
 function initRooms() {
   $('rm-back').onclick = () => { if (net) { net.close(); net = null; } enterLobby(); };
-  $('jn-back').onclick = () => { if (net) { net.close(); net = null; } enterLobby(); };
+  $('jn-back').onclick = () => { if (net) { net.send({ t: 'bye' }); net.leaveLobby(); net.close(); net = null; } enterLobby(); };
   $('jn-go').onclick = () => busy('jn-go', async () => {
     const code = $('jn-code').value.replace(/\D/g, '');
     if (code.length !== 6) return msg('jn-msg', '請輸入 6 位數驗證碼');
@@ -648,7 +664,7 @@ function initRooms() {
       const room = await net.join(code, session.user);
       $('jn-form').classList.add('hidden');
       $('jn-wait').classList.remove('hidden');
-      $('jn-host').textContent = room.host === session.user ? room.guest : room.host;
+      $('jn-host').textContent = room.host === session.user ? (room.guests || [room.guest]).join('、') : room.host;
       if (net.rejoin) { $('jn-info').textContent = '正在接續比賽，等對方打完這一桿…'; $('jn-link').textContent = 'GAS 轉送'; }
       // rj：這一次加入的編號；比賽進行中時，對方收到後會把目前進度傳回來（重新連回接續）
       const rj = Math.random().toString(36).slice(2, 10);
@@ -664,8 +680,20 @@ function initRooms() {
           return;
         }
         if (m.t === '_status') $('jn-link').textContent = m.mode === 'p2p' ? '直連（WebRTC）' : 'GAS 轉送';
-        if (m.t === 'hello' && m.host) $('jn-info').textContent = `${courseById(m.cfg.courseId).name} · ${m.cfg.mode === 'match' ? '比洞賽' : '比桿賽'}`;
+        if (m.t === 'hello' && m.host) {
+          const r = m.roster || [];
+          $('jn-info').innerHTML = `${escapeHtml(courseById(m.cfg.courseId).name)} · ${m.cfg.mode === 'match' && r.length <= 2 ? '比洞賽' : '比桿賽'}` +
+            (r.length ? `<br>目前 ${r.length} 人：${r.map(escapeHtml).join('、')}` : '');
+        }
         if (m.t === 'start' && !started) {
+          // 主機開打時名單裡沒有自己（還沒連上就開始了）：不能加入這一場
+          if (!m.players.some(p => p.user === session.user)) {
+            started = true;
+            clearInterval(resend);
+            msg('jn-msg', '主機已經開始比賽，這一場沒有你');
+            $('jn-form').classList.remove('hidden'); $('jn-wait').classList.add('hidden');
+            return;
+          }
           started = true;
           clearInterval(resend);
           const players = m.players.map(p => ({ ...p, local: p.user === session.user }));
@@ -808,12 +836,13 @@ function initGameMenu() {
   };
   $('gm-quit').onclick = () => {
     if (game.cfg.preview) return ui.exitPreview();
-    const other = game.net && game.players.find(p => !p.local && !p.away);
-    const text = other
+    const others = game.net ? game.players.filter(p => !p.local && !p.away) : [];
+    const names = others.map(p => p.user).join('、');
+    const text = others.length
       ? `確定離開這一場比賽？
 
-離開後 ${other.user} 會改成一個人打完剩下的洞，你的成績不會儲存。
-要回來接續的話，到大廳「加入遊戲」輸入驗證碼 ${game.net.code}；你沒打到的洞會比照 ${other.user} 的桿數。`
+離開後 ${names} 會${others.length > 1 ? '繼續' : '改成一個人'}打完剩下的洞，你的成績不會儲存。
+要回來接續的話，到大廳「加入遊戲」輸入驗證碼 ${game.net.code}；你沒打到的洞會比照 ${others[0].user} 的桿數。`
       : game.level ? '確定放棄這一次挑戰？' : '確定離開這一回合？目前成績不會儲存。';
     if (!confirm(text)) return;
     $('dlg-menu').classList.remove('open');
