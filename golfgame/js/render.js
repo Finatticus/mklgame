@@ -1677,6 +1677,30 @@ export class World {
     geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
     this.greenGrid = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.75, depthWrite: false }));
     this.greenGrid.visible = false;
+    // 坡度箭頭：每 1.6 公尺一個「往下坡」的箭頭，越陡越長、顏色越暖（< 1% 白、1~2% 黃、2~3% 橘、> 3% 紅）；
+    //   格線顏色是整個果嶺的相對高低，箭頭是腳下的坡，兩個一起看才知道球會往哪邊轉
+    const ap = [], ac = [], st2 = 1.6, e = 0.3;
+    const slopeCol = s => s < 0.01 ? [0.92, 0.95, 0.98] : s < 0.02 ? [1, 0.9, 0.25] : s < 0.03 ? [1, 0.55, 0.12] : [1, 0.18, 0.12];
+    for (let a = -R; a <= R; a += st2) for (let b2 = -R; b2 <= R; b2 += st2) {
+      const u = gr.u + a, v = gr.v + b2;
+      if (hole.greenR(u, v) > 0.92) continue;
+      const gu = (hole.heightUV(u + e, v) - hole.heightUV(u - e, v)) / (2 * e), gv = (hole.heightUV(u, v + e) - hole.heightUV(u, v - e)) / (2 * e);
+      const s = Math.hypot(gu, gv);
+      if (s < 0.004) continue;
+      const du = -gu / s, dv = -gv / s, L = clamp(0.35 + s * 25, 0.35, 1.15), w = 0.14 + L * 0.28;
+      const pt = (pu, pv) => [pu, hole.heightUV(pu, pv) + 0.035, -pv];
+      const tip = [u + du * L / 2, v + dv * L / 2], tail = [u - du * L / 2, v - dv * L / 2];
+      const c = Math.cos(2.6), sn = Math.sin(2.6);
+      const w1 = [tip[0] + (du * c - dv * sn) * w, tip[1] + (du * sn + dv * c) * w], w2 = [tip[0] + (du * c + dv * sn) * w, tip[1] + (-du * sn + dv * c) * w];
+      const [r0, g0, b0] = slopeCol(s);
+      for (const [p0, p1] of [[tail, tip], [tip, w1], [tip, w2]]) { ap.push(...pt(...p0), ...pt(...p1)); ac.push(r0, g0, b0, r0, g0, b0); }
+    }
+    if (ap.length) {
+      const ag = new THREE.BufferGeometry();
+      ag.setAttribute('position', new THREE.Float32BufferAttribute(ap, 3));
+      ag.setAttribute('color', new THREE.Float32BufferAttribute(ac, 3));
+      this.greenGrid.add(new THREE.LineSegments(ag, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false })));
+    }
     g.add(this.greenGrid);
   }
 

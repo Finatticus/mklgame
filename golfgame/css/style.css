@@ -1553,6 +1553,7 @@ button.cg-ch { width: 100%; border: 0; text-align: left; cursor: pointer; border
 /* 設定：說明書 / 重看教學 */
 .set-help { display: flex; gap: 10px; margin-top: 12px; }
 .set-help .btn { flex: 1; }
+.set-ver { margin: 10px 0 0; text-align: center; font-size: 11px; opacity: 0.5; letter-spacing: 0.04em; }
 /* 遊戲說明書（README）全螢幕視窗 */
 .readme-dlg { padding: 0; z-index: 60; }
 .readme-box { background: var(--paper); width: 100%; height: 100%; display: flex; flex-direction: column; }

@@ -1,5 +1,6 @@
-// 離線快取：程式與材質快取在手機裡，第二次開啟不用重新下載。更新版本時把 VERSION 加 1。
-const VERSION = 'dixen-v84';
+// 離線快取：程式與材質快取在手機裡，第二次開啟不用重新下載。版本號在 version.js（更新時只改那裡）
+importScripts('./version.js');
+const VERSION = 'dixen-' + self.DIXEN_VERSION;
 // 角色與材質另外一個快取：程式更新時不會被清掉，玩家不用重新下載大檔案
 const ASSET_CACHE = 'dixen-assets-v1';
 const CORE = [
@@ -9,7 +10,7 @@ const CORE = [
   './js/courses.js', './js/util.js', './js/audio.js', './js/mixamo.js', './js/progress.js', './js/challenge.js', './js/challenge-gen.js', './js/challenge-gen3.js', './js/career.js', './js/tutorial.js', './js/real.js', './js/stamps.js', './js/custom.js', './js/editor.js',
   './assets/textures/grass_d.jpg', './assets/textures/grass_n.jpg', './assets/textures/sand_d.jpg', './assets/textures/sand_n.jpg',
   './assets/textures/rock_d.jpg', './assets/textures/rock_n.jpg', './assets/textures/sky.hdr',
-  './assets/icons/icon-192.png', './assets/icons/apple-touch-icon.png', './README.html',
+  './assets/icons/icon-192.png', './assets/icons/apple-touch-icon.png', './README.html', './version.js',
 ];
 
 self.addEventListener('install', e => {

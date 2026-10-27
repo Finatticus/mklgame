@@ -143,6 +143,8 @@ function openSettings() {
   $('set-quality').value = getSetting('quality', 'high');
   $('set-sound').checked = getSetting('sound', true);
   $('set-tut').classList.toggle('hidden', !session.user);      // 重看新手教學要先登入
+  // 版本號（version.js）：確認手機上跑的是不是最新版
+  $('set-ver').textContent = `版本 ${self.DIXEN_VERSION || '?'}${self.DIXEN_DATE ? ' · ' + self.DIXEN_DATE : ''}`;
   $('dlg-settings').classList.add('open');
 }
 function initSettings() {

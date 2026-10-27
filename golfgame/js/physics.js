@@ -254,8 +254,9 @@ export function makeLaunch(input, ctx) {
 
   if (club.putter) {
     // 推桿：拉桿長度決定「平地滾動距離」，推的方向偏差造成推出偏左/偏右
-    const crr = stimpCrr(ctx.stimp) * (lie === SURF.GREEN ? 1 : 1.6);
+    // 推出的力道 = 沿推桿線實際經過的地面（果嶺邊短草、果嶺）平均阻力 × 距離；沒給推桿線就照舊估（果嶺外 1.6 倍）
     const dist = Math.max(0.2, input.power * ctx.puttScale);
+    const crr = ctx.rollCrr ? ctx.rollCrr(dist) : stimpCrr(ctx.stimp) * (lie === SURF.GREEN ? 1 : 1.6);
     let v0 = Math.sqrt(2 * crr * G * dist);
     v0 *= 1 + n() * d.touchSigma * pm;
     // 直直推出去（出桿偏移 < 4°）就照預測線走，不加隨機方向誤差；推歪了才會再加上「推桿方向」素質的誤差

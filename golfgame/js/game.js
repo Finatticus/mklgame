@@ -2,7 +2,7 @@
 // 單人時本機就是「權威端」；雙人時主機是權威端，客人只送揮桿輸入、接收結果。
 import * as THREE from 'three';
 import { buildHole } from './terrain.js';
-import { simulate, makeLaunch, distanceTable, carryAt, airDensity, SURF, ADJ_SEEDS } from './physics.js';
+import { simulate, makeLaunch, distanceTable, carryAt, airDensity, groundFor, SURF, ADJ_SEEDS } from './physics.js';
 import { CLUBS, clubById, clubIndex, puttLike } from './clubs.js';
 import { courseById, teeYards, loadCourseMaps, holeLabel, teeKey } from './courses.js';
 import { makeRng, hashStr, toYd, YD, MPH, FT, clamp, lerp, rad, smooth, fmtToPar, escapeHtml } from './util.js';
@@ -319,7 +319,7 @@ export class Game {
       const L = this.hole.L, t0 = new THREE.Vector3(...tee);
       const sStart = clamp(this.hole.near ? this.hole.near(t0.x, -t0.z).s : 0, 0, L);
       const fly = clamp((L - sStart) / 110, 2.2, 5.2);
-      this.intro = { t: 0, fly, hold: 1.3, dur: fly + 1.3, s0: sStart, L, high: 26 + (this.hole.falls && this.hole.falls.length ? 14 : 0) };
+      this.intro = { t: 0, fly, hold: 1.3, dur: fly + 1.3, s0: sStart, L, high: 42 + (this.hole.falls && this.hole.falls.length ? 14 : 0), path: this.droneRoute(t0) };
     }
     const note = this.hole.spec && this.hole.spec.note;
     const lab = holeLabel(this.course, idx), side = this.hole.greenSide;
@@ -427,6 +427,21 @@ export class Game {
   }
 
   // 推桿時在果嶺上畫出 OK 推範圍（練習場不計 OK 推，所以不畫）
+  // 開場空拍航線：從發球台到旗桿的一條直線（不跟著洞線轉彎），鏡頭方向全程不變；
+  //   高度 = 發球台到果嶺的地面高度直線內插，再整條抬高到比線上最高的地面還高，鏡頭只會平順地爬升或下降
+  droneRoute(t0) {
+    const h = this.hole, [px, pz] = h.pin;
+    const a = new THREE.Vector3(t0.x, h.height(t0.x, t0.z), t0.z), b = new THREE.Vector3(px, h.height(px, pz), pz);
+    const dx = b.x - a.x, dz = b.z - a.z, flat = Math.hypot(dx, dz) || 1, ux = dx / flat, uz = dz / flat;
+    let lift = 0;
+    for (let i = 0; i <= 40; i++) { const k = i / 40; lift = Math.max(lift, h.height(a.x + dx * k, a.z + dz * k) - (a.y + (b.y - a.y) * k)); }
+    const start = a.clone().add(new THREE.Vector3(-ux * 18, 0, -uz * 18)), len = flat + 18;
+    return { len, lift, at: d => {
+      const k = clamp(d, 0, len) / len;
+      return new THREE.Vector3(start.x + (b.x - start.x) * k, a.y + (b.y - a.y) * clamp((d - 18) / flat, 0, 1) + lift, start.z + (b.z - start.z) * k);
+    } };
+  }
+
   updateGimmeRing() {
     const r = this.club && this.club.putter && !this.cfg.practice && this.cfg.gimme > 0 ? this.cfg.gimme * YD : 0;
     this.world.setGimmeRing(r);
@@ -584,13 +599,27 @@ export class Game {
     this.hud.drawMini(this.hole, this.world.miniCanvas || this.world.colorCanvas, p.ball, this.targetPt, this.players.map(q => ({ ball: q.ball, holed: q.holed, current: q.idx === this.cur })));
   }
 
+  // 推桿線上的平均滾動阻力：從球往瞄準方向每 0.25 公尺看一次地面（果嶺邊短草比果嶺慢），
+  //   推桿的力道依這個算，從果嶺邊推也是「拉幾碼就滾幾碼（平地）」
+  rollCrrFn(p, aim) {
+    const dx = Math.sin(aim), dz = -Math.cos(aim), h = this.hole, c = this.course;
+    return dist => {
+      let sum = 0, n = 0;
+      for (let s = 0.125; s < dist; s += 0.25) {
+        const code = h.surface(p.ball[0] + dx * s, p.ball[2] + dz * s);
+        sum += code === SURF.WATER || code === SURF.CHASM || code === SURF.OB ? groundFor(SURF.GREEN, c).crr : groundFor(code, c).crr; n++;
+      }
+      return n ? sum / n : groundFor(p.lie, c).crr;
+    };
+  }
+
   // 推桿預測線：無誤差模擬，只顯示「讀果嶺」素質允許的長度
   updatePuttLine() {
     const p = this.players[this.cur];
     if (!this.club.putter || !this.canControl()) { this.world.setPuttLine(null); return; }
     const pw = this.power > 0.02 ? this.power : clamp(this.distPin(p) / this.puttScale, 0.1, 1);
     const zero = Object.assign(() => 0.5, { normal: () => 0 });
-    const l = makeLaunch({ power: pw, curve: 0, aimYaw: this.aim }, { club: this.club, lie: p.lie, stats: { ...p.stats, touch: 99, line: 99, mental: 99 }, rng: zero, stimp: this.course.stimp, puttScale: this.puttScale, distToPin: 0 });
+    const l = makeLaunch({ power: pw, curve: 0, aimYaw: this.aim }, { club: this.club, lie: p.lie, stats: { ...p.stats, touch: 99, line: 99, mental: 99 }, rng: zero, stimp: this.course.stimp, puttScale: this.puttScale, distToPin: 0, rollCrr: this.rollCrrFn(p, this.aim) });
     const maxLen = (6 + (p.stats.reading || 50) * 0.08) * YD;      // 讀果嶺 50 = 10 碼
     const r = simulate({ ...l, pos: p.ball, maxDist: maxLen + 0.5 }, { rho: this.rho, wind: [0, 0], rng: zero }, this.hole);
     const pts = [];
@@ -741,7 +770,7 @@ export class Game {
     const n = this.hole.normal(p.ball[0], p.ball[2]);
     const dist = this.distPin(p);
     const pressure = (lie === SURF.GREEN && p.strokes + 1 <= this.hole.par) || this.holeNo >= 16 || this.cfg.mode === 'match';
-    const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.calcPuttScale(p, club) });
+    const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.calcPuttScale(p, club), rollCrr: club.putter ? this.rollCrrFn(p, input.aimYaw) : null });
     const ws = Math.hypot(this.wind[0], this.wind[1]);
     const gust = ws > 0 ? Math.min(1 + rng.normal() * 0.12, WIND_MAX_MPH * MPH / ws) : 1;
     const env = { rho: this.rho, wind: [this.wind[0] * gust, this.wind[1] * gust], rng };
@@ -953,7 +982,8 @@ export class Game {
         const [px, pz] = this.hole.pin;
         let md = 1e9; for (const q of f) md = Math.min(md, Math.hypot(q[1] - px, q[3] - pz));
         const holed = msg.res.result === 'holed';
-        if (holed || md < YD) this.flight.cine = { on: false, done: false, t: 0, holed };
+        // 推桿：進洞或差 1 碼內；切桿：只有真的進洞或滾過洞口邊（0.25 公尺內）才特寫，停在 OK 距離內不演（看起來像切進）
+        if (holed || md < (club.putter ? YD : 0.25)) this.flight.cine = { on: false, done: false, t: 0, holed };
       }
       this.world.clearTracer();
       if (!club.putter && !this.flight.short) this.cam.mode = 'flight';
@@ -1112,9 +1142,11 @@ export class Game {
     let party = null;
     if (p.holed) {
       const diff = p.strokes - this.hole.par;
+      // 球真的進洞（不是停在 OK 距離內給推、不是 Double Par 撿起來）才放慶祝動畫
+      const inCup = r.result === 'holed';
       // 低於標準桿 2 桿以上（老鷹、信天翁、一桿進洞）：放 3 秒慶祝動畫，不另外跳文字
-      if (!p.picked && diff <= -2) party = this.celebration(p, diff);
-      else if (!p.picked && !club.putter && lieBefore !== SURF.GREEN && !firstShot) {
+      if (!p.picked && inCup && diff <= -2) party = this.celebration(p, diff);
+      else if (!p.picked && inCup && !club.putter && lieBefore !== SURF.GREEN && !firstShot) {
         // 沒推桿、從果嶺外直接切進 / 打進：放幾秒慶祝動畫
         const far = (this.shotCtx && this.shotCtx.dist || 0) > 60 * YD;
         party = { title: far ? 'HOLE OUT' : 'CHIP IN', sub: `${far ? '直接打進' : club.chipper ? '寶刀切進' : '切進'}！　${SCORE_NAME[diff] || (diff > 0 ? '+' + diff : diff)}`, name: p.user };
@@ -1683,13 +1715,12 @@ export class Game {
         this.intro = null; this.cam.mode = 'address'; cam.cut = true; this.beginTurn(this.cur);
         return;
       }
-      const at = sv => { const q = h.pointAt(clamp(sv, 0, it.L)); return new THREE.Vector3(q[0], h.height(q[0], -q[1]), -q[1]); };
       const [px, pz] = h.pin, pin = new THREE.Vector3(px, h.height(px, pz), pz);
-      // 鏡頭在洞線上方、跟著往前飛，看著前方的球道；最後停在果嶺前上方看著果嶺
-      const k = smooth(clamp(it.t / it.fly, 0, 1));
-      const sc = it.s0 + (it.L - 40 - it.s0) * k;
-      const pos = at(sc - 18), look = at(sc + 55).lerp(pin, k * k);
-      pos.y = Math.max(pos.y, at(sc).y) + it.high;
+      // 像空拍機：從發球台上空沿直線等速飛向旗桿（方向全程不變），高度約 42 公尺（比樹高很多），視線看前方 50 公尺的地面（往下俯視約 40°）；
+      // 最後停在果嶺前上方看著果嶺
+      const k = smooth(clamp(it.t / it.fly, 0, 1)), P = it.path;
+      const d = k * Math.max(0, P.len - 58), pos = P.at(d), look = P.at(d + 50); look.y -= P.lift; look.lerp(pin, k * k);
+      pos.y += it.high;
       cam.pos.copy(pos); cam.look.copy(look);
       camera.position.copy(cam.pos);
       camera.lookAt(cam.look);

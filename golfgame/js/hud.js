@@ -114,7 +114,8 @@ export class Hud {
     $('l-lie').textContent = SURF_NAME[lie];
     $('l-pin').textContent = distPin < 27 ? toYd(distPin).toFixed(1) + ' Y' : Math.round(toYd(distPin)) + ' Y';
     const putt = puttElev !== null && puttElev !== undefined;
-    $('l-land').textContent = putt ? (Math.abs(puttElev) < 0.01 ? '平' : (puttElev > 0 ? '上坡 ' : '下坡 ') + toYd(Math.abs(puttElev)).toFixed(2) + ' Y') : Math.round(toYd(landing)) + ' Y';
+    // 推桿的高低差用公分（幾公分的差別用碼看不出來）；下坡會比力道條的碼數多滾、上坡會少滾
+    $('l-land').textContent = putt ? (Math.abs(puttElev) < 0.02 ? '幾乎平坦' : (puttElev > 0 ? '上坡 ' : '下坡 ') + Math.round(Math.abs(puttElev) * 100) + ' cm' + (puttElev > 0 ? '（少滾）' : '（多滾）')) : Math.round(toYd(landing)) + ' Y';
     $('l-land-lbl').textContent = putt ? '高低差' : '預估落點';
     $('l-icon').setAttribute('href', lie === 3 ? '#i-green' : '#i-lie');
   }
