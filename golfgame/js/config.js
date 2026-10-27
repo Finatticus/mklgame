@@ -2,13 +2,16 @@
 export const CONFIG = {
   // GAS 網頁應用程式的網址（內建，玩家不用自己填；重新部署時用「管理部署作業 → 編輯 → 新版本」，網址不變）
   // 留空 = 本機模式：帳號存在這台裝置的瀏覽器，方便測試，但不能跨裝置連線。
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbw2R7bxaUBh5y6eE2RcDLeNJyTD6ZFSU398JKDsaSOR831YDV8D39a78cw0tkEzcyvj/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbw_GitZHlz8xnonhdWc3Y5AL_exIJRIcj7OgQK7br4n-PWWe5mBXXwBkfZTBhpyhTMD/exec',
 
   // WebRTC 連線用的公開 STUN 伺服器
   ICE: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }],
 };
 
 export const ADMIN_USER = 'Michael';
+// 生涯模式（開發測試中）只開放給這些帳號（分大小寫）；正式開放時改成 null = 所有人。伺服器 gas/Career.gs 的 CAREER_ACCESS 要一起改
+export const CAREER_USERS = ['test', 'Michael'];
+export const careerAllowed = user => !!user && (CAREER_USERS === null || CAREER_USERS.includes(user));
 
 // ===== 角色 =====
 // classic = 程式內建角色（可換顏色）；其他 = Mixamo 寫實角色（assets/character/<資料夾>/model.glb，由轉檔工具從 model.fbx 壓縮而來）

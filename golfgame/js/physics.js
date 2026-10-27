@@ -248,7 +248,8 @@ export function makeLaunch(input, ctx) {
   const d = derive(ctx.stats);
   const rng = ctx.rng;
   const club = ctx.club;
-  const pm = ctx.pressure ? d.pressureMul : 1;
+  // 生涯模式：誤差倍率由生涯算好傳進來（壓力等級、技能卡、手感、體能）；主遊戲照舊用關鍵球的抗壓倍率
+  const pm = Number.isFinite(ctx.errMul) ? ctx.errMul : ctx.pressure ? d.pressureMul : 1;
   const lie = ctx.lie;
   const n = () => rng.normal();
 

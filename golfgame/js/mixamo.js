@@ -201,7 +201,39 @@ export class MixamoGolfer {
     this.bR = this.model.getObjectByName('mixamorigRightHand');
     this.bL = this.model.getObjectByName('mixamorigLeftHand');
     this.gR = gripBones(this.model, 'Right'); this.gL = gripBones(this.model, 'Left');
+    try { this.attachGear(this.opts.look); } catch (e) { console.warn('寫實角色的帽子 / 眼鏡掛不上去', e); }
     this.ready = true;
+  }
+
+  // 生涯模式（look.v2）：帽子、太陽眼鏡掛在頭部骨架上、手套換手的顏色以外不改模型
+  attachGear(look) {
+    if (!look || !look.v2) return;
+    const head = this.model.getObjectByName('mixamorigHead');
+    if (!head) return;
+    this.model.updateMatrixWorld(true);
+    const ws = head.getWorldScale(new THREE.Vector3()).x || 0.01, k = 1 / ws;
+    const g = new THREE.Group();
+    g.scale.setScalar(k * 0.98);
+    g.position.set(0, 0.105 * k, 0.012 * k);
+    head.add(g);
+    const capMat = new THREE.MeshStandardMaterial({ color: look.cap || '#1d3a2a', roughness: 0.8 });
+    const hat = look.hat || 'cap';
+    if (hat === 'cap') {
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.105, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), capMat));
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.09, 0.01, 24, 1, false, -Math.PI * 0.5, Math.PI), capMat);
+      brim.position.set(0, 0.008, 0.06); g.add(brim);
+    } else if (hat === 'visor') {
+      const band = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.012, 6, 28), capMat); band.rotation.x = Math.PI / 2; band.position.y = 0.015; g.add(band);
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.09, 0.01, 24, 1, false, -Math.PI * 0.5, Math.PI), capMat); brim.position.set(0, 0.01, 0.06); g.add(brim);
+    } else if (hat === 'bucket') {
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.11, 0.09, 24), capMat); top.position.y = 0.03; g.add(top);
+      g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.165, 0.008, 28), capMat));
+    }
+    if (look.glasses) {
+      const fm = new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.3 }), gl = new THREE.Group();
+      for (const x of [-0.035, 0.035]) { const l = new THREE.Mesh(new THREE.TorusGeometry(0.02, 0.0035, 6, 18), fm); l.position.set(x, 0, 0); gl.add(l); }
+      gl.position.set(0, -0.07, 0.095); g.add(gl);
+    }
   }
 
   setLook() { /* 寫實角色的外觀由模型決定 */ }

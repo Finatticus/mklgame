@@ -40,7 +40,7 @@ const ADMIN = 'Michael';
 const ADMIN_PASS = '1220';
 const START_POINTS = 30;
 const START_RESPECS = 10;
-const RESERVED = ['Account', '排行', '挑戰排行', '自製球場', '排行精華', '實際下場'];
+const RESERVED = ['Account', '排行', '挑戰排行', '自製球場', '排行精華', '實際下場', '生涯週賽'];
 // 排行精華：只留「可能出現在排行上」的場次（每個分類前 100 名、每個人在每個分類的最佳、所有特殊紀錄），排行頁只讀這一頁
 const RANK_TOP_SHEET = '排行精華';
 const RANK_TOP_N = 100;
@@ -104,7 +104,8 @@ function doPost(e) {
     return json_({ ok: false, error: '格式錯誤' });
   }
   try {
-    const fn = ACTIONS[req.action];
+    // 生涯模式的動作在 Career.gs（同一個 Apps Script 專案的第二個檔案）；還沒貼 Career.gs 時就當成未知動作
+    const fn = ACTIONS[req.action] || (typeof CAREER_ACTIONS !== 'undefined' && /^cm/.test(String(req.action)) ? CAREER_ACTIONS[req.action] : null);
     if (!fn) return json_({ ok: false, error: '未知動作 ' + req.action });
     return json_({ ok: true, data: fn(req) });
   } catch (err) {
@@ -119,7 +120,7 @@ const ACTIONS = {
     const user = String(req.user || '').trim();
     const pass = String(req.pass || '');
     if (!/^[A-Za-z0-9_\-一-鿿]{2,20}$/.test(user)) throw new Error('帳號限 2~20 字（中英數字、_ -）');
-    if (RESERVED.indexOf(user) >= 0) throw new Error('這個名稱不能使用');
+    if (RESERVED.indexOf(user) >= 0 || /^生涯_/.test(user)) throw new Error('這個名稱不能使用');      // 生涯_ 開頭是生涯模式的工作頁
     if (pass.length < 1) throw new Error('請輸入密碼');
     return withLock_(() => {
       if (findAccountRow_(user, true)) throw new Error('帳號已存在');

@@ -13,6 +13,8 @@ export const SKINS = [
   { id: 'goldD', slot: 'driver', name: '黃金 Driver', head: 0xd8a830, metal: 1, shaft: 0xe8c860, ach: 'drive330', fx: 'gold' },
   { id: 'frostD', slot: 'driver', name: '冰霜 Driver', head: 0x9fdcff, glow: 0x3aa8ff, shaft: 0xd8f2ff, ach: 'aurora_par', fx: 'frost' },
   { id: 'galaxyD', slot: 'driver', name: '星河 Driver', head: 0x3a1a6a, glow: 0x9a5aff, shaft: 0xb89aff, ach: 'ch_p5', fx: 'galaxy' },
+  // 生涯模式的專屬外觀（career：只有開放名單內的帳號看得到；生涯成就解鎖）
+  { id: 'slamD', slot: 'driver', name: '大滿貫 Driver', head: 0xd4af37, metal: 1, shaft: 0x1d6b3a, glow: 0x8a6a10, ach: 'cm_slam', fx: 'gold', career: true, desc: '生涯模式：四大賽都拿過冠軍' },
   { id: 'std', slot: 'iron', name: '標準鐵桿', std: true },
   { id: 'lavaI', slot: 'iron', name: '熔岩鐵桿', head: 0x2a1410, glow: 0xff5a10, shaft: 0x4a2a20, ach: 'ember_par', fx: 'ember' },
   { id: 'obsidianI', slot: 'iron', name: '黑曜石鐵桿', head: 0x161420, glow: 0x6a4aff, metal: 1, shaft: 0x2a2838, ach: 'ch_p2', fx: 'void' },
@@ -23,6 +25,7 @@ export const SKINS = [
   { id: 'std', slot: 'chipper', name: '標準寶刀', std: true },
   { id: 'std', slot: 'ball', name: '標準白球', std: true },
   { id: 'gold', slot: 'ball', name: '黃金球', color: 0xffd860, glow: 0x8a6010, trail: 0xffd860, ach: 'hio', fx: 'gold' },
+  { id: 'hofBall', slot: 'ball', name: '名人堂球', color: 0xf6f0e1, glow: 0xc9a85c, trail: 0xe7d29a, ach: 'cm_hof', fx: 'gold', career: true, desc: '生涯模式：入選世界高爾夫名人堂' },
   { id: 'firefly', slot: 'ball', name: '螢火球', color: 0xeaffa0, glow: 0xa8ff4a, trail: 0xc8ff6a, ach: 'ring30', fx: 'firefly' },
   { id: 'lava', slot: 'ball', name: '熔岩球', color: 0x3a1a10, glow: 0xff5a10, trail: 0xff7a2a, ach: 'vent25', fx: 'ember' },
   { id: 'frost', slot: 'ball', name: '冰晶球', color: 0xd8f4ff, glow: 0x4ab8ff, trail: 0x8ad8ff, ach: 'wall30', fx: 'frost' },
@@ -434,7 +437,8 @@ export function checkCounters() {
 
 // 蓋球場護照的章：一般球場打完 18 洞；分區球場記下這一場打完的區（nineIds），每一區都打過才算蓋成
 //   strokes = 18 洞的桿數（只打 9 洞時傳 null，不算最佳成績）；回傳 true = 這一場剛好把章蓋成
-export function stamp(courseId, strokes, nineIds = null) {
+//   force = 生涯模式：自己打 9 洞以上就蓋章（不一定是完整 18 洞）
+export function stamp(courseId, strokes, nineIds = null, force = false) {
   const st = prog().stamps, now = new Date().toISOString(), before = stampDone(courseId);
   const cur = st[courseId] || { n: 0 };
   if (strokes) { cur.best = Math.min(cur.best || 999, strokes); cur.n = (cur.n || 0) + 1; }
@@ -442,7 +446,7 @@ export function stamp(courseId, strokes, nineIds = null) {
   if (nineIds) { cur.nines = cur.nines || {}; cur.nineN = cur.nineN || {}; for (const k of nineIds) { if (!cur.nines[k]) cur.nines[k] = now; cur.nineN[k] = (cur.nineN[k] || (cur.nines[k] !== now ? 1 : 0)) + 1; } }
   st[courseId] = cur;
   if (!before && stampDone(courseId)) cur.date = now;
-  else if (!nineIds && strokes && !cur.date) cur.date = now;
+  else if (!nineIds && (strokes || force) && !cur.date) cur.date = now;
   dirty = true;
   return !before && stampDone(courseId);
 }

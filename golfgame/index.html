@@ -369,6 +369,7 @@
 <section id="scr-lobby" class="screen app-screen">
   <header class="appbar"><small id="lb-greet">GOOD EVENING</small><h4 id="lb-name"></h4><p id="lb-stats" class="appbar-sub"></p><button id="btn-logout" class="appbar-act">登出</button><button id="btn-lobby-set" class="appbar-act set2">設定</button></header>
   <div class="body narrow">
+    <button class="mode career-card hidden" id="mode-career"><div class="thumb tc"><svg viewBox="0 0 120 120"><use href="#i-flag"/></svg></div><div><b>生涯模式 <em class="beta">測試中</em></b><span id="mode-career-sub">從 8 歲的第一次揮桿，到奧古斯塔的綠夾克</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-single"><div class="thumb t1"><svg viewBox="0 0 120 120"><use href="#i-driver"/></svg></div><div><b>單人回合</b><span>選球場、梯台、9 / 18 洞</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-chal"><div class="thumb t5"><svg viewBox="0 0 120 120"><use href="#i-target"/></svg></div><div><b>挑戰模式</b><span id="mode-chal-sub">特別設計的關卡，每關 1~3 顆星</span></div><span class="chev">›</span></button>
     <button class="mode" id="mode-host"><div class="thumb t2"><svg viewBox="0 0 120 120"><use href="#i-flag"/></svg></div><div><b>建立遊戲間</b><span>你的裝置當主機，產生驗證碼</span></div><span class="chev">›</span></button>
@@ -479,11 +480,14 @@
 <section id="scr-records" class="screen app-screen">
   <header class="appbar"><small>RECORDS</small><h4>紀錄</h4></header>
   <div class="body narrow scroll">
-    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="stats" class="on">個人紀錄</button><button data-rc="rounds">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button><button data-rc="real">實際下場</button></div>
+    <div id="rc-tabs" class="seg rk-tabs"><button data-rc="stats" class="on">個人紀錄</button><button data-rc="rounds">回合紀錄</button><button data-rc="ach">成就徽章</button><button data-rc="pass">球場護照</button><button data-rc="real">實際下場</button><button data-rc="career" id="rc-tab-career" class="hidden">生涯</button></div>
     <div id="rc-list"></div>
   </div>
   <nav class="tabbar"><button data-tab="lobby"><i></i>大廳</button><button data-tab="rank"><i></i>排行</button><button data-tab="records" class="on"><i></i>紀錄</button><button data-tab="char"><i></i>角色</button><button data-tab="admin" class="admin-only"><i></i>管理</button></nav>
 </section>
+
+<!-- ============ 生涯模式（內容由 Career/js 動態載入後畫上去；只有開放名單內的帳號會用到）============ -->
+<section id="scr-career" class="screen app-screen"></section>
 
 <!-- ============ 實際下場紀錄（新增 / 編輯 / 計分卡）============ -->
 <section id="scr-real" class="screen app-screen">

@@ -8,6 +8,12 @@ import { clamp, lerp } from './util.js';
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const UP = V(0, 1, 0);
 const D2R = Math.PI / 180;
+// 升級外觀：跟著頭轉的零件、兒童時一起放大的零件、固定的旋轉
+const HEAD_PARTS = ['hairTop', 'hairBack', 'hair', 'cap', 'brim', 'ponytail', 'earL', 'earR', 'nose', 'eyeL', 'eyeR', 'irisL', 'irisR', 'browL', 'browR', 'mouth', 'beard', 'mustache', 'lensL', 'lensR', 'bridge', 'hairLong', 'hairBun', 'hairBob', 'hairCurl', 'visorBand', 'bucketTop', 'bucketBrim'];
+const HEAD_SCALED = ['hairTop', 'hairBack', 'hair', 'cap', 'brim', 'ponytail', 'earL', 'earR', 'nose', 'hairLong', 'hairBun', 'hairBob', 'hairCurl', 'visorBand', 'bucketTop', 'bucketBrim', 'eyeL', 'eyeR', 'irisL', 'irisR', 'browL', 'browR', 'mouth', 'mustache', 'lensL', 'lensR', 'bridge'];
+const QZ90 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+const QX90 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+const QMOUTH = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI * 1.1);
 
 // 揮桿關鍵影格：phase, 手臂角 θ, 球桿角, 骨盆轉, 胸轉, 重心左右, 前傾, 膝彎
 const FULL = [
@@ -144,6 +150,30 @@ export class ProceduralGolfer {
       P['shoe' + s] = this.mesh(cap(0.05, 0.17), 'shoes', 0.55);
       P['sole' + s] = this.mesh(new THREE.BoxGeometry(0.1, 0.02, 0.27), 'sole', 0.9);
     }
+    // 升級外觀（生涯模式的基礎選項；look.v2 才顯示，主遊戲的經典外觀不變）：臉、髮型、帽型、眼鏡、鬍子、背心、裙子
+    const hide = m => { m.visible = false; return m; };
+    for (const s of ['L', 'R']) {
+      P['eye' + s] = hide(this.mesh(new THREE.SphereGeometry(0.016, 12, 10), 'eyeWhite', 0.3));
+      P['iris' + s] = hide(this.mesh(new THREE.SphereGeometry(0.009, 10, 8), 'iris', 0.2));
+      P['brow' + s] = hide(this.mesh(new THREE.BoxGeometry(0.034, 0.008, 0.01), 'hair', 0.9));
+      P['lens' + s] = hide(this.mesh(new THREE.TorusGeometry(0.021, 0.0035, 6, 18), 'frame', 0.3));
+    }
+    P.bridge = hide(this.mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.022, 6), 'frame', 0.3));
+    P.mouth = hide(this.mesh(new THREE.TorusGeometry(0.022, 0.004, 6, 16, Math.PI * 0.8), 'lips', 0.5));
+    P.beard = hide(this.mesh(new THREE.SphereGeometry(0.078, 18, 12, 0, Math.PI * 2, Math.PI * 0.45, Math.PI * 0.55), 'hair', 0.95));
+    P.mustache = hide(this.mesh(new THREE.CapsuleGeometry(0.008, 0.03, 4, 8), 'hair', 0.9));
+    P.hairTop = hide(this.mesh(new THREE.SphereGeometry(0.109, 22, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), 'hair', 0.9));      // 頭頂（不戴球帽時看得到）
+    P.hairBack = hide(this.mesh(new THREE.SphereGeometry(0.11, 20, 12, Math.PI * 0.85, Math.PI * 1.3, Math.PI * 0.2, Math.PI * 0.52), 'hair', 0.9));     // 後腦與兩側（臉的前面不蓋）
+    P.hairLong = hide(this.mesh(cap(0.075, 0.16, 16), 'hair', 0.9));
+    P.hairBun = hide(this.mesh(new THREE.SphereGeometry(0.045, 14, 10), 'hair', 0.9));
+    P.hairBob = hide(this.mesh(new THREE.SphereGeometry(0.122, 20, 14, Math.PI * 0.84, Math.PI * 1.32, Math.PI * 0.15, Math.PI * 0.62), 'hair', 0.9));
+    P.hairCurl = new THREE.Group(); P.hairCurl.visible = false; this.rig.add(P.hairCurl);
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; const m = new THREE.Mesh(new THREE.SphereGeometry(0.038, 10, 8), this.mat('hair', 0.95)); m.position.set(Math.cos(a) * 0.08, 0.06 + Math.sin(i * 1.7) * 0.012, Math.sin(a) * 0.08 - 0.01); m.castShadow = true; P.hairCurl.add(m); }
+    P.visorBand = hide(this.mesh(new THREE.TorusGeometry(0.108, 0.012, 6, 28), 'cap', 0.8));
+    P.bucketTop = hide(this.mesh(new THREE.CylinderGeometry(0.1, 0.115, 0.09, 24), 'cap', 0.85));
+    P.bucketBrim = hide(this.mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.008, 28), 'cap', 0.85));
+    P.vest = hide(this.mesh(cap(0.152, 0.17, 18), 'vest', 0.9));
+    P.skirt = hide(this.mesh(new THREE.CylinderGeometry(0.16, 0.22, 0.24, 24, 1, true), 'pants', 0.85));
     // 球桿（剛體）：原點在握把頂端，+Y 指向桿頭
     this.club = new THREE.Group();
     this.rig.add(this.club);
@@ -222,6 +252,53 @@ export class ProceduralGolfer {
     this.female = look.body === 'f';
     this.parts.ponytail.visible = this.female;
     this.rig.scale.setScalar(this.female ? 0.95 : 1);
+    this.headK = 1; this.bodyW = 1;
+    if (look.v2) this.applyV2(look);
+  }
+
+  // 升級外觀：年齡與身高（兒童頭比較大、身體比較小）、髮型、帽型、眼鏡、鬍子、長袖 / 背心 / 短褲 / 裙子、40 歲後白髮
+  applyV2(look) {
+    const P = this.parts, age = Number(look.age) || 25, set = (k, c) => this.mat(k).color.set(c);
+    const grow = age >= 18 ? 1 : ({ 8: 0.73, 9: 0.76, 10: 0.79, 11: 0.83, 12: 0.86, 13: 0.9, 14: 0.93, 15: 0.96, 16: 0.98, 17: 0.99 })[Math.floor(age)] || 0.73;
+    const cm = (look.height || (this.female ? 166 : 176)) * grow;
+    this.rig.scale.setScalar(cm / 178);
+    this.headK = 1 + Math.max(0, 16 - age) * 0.028;
+    this.bodyW = look.build === 'slim' ? 0.9 : look.build === 'strong' ? 1.12 : 1;
+    // 白髮：40 歲以後慢慢變灰
+    const hc = new THREE.Color(look.hairColor || look.hair || '#2b2118');
+    if (age > 40) hc.lerp(new THREE.Color('#c9c6c0'), Math.min(0.85, (age - 40) / 25));
+    this.mat('hair').color.copy(hc);
+    set('eyeWhite', '#f4f1ea'); set('iris', look.eyes || '#3a2a1e'); set('lips', '#a0584a'); set('frame', '#1c1c1c'); set('vest', look.vest || '#2a3442');
+    for (const n of ['eyeL', 'eyeR', 'irisL', 'irisR', 'browL', 'browR', 'mouth']) P[n].visible = true;
+    const brow = { thin: 0.5, natural: 1, thick: 1.4, straight: 1.6 }[look.brows || 'natural'];
+    P.browL.scale.set(1, brow, 1); P.browR.scale.set(1, brow, 1);
+    // 髮型
+    const hs = look.hairStyle || (this.female ? 'pony' : 'short');
+    // 原本的頭髮是繞頭一圈的帶子（經典外觀看不到臉，不影響）；升級外觀改用頭頂 + 後腦，臉的前面不蓋
+    P.hair.visible = false;
+    P.hairTop.visible = !['bald', 'curly'].includes(hs);
+    P.hairBack.visible = !['bald', 'curly', 'buzz', 'bob'].includes(hs);
+    P.ponytail.visible = hs === 'pony';
+    P.hairLong.visible = hs === 'long'; P.hairBun.visible = hs === 'bun'; P.hairBob.visible = hs === 'bob'; P.hairCurl.visible = hs === 'curly';
+    this.hairStyle = hs;
+    // 帽型：cap 球帽、visor 遮陽帽、bucket 漁夫帽、none 不戴
+    const hat = look.hat || 'cap';
+    P.cap.visible = hat === 'cap'; P.brim.visible = hat === 'cap' || hat === 'visor';
+    P.visorBand.visible = hat === 'visor'; P.bucketTop.visible = P.bucketBrim.visible = hat === 'bucket';
+    // 眼鏡、鬍子（成年後）
+    for (const n of ['lensL', 'lensR', 'bridge']) P[n].visible = !!look.glasses;
+    const bd = age >= 18 ? look.beard || 'none' : 'none';
+    P.beard.visible = bd === 'full' || bd === 'stubble' || bd === 'goatee';
+    this.beardK = bd === 'goatee' ? [0.4, 0.7, 0.6] : bd === 'stubble' ? [1.02, 1, 1.02] : [1, 1, 1];
+    P.mustache.visible = bd === 'mustache' || bd === 'full';
+    // 上衣：長袖、外套 → 手臂用上衣的顏色；背心 → 胸前多一層
+    const longSleeve = look.top === 'long' || look.top === 'jacket';
+    for (const s of ['L', 'R']) { P['upper' + s].material = this.mat(longSleeve ? 'shirt' : 'skin', 0.75); P['fore' + s].material = this.mat(longSleeve ? 'shirt' : 'skin', 0.75); }
+    P.vest.visible = look.top === 'vest';
+    // 下身：短褲、裙子 → 小腿是皮膚
+    const shorts = look.bottom === 'shorts' || look.bottom === 'skirt';
+    for (const s of ['L', 'R']) { P['shin' + s].material = this.mat(shorts ? 'skin' : 'pants', 0.75); P['knee' + s].material = this.mat(shorts ? 'skin' : 'pants', 0.75); }
+    P.skirt.visible = look.bottom === 'skirt';
   }
 
   // 依球的位置、瞄準方向與球桿，決定站位與揮桿平面
@@ -321,10 +398,12 @@ export class ProceduralGolfer {
     P.belt.scale.set(1.08, 1, 0.82);
     P.abdomen.position.copy(B.pelvis).addScaledVector(B.spineDir, 0.2);
     P.abdomen.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(rotY(V(1, 0, 0), (B.pelvisYaw + B.chestYaw) / 2), B.spineDir, rotY(V(0, 0, 1), (B.pelvisYaw + B.chestYaw) / 2)));
-    P.abdomen.scale.set(1.12, 1, 0.82);
+    P.abdomen.scale.set(1.12 * (this.bodyW || 1), 1, 0.82 * (this.bodyW || 1));
+    if (P.skirt.visible) { P.skirt.position.copy(B.pelvis).add(V(0, -0.1, 0)); P.skirt.quaternion.copy(P.pelvis.quaternion); }
     P.chest.position.copy(B.chest).addScaledVector(cUp, -0.08);
     P.chest.quaternion.setFromRotationMatrix(chestM);
-    P.chest.scale.set(this.female ? 1.12 : 1.28, 1, 0.78);
+    P.chest.scale.set((this.female ? 1.12 : 1.28) * (this.bodyW || 1), 1, 0.78 * (this.bodyW || 1));
+    if (P.vest.visible) { P.vest.position.copy(P.chest.position); P.vest.quaternion.copy(P.chest.quaternion); P.vest.scale.set((this.female ? 1.16 : 1.32) * (this.bodyW || 1), 1, 0.84 * (this.bodyW || 1)); }
     const neckBase = B.chest.clone().addScaledVector(cUp, 0.08);
     // 頭：保持準備姿勢時的位置，眼睛看球（下桿到送桿後才跟著轉）
     const headPos = this.headLock && ph < 2.15 ? this.headLock.clone() : neckBase.clone().addScaledVector(cUp, 0.08).add(V(0, 0.09, 0.03));
@@ -336,16 +415,34 @@ export class ProceduralGolfer {
     const hUp = look.clone().cross(hRight).negate().normalize();
     const headM = new THREE.Matrix4().makeBasis(hRight, hUp, look);
     P.head.quaternion.setFromRotationMatrix(headM);
-    P.head.scale.set(0.92, 1.06, 1);
-    for (const n of ['hair', 'cap', 'brim', 'ponytail', 'earL', 'earR', 'nose']) P[n].quaternion.copy(P.head.quaternion);
+    const hk = this.headK || 1;
+    P.head.scale.set(0.92 * hk, 1.06 * hk, hk);
+    for (const n of HEAD_PARTS) P[n].quaternion.copy(P.head.quaternion);
+    if (hk !== 1) for (const n of HEAD_SCALED) P[n].scale.setScalar(hk);
     const hq = P.head.quaternion;
-    const at = (x, y, z) => headPos.clone().add(V(x, y, z).applyQuaternion(hq));
+    const at = (x, y, z) => headPos.clone().add(V(x * hk, y * hk, z * hk).applyQuaternion(hq));
     P.hair.position.copy(at(0, -0.005, -0.006));
     P.cap.position.copy(at(0, 0.018, 0));
     P.brim.position.copy(at(0, 0.03, 0.06));
     P.ponytail.position.copy(at(0, -0.02, -0.13));
     P.earL.position.copy(at(0.1, 0, -0.005)); P.earR.position.copy(at(-0.1, 0, -0.005));
     P.nose.position.copy(at(0, -0.015, 0.1));
+    // 升級外觀的臉與配件
+    if (this.look && this.look.v2) {
+      for (const [s, x] of [['L', 0.036], ['R', -0.036]]) {
+        P['eye' + s].position.copy(at(x, 0.012, 0.086)); P['iris' + s].position.copy(at(x, 0.012, 0.099));
+        P['brow' + s].position.copy(at(x, 0.04, 0.095)); P['lens' + s].position.copy(at(x, 0.012, 0.106));
+      }
+      P.bridge.position.copy(at(0, 0.014, 0.108)); P.bridge.quaternion.multiply(QZ90);
+      P.mouth.position.copy(at(0, -0.042, 0.09)); P.mouth.quaternion.multiply(QMOUTH);
+      P.beard.position.copy(at(0, -0.02, 0.025)); if (this.beardK) P.beard.scale.set(this.beardK[0] * hk, this.beardK[1] * hk, this.beardK[2] * hk);
+      P.mustache.position.copy(at(0, -0.028, 0.1)); P.mustache.quaternion.multiply(QZ90);
+      P.hairTop.position.copy(at(0, 0.006, -0.006)); P.hairBack.position.copy(at(0, -0.004, -0.008)); if (this.hairStyle === 'buzz') P.hairTop.scale.set(hk, hk * 0.85, hk);
+      P.hairLong.position.copy(at(0, -0.1, -0.075)); P.hairBun.position.copy(at(0, 0.06, -0.08)); P.hairBob.position.copy(at(0, -0.01, -0.008)); P.hairCurl.position.copy(at(0, 0, 0));
+      if (this.hairStyle === 'buzz') P.hair.scale.set(hk, hk * 0.85, hk);
+      P.visorBand.position.copy(at(0, 0.035, 0)); P.visorBand.quaternion.multiply(QX90);
+      P.bucketTop.position.copy(at(0, 0.06, 0)); P.bucketBrim.position.copy(at(0, 0.02, 0));
+    }
     P.collar.position.copy(neckBase);
     P.collar.quaternion.setFromUnitVectors(V(0, 0, 1), cUp);
 

@@ -48,7 +48,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
 <body>
 <header><div class="wrap">
   <div class="wm">DIXEN GOLF</div>
-  <p>說明文件 · 第一版（修訂 89）· 2026-10-27<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
+  <p>說明文件 · 第一版（修訂 90）· 2026-10-28<br>上半部：遊玩方式與內容　下半部：程式邏輯、物理公式與機率</p>
 </div></header>
 
 <nav class="toc"><div class="wrap">
@@ -339,6 +339,22 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <li><b>舊資料自動搬</b>：舊的共用「實際下場」頁還在的話，每個人第一次打開 / 存 / 刪實際下場時，伺服器把他的那幾列搬到自己的玩家頁，搬完把共用頁的那幾列刪掉。共用頁只剩標題時就可以整頁刪除。共用的「生涯統計」頁不再使用（如果有，可以直接刪；個人紀錄會自動重算一次）。</li>
   <li><b>測試</b>：用模擬的試算表跑實際的 <code>Code.gs</code>：搬家（自己的 3 場搬過來、別人的留在原頁）、更新、新增、刪除實際下場、存 8 場遊戲回合、存 10 萬字的生涯統計再讀回來，位置和內容都正確，左邊的遊戲回合沒有被動到。</li>
   <li><b>GAS 要重新部署</b>；畫面端沒有改。</li>
+</ul>
+<h3>生涯模式（測試中）（修訂 90，版本 v92）</h3>
+<ul>
+  <li><b>只開放給 <code>test</code> 與 <code>Michael</code></b>：名單在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>。名單外的帳號看不到入口，也不會下載 <code>Career/</code> 的任何檔案（大廳卡片按下去才動態載入）。</li>
+  <li><b>完整的說明</b>在 <code>Career/career-plan.html</code>（企劃書第一章後面的「說明書」）：從 8 歲的序章、童年的五個關鍵時刻、青少年、大學與業餘、職業之路、PGA TOUR、四大賽與團體賽、名人賽與綠夾克、到名人堂、退休與傳承。</li>
+  <li><b>存檔</b>：同一個試算表多了「生涯_帳號」工作頁（第 2、3 個生涯欄位是「生涯_帳號_2 / _3」）與共用的「生涯週賽」；主遊戲的個人工作頁不新增任何列。Apps Script 要把 <code>gas/Code.gs</code> 換成新版，並新增第二個檔案 <code>Career</code>（內容 = <code>Career/gas/Career.gs</code>）。</li>
+  <li><b>主遊戲的改動（只有生涯的回合才生效）</b>：
+    <ul>
+      <li><code>js/game.js</code>：<code>cfg.career</code> 存在時，洞結束 / 回合結束交給生涯（轉播名次條、成績卡）；可以指定要打哪幾洞（<code>cfg.holeIdx</code>）、兒童梯（沿洞線的碼數）、關鍵時刻（球放在指定距離與球位）；誤差倍率由生涯計算（壓力等級、技能卡、桿弟）；揮桿的結果一算出來就先存，APP 關掉再開直接播放那一桿；表現型成就與最佳紀錄不共用，自己打 9 洞以上才算主遊戲的回合與蓋章。一般回合完全照舊。</li>
+      <li><code>js/stats.js</code> / <code>js/physics.js</code>：素質帶 <code>_min</code> 時可以低於 50（兒童）、<code>_spd</code> 是身體還沒長大時的桿頭速度倍率；<code>errMul</code> 取代關鍵球的抗壓倍率。主遊戲的素質沒有這些欄位，算法不變。</li>
+      <li><code>js/terrain.js</code>：<code>hole.teeAt(碼數)</code>（兒童梯）。</li>
+      <li><code>js/character.js</code>：升級外觀（臉、10 種髮型、帽型、眼鏡、鬍子、長袖 / 背心 / 短褲 / 裙子、兒童比例、40 歲後白髮），只在 <code>look.v2</code> 時啟用；主遊戲的經典外觀不變。<code>js/mixamo.js</code>：寫實角色在生涯中可以戴帽子、太陽眼鏡。</li>
+      <li><code>js/progress.js</code>：生涯成就的專屬外觀「大滿貫 Driver」「名人堂球」（名單外的帳號看不到）；角色頁的上衣顏色多一個「綠夾克綠」（生涯拿到綠夾克才出現）。</li>
+      <li><code>gas/Code.gs</code>：分派 <code>CAREER_ACTIONS</code>（Career.gs）；「生涯_」開頭與「生涯週賽」不能註冊成帳號名稱。</li>
+    </ul></li>
+  <li><b>測試工具</b>（本機用，不上傳）：<code>Career/tools/autosim.js</code>（全模擬三十年的平衡測試）、<code>.claude/career-auto.js</code>（自動點劇情、回合改模擬）、<code>.claude/career-bot.js</code>（自動打球）。</li>
 </ul>
 <h3>新增 80 座非真實球場（@C）（修訂 89，版本 v91）</h3>
 <ul>
@@ -964,6 +980,7 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <tr><td><code>js/challenge.js</code></td><td>挑戰模式第 1~100 關、章節與星星判定</td></tr>
   <tr><td><code>js/challenge-gen.js</code></td><td>產生挑戰第 101~300 關（10 章 × 20 關）</td></tr>
   <tr><td><code>gas/Code.gs</code></td><td>Google Apps Script 後端（貼到試算表的 Apps Script）</td></tr>
+  <tr><td><code>Career/</code></td><td>生涯模式（只有開放名單內的帳號會載入）：<code>js/</code> 程式、<code>css/</code> 樣式、<code>img/s/</code> 劇情照片、<code>gas/Career.gs</code> 後端（Apps Script 的第二個檔案）、<code>career-plan.html</code> 企劃書兼說明書</td></tr>
   <tr><td><code>assets/textures/</code></td><td>Poly Haven CC0 材質與天空 HDR</td></tr>
   <tr><td><code>assets/icons/</code></td><td>主畫面圖示</td></tr>
   <tr><td><code>manifest.webmanifest</code> / <code>sw.js</code></td><td>加到主畫面設定 / 離線快取</td></tr>

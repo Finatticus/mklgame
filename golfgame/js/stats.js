@@ -111,9 +111,11 @@ export function defaultStats() {
   return o;
 }
 
+// 生涯模式的球員可以低於 50（兒童從 15~25 開始）：素質物件帶 _min（下限）時才放寬，主遊戲的素質沒有這個欄位，照舊最低 50
 export function normalizeStats(stats) {
   const o = defaultStats();
-  if (stats) for (const k in o) if (Number.isFinite(stats[k])) o[k] = Math.max(BASE, Math.min(MAX, Math.round(stats[k])));
+  const lo = stats && Number.isFinite(stats._min) ? stats._min : BASE;
+  if (stats) for (const k in o) if (Number.isFinite(stats[k])) o[k] = Math.max(lo, Math.min(MAX, Math.round(stats[k])));
   return o;
 }
 
@@ -123,7 +125,8 @@ export const POWER_MPH = { base: 58, k: 0.6 };   // 力量 → 一號木桿頭�
 export function derive(stats) {
   const s = normalizeStats(stats);
   return {
-    driverMph: POWER_MPH.base + s.power * POWER_MPH.k,   // 一號木桿頭速度
+    // 一號木桿頭速度；生涯模式的兒童、青少年帶 _spd（身體還沒長大的倍率），主遊戲沒有這個欄位 = 1
+    driverMph: (POWER_MPH.base + s.power * POWER_MPH.k) * (stats && Number.isFinite(stats._spd) ? stats._spd : 1),
     smashMul: 0.96 + s.contact * 0.0008,            // 擊球效率倍率
     mishitSigma: 0.06 - s.contact * 0.0004,         // 打偏甜蜜點的程度（標準差）
     launchSigma: 2.0 - s.launch * 0.014,            // 發射角誤差（度）

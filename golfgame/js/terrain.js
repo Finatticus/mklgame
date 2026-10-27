@@ -1525,6 +1525,16 @@ export function buildHole(course, holeIdx, opts = {}) {
       const t = tees.find(q => q.id === teeId) || tees[1];
       return [t.u, H(t.u, -t.v) + 0.0213, -t.v];   // 球心在地面上一個半徑
     },
+    // 生涯模式的兒童梯 / 年齡梯台：沿洞線離果嶺 yards 碼的地方開球（落在水、沙坑、界外就往果嶺方向找乾地）
+    teeAt(yards) {
+      let s = clamp(Lp - yards * YD, 0, Lp - 30);
+      for (let k = 0; k < 60; k++, s = Math.min(Lp - 30, s + 3)) {
+        const p = pointAt(s), sf = surface(p[0], p[1]);
+        if (sf !== SURF.WATER && sf !== SURF.CHASM && sf !== SURF.OB && sf !== SURF.SAND && sf !== SURF.GREEN) break;
+      }
+      const p = pointAt(s);
+      return [p[0], H(p[0], -p[1]) + 0.0213, -p[1]];
+    },
     // 果嶺高度統計：平均高度與最大高低差（色階用）
     greenStats() {
       if (api._gs) return api._gs;

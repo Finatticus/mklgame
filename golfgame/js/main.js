@@ -1,7 +1,7 @@
 // 介面流程：登入/註冊 → 大廳 → 單人 / 建立遊戲間 / 加入遊戲間 / 練習場；角色素質、紀錄、管理員
 import * as THREE from 'three';
 import { session, call, isLocalMode, peek, refresh, refreshWith, setCache, prefetch } from './api.js';
-import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
+import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE, careerAllowed } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS, levelOf } from './stats.js';
 import { CREATIVE_TIERS } from './courses-creative.js';
 import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel, teeKey, teeList } from './courses.js';
@@ -25,7 +25,7 @@ const ROUND_PAGE = 50;      // 回合紀錄一次讀幾場
 import { startTutorial, tutorialSeen } from './tutorial.js';
 
 const $ = id => document.getElementById(id);
-const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-chal', 'scr-shop', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-real', 'scr-admin', 'scr-editor', 'scr-edcanvas', 'scr-game'];
+const screens = ['scr-login', 'scr-register', 'scr-lobby', 'scr-chal', 'scr-shop', 'scr-setup', 'scr-room', 'scr-join', 'scr-char', 'scr-rank', 'scr-records', 'scr-real', 'scr-admin', 'scr-editor', 'scr-edcanvas', 'scr-game', 'scr-career'];
 function show(id) {
   screens.forEach(s => $(s).classList.toggle('active', s === id));
   document.body.dataset.screen = id;
@@ -190,7 +190,13 @@ const prefetched = new Set();
 function enterLobby() {
   const h = new Date().getHours();
   $('lb-greet').textContent = h < 11 ? 'GOOD MORNING' : h < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
-  $('lb-name').innerHTML = escapeHtml(session.user) + `<span class="lv-tag">Lv.${levelOf(session.profile.stats)}</span>` + (session.isAdmin ? '<span class="badge">管理員</span>' : '');
+  const cTitle = careerAllowed(session.user) ? getSetting('careerTitle.' + session.user, null) : null;      // 生涯稱號（生涯模式存的摘要）
+  $('lb-name').innerHTML = escapeHtml(session.user) + `<span class="lv-tag">Lv.${levelOf(session.profile.stats)}</span>` + (session.isAdmin ? '<span class="badge">管理員</span>' : '') + (cTitle ? `<button class="badge career-title" id="lb-ctitle">${escapeHtml(cTitle)}</button>` : '');
+  if (cTitle) $('lb-ctitle').onclick = () => openCareer('card');
+  // 生涯模式：只有開放名單內的帳號看得到入口（其他人不會下載任何生涯的程式）
+  $('mode-career').classList.toggle('hidden', !careerAllowed(session.user));
+  $('rc-tab-career').classList.toggle('hidden', !careerAllowed(session.user));
+  if (careerAllowed(session.user)) { const sub = getSetting('careerSub.' + session.user, null); $('mode-career-sub').textContent = sub || '從 8 歲的第一次揮桿，到奧古斯塔的綠夾克 · 測試中'; }
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !session.isAdmin));
   const p = session.profile;
   const lbStats = best => ($('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞（黑梯）<b>${best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`);
@@ -241,12 +247,34 @@ function checkResume() {
   $('dlg-resume').classList.add('open');
 }
 
+// 生涯模式：按下卡片時才動態載入 Career/ 的程式（名單外的帳號不會下載）
+let careerMod = null;
+async function loadCareerMod() {
+  if (!careerAllowed(session.user)) throw new Error('生涯模式尚未開放');
+  if (!careerMod) careerMod = await import('../Career/js/boot.js');
+  return careerMod;
+}
+const careerCtx = () => ({
+  session, call, show, getSetting, setSetting, enterLobby, ensureWorld,
+  startGame: (cfg, players, resume = null) => startGame(cfg, players, null, true, resume),
+  game: () => game, world: () => world, hud: () => hud, ui,
+});
+async function openCareer(view) {
+  try {
+    ui.loading(true, '載入生涯模式…');
+    const m = await loadCareerMod();
+    ui.loading(false);
+    await m.openCareer(careerCtx(), view);
+  } catch (e) { ui.loading(false); console.error(e); alert('生涯模式載入失敗：' + e.message); }
+}
+
 function initLobby() {
   $('mode-single').onclick = () => openSetup('single');
   $('mode-host').onclick = () => openSetup('host');
   $('mode-join').onclick = () => { $('jn-code').value = ''; msg('jn-msg', ''); $('jn-wait').classList.add('hidden'); $('jn-form').classList.remove('hidden'); show('scr-join'); };
   $('mode-practice').onclick = () => openSetup('practice');
   $('mode-chal').onclick = openChallenge;
+  $('mode-career').onclick = () => openCareer();
   $('cg-back').onclick = enterLobby;
   initReal({ show, back: () => { rcTab = 'real'; openRecords(); } });
   $('cg-shop').onclick = openShop;
@@ -843,6 +871,7 @@ function initGameMenu() {
   };
   $('gm-quit').onclick = () => {
     if (game.cfg.preview) return ui.exitPreview();
+    if (game.cfg.career && game.careerHooks) { $('dlg-menu').classList.remove('open'); game.careerHooks.quit(game); return; }
     const others = game.net ? game.players.filter(p => !p.local && !p.away) : [];
     const names = others.map(p => p.user).join('、');
     const text = others.length
@@ -927,7 +956,7 @@ let previewPick = null;          // 預覽中的外觀 { slot, id }（還沒裝�
 function gearHtml() {
   return `<h4 class="gear-h">球具與高爾夫球</h4><div class="gear-bal">可用星星 <b class="num">${starBalance()}</b> 顆</div>
     <p class="small gear-tip">點一項可以在上面的預覽看外觀與特效；已擁有的按「裝備」換上。</p>` + Object.keys(GEAR_CAT).map(slot => {
-    const list = SKINS.filter(x => x.slot === slot), cur = skinById(slot, draft.look[LOOK_KEY[slot]]);
+    const list = SKINS.filter(x => x.slot === slot && (!x.career || careerAllowed(session.user))), cur = skinById(slot, draft.look[LOOK_KEY[slot]]);
     const open = gearOpen.has(slot), owned = list.filter(skinUnlocked).length;
     return `<div class="gx ${open ? 'open' : ''}">
       <button class="gx-head" data-gx="${slot}">${gearSwatch(cur)}<span class="gx-t"><b>${GEAR_CAT[slot]}</b><small>裝備中：${escapeHtml(cur.name)}</small></span><span class="gx-cnt num">${owned} / ${list.length}</span><i class="cp-arrow"></i></button>
@@ -1072,7 +1101,7 @@ function renderChar() {
   const model = characterDef(look.model).id;
   const pick = `<div class="look-row char-pick"><span>角色</span>${CHARACTERS.map(c => `<button class="chip ${model === c.id ? 'on' : ''}" data-model="${c.id}">${c.name}</button>`).join('')}</div>`;
   const colors = model === 'classic'
-    ? `<div class="look-row"><span>體型</span>${LOOK_OPTIONS.body.map(([v, l]) => `<button class="chip ${look.body === v ? 'on' : ''}" data-lk="body" data-lv="${v}">${l}</button>`).join('')}</div>` + ['skin', 'hair', 'shirt', 'pants', 'cap'].map(k => sw(k, LOOK_OPTIONS[k])).join('')
+    ? `<div class="look-row"><span>體型</span>${LOOK_OPTIONS.body.map(([v, l]) => `<button class="chip ${look.body === v ? 'on' : ''}" data-lk="body" data-lv="${v}">${l}</button>`).join('')}</div>` + ['skin', 'hair', 'shirt', 'pants', 'cap'].map(k => sw(k, k === 'shirt' && prog().ach.cm_green ? LOOK_OPTIONS.shirt.concat(['#1d6b3a']) : LOOK_OPTIONS[k])).join('')      // 綠夾克上衣：生涯模式拿到綠夾克才有
     : '<p class="small">寫實角色的外觀由模型決定。第一次選用要下載約 1.5～6MB，之後會存在手機裡。</p>';
   $('ch-look').innerHTML = pick + colors;
   $('ch-look').querySelectorAll('[data-model]').forEach(b => b.onclick = () => {
@@ -1279,7 +1308,8 @@ async function openRecords() {
 
 async function renderRecords() {
   $('rc-tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.rc === rcTab));
-  if (rcTab === 'ach') { $('rc-list').innerHTML = achHtml(); return; }
+  if (rcTab === 'career') { loadCareerMod().then(m => m.renderCareerRecords(careerCtx(), $('rc-list'))).catch(e => { $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }); return; }
+  if (rcTab === 'ach') { if (careerAllowed(session.user) && !careerMod) { loadCareerMod().then(() => { if (rcTab === 'ach') $('rc-list').innerHTML = achHtml(); }).catch(() => {}); } $('rc-list').innerHTML = achHtml(); return; }
   if (rcTab === 'stats') { renderCareer(); return; }
   if (rcTab === 'real') { renderRealTab($('rc-list'), () => rcTab === 'real' && document.body.dataset.screen === 'scr-records'); return; }
   if (rcTab === 'pass') { $('rc-list').innerHTML = passportHtml(); $('rc-list').querySelectorAll('[data-sp]').forEach(b => b.onclick = () => openStamp(b)); return; }

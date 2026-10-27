@@ -11,10 +11,14 @@ import { MixamoGolfer } from './mixamo.js';
 import { characterDef, ANIM_BASE, getSetting } from './config.js';
 import { SwingInput } from './input.js';
 import * as sfx from './audio.js';
-import { bump, unlock, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal, fantasyPar, setMax } from './progress.js';
+import { bump, unlock as unlockAch, checkCounters, checkChallenge, stamp, save as saveProgress, setStars, equippedSkins, chal, fantasyPar, setMax as setMaxCnt } from './progress.js';
 import { LEVELS, levelById, evaluate, goalMet } from './challenge.js';
 
 const WIND = { calm: [0, 0], light: [2, 6], normal: [6, 11], strong: [11, 15] };
+// 生涯模式的回合：表現型成就與最佳紀錄（最遠開球、最長推桿…）不共用（生涯有技能卡與球具加成），數量型的計數照常累計
+let careerRun = false;
+const unlock = id => (careerRun ? false : unlockAch(id));
+const setMax = (k, v) => (careerRun ? undefined : setMaxCnt(k, v));
 const ADJ_LEVELS = [1, 0.65, 0.3];    // 特殊球位增減比例計算的三個力道（由大到小）
 const WIND_MAX_MPH = 15;
 // 平坦球道（算「同樣揮桿在球道上會飛多遠」當比較基準）
@@ -101,6 +105,8 @@ export class Game {
   // resume：中途重新連回來時，對方傳來的目前進度（第幾洞、每個人的成績與球位）
   async start(cfg, players, net = null, isHost = true, resume = null) {
     this.cfg = cfg;
+    careerRun = !!cfg.career;
+    this.resumeKey = cfg.career ? 'dixen.cresume' : 'dixen.resume';      // 生涯的中斷存檔另外放，不會蓋掉一般回合的
     this.net = net;
     $('btn-chat').classList.toggle('hidden', !net);          // 對話按鈕只有連線時才有
     $('chat-bar').classList.add('hidden'); $('danmaku').innerHTML = '';
@@ -109,7 +115,8 @@ export class Game {
     const base = courseById(cfg.courseId);
     this.course = { ...base, stimp: Number(cfg.stimp) > 0 ? Number(cfg.stimp) : base.stimp };
     this.level = cfg.challenge ? levelById(cfg.challenge) : null;        // 挑戰模式的關卡
-    this.holeList = cfg.practice || this.level || cfg.holePractice ? [cfg.startHole || 0] : cfg.holes === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : cfg.holes === 'back' ? [9, 10, 11, 12, 13, 14, 15, 16, 17] : [...Array(18).keys()];
+    // 生涯模式可以指定要打哪幾洞（精華 9 洞、關鍵時刻、延長賽）
+    this.holeList = Array.isArray(cfg.holeIdx) && cfg.holeIdx.length ? cfg.holeIdx.slice() : cfg.practice || this.level || cfg.holePractice ? [cfg.startHole || 0] : cfg.holes === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : cfg.holes === 'back' ? [9, 10, 11, 12, 13, 14, 15, 16, 17] : [...Array(18).keys()];
     this.seed = cfg.seed;
     const rng = makeRng(cfg.seed);
     const range = cfg.wind === 'course' || !WIND[cfg.wind] ? this.course.wind : WIND[cfg.wind];
@@ -168,20 +175,27 @@ export class Game {
       this.pendingState = resume.state;
       await this.loadHole(resume.state.k);
       this.authority = true;
+      // 生涯模式：關掉前已經揮出去的那一桿，直接播放原本的結果
+      if (resume.pendingShot && this.cfg.career) {
+        this.replaying = resume.pendingShot;
+        const go = () => { if (this.intro || !this.ready) return setTimeout(go, 200); this.input.enabled = false; this.hud.enableControls(false); this.playShot(this.replaying); };
+        setTimeout(go, 400);
+      }
     } else if (resume) await this.applyResume(resume);
     else await this.loadHole(0);
   }
 
   // 單人回合的進度存在手機裡：每一桿開始前存一次，回合打完才清掉（連線、練習場、挑戰不存）
-  saveLocal(turn) {
+  //   生涯模式：揮桿的結果一算出來就先存（pendingShot），APP 被關掉再打開時直接播放那一桿，不能重打
+  saveLocal(turn, pendingShot = null) {
     if (this.net || this.cfg.practice || this.level || this.roundOver || !this.authority) return;
     const me = this.players.find(p => p.local) || this.players[0];
     try {
-      localStorage.setItem('dixen.resume', JSON.stringify({ v: 1, at: Date.now(), user: me.user, cfg: this.cfg, state: this.serialize(turn),
+      localStorage.setItem(this.resumeKey || 'dixen.resume', JSON.stringify({ v: 1, at: Date.now(), user: me.user, cfg: this.cfg, state: this.serialize(turn), pendingShot: pendingShot || this.replaying || null,
         course: this.course.name, holeNo: this.holeNo, label: holeLabel(this.course, this.holeList[this.k]), holes: this.holeList.length, strokes: me.strokes }));
     } catch (e) { /* 私密模式存不了就算了 */ }
   }
-  static clearLocal() { try { localStorage.removeItem('dixen.resume'); } catch (e) { /* 略過 */ } }
+  static clearLocal(key = 'dixen.resume') { try { localStorage.removeItem(key); } catch (e) { /* 略過 */ } }
 
   // 目前還在遊戲裡的玩家（對方離開後就不算）
   present() { return this.players.filter(p => !p.away); }
@@ -267,7 +281,7 @@ export class Game {
   makeGolfer(look) {
     const def = characterDef(look && look.model);
     if (!def.file) return new ProceduralGolfer(look);
-    const g = new MixamoGolfer(def, { animBase: ANIM_BASE });
+    const g = new MixamoGolfer(def, { animBase: ANIM_BASE, look });
     g.loading = g.load().catch(err => {
       console.warn('寫實角色載入失敗，改用內建角色', err);
       g.failed = true;
@@ -310,12 +324,16 @@ export class Game {
       mph = this.level.wind.mph;
     }
     this.wind = [Math.sin(dir) * mph * MPH, -Math.cos(dir) * mph * MPH];
-    const tee = this.hole.teePos(this.cfg.tee);
+    // 生涯模式：兒童梯 / 年齡梯台（沿洞線指定碼數）
+    const cTee = this.cfg.career && this.cfg.career.teeYds ? this.cfg.career.teeYds[idx] : 0;
+    const tee = cTee ? this.hole.teeAt(cTee) : this.hole.teePos(this.cfg.tee);
+    this.teeBall = tee;
     for (const p of this.players) {
       Object.assign(p, { ball: tee.slice(), lie: SURF.TEE, strokes: 0, holed: false, holePutts: 0, girDone: false, prev: null, picked: false, lieOverride: null, failed: false, trk: { portal: false } });
       p.pars[k] = this.hole.par;
     }
-    const yd = teeYards(this.course, idx, this.cfg.tee);
+    if (this.cfg.career) this.careerStart(idx);
+    const yd = cTee || teeYards(this.course, idx, this.cfg.tee);
     this.hud.setHole(this.hole, idx + 1, yd, this.course.name);
     // 挑戰：這一次的紀錄、已收集的金球、畫面上的目標
     this.att = { holed: false, failed: false, strokes: 0, putts: 0, hazards: 0, sand: false, shots: [] };
@@ -350,7 +368,9 @@ export class Game {
       this.puttSpot = null;
       this.pClub = this.pClub || 'D';
       $('h-course').textContent = '練習場 · ' + this.course.name;
-      this.setPracticeMode('range');
+      // 生涯模式的訓練關卡：直接進指定的練習（發球台 / 沙坑 / 推桿）
+      const drill = this.cfg.career && this.cfg.career.drill;
+      this.setPracticeMode(drill === 'bunker' || drill === 'putt' ? drill : 'range');
       return;
     }
     if (this.authority) this.nextTurn();
@@ -432,6 +452,8 @@ export class Game {
     this.updateSkinFx();
     this.hud.swingHint(mine ? '往下拉上桿（決定力道），快速往上滑出桿；左右滑調方向' : `等待 ${p.user} 擊球…`);
     this.updateMulliganBtn();
+    // 生涯模式：桿弟的建議、壓力等級、轉播名次條
+    if (this.cfg.career && this.careerHooks && this.careerHooks.turn) this.careerHooks.turn(this, p);
   }
 
   // 角色的腳踩在畫面上的地面（兩腳位置取比較高的那邊），小腿不會插進沙坑邊坡或草地裡
@@ -746,7 +768,7 @@ export class Game {
   // 重打之前先確認：用過重打的這一場不列入排行與個人最佳 18 洞
   askMulligan() {
     const box = $('dlg-mull');
-    $('mu-body').innerHTML = this.cfg.practice ? '' : '用過重打的這一場<b>不會列入排行榜</b>，也<b>不算個人最佳 18 洞</b>。<br>確定要重打這一桿嗎？';
+    $('mu-body').innerHTML = this.cfg.practice ? '' : this.cfg.career ? `生涯「休閒」難度每一輪可以重打 ${this.cfg.mulligans} 次。<br>確定要重打這一桿嗎？` : '用過重打的這一場<b>不會列入排行榜</b>，也<b>不算個人最佳 18 洞</b>。<br>確定要重打這一桿嗎？';
     $('mu-no').onclick = () => box.classList.remove('open');
     $('mu-yes').onclick = () => { box.classList.remove('open'); this.mulligan(); };
     box.classList.add('open');
@@ -789,7 +811,9 @@ export class Game {
     const n = this.hole.normal(p.ball[0], p.ball[2]);
     const dist = this.distPin(p);
     const pressure = (lie === SURF.GREEN && p.strokes + 1 <= this.hole.par) || this.holeNo >= 16 || this.cfg.mode === 'match';
-    const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.calcPuttScale(p, club), rollCrr: club.putter ? this.rollCrrFn(p, input.aimYaw) : null });
+    // 生涯模式：誤差倍率（壓力等級、手感、體能、技能卡）由生涯計算
+    const errMul = this.cfg.career && this.careerHooks ? this.careerHooks.errMul({ game: this, p, lie, dist, club, pressure }) : undefined;
+    const launch = makeLaunch(input, { club, lie, stats: p.stats, rng, pressure, errMul, distToPin: dist, slope: Math.acos(clamp(n[1], 0, 1)), stimp: this.course.stimp, puttScale: this.calcPuttScale(p, club), rollCrr: club.putter ? this.rollCrrFn(p, input.aimYaw) : null });
     const ws = Math.hypot(this.wind[0], this.wind[1]);
     const gust = ws > 0 ? Math.min(1 + rng.normal() * 0.12, WIND_MAX_MPH * MPH / ws) : 1;
     const env = { rho: this.rho, wind: [this.wind[0] * gust, this.wind[1] * gust], rng };
@@ -805,6 +829,7 @@ export class Game {
     };
     this.lastShotUndo = { p: pi, state: JSON.stringify({ ball: p.ball, lie: p.lie, strokes: p.strokes, holePutts: p.holePutts, girDone: p.girDone, prev: p.prev, holed: false, picked: false }) };
     if (this.net) this.net.send(msg);
+    if (this.cfg.career) this.saveLocal(pi, msg);
     this.playShot(msg);
   }
 
@@ -1114,6 +1139,7 @@ export class Game {
 
   // ---------------- 權威端：判定 ----------------
   resolve(msg) {
+    this.replaying = null;
     const p = this.players[msg.p];
     const r = msg.res;
     if (this.cfg.practice) return this.resolvePractice(p, r);
@@ -1194,6 +1220,8 @@ export class Game {
   // ---------------- 練習場 ----------------
   // 不計桿數。發球台 / 沙坑：每球都回到原位；果嶺：每球回到自己選的站位
   resolvePractice(p, r) {
+    // 生涯模式的訓練關卡：每一球的結果交給生涯計分
+    if (this.cfg.career && this.careerHooks && this.careerHooks.drillShot) this.careerHooks.drillShot(this, r, p, this.pmode);
     let msgText = '';
     if (r.result === 'holed') msgText = '進洞！';
     else if (r.result === 'water' || r.result === 'chasm') msgText = '落水';
@@ -1349,6 +1377,7 @@ export class Game {
   // 每一洞：小鳥 / 老鷹 / 一桿進洞、連續小鳥、星門洞的成績、三推、柏忌
   trackHole(p) {
     if (this.cfg.practice || this.cfg.holePractice || p.copied?.[this.k]) return;
+    if (this.cfg.career && this.cfg.career.starts && this.cfg.career.starts[this.holeList[this.k]]) return;      // 生涯的關鍵時刻（從半路開始的洞）不算一洞
     const s = p.scores[this.k], par = this.hole.par;
     if (!s) return;
     bump('holes');
@@ -1378,6 +1407,7 @@ export class Game {
   // 每一場：回合數、球場護照的章、整場的成就
   trackRound(p) {
     if (this.cfg.practice || this.cfg.holePractice || this.level) return;
+    if (this.cfg.career) return this.trackCareerRound(p);
     bump('rounds');
     const sum = this.roundSummary(p);
     // 球場護照：分區球場打完 9 洞也記下那一區；一般球場要打完 18 洞
@@ -1416,6 +1446,54 @@ export class Game {
     }
     checkCounters();
     saveProgress(true);
+  }
+
+  // 生涯模式的一輪：自己從開球打完的洞有 9 洞以上，才算主遊戲的 1 場回合、蓋球場護照的章（表現型成就不共用）
+  trackCareerRound(p) {
+    const starts = this.cfg.career.starts || {};
+    const own = this.holeList.filter((h, k) => !starts[h] && p.scores[k]).length;
+    if (own >= 9) {
+      bump('rounds');
+      if (this.course.group !== 'custom' && this.course.group !== 'fantasy') {
+        const full = own === 18 && this.holeList.length === 18;
+        const done = stamp(this.course.baseId || this.course.id, full ? p.scores.reduce((s, v) => s + (v || 0), 0) : null, null, true);
+        if (done) setTimeout(() => this.hud.toast(`<small>球場護照</small><b>蓋下「${escapeHtml(this.course.name.split('（')[0])}」的章</b>`, 3200, 'big'), 600);
+      }
+    }
+    checkCounters();
+    saveProgress(true);
+  }
+
+  // 生涯模式的關鍵時刻：這一洞從半路開始（球放在指定的距離與球位，已經打了幾桿）
+  //   st = { strokes, yds（離旗桿幾碼）, lie: 'fairway' | 'rough' | 'sand' | 'green' }
+  careerStart(idx) {
+    const st = this.cfg.career.starts && this.cfg.career.starts[idx];
+    if (!st) return;
+    const h = this.hole, [px, pz] = h.pin, want = { fairway: SURF.FAIRWAY, rough: SURF.ROUGH, sand: SURF.SAND, green: SURF.GREEN }[st.lie] ?? SURF.FAIRWAY;
+    const d = Math.max(1, st.yds * YD);
+    let best = null;
+    if (want === SURF.GREEN) {
+      // 果嶺上：以旗桿為中心、半徑 d 的圓上找果嶺的點（從洞線的方向開始找）
+      const t0 = this.teeBall, a0 = Math.atan2(t0[0] - px, t0[2] - pz);
+      for (let i = 0; i < 72 && !best; i++) {
+        const a = a0 + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 0.09, x = px + Math.sin(a) * d, z = pz + Math.cos(a) * d;
+        if (h.surface(x, z) === SURF.GREEN) best = [x, z];
+      }
+    } else {
+      // 沿洞線找離旗桿 d 公尺的點，再左右找想要的球位（找不到就用球道 / 長草）
+      let sBest = h.L, err = 1e9;
+      for (let s = 0; s <= h.L; s += 2) { const q = h.pointAt(s), e = Math.abs(Math.hypot(q[0] - px, -q[1] - pz) - d); if (e < err) { err = e; sBest = s; } }
+      const q = h.pointAt(sBest), dir = h.dirAt(sBest);
+      const offs = [0, 4, -4, 8, -8, 12, -12, 16, -16, 20, -20, 25, -25, 30, -30];
+      for (const pass of [want, SURF.FAIRWAY, SURF.ROUGH]) {
+        for (const o of offs) { const u = q[0] + dir[1] * o, v = q[1] - dir[0] * o; if (h.surfaceUV(u, v) === pass) { best = [u, -v]; break; } }
+        if (best) break;
+      }
+      if (!best) best = [q[0], -q[1]];
+    }
+    if (!best) return;
+    const pos = [best[0], h.height(best[0], best[1]) + 0.0213, best[1]];
+    for (const p of this.players) { p.ball = pos.slice(); p.lie = h.surface(pos[0], pos[2]); p.strokes = st.strokes || 0; }
   }
 
   // 挑戰結束：算星數、存檔、挑戰成就，跳出結果
@@ -1474,8 +1552,10 @@ export class Game {
     if (this.level) { this.finishChallenge(); return; }
     if (this.cfg.holePractice) { Game.clearLocal(); this.ui.showHolePracticeEnd(this); return; }
     const last = this.k >= this.holeList.length - 1;
-    this.ui.showHoleResult(this, last).then(() => {
-      if (last) this.endRound();
+    // 生涯模式：洞結束改由生涯顯示（轉播風格的成績與排行榜）
+    const shown = this.cfg.career && this.careerHooks ? this.careerHooks.holeDone(this, last) : this.ui.showHoleResult(this, last);
+    shown.then(r => {
+      if (last || r === 'end') this.endRound();      // 生涯的比洞賽：勝負已定就提早結束
       else if (this.authority) { if (this.net) this.net.send({ t: 'next' }); this.loadHole(this.k + 1); }
     });
   }
@@ -1483,9 +1563,10 @@ export class Game {
   endRound() {
     this.running = false;
     this.roundOver = true;
-    Game.clearLocal();
+    Game.clearLocal(this.resumeKey);
     for (const p of this.players) if (p.local) this.trackRound(p);
-    this.ui.showRoundResult(this);
+    if (this.cfg.career && this.careerHooks) this.careerHooks.roundDone(this);
+    else this.ui.showRoundResult(this);
   }
 
   roundSummary(p) {

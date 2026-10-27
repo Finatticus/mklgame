@@ -1,5 +1,5 @@
 // 後端呼叫：有 GAS 網址就打 GAS，沒有就用瀏覽器本機模擬（同一套動作）
-import { gasUrl, ADMIN_USER } from './config.js';
+import { gasUrl, ADMIN_USER, careerAllowed } from './config.js';
 import { START_POINTS, START_RESPECS } from './stats.js';
 
 export const session = { user: null, pass: null, isAdmin: false, profile: null };
@@ -96,6 +96,7 @@ async function local(b) {
       case 'register': {
         const u = String(b.user || '').trim();
         if (!/^[A-Za-z0-9_\-一-鿿]{2,20}$/.test(u)) throw new Error('帳號限 2~20 字（中英數字、_ -）');
+        if (/^生涯_/.test(u) || u === '生涯週賽') throw new Error('這個名稱不能使用');
         if (d.accounts.some(a => a.user.toLowerCase() === u.toLowerCase())) throw new Error('帳號已存在');
         if (!b.pass) throw new Error('請輸入密碼');
         d.accounts.push({ user: u, pass: String(b.pass), active: u === ADMIN_USER });
@@ -229,6 +230,8 @@ async function local(b) {
         return rec;
       }
       case 'realDelete': { const a = auth(d, b); d.real = d.real || {}; d.real[a.user] = (d.real[a.user] || []).filter(x => x.id !== String(b.id)); return true; }
+      // ---------- 生涯模式（本機模擬；伺服器版在 gas/Career.gs）----------
+      case 'cmSave': case 'cmLoad': case 'cmList': case 'cmDelete': case 'cmWeekSubmit': case 'cmWeekBoard': case 'cmAdminList': return careerLocal(d, b);
       default: throw new Error('未知動作');
     }
   })();
@@ -236,6 +239,37 @@ async function local(b) {
   return JSON.parse(JSON.stringify(out));
 }
 const pick = p => ({ points: p.points, respecs: p.respecs, rounds: p.rounds });
+// 生涯模式的本機模擬：每個帳號最多 3 個欄位；版本號比較舊的存檔不收（兩台裝置不互相覆蓋）
+function careerLocal(d, b) {
+  const a = auth(d, b);
+  if (!careerAllowed(a.user)) throw new Error('生涯模式尚未開放');
+  d.cm = d.cm || {}; const mine = d.cm[a.user] = d.cm[a.user] || {};
+  const slot = String(Number(b.slot) || 1);
+  switch (b.action) {
+    case 'cmSave': {
+      const old = mine[slot];
+      if (old && (old.rev || 0) > (Number(b.rev) || 0)) return { ok: false, rev: old.rev };
+      mine[slot] = { rev: Number(b.rev) || 0, data: String(b.data || ''), summary: b.summary || {} };
+      return { ok: true, rev: mine[slot].rev };
+    }
+    case 'cmLoad': return mine[slot] ? { rev: mine[slot].rev, data: mine[slot].data } : null;
+    case 'cmList': return Object.keys(mine).map(k => ({ ...mine[k].summary, slot: Number(k), rev: mine[k].rev }));
+    case 'cmDelete': delete mine[slot]; return true;
+    case 'cmWeekSubmit': {
+      d.cmw = d.cmw || {}; const wk = String(b.week || ''); const list = d.cmw[wk] = d.cmw[wk] || [];
+      const i = list.findIndex(x => x.user === a.user);
+      const row = { user: a.user, name: String(b.name || ''), strokes: Number(b.strokes) || 0, toPar: Number(b.toPar) || 0, course: String(b.course || ''), at: new Date().toISOString() };
+      if (i < 0) list.push(row); else if (row.strokes < list[i].strokes) list[i] = row;
+      return true;
+    }
+    case 'cmWeekBoard': { d.cmw = d.cmw || {}; return (d.cmw[String(b.week || '')] || []).slice().sort((x, y) => x.strokes - y.strokes); }
+    case 'cmAdminList': {
+      if (a.user !== ADMIN_USER) throw new Error('需要管理員權限');
+      return Object.entries(d.cm).flatMap(([u, slots]) => Object.entries(slots).map(([k, v]) => ({ user: u, slot: Number(k), ...v.summary, rev: v.rev })));
+    }
+  }
+  return null;
+}
 function mergeProg(a, b) {
   const o = { ach: { ...(a.ach || {}) }, cnt: { ...(a.cnt || {}) }, stamps: { ...(a.stamps || {}) } };
   for (const k in b.ach || {}) if (!o.ach[k]) o.ach[k] = b.ach[k];

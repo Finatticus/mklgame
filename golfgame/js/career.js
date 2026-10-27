@@ -189,7 +189,7 @@ export function careerHtml({ agg, user, profile, bestBlack, levels, chapters: ch
   const stamps = PASSPORT.filter(p => stampDone(p.id));
   const tiers = [0, 0, 0, 0];
   for (const p of stamps) { const n = Math.max(1, stampCount(p.id)); tiers[n >= 10 ? 3 : n >= 5 ? 2 : n >= 3 ? 1 : 0]++; }
-  const skinsGot = SKINS.filter(s => !s.std && skinUnlocked(s)).length, skinsAll = SKINS.filter(s => !s.std).length;
+  const skinsGot = SKINS.filter(s => !s.std && skinUnlocked(s)).length, skinsAll = SKINS.filter(s => !s.std && (!s.career || skinUnlocked(s))).length;      // 生涯模式的專屬外觀只在解鎖後才算進總數
   const fx = Object.keys(FX_ZH).map(k => ({ label: FX_ZH[k], v: n0(c[k]) })).filter(x => x.v).sort((a, b) => b.v - a.v);
   const clubUse = CLUBS.map(cl => ({ label: cl.short, v: n0(c['club_' + cl.id]) || n0(clubs[cl.id]) })).filter(x => x.v);
   const st = profile.stats || {}, statAvg = STATS.reduce((s, x) => s + (n0(st[x.key]) || 50), 0) / STATS.length;
