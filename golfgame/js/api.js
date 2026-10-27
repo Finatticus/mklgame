@@ -44,6 +44,16 @@ export function refresh(action) {
   }).finally(() => { delete inflight[k]; });
   return inflight[k];
 }
+// 帶參數的讀取（例如回合紀錄第一頁）：存在 key 底下
+export function refreshWith(key, action, payload) {
+  const k = ckey(key);
+  if (!inflight[k]) inflight[k] = call(action, payload).then(d => {
+    memo[k] = d;
+    try { localStorage.setItem(k, JSON.stringify(d)); } catch (e) { /* 存不下就只留在記憶體 */ }
+    return d;
+  }).finally(() => { delete inflight[k]; });
+  return inflight[k];
+}
 // 改了資料（存回合、改實際下場紀錄）後：直接換成新的清單，或在背景重新讀
 export function setCache(action, data) { const k = ckey(action); memo[k] = data; try { localStorage.setItem(k, JSON.stringify(data)); } catch (e) { /* 存不下就算了 */ } }
 export function prefetch(actions) { for (const a of actions) refresh(a).catch(() => {}); }
@@ -134,7 +144,21 @@ async function local(b) {
       }
       case 'getStarRanking': auth(d, b); return Object.values(d.starRank || {});
       case 'getRounds': auth(d, b); return (d.rounds[b.user] || []).slice(-3000).reverse();      // 全部（個人紀錄要算生涯統計）
-      case 'getRankings': auth(d, b); return (d.rankings || []).slice(-5000);
+      case 'getRankings': auth(d, b); return d.rankings || [];
+      case 'getRoundsPage': {
+        auth(d, b);
+        const all = d.rounds[b.user] || [], off = Math.max(0, Number(b.offset) || 0), lim = Math.min(500, Number(b.limit) || 50);
+        const end = all.length - off;
+        return { rows: end > 0 ? all.slice(Math.max(0, end - lim), end).reverse() : [], total: all.length };
+      }
+      case 'getRoundsFrom': {
+        auth(d, b);
+        const all = d.rounds[b.user] || [], from = Math.max(0, Number(b.from) || 0);
+        return { rows: all.slice(from, from + Math.min(500, Number(b.limit) || 300)), total: all.length };
+      }
+      case 'getCareer': { auth(d, b); const c = (d.career || {})[b.user]; return { count: c ? c.count : 0, data: c ? c.data : null, total: (d.rounds[b.user] || []).length }; }
+      case 'saveCareer': { auth(d, b); d.career = d.career || {}; d.career[b.user] = { count: Number(b.count) || 0, data: b.data }; save(d); return true; }
+      case 'rebuildRankTop': admin(d, b); return { total: (d.rankings || []).length, kept: (d.rankings || []).length };
       case 'listAccounts': admin(d, b); return d.accounts.map(a => ({ ...a, ...pick(prof(d, a.user)) }));
       case 'setActive': {
         admin(d, b);

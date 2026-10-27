@@ -213,7 +213,7 @@ function build(kind, t, n, d, r, pick, ci) {
     }
     case 'apex': {
       par = 3; yards = rnd(140, 175); feat = 'tr nw'; extra.c = { trees: 1.3 };
-      const v = Math.round(lerp(28, 40));
+      const v = Math.round(lerp(18, 26));      // 素質 50 的 5 鐵全揮最高點約 19 公尺、超揮約 23；越難越要靠素質或超揮
       spec = { green: { size: [24, 28] }, bunkers: [{ g: 'F' }] };
       goals = [{ t: 'apex', v, text: `打出最高點 ${v} 公尺以上的球` }, { t: 'teeGreen', text: '開球直接上果嶺' }];
       intro = `${M}。果嶺被高高的樹圍住，要打出很高的球才進得去。`;

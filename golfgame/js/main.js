@@ -1,6 +1,6 @@
 // 介面流程：登入/註冊 → 大廳 → 單人 / 建立遊戲間 / 加入遊戲間 / 練習場；角色素質、紀錄、管理員
 import * as THREE from 'three';
-import { session, call, isLocalMode, peek, refresh, prefetch } from './api.js';
+import { session, call, isLocalMode, peek, refresh, refreshWith, setCache, prefetch } from './api.js';
 import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS, levelOf } from './stats.js';
 import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel, teeKey, teeList } from './courses.js';
@@ -19,7 +19,8 @@ import { ACH, ACH_CATS, TIER_NAME, SKINS, SLOT_NAME, LOOK_KEY, PASSPORT, stampDo
 import { LEVELS, levelById, THEME_NAME, CHAPTERS, chapterOf } from './challenge.js';
 import { clubById } from './clubs.js';
 import { initReal, renderRealTab } from './real.js';
-import { careerHtml } from './career.js';
+import { careerHtml, careerFold, CAREER_V } from './career.js';
+const ROUND_PAGE = 50;      // 回合紀錄一次讀幾場
 import { startTutorial, tutorialSeen } from './tutorial.js';
 
 const $ = id => document.getElementById(id);
@@ -198,7 +199,7 @@ function enterLobby() {
   if (!prefetched.has(session.user)) {
     prefetched.add(session.user); prefetch(['getStarRanking', 'realList']);
     const who = session.user;
-    Promise.all([refresh('getRankings').catch(() => []), refresh('getRounds').catch(() => [])]).then(([rk, rd]) => {
+    Promise.all([refresh('getRankings').catch(() => []), refreshWith('roundsPage', 'getRoundsPage', { offset: 0, limit: ROUND_PAGE }).then(r => r.rows).catch(() => [])]).then(([rk, rd]) => {
       if (session.user === who) backfillStamps([...(rk || []), ...(rd || [])], who);
     });
   }
@@ -786,7 +787,8 @@ const ui = {
       const r = await call('saveRound', { round: sum });
       session.profile = r.profile;
       myBest.at = 0;          // 回大廳時重新算最佳 18 洞
-      prefetch(['getRounds', 'getRankings']);      // 新的回合：背景更新回合紀錄與排行
+      prefetch(['getRankings']);      // 新的回合：背景更新排行（回合紀錄、生涯統計打開時才補新的那一場）
+      refreshWith('roundsPage', 'getRoundsPage', { offset: 0, limit: ROUND_PAGE }).catch(() => {});
       $('rr-save').textContent = r.earned ? `成績已儲存，獲得 ${r.earned} 能力點！` : '成績已儲存';
     } catch (e) { $('rr-save').textContent = '儲存失敗：' + e.message; }
   },
@@ -1279,36 +1281,72 @@ async function renderRecords() {
   // 一場一列（日期、球場、桿數），點一下展開：梯台、模式、同組、推桿、上球道、GIR、每洞桿數
   const teeName = r => { const c = COURSES.find(x => x.name === String(r.course).split('（')[0] || x.oldName === String(r.course).split('（')[0]); return (teeList(c).find(t => t.id === teeKey(c, r.tee)) || {}).name || '—'; };
   const holesHtml = r => { const sc = Array.isArray(r.scores) ? r.scores : []; return sc.length ? `<div class="rec-holes">${sc.map((v, i) => `<span><small>${i + 1}</small><b class="num">${v || '—'}</b></span>`).join('')}</div>` : ''; };
-  const draw = list => {
-    $('rc-list').innerHTML = list.length ? list.map((r, i) => `
+  // 回合紀錄分頁讀：先 50 場，最下面「再載入 50 場」（打了幾千場也一樣快）
+  let total = 0, list = [];
+  const draw = () => {
+    $('rc-list').innerHTML = (list.length ? list.map((r, i) => `
       <div class="rec ${rcOpen === i ? 'open' : ''}" data-rec="${i}">
         <div class="rec-head"><span class="rec-date num">${fmtDay(r.date)}</span><b>${escapeHtml(r.course)}</b><span class="rec-h">${r.holes} 洞</span><b class="num rec-s">${r.strokes}</b><span class="num rec-p ${Number(r.toPar) < 0 ? 'under' : ''}">${fmtToPar(Number(r.toPar))}</span><i class="rec-chev">${rcOpen === i ? '▾' : '▸'}</i></div>
         ${rcOpen === i ? `<div class="rec-body"><div class="rec-kv"><span>梯台<b>${escapeHtml(teeName(r))}</b></span><span>模式<b>${escapeHtml(r.mode || '—')}</b></span>${r.partners ? `<span>同組<b>${escapeHtml(r.partners)}</b></span>` : ''}<span>推桿<b class="num">${r.putts}</b></span><span>上球道<b class="num">${r.fairways}</b></span><span>標準桿上果嶺<b class="num">${r.gir}</b></span><span>時間<b class="num">${new Date(r.date).toLocaleString()}</b></span></div>${holesHtml(r)}</div>` : ''}
-      </div>`).join('') : '<p class="small">還沒有紀錄，去打一場吧！</p>';
-    $('rc-list').querySelectorAll('[data-rec]').forEach(el => el.onclick = () => { const i = Number(el.dataset.rec); rcOpen = rcOpen === i ? null : i; draw(list); });
+      </div>`).join('') : '<p class="small">還沒有紀錄，去打一場吧！</p>') +
+      (list.length < total ? `<button class="btn ghost-dark rec-more" id="rc-more">再載入 ${Math.min(ROUND_PAGE, total - list.length)} 場（共 ${total} 場）</button>` : '');
+    $('rc-list').querySelectorAll('[data-rec]').forEach(el => el.onclick = () => { const i = Number(el.dataset.rec); rcOpen = rcOpen === i ? null : i; draw(); });
+    const more = $('rc-more');
+    if (more) more.onclick = () => busy('rc-more', async () => {
+      const r = await call('getRoundsPage', { offset: list.length, limit: ROUND_PAGE });
+      if (rcTab !== 'rounds') return;
+      list = list.concat(r.rows); total = r.total;
+      draw();
+    });
   };
-  // 先畫上次讀到的，背景更新回來再換上（還停在回合紀錄分頁才重畫）
-  const old = peek('getRounds');
-  if (old) draw(old); else $('rc-list').innerHTML = '<p class="small">讀取中…</p>';
+  // 先畫上次讀到的第一頁，背景更新回來再換上（還停在回合紀錄分頁才重畫）
+  const old = peek('roundsPage');
+  if (old) { list = old.rows; total = old.total; draw(); } else $('rc-list').innerHTML = '<p class="small">讀取中…</p>';
   try {
-    const list = await refresh('getRounds');
-    if (rcTab === 'rounds' && document.body.dataset.screen === 'scr-records') draw(list);
+    const r = await refreshWith('roundsPage', 'getRoundsPage', { offset: 0, limit: ROUND_PAGE });
+    if (rcTab === 'rounds' && document.body.dataset.screen === 'scr-records') { list = r.rows; total = r.total; rcOpen = null; draw(); }
   } catch (e) { if (!old) $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
 }
 
-// 個人紀錄：整個生涯的儀表板（先畫快取，背景讀到最新的回合與排行再重畫）
+// 生涯統計：伺服器存了「算到第幾場」的統計，只要把之後的新回合加進去（每次最多讀 300 場，第一次會分幾次讀完）；
+// 加完存回伺服器，下次就不用再算。換帳號、統計方式改版（CAREER_V）或場數對不起來就從第一場重新算
+let careerJob = null;
+function loadCareer() {
+  if (careerJob) return careerJob;
+  const who = session.user;
+  careerJob = (async () => {
+    const rk = await refresh('getRankings').catch(() => peek('getRankings') || []);
+    const cur = await call('getCareer');
+    let agg = cur.data && cur.data.v === CAREER_V && cur.count <= cur.total && cur.data.n === cur.count ? cur.data : null;
+    let count = agg ? cur.count : 0, total = cur.total, changed = false;
+    while (count < total) {
+      const r = await call('getRoundsFrom', { from: count, limit: 300 });
+      if (!r.rows.length) break;
+      agg = careerFold(agg, r.rows, rk, who);
+      count += r.rows.length; total = r.total; changed = true;
+      if (session.user === who && rcTab === 'stats' && document.body.dataset.screen === 'scr-records' && count < total) $('rc-list').innerHTML = `<p class="small">第一次整理生涯紀錄… ${count} / ${total} 場</p>`;
+    }
+    agg = agg || careerFold(null, [], rk, who);
+    if (changed) call('saveCareer', { count, data: agg }).catch(() => {});
+    if (session.user === who) setCache('career', agg);
+    return agg;
+  })().finally(() => { careerJob = null; });
+  return careerJob;
+}
+
+// 個人紀錄：整個生涯的儀表板（先畫快取，背景補上新回合再重畫）
 async function renderCareer() {
   const draw = () => {
-    const rounds = peek('getRounds'), rows = peek('getRankings');
-    if (!rounds && !rows) { $('rc-list').innerHTML = '<p class="small">讀取中…</p>'; return; }
-    $('rc-list').innerHTML = careerHtml({ rounds: rounds || [], rankRows: rows || [], user: session.user, profile: session.profile,
+    const agg = peek('career'), rows = peek('getRankings');
+    if (!agg) { $('rc-list').innerHTML = '<p class="small">讀取中…</p>'; return; }
+    $('rc-list').innerHTML = careerHtml({ agg, user: session.user, profile: session.profile,
       bestBlack: rows ? bestFrom(rows) : null, levels: LEVELS, chapters: CHAPTERS, realCount: (peek('realList') || null)?.length });
   };
   draw();
   try {
-    await Promise.all([refresh('getRounds'), refresh('getRankings')]);
+    await loadCareer();
     if (rcTab === 'stats' && document.body.dataset.screen === 'scr-records') draw();
-  } catch (e) { if (!peek('getRounds')) $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  } catch (e) { if (!peek('career')) $('rc-list').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
 }
 
 // 成就：依分類列成清單（一列一個：小徽章、名稱與說明、右邊是進度 / 獎勵 / 達成日期），不顯示難度，看徽章外觀分辨

@@ -43,24 +43,82 @@ function resolveRound(r, rk) {
   return { base, cobj, pars, back };
 }
 
-// 整理所有回合
-function collect(rounds, rankRows, user) {
+// ---------------- 生涯統計（累計）----------------
+// 每一場只算一次：把新的回合依序加進統計（agg），統計存在伺服器的「生涯統計」頁，下次只要再加之後的新回合，
+// 玩家打了幾千場也不用每次重讀全部。統計的算法改了就把 CAREER_V 加 1，下次會自動從第一場重新算
+export const CAREER_V = 1;
+export function careerNew() {
+  return {
+    v: CAREER_V, n: 0, holesSum: 0, strokesAll: 0, mullRounds: 0, mullUsed: 0, fwA: 0, fwB: 0, girA: 0, girB: 0, haz: 0, sandR: 0, maxDrive: 0,
+    clubs: {}, dist: { hio: 0, alb: 0, eagle: 0, birdie: 0, par: 0, bogey: 0, double: 0, triple: 0 }, byPar: { 3: [0, 0], 4: [0, 0], 5: [0, 0] },
+    holesCounted: 0, putts1: 0, putts3: 0, puttHoles: 0, puttSum: 0,
+    r18: { n: 0, sum: 0, best: null, bestToPar: null, under: 0, even: 0, puttSum: 0, puttN: 0 }, best9: null,
+    days: 0, lastDay: '', first: null, last: null,
+    byCourse: {}, groups: {}, tees: {}, modes: {}, months: {}, trend: [], evs: [],
+  };
+}
+const minN = (a, b) => (a == null ? b : Math.min(a, b));
+
+// rounds：照時間順序（舊的在前）；rankRows：排行紀錄（舊回合靠同一個時間對到排行，補球場代號、梯台、特殊紀錄）
+export function careerFold(agg, rounds, rankRows, user) {
+  const a = agg && agg.v === CAREER_V ? agg : careerNew();
   const rkBy = new Map();
   for (const x of rankRows || []) if (String(x.user) === String(user)) rkBy.set(dayKey(x.date), x);
-  const used = new Set();
-  const list = [];
-  for (const r of rounds || []) {
-    const rk = rkBy.get(dayKey(r.date));
-    if (rk) used.add(dayKey(r.date));
-    const info = resolveRound(r, rk);
-    list.push({ ...r, rk, ...info, tee: teeKey(info.base, r.tee || (rk && rk.tee)), mulligans: n0(r.mulligans) || n0(rk && rk.mulligans), events: (rk && rk.events) || [] });
+  for (const r0 of rounds || []) {
+    const rk = rkBy.get(dayKey(r0.date));
+    const info = resolveRound(r0, rk);
+    const r = { ...r0, rk, ...info, tee: teeKey(info.base, r0.tee || (rk && rk.tee)), mulligans: n0(r0.mulligans) || n0(rk && rk.mulligans), events: (rk && rk.events) || [] };
+    const holes = n0(r.holes), strokes = n0(r.strokes);
+    a.n++;
+    a.holesSum += holes;
+    a.strokesAll += strokes;
+    if (r.mulligans > 0) { a.mullRounds++; a.mullUsed += r.mulligans; }
+    const [fa, fb] = frac(r.fairways), [ga, gb] = frac(r.gir);
+    a.fwA += fa; a.fwB += fb; a.girA += ga; a.girB += gb;
+    const det = r.detail || {};
+    a.haz += n0(det.haz); a.sandR += n0(det.sand);
+    a.maxDrive = Math.max(a.maxDrive, n0(det.maxDrive));
+    for (const k in det.clubs || {}) a.clubs[k] = (a.clubs[k] || 0) + n0(det.clubs[k]);
+    if (r.pars && Array.isArray(r.scores)) r.scores.forEach((s, i) => {
+      const par = r.pars[i];
+      if (!s || !par) return;
+      a.holesCounted++;
+      const d = s - par, D = a.dist;
+      if (s === 1) D.hio++; else if (d <= -3) D.alb++; else if (d === -2) D.eagle++; else if (d === -1) D.birdie++; else if (d === 0) D.par++; else if (d === 1) D.bogey++; else if (d === 2) D.double++; else D.triple++;
+      if (a.byPar[par]) { a.byPar[par][0] += s; a.byPar[par][1]++; }
+      const pt = det.putts && det.putts[i];
+      if (pt != null && pt !== '') { a.puttHoles++; a.puttSum += n0(pt); if (n0(pt) === 1) a.putts1++; if (n0(pt) >= 3) a.putts3++; }
+    });
+    // 一般球場：不是奇幻 / 自製，也不是三桿洞球場（18 洞標準桿低於 66、9 洞低於 33）
+    const par = n0(r.par) || n0(rk && rk.par);
+    const normal = r.base && r.base.group !== 'fantasy' && r.base.group !== 'custom' && !(par && par < (holes === 18 ? 66 : 33));
+    if (holes === 18 && normal) {
+      const q = a.r18, tp = n0(r.toPar);
+      q.n++; q.sum += strokes; q.best = minN(q.best, strokes); q.bestToPar = minN(q.bestToPar, tp);
+      if (tp < 0) q.under++;
+      if (tp <= 0) q.even++;
+      if (n0(r.putts)) { q.puttSum += n0(r.putts); q.puttN++; }
+      a.trend.push({ date: r.date, course: r.course, strokes, toPar: tp });
+      if (a.trend.length > 30) a.trend.shift();
+    }
+    if (holes === 9 && normal) a.best9 = minN(a.best9, strokes);
+    const day = String(r.date).slice(0, 10);
+    if (day !== a.lastDay) { a.days++; a.lastDay = day; }
+    if (!a.first) a.first = { date: r.date };
+    a.last = { date: r.date, course: r.course, strokes };
+    const id = r.base ? r.base.id : String(r.course);
+    const o = a.byCourse[id] || (a.byCourse[id] = { name: r.base ? r.base.name : String(r.course), group: r.base ? r.base.group : '', n: 0, best: null, sum: 0, n18: 0 });
+    o.n++;
+    if (holes === 18) { o.n18++; o.sum += strokes; o.best = minN(o.best, strokes); }
+    if (r.base) a.groups[r.base.group] = (a.groups[r.base.group] || 0) + 1;
+    if (r.tee) a.tees[r.tee] = (a.tees[r.tee] || 0) + 1;
+    if (r.mode) a.modes[r.mode] = (a.modes[r.mode] || 0) + 1;
+    const dt = new Date(r.date);
+    if (!isNaN(dt)) { const mk = `${dt.getFullYear()}-${dt.getMonth()}`; a.months[mk] = (a.months[mk] || 0) + 1; }
+    for (const e of r.events) a.evs.push({ t: e.t, hole: e.hole, date: r.date, course: r.course });
+    if (a.evs.length > 6) a.evs.splice(0, a.evs.length - 6);
   }
-  // 排行有、回合紀錄沒有的（回合紀錄只讀到最近的；通常不會發生）也算進來，只是沒有每洞細節
-  for (const x of rankRows || []) if (String(x.user) === String(user) && !used.has(dayKey(x.date))) {
-    const info = resolveRound({ course: x.course, courseId: x.courseId, holes: x.holes, range: x.range }, x);
-    list.push({ date: x.date, course: x.course, holes: x.holes, strokes: x.strokes, toPar: x.toPar, mode: x.mode, scores: [], ...info, tee: teeKey(info.base, x.tee), mulligans: n0(x.mulligans), events: x.events || [], rk: x, noDetail: true });
-  }
-  return list.sort((a, b) => new Date(a.date) - new Date(b.date));
+  return a;
 }
 
 // ---------------- 小圖表 ----------------
@@ -98,72 +156,30 @@ function trendHtml(rows) {
   </svg><div class="cs-cap"><span>${fmtD(rows[0].date)}</span><span>最近 ${rows.length} 場 18 洞（對標準桿，越上面越好）</span><span>${fmtD(rows[rows.length - 1].date)}</span></div>`;
 }
 // 每月回合數（最近 12 個月）
-function monthsHtml(list) {
+function monthsHtml(months) {
   const now = new Date(), ms = [];
-  for (let i = 11; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); ms.push({ k: `${d.getFullYear()}-${d.getMonth()}`, label: `${d.getMonth() + 1}月`, v: 0 }); }
-  for (const r of list) { const d = new Date(r.date), m = ms.find(x => x.k === `${d.getFullYear()}-${d.getMonth()}`); if (m) m.v++; }
+  for (let i = 11; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1), k = `${d.getFullYear()}-${d.getMonth()}`; ms.push({ k, label: `${d.getMonth() + 1}月`, v: n0(months[k]) }); }
   const max = Math.max(1, ...ms.map(m => m.v));
   return `<div class="cs-cols">${ms.map(m => `<div class="cs-col"><b class="num">${m.v || ''}</b><i style="height:${m.v / max * 100}%"></i><span>${m.label}</span></div>`).join('')}</div>`;
 }
 
 // ---------------- 儀表板 ----------------
-export function careerHtml({ rounds, rankRows, user, profile, bestBlack, levels, chapters: chList = [], realCount }) {
+// agg：生涯統計（careerFold 算好的，已經包含所有回合）
+export function careerHtml({ agg, user, profile, bestBlack, levels, chapters: chList = [], realCount }) {
   const g = prog(), c = g.cnt, ch = chal();
-  const list = collect(rounds, rankRows, user);
-  const r18 = list.filter(r => n0(r.holes) === 18), r9 = list.filter(r => n0(r.holes) === 9);
-  // 一般球場：不是奇幻 / 自製，也不是三桿洞球場（18 洞標準桿低於 66、9 洞低於 33）
-  const normal = r => { const par = n0(r.par) || n0(r.rk && r.rk.par); return r.base && r.base.group !== 'fantasy' && r.base.group !== 'custom' && !(par && par < (n0(r.holes) === 18 ? 66 : 33)); };
-  const n18 = r18.filter(normal);
-  // 每洞：分數分布、各標準桿的平均、推桿
-  const dist = { hio: 0, alb: 0, eagle: 0, birdie: 0, par: 0, bogey: 0, double: 0, triple: 0 };
-  const byPar = { 3: [0, 0], 4: [0, 0], 5: [0, 0] };
-  let holesCounted = 0, putts1 = 0, putts3 = 0, puttHoles = 0, puttSum = 0, fwA = 0, fwB = 0, girA = 0, girB = 0, strokesAll = 0, mullRounds = 0, mullUsed = 0, haz = 0, sandR = 0;
-  const clubs = {};
-  for (const r of list) {
-    strokesAll += n0(r.strokes);
-    if (r.mulligans > 0) { mullRounds++; mullUsed += r.mulligans; }
-    const [fa, fb] = frac(r.fairways), [ga, gb] = frac(r.gir);
-    fwA += fa; fwB += fb; girA += ga; girB += gb;
-    const det = r.detail || {};
-    haz += n0(det.haz); sandR += n0(det.sand);
-    for (const k in det.clubs || {}) clubs[k] = (clubs[k] || 0) + n0(det.clubs[k]);
-    if (!r.pars || !Array.isArray(r.scores)) continue;
-    r.scores.forEach((s, i) => {
-      const par = r.pars[i];
-      if (!s || !par) return;
-      holesCounted++;
-      const d = s - par;
-      if (s === 1) dist.hio++; else if (d <= -3) dist.alb++; else if (d === -2) dist.eagle++; else if (d === -1) dist.birdie++; else if (d === 0) dist.par++; else if (d === 1) dist.bogey++; else if (d === 2) dist.double++; else dist.triple++;
-      if (byPar[par]) { byPar[par][0] += s; byPar[par][1]++; }
-      const pt = det.putts && det.putts[i];
-      if (pt != null && pt !== '') { puttHoles++; puttSum += n0(pt); if (n0(pt) === 1) putts1++; if (n0(pt) >= 3) putts3++; }
-    });
-  }
-  const strokes18 = n18.map(r => n0(r.strokes)), toPar18 = n18.map(r => n0(r.toPar));
-  const avg18 = strokes18.length ? strokes18.reduce((a, b) => a + b, 0) / strokes18.length : 0;
-  const bestAny18 = strokes18.length ? Math.min(...strokes18) : null;
-  const best9 = r9.filter(normal).length ? Math.min(...r9.filter(normal).map(r => n0(r.strokes))) : null;
-  const bestToPar = toPar18.length ? Math.min(...toPar18) : null;
-  const under = n18.filter(r => n0(r.toPar) < 0).length, even = n18.filter(r => n0(r.toPar) <= 0).length;
-  const putts18 = n18.map(r => n0(r.putts)).filter(Boolean);
-  const avgPutts = putts18.length ? putts18.reduce((a, b) => a + b, 0) / putts18.length : 0;
-  const days = new Set(list.map(r => String(r.date).slice(0, 10))).size;
-  const first = list[0], last = list[list.length - 1];
-  // 球場
-  const byCourse = new Map();
-  for (const r of list) {
-    const id = r.base ? r.base.id : r.course;
-    const o = byCourse.get(id) || { name: r.base ? r.base.name : r.course, group: r.base ? r.base.group : '', n: 0, best: null, sum: 0, n18: 0 };
-    o.n++;
-    if (n0(r.holes) === 18) { o.n18++; o.sum += n0(r.strokes); o.best = o.best == null ? n0(r.strokes) : Math.min(o.best, n0(r.strokes)); }
-    byCourse.set(id, o);
-  }
-  const courses = [...byCourse.values()].sort((a, b) => b.n - a.n);
-  const byGroup = COURSE_GROUPS.map(gr => ({ label: gr.name, v: list.filter(r => r.base && r.base.group === gr.id).length })).filter(x => x.v);
-  const tees = TEE_SETS.map(t => ({ label: t.name, v: list.filter(r => r.tee === t.id).length, color: { black: '#1c1c1c', blue: '#2c4f8f', white: '#b9b4a6', red: '#a3302a' }[t.id] })).filter(x => x.v);
-  const modes = ['單人', '比桿賽', '比洞賽'].map(m => ({ label: m, v: list.filter(r => r.mode === m).length })).filter(x => x.v);
-  // 特殊紀錄（排行裡的一桿進洞 / 信天翁 / 老鷹，第幾洞）
-  const evs = list.flatMap(r => (r.events || []).map(e => ({ ...e, date: r.date, course: r.course })));
+  const A = agg && agg.v === CAREER_V ? agg : careerNew();
+  const { dist, byPar, holesCounted, putts1, putts3, puttHoles, puttSum, fwA, fwB, girA, girB, strokesAll, mullRounds, mullUsed, haz, sandR, clubs, days, first, last } = A;
+  const q = A.r18;
+  const avg18 = q.n ? q.sum / q.n : 0, bestAny18 = q.best, best9 = A.best9, bestToPar = q.bestToPar, under = q.under, even = q.even;
+  const avgPutts = q.puttN ? q.puttSum / q.puttN : 0;
+  const n18 = { length: q.n };
+  const list = { length: A.n };
+  const courses = Object.values(A.byCourse).sort((a, b) => b.n - a.n);
+  const byGroup = COURSE_GROUPS.map(gr => ({ label: gr.name, v: n0(A.groups[gr.id]) })).filter(x => x.v);
+  const tees = TEE_SETS.map(t => ({ label: t.name, v: n0(A.tees[t.id]), color: { black: '#1c1c1c', blue: '#2c4f8f', white: '#b9b4a6', red: '#a3302a' }[t.id] })).filter(x => x.v);
+  const modes = ['單人', '比桿賽', '比洞賽'].map(m => ({ label: m, v: n0(A.modes[m]) })).filter(x => x.v);
+  // 特殊紀錄（排行裡的一桿進洞 / 信天翁 / 老鷹，第幾洞；只留最近 6 筆）
+  const evs = A.evs;
   // 挑戰、收藏
   const lv = levels || [];
   const passed = lv.filter(l => (ch.stars[l.id] || 0) >= 1).length, three = lv.filter(l => (ch.stars[l.id] || 0) >= 3).length;
@@ -177,8 +193,8 @@ export function careerHtml({ rounds, rankRows, user, profile, bestBlack, levels,
   const fx = Object.keys(FX_ZH).map(k => ({ label: FX_ZH[k], v: n0(c[k]) })).filter(x => x.v).sort((a, b) => b.v - a.v);
   const clubUse = CLUBS.map(cl => ({ label: cl.short, v: n0(c['club_' + cl.id]) || n0(clubs[cl.id]) })).filter(x => x.v);
   const st = profile.stats || {}, statAvg = STATS.reduce((s, x) => s + (n0(st[x.key]) || 50), 0) / STATS.length;
-  const trend = n18.slice(-30);
-  const maxDrive = n0(c.maxDrive) || Math.max(0, ...list.map(r => n0(r.detail && r.detail.maxDrive)));
+  const trend = A.trend;
+  const maxDrive = n0(c.maxDrive) || A.maxDrive;
 
   if (!list.length && !n0(c.holes)) return '<div class="cs-empty"><b>還沒有任何紀錄</b><p class="small">打完第一場回合，這裡就會開始記錄你的高爾夫生涯。</p></div>';
 
@@ -188,7 +204,7 @@ export function careerHtml({ rounds, rankRows, user, profile, bestBlack, levels,
   <section class="cs-hero">
     <div class="cs-who"><small>CAREER</small><b>${escapeHtml(user)}<span class="lv-tag">Lv.${levelOf(st)}</span></b><span>${first ? `${fmtD(first.date)} 開始 · 打球 ${days} 天` : '生涯剛開始'}</span></div>
     <div class="cs-hero-k">
-      ${kpi('回合', n0(profile.rounds) || list.length)}${kpi('洞數', Math.max(n0(c.holes), list.reduce((a, r) => a + n0(r.holes), 0)))}${kpi('總桿數', strokesAll.toLocaleString())}${kpi('球場', courses.length)}
+      ${kpi('回合', n0(profile.rounds) || list.length)}${kpi('洞數', Math.max(n0(c.holes), A.holesSum))}${kpi('總桿數', strokesAll.toLocaleString())}${kpi('球場', courses.length)}
     </div>
   </section>
   ${note}
@@ -214,7 +230,7 @@ export function careerHtml({ rounds, rankRows, user, profile, bestBlack, levels,
       ${kpi('一推', n0(c.onePutt) || putts1)}${kpi('三推以上', n0(c.threePutt) || putts3)}${kpi('一推率', puttHoles ? pct(putts1, puttHoles) + '%' : '—')}</div>`)}
     ${sec('重打與失誤', `<div class="cs-kpis k3">${kpi('用過重打的回合', mullRounds, '不列入排行')}${kpi('重打次數', Math.max(mullUsed, n0(c.mulliganUsed)))}${kpi('總揮桿數', n0(c.shots) ? n0(c.shots).toLocaleString() : '—')}
       ${kpi('下水', n0(c.pen_water))}${kpi('OB', n0(c.pen_ob))}${kpi('掉落深淵', n0(c.pen_chasm))}${kpi('沙坑擊球', n0(c.sandShots) || sandR)}${kpi('長草擊球', n0(c.roughShots))}${kpi('失誤（本版起）', haz)}</div>`)}
-    ${sec('每月回合數', monthsHtml(list), 'wide')}
+    ${sec('每月回合數', monthsHtml(A.months), 'wide')}
     ${sec('最常打的球場', courses.length ? `<div class="cs-table"><div class="cs-tr th"><span>球場</span><span>場數</span><span>最佳</span><span>平均</span></div>${courses.slice(0, 10).map(o => `<div class="cs-tr"><span>${escapeHtml(o.name)}</span><b class="num">${o.n}</b><b class="num">${o.best ?? '—'}</b><b class="num">${o.n18 ? f1(o.sum / o.n18) : '—'}</b></div>`).join('')}</div>` : '<p class="small">—</p>', 'wide')}
     ${sec('球場類型', bars(byGroup.map(x => ({ ...x, color: '#2f5a44' }))))}
     ${sec('梯台', bars(tees))}

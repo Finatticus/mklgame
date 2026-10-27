@@ -6,11 +6,33 @@
  *
  * 工作頁
  *   Account      A 帳號 / B 密碼 / C 啟用(Y/N)，第 1 列為標題
- *   <帳號名稱>    每位玩家一頁：上半部是個人資料（鍵/值），第 14 列起是回合紀錄
- *   排行          每打完一場（9 或 18 洞）一列，排行榜就是讀這一頁（每一場都單獨列入，不只取最好）
+ *   <帳號名稱>    每位玩家一頁，這個人的所有資料都在這一頁（排法見下面「玩家頁」）
+ *   排行          每打完一場（9 或 18 洞）一列，所有玩家的完整紀錄（備份用，排行頁不直接讀這一頁）
+ *   排行精華      從「排行」整理出來、只留可能上榜的場次（每個分類前 100 名、每人最佳、特殊紀錄），排行頁讀這一頁；程式自動維護
  *   挑戰排行      每位玩家一列：挑戰模式的總星數（有更新就改寫那一列）
  *   自製球場      管理員的自製球場資料：每一列 = 一個草稿洞 / 一座發布的球場 / 一個修改過的現有球洞
  *                 A 種類（draft / course / override）B 代號 C 名稱 D 更新時間 E 摘要（JSON）F 起 資料（JSON，每格最多 45000 字，太長就接到後面的格子）
+ *   實際下場      （舊版用的，已改存到每個人的玩家頁）每個人第一次打開實際下場時會自動把自己的資料搬走；
+ *                 搬完的列會刪掉，整頁只剩標題時就可以把這一頁刪除
+ *
+ * 玩家頁（工作頁名稱 = 帳號）
+ *
+ *        A        B      C   D          E           F          G ~
+ *    1   帳號     值         生涯統計    已統計場數   更新時間    統計資料（JSON）     ← 第 1 列：標題
+ *    2   能力點   值         （自動）    123         2026/..     {...}（太長接到右邊） ← 第 2 列：數字
+ *   ...  個人資料（第 1~13 列，A 名稱 / B 值）
+ *   13   挑戰     值
+ *
+ *        A ~ Q（遊戲回合）                          R（空白）   S ~ W（實際下場）
+ *   14   日期 / 球場 / 洞數 / … / 每洞細節          　          編號 / 日期 / 球場 / 更新時間 / 資料
+ *   15~  一場一列，新的接在最下面                    　          一場一列（現實世界打的回合）
+ *
+ *   ‧個人資料：能力點、素質、外觀、總回合數、成就、挑戰星數…（A 欄名稱、B 欄值）
+ *   ‧生涯統計：個人紀錄頁的累計數字（平均桿數、分數分布…），由遊戲畫面算好存回來，E 欄 = 已經算進幾場遊戲回合；
+ *     刪掉也沒關係，下次打開個人紀錄會從第一場重算
+ *   ‧遊戲回合：A~Q 欄，第 14 列標題、第 15 列起一場一列
+ *   ‧實際下場：S~W 欄，第 14 列標題、第 15 列起一場一列；刪除時只刪 S~W 這五格（下面往上補），不會動到左邊的遊戲回合
+ *   ‧遊戲回合和實際下場是左右兩張獨立的表，各自往下長，列數不用一樣
  * 遊戲間（驗證碼、連線資料、訊息）放在 CacheService，6 小時自動清除，不佔工作頁。
  */
 
@@ -18,7 +40,17 @@ const ADMIN = 'Michael';
 const ADMIN_PASS = '1220';
 const START_POINTS = 30;
 const START_RESPECS = 10;
-const RESERVED = ['Account', '排行', '挑戰排行', '自製球場'];
+const RESERVED = ['Account', '排行', '挑戰排行', '自製球場', '排行精華', '實際下場'];
+// 排行精華：只留「可能出現在排行上」的場次（每個分類前 100 名、每個人在每個分類的最佳、所有特殊紀錄），排行頁只讀這一頁
+const RANK_TOP_SHEET = '排行精華';
+const RANK_TOP_N = 100;
+// 玩家頁的生涯統計：第 1 列標題、第 2 列數字，從 D 欄開始（個人資料在 A、B 欄的右邊）
+const CAREER_COL = 4;                 // D
+const CAREER_HEADER = ['生涯統計', '已統計場數', '更新時間', '統計資料（JSON，程式自動維護，太長會接到右邊的格子）'];
+// 玩家頁的實際下場：S~W 欄，第 14 列標題（跟遊戲回合同一列）、第 15 列起一場一列
+const REAL_COL = 19;                  // S
+const REAL_HEADER = ['實際下場：編號', '日期', '球場', '更新時間', '資料（JSON）'];
+const OLD_REAL_SHEET = '實際下場';    // 舊版的共用頁（自動搬到玩家頁）
 const CUSTOM_SHEET = '自製球場';
 const CUSTOM_HEADER = ['種類', '代號', '名稱', '更新時間', '摘要', '資料'];
 const CHUNK = 45000;
@@ -137,15 +169,20 @@ const ACTIONS = {
       const now = new Date();
       // 舊的玩家頁 / 排行頁：欄位名稱補上新加的欄（重打、球場代號、範圍、標準桿、每洞細節）
       if (sh.getRange(ROUND_HEADER_ROW, ROUND_HEADER.length).getValue() !== ROUND_HEADER[ROUND_HEADER.length - 1]) sh.getRange(ROUND_HEADER_ROW, 1, 1, ROUND_HEADER.length).setValues([ROUND_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
-      sh.appendRow([now, r.course, r.holes, r.tee, r.strokes, r.toPar, r.putts, r.fairways, r.gir, r.mode, r.partners || '', JSON.stringify(r.scores),
-        Number(r.mulligans) || 0, r.courseId || '', r.range || '', Number(r.par) || '', JSON.stringify(r.detail || {})]);
+      // 接在遊戲回合（A 欄）的最下面；右邊的實際下場列數不一樣，不能用 appendRow
+      const at = lastRowIn_(sh, 1) + 1;
+      ensureSize_(sh, at, ROUND_HEADER.length);
+      sh.getRange(at, 1, 1, ROUND_HEADER.length).setValues([[now, r.course, r.holes, r.tee, r.strokes, r.toPar, r.putts, r.fairways, r.gir, r.mode, r.partners || '', JSON.stringify(r.scores),
+        Number(r.mulligans) || 0, r.courseId || '', r.range || '', Number(r.par) || '', JSON.stringify(r.detail || {})]]);
       // 排行：每一場都單獨記一列；特殊紀錄 = 這一場的一桿進洞 / 信天翁 / 老鷹（第幾洞、標準桿）
       const ev = Array.isArray(r.events) ? r.events : [];
       const cnt = t => ev.filter(e => e.t === t).length;
       const range = r.range === 'front' ? '前 9 洞' : r.range === 'back' ? '後 9 洞' : '18 洞';
       const rk = rankSheet_();
       if (rk.getRange(1, RANK_HEADER.length).getValue() !== RANK_HEADER[RANK_HEADER.length - 1]) rk.getRange(1, 1, 1, RANK_HEADER.length).setValues([RANK_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
-      rk.appendRow([now, acc.user, r.course, r.courseId || '', r.holes, range, r.tee, r.strokes, r.par || (r.strokes - r.toPar), r.toPar, r.mode, cnt('hio'), cnt('albatross'), cnt('eagle'), JSON.stringify(ev), Number(r.mulligans) || 0]);
+      const rkRow = [now, acc.user, r.course, r.courseId || '', r.holes, range, r.tee, r.strokes, r.par || (r.strokes - r.toPar), r.toPar, r.mode, cnt('hio'), cnt('albatross'), cnt('eagle'), JSON.stringify(ev), Number(r.mulligans) || 0];
+      rk.appendRow(rkRow);
+      addRankTop_(rkRow);
       const cur = readProfile_(acc.user);
       const earned = Math.floor(r.holes / 9);
       const upd = { '總回合數': cur.rounds + 1, '能力點': cur.points + earned, '累計獲得點數': cur.earned + earned };
@@ -159,28 +196,64 @@ const ACTIONS = {
   getRounds(req) {
     const acc = auth_(req);
     const sh = ensurePlayerSheet_(acc.user);
-    const last = sh.getLastRow();
-    if (last <= ROUND_HEADER_ROW) return [];
-    const n = Math.min(3000, last - ROUND_HEADER_ROW);      // 全部（個人紀錄要算生涯統計）
-    const rows = sh.getRange(last - n + 1, 1, n, ROUND_HEADER.length).getValues();
-    return rows.reverse().map(r => ({
-      date: r[0] instanceof Date ? r[0].toISOString() : r[0], course: r[1], holes: r[2], tee: r[3], strokes: r[4],
-      toPar: r[5], putts: r[6], fairways: r[7], gir: r[8], mode: r[9], partners: r[10], scores: safeParse_(r[11], []),
-      mulligans: Number(r[12]) || 0, courseId: r[13] || '', range: r[14] || '', par: Number(r[15]) || 0, detail: safeParse_(r[16], null),
-    }));
+    const total = roundCount_(sh), last = ROUND_HEADER_ROW + total;
+    if (!total) return [];
+    const n = Math.min(3000, total);      // 舊版畫面用（新版改用 getRoundsPage / getRoundsFrom）
+    return sh.getRange(last - n + 1, 1, n, ROUND_HEADER.length).getValues().reverse().map(roundObj_);
   },
 
-  // 排行榜：回傳「排行」工作頁的每一場（最多最近 5000 場），排序與分類在畫面端做
+  // 回合紀錄分頁（回合紀錄頁用）：offset = 從最新一場往前跳過幾場、limit = 要幾場（最多 500），新的在前
+  getRoundsPage(req) {
+    const acc = auth_(req);
+    const sh = ensurePlayerSheet_(acc.user);
+    const total = roundCount_(sh);
+    const offset = Math.max(0, Number(req.offset) || 0), limit = Math.max(1, Math.min(500, Number(req.limit) || 50));
+    const end = total - offset, n = Math.min(limit, end);
+    if (n <= 0) return { rows: [], total: total };
+    const rows = sh.getRange(ROUND_HEADER_ROW + end - n + 1, 1, n, ROUND_HEADER.length).getValues();
+    return { rows: rows.reverse().map(roundObj_), total: total };
+  },
+
+  // 從第 from 場（0 = 最早的一場）開始往後拿 limit 場，舊的在前（個人紀錄把新回合加進生涯統計用）
+  getRoundsFrom(req) {
+    const acc = auth_(req);
+    const sh = ensurePlayerSheet_(acc.user);
+    const total = roundCount_(sh);
+    const from = Math.max(0, Number(req.from) || 0), limit = Math.max(1, Math.min(500, Number(req.limit) || 300));
+    const n = Math.min(limit, total - from);
+    if (n <= 0) return { rows: [], total: total };
+    return { rows: sh.getRange(ROUND_HEADER_ROW + 1 + from, 1, n, ROUND_HEADER.length).getValues().map(roundObj_), total: total };
+  },
+
+  // 生涯統計（玩家頁 D1 起）：存好的統計（count = 已經算進去幾場）＋ 目前遊戲回合總場數；畫面端只要再補 count 之後的新回合
+  getCareer(req) {
+    const acc = auth_(req);
+    const sh = ensurePlayerSheet_(acc.user);
+    const c = readCareer_(sh);
+    return { count: c ? c.count : 0, data: c ? c.data : null, total: roundCount_(sh) };
+  },
+
+  saveCareer(req) {
+    const acc = auth_(req);
+    const json = JSON.stringify(req.data || null);
+    return withLock_(() => { writeCareer_(ensurePlayerSheet_(acc.user), Number(req.count) || 0, json); return true; });
+  },
+
+  // 排行榜：回傳「排行精華」工作頁（每個分類前 100 名、每個人的最佳、所有特殊紀錄），排序與分類在畫面端做
+  //   結果在伺服器快取 10 分鐘，有人存新回合就清掉
   getRankings(req) {
     auth_(req);
-    const sh = rankSheet_();
-    const last = sh.getLastRow();
-    if (last < 2) return [];
-    const n = Math.min(5000, last - 1);
-    return sh.getRange(last - n + 1, 1, n, RANK_HEADER.length).getValues().map(r => ({
-      date: r[0] instanceof Date ? r[0].toISOString() : r[0], user: String(r[1]), course: r[2], courseId: r[3], holes: Number(r[4]),
-      range: r[5], tee: r[6], strokes: Number(r[7]), par: Number(r[8]), toPar: Number(r[9]), mode: r[10], events: safeParse_(r[14], []), mulligans: Number(r[15]) || 0,
-    }));
+    const hit = cacheGetBig_('rankTop');
+    if (hit) return hit;
+    const out = rankTopRows_().map(rankObj_);
+    cachePutBig_('rankTop', out, 600);
+    return out;
+  },
+
+  // 管理員：從完整的「排行」工作頁重新整理排行精華（平常不用，存回合時會自動維護）
+  rebuildRankTop(req) {
+    admin_(req);
+    return withLock_(() => rebuildRankTop_());
   },
 
   // 成就 / 球場護照 / 挑戰星數：跟伺服器上的合併（只會增加不會減少）；新達成的成就依 points 加能力點（每個最多 3 點）
@@ -215,10 +288,10 @@ const ACTIONS = {
   // 「實際下場」工作頁：一場一列（帳號、編號、日期、球場、更新時間、資料 JSON），用編號新增 / 更新 / 刪除
   realList(req) {
     const acc = auth_(req);
-    const sh = realSheet_(), last = sh.getLastRow();
-    if (last < 2) return [];
-    return sh.getRange(2, 1, last - 1, REAL_HEADER.length).getValues().filter(r => String(r[0]) === acc.user)
-      .map(r => Object.assign(safeParse_(r[5], {}), { id: String(r[1]), updated: r[4] instanceof Date ? r[4].toISOString() : String(r[4]) }))
+    const sh = ensurePlayerSheet_(acc.user);
+    const old = SpreadsheetApp.getActive().getSheetByName(OLD_REAL_SHEET);
+    if (old && old.getLastRow() > 1) withLock_(() => migrateReal_(acc.user, sh));      // 舊版的共用頁還有資料：先搬過來
+    return realRows_(sh).map(x => realObj_(x.vals))
       .sort((x, y) => String(y.date).localeCompare(String(x.date)) || String(y.updated).localeCompare(String(x.updated)));
   },
 
@@ -229,24 +302,26 @@ const ACTIONS = {
     const json = JSON.stringify(rec);
     if (json.length > 40000) throw new Error('紀錄太大');
     return withLock_(() => {
-      const sh = realSheet_(), last = sh.getLastRow(), now = new Date();
-      const row = [acc.user, rec.id, String(rec.date || ''), String(rec.course || ''), now, json];
-      if (last >= 2) {
-        const keys = sh.getRange(2, 1, last - 1, 2).getValues();
-        for (let i = 0; i < keys.length; i++) if (String(keys[i][0]) === acc.user && String(keys[i][1]) === rec.id) { sh.getRange(i + 2, 1, 1, row.length).setValues([row]); return Object.assign(rec, { updated: now.toISOString() }); }
-      }
-      sh.appendRow(row);
+      const sh = ensurePlayerSheet_(acc.user), now = new Date();
+      migrateReal_(acc.user, sh);
+      realHeader_(sh);
+      const vals = [rec.id, String(rec.date || ''), String(rec.course || ''), now, json];
+      const hit = realRows_(sh).find(x => String(x.vals[0]) === rec.id);
+      const row = hit ? hit.row : lastRowIn_(sh, REAL_COL) + 1;
+      ensureSize_(sh, row, REAL_COL + REAL_HEADER.length - 1);
+      sh.getRange(row, REAL_COL, 1, REAL_HEADER.length).setValues([vals]);
       return Object.assign(rec, { updated: now.toISOString() });
     });
   },
 
+  // 刪除：只刪 S~W 這五格、下面的往上補（不會動到左邊的遊戲回合）
   realDelete(req) {
     const acc = auth_(req);
     return withLock_(() => {
-      const sh = realSheet_(), last = sh.getLastRow();
-      if (last < 2) return true;
-      const keys = sh.getRange(2, 1, last - 1, 2).getValues();
-      for (let i = keys.length - 1; i >= 0; i--) if (String(keys[i][0]) === acc.user && String(keys[i][1]) === String(req.id)) sh.deleteRow(i + 2);
+      const sh = ensurePlayerSheet_(acc.user);
+      migrateReal_(acc.user, sh);
+      const hits = realRows_(sh).filter(x => String(x.vals[0]) === String(req.id));
+      for (let i = hits.length - 1; i >= 0; i--) sh.getRange(hits[i].row, REAL_COL, 1, REAL_HEADER.length).deleteCells(SpreadsheetApp.Dimension.ROWS);
       return true;
     });
   },
@@ -436,14 +511,177 @@ const ACTIONS = {
   },
 };
 
-// ---------- 成就 / 挑戰 ----------
-const REAL_HEADER = ['帳號', '編號', '日期', '球場', '更新時間', '資料'];
-function realSheet_() {
-  const ss = SpreadsheetApp.getActive();
-  let sh = ss.getSheetByName('實際下場');
-  if (!sh) { sh = ss.insertSheet('實際下場'); sh.appendRow(REAL_HEADER); sh.setFrozenRows(1); sh.getRange('B:C').setNumberFormat('@'); }
-  return sh;
+// ---------- 回合 / 排行的資料轉換 ----------
+const isoOf_ = v => (v instanceof Date ? v.toISOString() : v);
+function roundObj_(r) {
+  return {
+    date: isoOf_(r[0]), course: r[1], holes: r[2], tee: r[3], strokes: r[4],
+    toPar: r[5], putts: r[6], fairways: r[7], gir: r[8], mode: r[9], partners: r[10], scores: safeParse_(r[11], []),
+    mulligans: Number(r[12]) || 0, courseId: r[13] || '', range: r[14] || '', par: Number(r[15]) || 0, detail: safeParse_(r[16], null),
+  };
 }
+function rankObj_(r) {
+  return {
+    date: isoOf_(r[0]), user: String(r[1]), course: r[2], courseId: r[3], holes: Number(r[4]),
+    range: r[5], tee: r[6], strokes: Number(r[7]), par: Number(r[8]), toPar: Number(r[9]), mode: r[10], events: safeParse_(r[14], []), mulligans: Number(r[15]) || 0,
+  };
+}
+
+// ---------- 排行精華 ----------
+// 畫面端的排行：每個「洞數 + 球場 + 梯台」各排前 100 名（不含重打）；總桿排行是所有球場合起來的前 100 名，
+// 一定也是某個分類的前 100 名，所以只要留下每個分類的前 100 名就不會漏。另外留每個人在每個分類的最佳（大廳的最佳 18 洞）
+// 和所有一桿進洞 / 信天翁 / 老鷹（特殊紀錄排行）。梯台照原本的代號分（畫面端可能把藍梯當黑梯，分得比較細只會多留不會漏）
+function rankKeep_(rows) {
+  const t = v => new Date(v).getTime() || 0;
+  const cmp = (a, b) => (Number(a[7]) - Number(b[7])) || (Number(a[9]) - Number(b[9])) || (t(a[0]) - t(b[0]));
+  const key = r => [Number(r[4]), String(r[3] || '').split(':')[0] || String(r[2] || '').split('（')[0], r[6]].join('|');
+  const keep = new Set(), groups = {}, best = {};
+  rows.forEach((r, i) => {
+    if (Number(r[11]) > 0 || Number(r[12]) > 0 || Number(r[13]) > 0) keep.add(i);
+    if (Number(r[15]) > 0) return;              // 用過重打：不列入排行
+    const k = key(r), uk = r[1] + '|' + k;
+    (groups[k] = groups[k] || []).push(i);
+    if (best[uk] == null || cmp(r, rows[best[uk]]) < 0) best[uk] = i;
+  });
+  Object.keys(groups).forEach(k => groups[k].sort((a, b) => cmp(rows[a], rows[b])).slice(0, RANK_TOP_N).forEach(i => keep.add(i)));
+  Object.keys(best).forEach(k => keep.add(best[k]));
+  return rows.filter((r, i) => keep.has(i));
+}
+
+function writeRankTop_(sh, rows) {
+  const last = sh.getLastRow();
+  if (last > 1) sh.getRange(2, 1, last - 1, RANK_HEADER.length).clearContent();
+  if (rows.length) sh.getRange(2, 1, rows.length, RANK_HEADER.length).setValues(rows);
+  cacheDropBig_('rankTop');
+}
+
+// 從完整的「排行」工作頁整理一次（第一次使用時自動執行；之後存回合時只加新的一場）
+function rebuildRankTop_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(RANK_TOP_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(RANK_TOP_SHEET, 2);
+    sh.getRange(1, 1, 1, RANK_HEADER.length).setValues([RANK_HEADER]).setFontWeight('bold').setBackground('#1d3a2a').setFontColor('#f2ead8');
+    sh.setFrozenRows(1);
+  }
+  const src = rankSheet_(), last = src.getLastRow();
+  const all = last > 1 ? src.getRange(2, 1, last - 1, RANK_HEADER.length).getValues() : [];
+  const kept = rankKeep_(all);
+  writeRankTop_(sh, kept);
+  return { total: all.length, kept: kept.length };
+}
+
+// 排行精華的所有列（還沒有這一頁就先整理一次）
+function rankTopRows_() {
+  let sh = SpreadsheetApp.getActive().getSheetByName(RANK_TOP_SHEET);
+  if (!sh) { withLock_(() => { if (!SpreadsheetApp.getActive().getSheetByName(RANK_TOP_SHEET)) rebuildRankTop_(); }); sh = SpreadsheetApp.getActive().getSheetByName(RANK_TOP_SHEET); }
+  const last = sh.getLastRow();
+  return last > 1 ? sh.getRange(2, 1, last - 1, RANK_HEADER.length).getValues() : [];
+}
+
+// 存回合時：把新的一場加進排行精華（在 saveRound 的鎖裡面呼叫）
+function addRankTop_(row) {
+  const sh = SpreadsheetApp.getActive().getSheetByName(RANK_TOP_SHEET);
+  if (!sh) { rebuildRankTop_(); return; }        // 第一次：整份重整（新的一場已經在「排行」裡）
+  const last = sh.getLastRow();
+  const rows = last > 1 ? sh.getRange(2, 1, last - 1, RANK_HEADER.length).getValues() : [];
+  rows.push(row);
+  writeRankTop_(sh, rankKeep_(rows));
+}
+
+// ---------- 伺服器快取（大的資料切成多段存，每段 3 萬字以內，中文一個字 3 bytes 也不會超過 100KB）----------
+function cachePutBig_(key, obj, ttl) {
+  const s = JSON.stringify(obj), size = 30000, n = Math.ceil(s.length / size);
+  if (!n || n > 150) return;
+  const m = {};
+  for (let i = 0; i < n; i++) m[key + '_' + i] = s.slice(i * size, (i + 1) * size);
+  m[key + '_n'] = String(n);
+  try { CacheService.getScriptCache().putAll(m, ttl); } catch (e) { /* 放不進快取就算了 */ }
+}
+function cacheGetBig_(key) {
+  const c = CacheService.getScriptCache(), n = Number(c.get(key + '_n'));
+  if (!n) return null;
+  const keys = [];
+  for (let i = 0; i < n; i++) keys.push(key + '_' + i);
+  const got = c.getAll(keys);
+  let s = '';
+  for (let i = 0; i < keys.length; i++) { if (got[keys[i]] == null) return null; s += got[keys[i]]; }
+  return safeParse_(s, null);
+}
+function cacheDropBig_(key) { CacheService.getScriptCache().remove(key + '_n'); }
+
+// ---------- 玩家頁的位置 ----------
+// 某一欄最後一筆資料在第幾列。玩家頁左邊（遊戲回合）和右邊（實際下場）各自往下長，不能用整頁的 getLastRow
+function lastRowIn_(sh, col) {
+  const max = sh.getMaxRows(), bottom = sh.getRange(max, col);
+  if (bottom.getValue() !== '') return max;
+  return bottom.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
+}
+// 遊戲回合有幾場（A 欄第 15 列起）
+function roundCount_(sh) { return Math.max(0, lastRowIn_(sh, 1) - ROUND_HEADER_ROW); }
+// 要寫到第 row 列 / 第 col 欄，工作頁不夠大就先加列 / 加欄
+function ensureSize_(sh, row, col) {
+  if (row > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), row - sh.getMaxRows());
+  if (col > sh.getMaxColumns()) sh.insertColumnsAfter(sh.getMaxColumns(), col - sh.getMaxColumns());
+}
+
+// ---------- 生涯統計（玩家頁 D1 起：第 1 列標題、第 2 列數字）----------
+const CAREER_PARTS = 8;               // 統計資料最多切 8 格（G~N 欄）
+function readCareer_(sh) {
+  if (sh.getMaxColumns() < CAREER_COL + 3 || sh.getRange(1, CAREER_COL).getValue() !== CAREER_HEADER[0]) return null;
+  ensureSize_(sh, 2, CAREER_COL + 2 + CAREER_PARTS);
+  const v = sh.getRange(2, CAREER_COL, 1, 3 + CAREER_PARTS).getValues()[0];
+  return { count: Number(v[1]) || 0, data: safeParse_(v.slice(3).join(''), null) };
+}
+function writeCareer_(sh, count, json) {
+  const parts = [];
+  for (let i = 0; i < json.length; i += CHUNK) parts.push(json.slice(i, i + CHUNK));
+  if (parts.length > CAREER_PARTS) throw new Error('生涯統計資料太大');
+  while (parts.length < CAREER_PARTS) parts.push('');
+  ensureSize_(sh, 2, CAREER_COL + 2 + CAREER_PARTS);
+  if (sh.getRange(1, CAREER_COL).getValue() !== CAREER_HEADER[0]) {
+    sh.getRange(1, CAREER_COL, 1, CAREER_HEADER.length).setValues([CAREER_HEADER]).setFontWeight('bold').setBackground('#f1ebdc');
+  }
+  sh.getRange(2, CAREER_COL, 1, 3 + CAREER_PARTS).setValues([['（自動）', count, new Date()].concat(parts)]);
+}
+
+// ---------- 實際下場（玩家頁 S~W 欄：第 14 列標題、第 15 列起一場一列）----------
+function realHeader_(sh) {
+  ensureSize_(sh, ROUND_HEADER_ROW, REAL_COL + REAL_HEADER.length - 1);
+  if (sh.getRange(ROUND_HEADER_ROW, REAL_COL).getValue() !== REAL_HEADER[0]) {
+    sh.getRange(ROUND_HEADER_ROW, REAL_COL, 1, REAL_HEADER.length).setValues([REAL_HEADER]).setFontWeight('bold').setBackground('#3a2f1d').setFontColor('#f2ead8');
+    sh.getRange(1, REAL_COL, sh.getMaxRows(), 2).setNumberFormat('@');      // 編號、日期當文字存（不要被試算表改成數字 / 日期）
+  }
+}
+// 這個人的實際下場：[{ row, vals: [編號, 日期, 球場, 更新時間, 資料] }]
+function realRows_(sh) {
+  if (sh.getMaxColumns() < REAL_COL + REAL_HEADER.length - 1) return [];
+  const last = lastRowIn_(sh, REAL_COL);
+  if (last <= ROUND_HEADER_ROW) return [];
+  return sh.getRange(ROUND_HEADER_ROW + 1, REAL_COL, last - ROUND_HEADER_ROW, REAL_HEADER.length).getValues()
+    .map((v, i) => ({ row: ROUND_HEADER_ROW + 1 + i, vals: v }));
+}
+// 舊版存在共用「實際下場」頁的資料：搬到這個人的玩家頁，搬完把共用頁那幾列刪掉（在鎖裡面呼叫）
+function migrateReal_(user, sh) {
+  const old = SpreadsheetApp.getActive().getSheetByName(OLD_REAL_SHEET);
+  if (!old || old.getLastRow() < 2) return;
+  const rows = old.getRange(2, 1, old.getLastRow() - 1, 6).getValues();
+  const mine = [];
+  rows.forEach((r, i) => { if (String(r[0]) === String(user)) mine.push(i + 2); });
+  if (!mine.length) return;
+  realHeader_(sh);
+  const have = new Set(realRows_(sh).map(x => String(x.vals[0])));
+  const add = mine.map(n => rows[n - 2]).filter(r => !have.has(String(r[1]))).map(r => [String(r[1]), String(r[2]), r[3], r[4], r[5]]);
+  if (add.length) {
+    const start = lastRowIn_(sh, REAL_COL) + 1;
+    ensureSize_(sh, start + add.length - 1, REAL_COL + REAL_HEADER.length - 1);
+    sh.getRange(start, REAL_COL, add.length, REAL_HEADER.length).setValues(add);
+  }
+  for (let i = mine.length - 1; i >= 0; i--) old.deleteRow(mine[i]);
+}
+const realObj_ = v => Object.assign(safeParse_(v[4], {}), { id: String(v[0]), updated: v[3] instanceof Date ? v[3].toISOString() : String(v[3]) });
+
+// ---------- 成就 / 挑戰 ----------
 
 function customSheet_() {
   const ss = SpreadsheetApp.getActive();

@@ -158,7 +158,7 @@ function build(kind, t, n, d, r, pick, ci) {
     }
     case 'lob': {
       par = 3; yards = rnd(110, 150); feat = 'tr nw'; extra.c = { trees: 1.5 };
-      const v = Math.round(lerp(26, 34));
+      const v = Math.round(lerp(16, 22));      // 素質 50 的劈起桿～9 鐵全揮最高點約 16~17 公尺、超揮約 20
       spec = { green: { size: [22, 26] }, bunkers: [{ g: 'F' }, { g: 'B' }] };
       goals = [{ t: 'apex', v, text: `開球最高點 ${v} 公尺以上` }, { t: 'teeNear', v: Math.round(lerp(8, 4)), text: `開球停在旗桿 ${Math.round(lerp(8, 4))} 碼內` }];
       intro = `${M}。果嶺在一口「天井」的底部，四周高樹圍繞，只能從正上方掉進去。`;
