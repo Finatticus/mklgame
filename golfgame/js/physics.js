@@ -34,6 +34,8 @@ export function airDensity(altitude, tempC) {
 }
 
 // 果嶺速度（Stimp 呎）→ 滾動阻力。Stimp 球道以約 1.83 m/s 滾出，滾 stimp 呎停下：a = v²/2d
+// 低速的額外滾動阻力（見 simulate 的滾動）；推桿的初速補上這一段少滾的距離（與阻力係數無關：v0² 多加 0.0484）
+const LOW_SPEED_DRAG = 0.8, LOW_SPEED_V = 0.5, LOW_SPEED_V2 = 0.0484;
 export const stimpCrr = stimp => (1.83 * 1.83) / (2 * stimp * 0.3048) / G;
 
 function windAt(env, h) {
@@ -157,13 +159,16 @@ export function simulate(launch, env, terrain) {
       const gx = -G * n[1] * n[0] * -1, gz = -G * n[1] * n[2] * -1; // 重力沿坡面的水平分量 ≈ G·n_y·(n_x, n_z)
       let sp = Math.hypot(vx, vz);
       const slopeAcc = Math.hypot(gx, gz);
-      if (sp < 0.03 && slopeAcc < gnd.crr * G * 1.3) { vx = vz = 0; break; }
+      // 低速時球陷進草裡，滾動阻力變大（0.5 m/s 以下逐漸增加，停下前約 1.8 倍）：
+      //   球會越滾越慢直到停住，不會在斜坡上用幾乎等速的速度一直「飄」
+      const crr = gnd.crr * (1 + LOW_SPEED_DRAG * Math.max(0, 1 - sp / LOW_SPEED_V));
+      if (sp < 0.05 && slopeAcc < crr * G) { vx = vz = 0; break; }
       let ax = gx, az = gz;
-      if (sp > 1e-4) { ax -= gnd.crr * G * vx / sp; az -= gnd.crr * G * vz / sp; }
+      if (sp > 1e-4) { ax -= crr * G * vx / sp; az -= crr * G * vz / sp; }
       const ovx = vx, ovz = vz;
       vx += ax * dt; vz += az * dt;
       // 阻力不能讓球反向
-      if (sp > 1e-4 && (vx * ovx + vz * ovz) < 0 && slopeAcc < gnd.crr * G) { vx = vz = 0; break; }
+      if (sp > 1e-4 && (vx * ovx + vz * ovz) < 0 && slopeAcc < crr * G) { vx = vz = 0; break; }
       x += vx * dt; z += vz * dt;
       y = terrain.height(x, z) + R;
       t += dt;
@@ -258,7 +263,7 @@ export function makeLaunch(input, ctx) {
     // 推出的力道 = 沿推桿線實際經過的地面（果嶺邊短草、果嶺）平均阻力 × 距離；沒給推桿線就照舊估（果嶺外 1.6 倍）
     const dist = Math.max(0.2, input.power * ctx.puttScale);
     const crr = ctx.rollCrr ? ctx.rollCrr(dist) : stimpCrr(ctx.stimp) * (lie === SURF.GREEN ? 1 : 1.6);
-    let v0 = Math.sqrt(2 * crr * G * dist);
+    let v0 = Math.sqrt(2 * crr * G * dist + LOW_SPEED_V2);
     v0 *= 1 + n() * d.touchSigma * pm;
     // 直直推出去（出桿偏移 < 4°）就照預測線走，不加隨機方向誤差；推歪了才會再加上「推桿方向」素質的誤差
     const lineErr = n() * d.lineSigma * pm;

@@ -301,6 +301,10 @@ export class Game {
     await loadCourseMaps(this.course);
     this.hole = buildHole(this.course, idx, { pinSeed: this.seed + idx * 31 });
     await this.world.loadHole(this.hole);
+    // 生涯模式：時段光線、觀眾與看台（主遊戲照舊用預設光線、沒有觀眾）
+    const cc = this.cfg.career;
+    this.world.setDaylight((cc && cc.light) || null);
+    if (cc && cc.gallery) this.world.buildGallery(this.hole, cc.gallery, { stand: !!cc.stand && k === this.holeList.length - 1 });
     this.hud.setGreenHeat(this.hole);
     const rng = makeRng(this.seed + idx * 977);
     // 每洞的風：大多在當天主風向 ±45° 內、風速 0.6~1.4 倍；偶爾整個轉向（地形擋風 / 繞流），也偶爾特別靜或特別大
@@ -768,7 +772,7 @@ export class Game {
   // 重打之前先確認：用過重打的這一場不列入排行與個人最佳 18 洞
   askMulligan() {
     const box = $('dlg-mull');
-    $('mu-body').innerHTML = this.cfg.practice ? '' : this.cfg.career ? `生涯「休閒」難度每一輪可以重打 ${this.cfg.mulligans} 次。<br>確定要重打這一桿嗎？` : '用過重打的這一場<b>不會列入排行榜</b>，也<b>不算個人最佳 18 洞</b>。<br>確定要重打這一桿嗎？';
+    $('mu-body').innerHTML = this.cfg.practice ? '' : this.cfg.career ? `這一輪可以重打 ${this.cfg.mulligans} 次（休閒難度、技能卡「重來的機會」）。<br>確定要重打這一桿嗎？` : '用過重打的這一場<b>不會列入排行榜</b>，也<b>不算個人最佳 18 洞</b>。<br>確定要重打這一桿嗎？';
     $('mu-no').onclick = () => box.classList.remove('open');
     $('mu-yes').onclick = () => { box.classList.remove('open'); this.mulligan(); };
     box.classList.add('open');
@@ -1200,6 +1204,8 @@ export class Game {
       p.putts[this.k] = p.holePutts;
     }
     if (party) { if (this.net) this.net.send({ t: 'celebrate', ...party }); this.playCelebration(party); }
+    // 生涯模式：觀眾的反應（掌聲、歡呼、惋惜）
+    if (this.cfg.career && this.careerHooks && this.careerHooks.shotDone) this.careerHooks.shotDone(this, p, r, { club, lieBefore, firstShot, party: !!party });
     if (toasts.length) { if (this.net) this.net.send({ t: 'toast', text: toasts.join('<br>') }); this.hud.toast(toasts.join('<br>'), 2600, p.holed ? 'big' : ''); }
     setTimeout(() => this.nextTurn(), party ? 3200 : toasts.length ? 1400 : 500);
   }

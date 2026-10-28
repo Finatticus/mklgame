@@ -244,3 +244,115 @@ export function playCheer() {
   for (let i = 0; i < 40; i++) burst(c, t + 0.3 + Math.random() * 2, 'bandpass', 1800 + Math.random() * 1500, 1.5, 0.001, 0.05 + Math.random() * 0.05, 0.03);
   [523, 659, 784, 1047].forEach((hz, i) => tone(c, t + i * 0.12, 'triangle', hz, null, 0.005, 0.14, 0.9));
 }
+
+// ---------- 生涯模式的比賽氣氛（v93）：環境音（風、鳥）、觀眾的嘈雜聲與反應、心跳、頒獎配樂 ----------
+//   全部即時合成；主遊戲不會呼叫，所以單人 / 連線回合的聲音不變
+let amb = null;
+function loopNoise(c, type, freq, q, gain) {
+  const n = noise(c), f = filt(c, type, freq, q), g = c.createGain();
+  g.gain.value = 0.0001; n.connect(f); f.connect(g); g.connect(master);
+  n.start(c.currentTime, Math.random() * 1.5);
+  g.gain.setTargetAtTime(gain, c.currentTime, 0.8);
+  return { n, f, g };
+}
+// crowd：0 = 沒有觀眾（訓練）、1 = 地方賽、2 = 巡迴賽、3 = 大賽
+export function startAmbience(o = {}) {
+  stopAmbience();
+  const c = enabled && ac();
+  if (!c) return;
+  const lv = o.crowd || 0;
+  amb = { lv, hush: 0, wind: loopNoise(c, 'lowpass', 420, 0.5, 0.012), crowd: lv ? loopNoise(c, 'bandpass', 520, 0.6, 0.006 + lv * 0.007) : null, crowd2: lv >= 2 ? loopNoise(c, 'bandpass', 1150, 0.9, 0.003 + lv * 0.002) : null, timers: [], heart: null };
+  // 觀眾的嘈雜聲慢慢起伏（像人群在聊天、走動）
+  if (amb.crowd) amb.timers.push(setInterval(() => { if (!amb || !amb.crowd) return; const base = (0.006 + amb.lv * 0.007) * (1 - amb.hush * 0.85); amb.crowd.g.gain.setTargetAtTime(base * (0.75 + Math.random() * 0.5), c.currentTime, 1.2); }, 1700));
+  // 鳥叫：每隔幾秒一串短短的上下滑音
+  amb.timers.push(setInterval(() => { if (amb && Math.random() < 0.55) chirp(c); }, 2600));
+}
+export function stopAmbience() {
+  if (!amb) return;
+  const c = ctx;
+  for (const t of amb.timers) clearInterval(t);
+  if (amb.heart) clearInterval(amb.heart);
+  for (const k of ['wind', 'crowd', 'crowd2']) { const s = amb[k]; if (!s) continue; try { s.g.gain.setTargetAtTime(0.0001, c.currentTime, 0.3); s.n.stop(c.currentTime + 1.2); } catch (e) { /* 已經停了 */ } }
+  amb = null;
+}
+function chirp(c) {
+  const t = c.currentTime, f0 = 2600 + Math.random() * 1800, n = 2 + Math.floor(Math.random() * 4);
+  for (let i = 0; i < n; i++) {
+    const o = c.createOscillator(), g = c.createGain(), tt = t + i * (0.09 + Math.random() * 0.05);
+    o.type = 'sine'; o.frequency.setValueAtTime(f0, tt); o.frequency.exponentialRampToValueAtTime(f0 * (1.25 + Math.random() * 0.3), tt + 0.05);
+    g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.012, tt + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.07);
+    o.connect(g); g.connect(master); g.connect(verb); o.start(tt); o.stop(tt + 0.1);
+  }
+}
+// 風聲跟著這一洞的風速（mph）
+export function setWindSound(mph) {
+  if (!amb || !ctx) return;
+  amb.wind.g.gain.setTargetAtTime(0.006 + Math.min(20, mph) * 0.0022, ctx.currentTime, 1.5);
+  amb.wind.f.frequency.setTargetAtTime(300 + Math.min(20, mph) * 22, ctx.currentTime, 1.5);
+}
+// 壓力：觀眾安靜下來（0~1）；2 級以上加心跳
+export function setPressureSound(lvl) {
+  if (!amb || !ctx) return;
+  amb.hush = Math.min(1, lvl / 3);
+  if (amb.crowd) amb.crowd.g.gain.setTargetAtTime((0.006 + amb.lv * 0.007) * (1 - amb.hush * 0.85), ctx.currentTime, 0.6);
+  if (lvl >= 2 && !amb.heart) {
+    const beat = () => { const c = ctx, t = c.currentTime; tone(c, t, 'sine', 62, 48, 0.008, 0.16, 0.16); tone(c, t + 0.24, 'sine', 56, 44, 0.008, 0.1, 0.14); };
+    beat(); amb.heart = setInterval(beat, lvl >= 3 ? 720 : 880);
+  } else if (lvl < 2 && amb.heart) { clearInterval(amb.heart); amb.heart = null; }
+}
+const crowdLv = () => (amb ? amb.lv : 1);
+// 掌聲：strength 0~1（觀眾越多越熱烈）
+export function playApplause(strength = 0.5) {
+  const c = enabled && ac();
+  if (!c || !crowdLv()) return;
+  const t = c.currentTime, n = Math.round(12 + strength * 30 * crowdLv()), dur = 1.4 + strength * 1.6;
+  for (let i = 0; i < n; i++) { const tt = t + Math.random() * dur * Math.random(); burst(c, tt, 'bandpass', 1500 + Math.random() * 1800, 1.4, 0.001, (0.03 + Math.random() * 0.04) * (0.6 + strength * 0.6), 0.03); }
+}
+// 歡呼（抓鳥、救 Par 的長推）：人聲雜訊升起再退 + 掌聲
+export function playRoar(strength = 0.6) {
+  const c = enabled && ac();
+  if (!c || !crowdLv()) return;
+  const t = c.currentTime, k = strength * (0.4 + crowdLv() * 0.25);
+  [600, 950, 1500].forEach((fq, i) => {
+    const n = noise(c), f = filt(c, 'bandpass', fq, 0.7), g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime((0.11 / (i + 1) + 0.03) * k, t + 0.35 + i * 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8 + strength * 1.5);
+    n.connect(f); f.connect(g); g.connect(master); g.connect(verb); startN(n, t, 3.6);
+  });
+  playApplause(strength);
+}
+// 惋惜聲（差一點進、掉水）：「喔——」往下掉的人聲
+export function playGroan() {
+  const c = enabled && ac();
+  if (!c || !crowdLv()) return;
+  const t = c.currentTime, n = noise(c), f = filt(c, 'bandpass', 700, 2.2), g = c.createGain();
+  f.frequency.setValueAtTime(760, t); f.frequency.exponentialRampToValueAtTime(330, t + 1.3);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05 + crowdLv() * 0.025, t + 0.25); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
+  n.connect(f); f.connect(g); g.connect(master); g.connect(verb); startN(n, t, 1.7);
+}
+// 遠方其他洞的歡呼（大賽的招牌氣氛）：悶悶的、從遠處傳來
+export function playDistantRoar() {
+  const c = enabled && ac();
+  if (!c) return;
+  const t = c.currentTime, n = noise(c), f = filt(c, 'lowpass', 650, 0.6), g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.035, t + 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+  n.connect(f); f.connect(g); g.connect(master); g.connect(verb); startN(n, t, 3.4);
+}
+// 頒獎配樂：銅管風格的和弦進行（鋸齒波 + 低通，I–IV–V–I）
+export function playFanfare() {
+  const c = enabled && ac();
+  if (!c) return;
+  const t = c.currentTime;
+  const chords = [[261.6, 329.6, 392], [349.2, 440, 523.3], [392, 493.9, 587.3], [523.3, 659.3, 784]];
+  const lens = [0.45, 0.45, 0.45, 1.8];
+  let tt = t;
+  chords.forEach((ch, i) => {
+    for (const hz of ch) {
+      const o = c.createOscillator(), f = filt(c, 'lowpass', 1800, 0.7), g = c.createGain();
+      o.type = 'sawtooth'; o.frequency.value = hz;
+      g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.045, tt + 0.04); g.gain.setTargetAtTime(0.03, tt + 0.1, 0.2); g.gain.exponentialRampToValueAtTime(0.0001, tt + lens[i] + 0.25);
+      o.connect(f); f.connect(g); g.connect(master); g.connect(verb); o.start(tt); o.stop(tt + lens[i] + 0.3);
+    }
+    tt += lens[i];
+  });
+  setTimeout(() => playApplause(0.9), 300);
+}

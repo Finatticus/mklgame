@@ -384,7 +384,8 @@ export class ProceduralGolfer {
     const cRight = rotY(V(1, 0, 0), B.chestYaw);
     const cUp = B.spineDir.clone();
     cRight.sub(cUp.clone().multiplyScalar(cRight.dot(cUp))).normalize();
-    const cFwd = cRight.clone().cross(cUp).negate();
+    // 右手座標（cFwd = 身體前方）：之前少了一個負號變成鏡像矩陣，胸口的旋轉算錯、往前凸出一大塊
+    const cFwd = cRight.clone().cross(cUp);
     const chestM = new THREE.Matrix4().makeBasis(cRight, cUp, cFwd);
     const pRight = rotY(V(1, 0, 0), B.pelvisYaw);
     const pFwd = rotY(V(0, 0, 1), B.pelvisYaw);
@@ -400,10 +401,11 @@ export class ProceduralGolfer {
     P.abdomen.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(rotY(V(1, 0, 0), (B.pelvisYaw + B.chestYaw) / 2), B.spineDir, rotY(V(0, 0, 1), (B.pelvisYaw + B.chestYaw) / 2)));
     P.abdomen.scale.set(1.12 * (this.bodyW || 1), 1, 0.82 * (this.bodyW || 1));
     if (P.skirt.visible) { P.skirt.position.copy(B.pelvis).add(V(0, -0.1, 0)); P.skirt.quaternion.copy(P.pelvis.quaternion); }
-    P.chest.position.copy(B.chest).addScaledVector(cUp, -0.08);
+    // 胸口：前後稍微壓扁、往背後移一點
+    P.chest.position.copy(B.chest).addScaledVector(cUp, -0.08).addScaledVector(cFwd, -0.012);
     P.chest.quaternion.setFromRotationMatrix(chestM);
-    P.chest.scale.set((this.female ? 1.12 : 1.28) * (this.bodyW || 1), 1, 0.78 * (this.bodyW || 1));
-    if (P.vest.visible) { P.vest.position.copy(P.chest.position); P.vest.quaternion.copy(P.chest.quaternion); P.vest.scale.set((this.female ? 1.16 : 1.32) * (this.bodyW || 1), 1, 0.84 * (this.bodyW || 1)); }
+    P.chest.scale.set((this.female ? 1.12 : 1.28) * (this.bodyW || 1), 1, 0.72 * (this.bodyW || 1));
+    if (P.vest.visible) { P.vest.position.copy(P.chest.position); P.vest.quaternion.copy(P.chest.quaternion); P.vest.scale.set((this.female ? 1.16 : 1.32) * (this.bodyW || 1), 1, 0.78 * (this.bodyW || 1)); }
     const neckBase = B.chest.clone().addScaledVector(cUp, 0.08);
     // 頭：保持準備姿勢時的位置，眼睛看球（下桿到送桿後才跟著轉）
     const headPos = this.headLock && ph < 2.15 ? this.headLock.clone() : neckBase.clone().addScaledVector(cUp, 0.08).add(V(0, 0.09, 0.03));

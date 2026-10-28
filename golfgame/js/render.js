@@ -5,6 +5,7 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import { paintMaps } from './terrain.js';
 import { makeNoise, makeRng, clamp } from './util.js';
 import { heatColor } from './hud.js';
+import { SURF } from './physics.js';
 
 const BALL_R = 0.021335;
 const QUALITY = {
@@ -392,6 +393,132 @@ export class World {
     this.sun.color.set(th.sun); this.sun.intensity = th.sunI;
     this.hemi.color.set(th.hemi[0]); this.hemi.groundColor.set(th.hemi[1]); this.hemi.intensity = th.hemi[2];
     this.renderer.toneMappingExposure = th.exposure;
+  }
+
+  // 時段光線（生涯模式）：morning 早上、afternoon 午後、golden 黃昏（最後一輪）；null = 預設。奇幻主題的球場不改
+  setDaylight(mode) {
+    if (THEMES[this.curTheme]) return;
+    const L = {
+      morning: { dir: [-0.75, 0.42, 0.5], sun: 0xffe2c0, si: 2.45, hemi: 0xd6e6ff, hg: 0x445a36, hi: 0.4, exp: 0.93 },
+      afternoon: { dir: [0.5, 0.62, -0.6], sun: 0xffe7c4, si: 2.7, hemi: 0xcfe0ff, hg: 0x4a5a32, hi: 0.36, exp: 0.95 },
+      golden: { dir: [0.8, 0.26, -0.55], sun: 0xffbe82, si: 2.35, hemi: 0xf0d6c0, hg: 0x4e4a30, hi: 0.42, exp: 1.0 },
+    }[mode];
+    if (!L) { this.sunDir.set(-0.45, 0.78, 0.35).normalize(); this.sun.color.set(0xfff0d8); this.sun.intensity = 2.8; this.hemi.color.set(0xcfe3ff); this.hemi.groundColor.set(0x4a5a32); this.hemi.intensity = 0.35; this.renderer.toneMappingExposure = 0.95; return; }
+    this.sunDir.set(...L.dir).normalize();
+    this.sun.color.set(L.sun); this.sun.intensity = L.si;
+    this.hemi.color.set(L.hemi); this.hemi.groundColor.set(L.hg); this.hemi.intensity = L.hi;
+    this.renderer.toneMappingExposure = L.exp;
+  }
+
+  // 觀眾（生涯模式的比賽）：level 1 = 地方賽（稀疏）、2 = 巡迴賽、3 = 大賽（沿球道兩側滿滿的人 + 果嶺後方的看台）
+  //   放在球道外的長草區（離球道邊 6~14 公尺、不在樹下 / 水裡 / 沙坑），果嶺四周留出正面的進攻路線
+  buildGallery(hole, level, opts = {}) {
+    if (this.galleryGroup) { this.galleryGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); this.galleryGroup.parent && this.galleryGroup.parent.remove(this.galleryGroup); this.galleryGroup = null; }
+    if (!level || !this.holeGroup) return;
+    const g = this.galleryGroup = new THREE.Group();
+    this.holeGroup.add(g);
+    let seed = 1234567 + (hole.holeIdx || 0) * 7919;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const S = SURF, okSurf = s => s === S.ROUGH || s === S.DEEP || s === S.WASTE;
+    const L = hole.L, pts = [];
+    const freeAt = (u, v) => {
+      if (!okSurf(hole.surfaceUV(u, v))) return false;
+      const x = u, z = -v, y = hole.heightUV(u, v);
+      return !hole.treeAt(x, y + 1.2, z) && !hole.treeAt(x, y + 2.5, z) && hole.inBounds(x, z);
+    };
+    // 沿球道：從中心線往外走，離開球道 / 果嶺邊之後再隔幾公尺
+    const along = level === 1 ? 60 : level === 2 ? 200 : 520;
+    for (let i = 0; i < along * 3 && pts.length < along; i++) {
+      const s = L * (0.3 + rnd() * 0.68), side = rnd() < 0.5 ? -1 : 1;
+      const [cu, cv] = hole.pointAt(s), [du, dv] = hole.dirAt(s), ru = dv * side, rv = -du * side;
+      let d = 4, edge = -1;
+      for (; d < 70; d += 2) { const sf = hole.surfaceUV(cu + ru * d, cv + rv * d); if (sf === S.FAIRWAY || sf === S.FRINGE || sf === S.GREEN || sf === S.TEE) edge = -1; else if (edge < 0) edge = d; if (edge > 0 && d - edge >= 6) break; }
+      if (edge < 0 || d >= 70) continue;
+      const dd = d + 1 + rnd() * (level === 3 ? 8 : 6), u = cu + ru * dd, v = cv + rv * dd;
+      if (freeAt(u, v)) pts.push([u, v]);
+      // 大賽：一群一群站（旁邊再補幾個人）
+      if (level === 3) for (let k = 0; k < 2; k++) { const u2 = u + (rnd() - 0.5) * 2.4, v2 = v + (rnd() - 0.5) * 2.4; if (freeAt(u2, v2)) pts.push([u2, v2]); }
+    }
+    // 果嶺四周（正面 ±35° 留給進攻路線）
+    const G = hole.green, gr = Math.max(G.rx, G.ry);
+    const [adu, adv] = hole.dirAt(L - 1);
+    const ring = level === 1 ? 25 : level === 2 ? 70 : 160;
+    for (let i = 0; i < ring * 3 && ring > 0; i++) {
+      const a = (rnd() - 0.5) * 2 * Math.PI * (325 / 360) + Math.PI;        // 以來球方向的反方向（果嶺後方）為中心
+      const back = Math.atan2(adv, adu), th = back + a - Math.PI;
+      const r = gr + 9 + rnd() * (level === 3 ? 9 : 5), u = G.u + Math.cos(th) * r, v = G.v + Math.sin(th) * r;
+      if (freeAt(u, v)) pts.push([u, v]); if (pts.length > along + ring) break;
+    }
+    // 人：身體（上衣顏色隨機）+ 頭 + 腿；InstancedMesh 一次畫完
+    const n = pts.length; if (!n) return;
+    const bodyG = new THREE.CylinderGeometry(0.19, 0.23, 0.72, 7); bodyG.translate(0, 1.12, 0);
+    const legG = new THREE.CylinderGeometry(0.16, 0.13, 0.78, 6); legG.translate(0, 0.39, 0);
+    const headG = new THREE.SphereGeometry(0.12, 8, 6); headG.translate(0, 1.6, 0);
+    const capG = new THREE.SphereGeometry(0.128, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2); capG.translate(0, 1.63, 0);
+    const mk = (geo, mat) => { const m = new THREE.InstancedMesh(geo, mat, n); m.castShadow = level < 3; m.receiveShadow = false; g.add(m); return m; };
+    const body = mk(bodyG, new THREE.MeshStandardMaterial({ roughness: 0.85 })), legs = mk(legG, new THREE.MeshStandardMaterial({ roughness: 0.9 }));
+    const head = mk(headG, new THREE.MeshStandardMaterial({ roughness: 0.7 })), cap = mk(capG, new THREE.MeshStandardMaterial({ roughness: 0.8 }));
+    const SHIRT = ['#f2efe6', '#1f3b6b', '#2f6f3a', '#b23a3a', '#e8c547', '#6a8fc7', '#ffffff', '#222222', '#d97a3a', '#8a5aa8', '#4fa3a0', '#f0a5b5'];
+    const PANTS = ['#2a3442', '#d8cfb8', '#1c1c1c', '#5a6a7a', '#7a6a55'], SKIN = ['#f1c9a5', '#d9a77f', '#b07a52', '#7a4e32', '#e8b896'], CAPS = ['#ffffff', '#1d3a2a', '#20324f', '#c9a85c', '#b23a3a', '#e8e1d0'];
+    const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), SC = new THREE.Vector3(), C = new THREE.Color(), UP = new THREE.Vector3(0, 1, 0);
+    pts.forEach(([u, v], i) => {
+      // 面向球道中心線
+      const { s } = hole.near(u, v), [cu, cv] = hole.pointAt(Math.min(L, s)), dist = Math.hypot(u - G.u, v - G.v);
+      const tu = dist < gr + 22 ? G.u : cu, tv = dist < gr + 22 ? G.v : cv;
+      Q.setFromAxisAngle(UP, Math.atan2(tu - u, tv - v) + Math.PI);
+      const h = 0.9 + rnd() * 0.2;
+      P.set(u, hole.heightUV(u, v), -v); SC.set(1 + (rnd() - 0.5) * 0.15, h, 1 + (rnd() - 0.5) * 0.15);
+      M.compose(P, Q, SC);
+      for (const m of [body, legs, head, cap]) m.setMatrixAt(i, M);
+      body.setColorAt(i, C.set(SHIRT[Math.floor(rnd() * SHIRT.length)]));
+      legs.setColorAt(i, C.set(PANTS[Math.floor(rnd() * PANTS.length)]));
+      head.setColorAt(i, C.set(SKIN[Math.floor(rnd() * SKIN.length)]));
+      cap.setColorAt(i, rnd() < 0.55 ? C.set(CAPS[Math.floor(rnd() * CAPS.length)]) : C.set('#3a2a1e'));      // 沒戴帽子 = 頭髮
+    });
+    // 看台（大賽，或 opts.stand）：果嶺後方 / 側面找一塊不是水的地方
+    if (level >= 3 || opts.stand) {
+      const back = Math.atan2(adv, adu);
+      for (const off of [0, 0.9, -0.9, 1.6, -1.6]) {
+        const th = back + off, r = gr + 26, u = G.u + Math.cos(th) * r, v = G.v + Math.sin(th) * r;
+        const sf = hole.surfaceUV(u, v);
+        if (sf === S.WATER || sf === S.OB || sf === S.CHASM || !hole.inBounds(u, -v)) continue;
+        if (hole.treeAt(u, hole.heightUV(u, v) + 3, -v)) continue;
+        g.add(this.grandstand(u, v, th, hole.heightUV(u, v), rnd));
+        break;
+      }
+    }
+    body.instanceColor.needsUpdate = legs.instanceColor.needsUpdate = head.instanceColor.needsUpdate = cap.instanceColor.needsUpdate = true;
+  }
+  // 看台：四層階梯 + 坐著的觀眾 + 頂上的計分板
+  grandstand(u, v, th, y0, rnd) {
+    const st = new THREE.Group(), W = 26, steps = 5, D = 1.6, Hs = 0.9;
+    const frame = new THREE.MeshStandardMaterial({ color: 0xe9e6dc, roughness: 0.8 }), green = new THREE.MeshStandardMaterial({ color: 0x1d4a30, roughness: 0.85 });
+    for (let k = 0; k < steps; k++) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(W, Hs * (k + 1), D), k % 2 ? frame : green);
+      m.position.set(0, Hs * (k + 1) / 2, k * D); m.castShadow = true; m.receiveShadow = true; st.add(m);
+    }
+    const board = new THREE.Mesh(new THREE.BoxGeometry(W * 0.5, 2.6, 0.3), green);
+    board.position.set(0, Hs * steps + 2.4, (steps - 1) * D + 0.3); board.castShadow = true; st.add(board);
+    const legM = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2, 0.3), frame);
+    for (const x of [-W * 0.2, W * 0.2]) { const l = legM.clone(); l.position.set(x, Hs * steps + 0.6, (steps - 1) * D + 0.3); st.add(l); }
+    // 坐著的觀眾
+    const seat = new THREE.CylinderGeometry(0.2, 0.22, 0.6, 6); seat.translate(0, 0.3, 0);
+    const hd = new THREE.SphereGeometry(0.12, 7, 5); hd.translate(0, 0.75, 0);
+    const per = 22, n = per * steps;
+    const bm = new THREE.InstancedMesh(seat, new THREE.MeshStandardMaterial({ roughness: 0.85 }), n), hm = new THREE.InstancedMesh(hd, new THREE.MeshStandardMaterial({ roughness: 0.7 }), n);
+    const M = new THREE.Matrix4(), C = new THREE.Color();
+    const SH = ['#f2efe6', '#1f3b6b', '#2f6f3a', '#b23a3a', '#e8c547', '#6a8fc7', '#ffffff', '#222222', '#d97a3a'], SK = ['#f1c9a5', '#d9a77f', '#b07a52', '#7a4e32'];
+    let i = 0;
+    for (let k = 0; k < steps; k++) for (let j = 0; j < per; j++, i++) {
+      M.makeTranslation(-W / 2 + 0.8 + j * (W - 1.6) / (per - 1) + (rnd() - 0.5) * 0.3, Hs * (k + 1), k * D - 0.2);
+      bm.setMatrixAt(i, M); hm.setMatrixAt(i, M);
+      bm.setColorAt(i, C.set(SH[Math.floor(rnd() * SH.length)])); hm.setColorAt(i, C.set(SK[Math.floor(rnd() * SK.length)]));
+    }
+    st.add(bm, hm);
+    // 面向果嶺（看台的 -z 是正面）
+    st.position.set(u, y0 - 0.2, -v);
+    st.rotation.y = Math.atan2(-Math.cos(th), Math.sin(th)) + Math.PI;
+    return st;
   }
 
   buildSkirt(hole, style, theme = null) {

@@ -41,6 +41,25 @@ function designHole(c, i, rng) {
   // 落點：四桿洞開球約 60% 處、五桿洞兩個落點
   const land = par === 4 ? Math.max(185, Math.min(265, Math.round(white * 0.6))) : par === 5 ? Math.max(210, Math.min(265, Math.round(white * 0.46))) : 0;
   const land2 = par === 5 ? Math.round(white * 0.76) : 0;
+  // 三桿洞：果嶺前一段球道（從洞長的 30~70% 開始），不是整片長草只有一個果嶺
+  if (par === 3) spec.fwStart = Math.round(white * rr(0.3, 0.7));
+  if (par >= 4) {
+    spec.lands = par === 5 ? [land, land2] : [land];
+    // 球道從哪裡開始（距白梯碼數）：大多 120~170 碼，偶爾很前面或要先飛越一大段長草
+    spec.fwStart = Math.round(Math.min(land - 55, rr(95, 175)));
+    // 五桿洞：三成的機會在兩個落點中間有一段長草把球道切斷（第二桿要決定打過去還是停在前面）
+    if (par === 5 && land2 - land > 150 && rng() < 0.35) spec.fwGap = Math.round(rr(land + 55, land2 - 55));
+  }
+  // 轉角的位置：一般的狗腿在開球落點之後轉（打到轉角、第二桿換方向）；五桿洞可以有兩個彎（第二個彎在第二桿落點附近）
+  if (par === 4 && !shape && Math.abs(bend) >= 8 && o.bend == null) spec.bendAt = land + Math.round(rr(8, 32));
+  if (par === 5 && Math.abs(bend) >= 8 && o.bend == null && shape !== 'D') {
+    spec.bendAt = land + Math.round(rr(0, 25));
+    spec.bend2At = Math.min(white - 90, land2 + Math.round(rr(-15, 20)));
+    let b2 = shape === 'S' ? -bend * rr(1.2, 1.8) : bend * rr(-0.9, 0.6);
+    b2 = Math.max(-60 - bend, Math.min(60 - bend, b2));
+    spec.bend2 = Math.round(b2);
+    if (spec.bend2At - spec.bendAt < 60) { delete spec.bend2At; delete spec.bend2; }
+  }
   // 沙坑
   const bunkers = [];
   const gsN = Math.round(rr(P.gs[0], P.gs[1]));
@@ -57,27 +76,28 @@ function designHole(c, i, rng) {
   if (bunkers.length) spec.bunkers = bunkers;
   // 水
   const W = P.w || {}, water = [];
-  if (par >= 4 && rng() < (W.side || 0)) water.push({ from: land - 40, to: land + 45, side: pick(['L', 'R']), w: Math.round(rr(22, 40)) });
+  // 球道旁的水池：留 3~8 碼的長草緩衝，不吃進落點的球道
+  if (par >= 4 && rng() < (W.side || 0)) water.push({ from: land - 40, to: land + 45, side: pick(['L', 'R']), w: Math.round(rr(22, 40)), gap: Math.round(rr(3, 8)) });
   if (rng() < (W.green || 0)) water.push({ g: pick(['F', 'FR', 'FL', 'R', 'L', 'B']), size: [Math.round(rr(14, 24)), Math.round(rr(10, 20))] });
   if (par === 3 && rng() < (W.front || 0)) tok.push('wc');
   if (par >= 4 && rng() < (W.creek || 0)) tok.push('xc');
   if (water.length) spec.water = water;
-  // 起伏
-  if (P.elev) {
-    const e1 = Math.round(rr(-1, 1) * P.elev * 10) / 10, e2 = Math.round(rr(-1, 1) * P.elev * 10) / 10;
-    spec.elev = par === 3 ? [[white, e2]] : [[Math.round(white * 0.55), e1], [white, e2]];
-  }
-  // 果嶺
+  // 起伏：每洞一種地形劇本（平坦、高台開球、爬坡到高果嶺、谷地、山脊、五桿洞的兩段平台），開球落點一定是平台
+  if (P.elev) spec.elev = elevPlan(par, white, land, land2, P.elev, rng);
+  // 果嶺（坡度依果嶺速度封頂：越快的果嶺越平，旗位附近的球才停得住）
   const G = P.green;
   const gw = Math.round(rr(G.size[0], G.size[1]) * (par === 3 ? 0.9 : 1)), gl = Math.round(rr(G.size[0], G.size[1]) * (par === 5 ? 1.1 : 1));
-  spec.green = { size: [Math.min(gw, gl), Math.max(gw, gl)], slope: Math.round(rr(G.slope[0], G.slope[1]) * 1000) / 1000, side: Math.round(rr(-0.012, 0.012) * 1000) / 1000, rot: Math.round(rr(-25, 25)) };
-  if (rng() < (G.tier || 0)) spec.green.tier = true;
+  spec.green = { size: [Math.min(gw, gl), Math.max(gw, gl)], slope: Math.round(rr(G.slope[0], G.slope[1]) * 1000) / 1000, side: Math.round(rr(-0.008, 0.008) * 1000) / 1000, rot: Math.round(rr(-25, 25)) };
+  if (rng() < (G.tier || 0) && spec.green.size[1] >= 26) spec.green.tier = true;      // 小果嶺不做雙層（整個果嶺都是斜面）
   if (G.crown) spec.green.crown = Math.round(G.crown * rr(0.7, 1.1) * 100) / 100;
-  // 狗腿內側的樹叢
-  if (par >= 4 && Math.abs(bend) >= 15 && rng() < (P.rows ?? 0.4)) spec.trees = [{ at: land - 10, side: bend > 0 ? 'R' : 'L', n: 8, len: 50 }];
+  // 狗腿內側的樹叢：種在落點之後的轉角（擋住第二桿抄近路），不會擋到開球的球路
+  if (par >= 4 && Math.abs(bend) >= 15 && rng() < (P.rows ?? 0.4)) spec.trees = [{ at: (spec.bendAt || land) + 25, side: bend > 0 ? 'R' : 'L', n: 8, len: 45, gap: 5 }];
   if (rng() < (P.ob || 0)) spec.ob = pick(['L', 'R']);
   if (P.sea && P.sea.holes.includes(i + 1)) tok.push(P.sea.side === 'L' ? 'sl' : 'sr');
   if (P.waste) tok.push('ww');
+  // 荒地 / 沙地型的球場：果嶺旁有一塊荒地（很難切）；林克斯與石南荒原：草坑
+  if (P.waste && rng() < 0.4) spec.waste = [{ g: pick(['L', 'R', 'BL', 'BR']) }];
+  if ((c.style === 'links' || c.treeKind === 'heath' || c.treeKind === 'gorse') && rng() < 0.45) (spec.bunkers = spec.bunkers || []).push({ g: pick(['L', 'R', 'B', 'FL', 'FR']), grass: true });
   if (P.nw && rng() < P.nw) tok.push('nw');
   if (P.wd && rng() < P.wd) tok.push('wd');
   if (P.up && par >= 4 && rng() < P.up) tok.push(rng() < 0.5 ? 'up' : 'dn');
@@ -86,11 +106,58 @@ function designHole(c, i, rng) {
   for (const t of o.tok || []) tok.push(t);
   if (o.spec) Object.assign(spec, o.spec);
   if (o.green) spec.green = { ...spec.green, ...o.green };
+  // 指定的起伏也要有落點平台（知名洞的描述常常只給兩個點）、果嶺坡度封頂
+  if (o.spec && o.spec.elev) spec.elev = flattenLanding(spec.elev, par, land, land2);
+  //   雙層果嶺、龜背果嶺本身就有陡的地方，整體坡度再打折
+  const sMax = (0.03 - Math.max(0, (c.stimp || 11) - 10) * 0.0025) * (spec.green.tier ? 0.6 : 1) * ((spec.green.crown || 0) > 0.15 ? 0.55 : 1);
+  spec.green.slope = Math.max(-sMax, Math.min(sMax, spec.green.slope || 0));
+  spec.green.side = Math.max(-0.012, Math.min(0.012, spec.green.side || 0));
+  if (spec.green.crown) spec.green.crown = Math.max(-0.25, Math.min(0.32, spec.green.crown));
   spec.note = o.note || autoNote(par, bend, shape, tok, spec);
   if (o.tip) spec.tip = o.tip;
   const nb = (spec.bunkers || []).length;
   const feat = ['b' + Math.min(4, Math.ceil(nb / 2)), ...tok, shape].filter(Boolean).join(' ');
   return [par, yd, bend, feat, 0, spec];
+}
+
+// ---------- 起伏的劇本 ----------
+//   spec.elev = [[距白梯碼數, 相對發球台高度(公尺)], …]（terrain.js 用 smoothstep 內插，兩點之間中段的坡度約是平均坡度的 1.5 倍）
+const r1 = x => Math.round(x * 10) / 10;
+function pickW(list, rng) { let w = list.reduce((s, x) => s + x[1], 0) * rng(); for (const x of list) { w -= x[1]; if (w <= 0) return x[0]; } return list[0][0]; }
+function elevPlan(par, white, land, land2, A, rng) {
+  const a = (lo, hi) => (lo + (hi - lo) * rng()) * A;
+  if (par === 3) {
+    const k = pickW([['flat', 2], ['down', 3], ['up', 2]], rng);
+    return capSlope([[white, r1(k === 'flat' ? a(-0.15, 0.15) : k === 'down' ? -a(0.35, 0.9) : a(0.25, 0.6))]]);
+  }
+  const k = pickW(par === 4 ? [['flat', 2], ['downTee', 3], ['climb', 3], ['valley', 2], ['ridge', 2]] : [['downTee', 2], ['climb', 2], ['valley', 2], ['ridge', 1], ['steps', 3]], rng);
+  let h1, h2, pts;
+  switch (k) {
+    case 'flat': h1 = a(-0.15, 0.15); pts = [[land - 35, h1], [land + 30, h1], [white, h1 + a(-0.2, 0.2)]]; break;
+    case 'downTee': h1 = -a(0.5, 0.9); pts = [[land - 35, h1], [land + 30, h1], [white, h1 + a(-0.25, 0.3)]]; break;                 // 高台開球、一路往下
+    case 'climb': h1 = a(-0.1, 0.15); pts = [[land - 35, h1], [land + 30, h1], [white - 45, h1 + a(0.15, 0.3)], [white, h1 + a(0.45, 0.8)]]; break;   // 果嶺在高台上
+    case 'valley': h1 = -a(0.4, 0.7); pts = [[land - 35, h1], [land + 30, h1], [white, h1 + a(0.3, 0.6)]]; break;                     // 開球打進谷底、再往上攻
+    case 'ridge': h1 = a(0.35, 0.6); pts = [[land - 40, h1], [land + 28, h1], [white, h1 - a(0.3, 0.6)]]; break;                     // 開球上坡到山脊、往下攻果嶺
+    default: h1 = a(-0.6, 0.6); h2 = h1 + a(-0.5, 0.5); pts = [[land - 35, h1], [land + 30, h1], [land2 - 30, h2], [land2 + 30, h2], [white, h2 + a(-0.4, 0.4)]];    // 兩段平台
+  }
+  return capSlope(pts.filter((p, i, arr) => i === 0 || p[0] > arr[i - 1][0] + 5).map(([y, m]) => [Math.round(y), r1(m)]));
+}
+// 相鄰兩點之間的平均坡度最多 4.5%（中段約 7%）：太陡就把後面的點壓回來
+function capSlope(pts) {
+  let py = 0, pm = 0;
+  return pts.map(([y, m]) => { const max = Math.max(0.5, (y - py) * 0.9144 * 0.045); const mm = Math.max(pm - max, Math.min(pm + max, m)); py = y; pm = mm; return [y, r1(mm)]; });
+}
+// 知名洞指定的起伏：在落點前後補一個平台（同一個高度）
+function flattenLanding(elev, par, land, land2) {
+  if (!elev || par < 4) return elev;
+  const at = y => { const pts = [[0, 0], ...elev]; for (let i = 1; i < pts.length; i++) if (y <= pts[i][0]) { const [y0, m0] = pts[i - 1], [y1, m1] = pts[i]; return m0 + (m1 - m0) * (y - y0) / ((y1 - y0) || 1); } return pts[pts.length - 1][1]; };
+  const out = elev.filter(([y]) => y > 0);
+  for (const l of par === 5 ? [land, land2] : [land]) {
+    const h = r1(at(l));
+    for (let i = out.length - 1; i >= 0; i--) if (Math.abs(out[i][0] - l) < 34) out.splice(i, 1);
+    out.push([l - 30, h], [l + 28, h]);
+  }
+  return capSlope(out.sort((p, q) => p[0] - q[0]));
 }
 
 // 自動產生的特徵摘要（洞的介紹）
@@ -254,7 +321,7 @@ add({ id: 'oaklandhills', name: '奧克蘭山南場@C', en: 'Oakland Hills (Sout
   card: card('443/4 592/5 216/3 482/4 491/4 361/4 421/4 476/4 253/3 496/4 451/4 580/5 181/3 504/4 396/4 425/4 237/3 504/4'),
   p: { dog: [10, 26], straight: 0.2, elev: 6, fw: [1, 3], gs: [2, 4], cross: 0.1, w: { green: 0.05 }, green: { size: [26, 38], slope: [0.018, 0.032], tier: 0.35 }, rows: 0.4 },
   over: {
-    16: { bend: 38, shape: 'J', spec: { water: [{ from: 220, to: 380, side: 'R', w: 40 }, { g: 'FR', size: [26, 18] }], bunkers: [{ g: 'BL' }, { g: 'L' }] }, note: '狗腿右繞著池塘 · 第二桿要越過水打向貼著水邊的果嶺' },
+    16: { bend: 38, shape: 'J', spec: { water: [{ from: 270, to: 380, side: 'R', w: 40, gap: 4 }, { g: 'FR', size: [26, 18] }], bunkers: [{ g: 'BL' }, { g: 'L' }] }, note: '狗腿右繞著池塘 · 第二桿要越過水打向貼著水邊的果嶺' },
   } });
 
 add({ id: 'birkdale', name: '皇家伯克戴爾@C', en: 'Royal Birkdale Golf Club @C', area: '英國英格蘭紹斯波特', tier: 'major', event: '英國公開賽輪替（7 月）', diff: 4,
@@ -332,6 +399,7 @@ add({ id: 'valhalla', name: '瓦爾哈拉@C', en: 'Valhalla Golf Club @C', area:
   card: card('484/4 500/4 208/3 372/4 463/4 495/4 597/5 190/3 415/4 590/5 211/3 494/4 351/4 254/3 435/4 508/4 472/4 570/5'),
   p: { dog: [10, 28], straight: 0.2, elev: 6, fw: [1, 3], gs: [2, 3], cross: 0.1, w: { side: 0.15, creek: 0.2, green: 0.08 }, green: { size: [26, 36], slope: [0.012, 0.026], tier: 0.3 }, rows: 0.4 },
   over: {
+    5: { green: { tier: false } },
     7: { bend: -8, spec: { bunkers: [{ at: 280, side: 'C', n: 2 }], water: [{ from: 240, to: 360, side: 'R', ditch: true }] }, note: '分岔球道的五桿洞 · 走左邊比較近但要越過溪' },
     13: { bend: 0, tok: ['IG'], green: { size: [22, 24] }, note: '石灰岩洞 · 果嶺立在溪中的石灰岩島上 · 短四桿洞的大挑戰' },
     18: { bend: -15, spec: { water: [{ from: 240, to: 400, side: 'R', w: 34 }] }, note: '五桿洞收尾 · 右側水 · 1996、2000 年都在這裡延長賽' },
@@ -446,7 +514,7 @@ add({ id: 'bayhill', name: '貝山@C', en: 'Bay Hill Club & Lodge @C', area: '�
   style: 'parkland', treeKind: 'florida', stimp: 13, firm: 1.15, altitude: 30, temp: 26, wind: [5, 14], fairwayW: 32, roughW: 18, corridor: 72, trees: 0.6,
   card: card('461/4 231/3 434/4 561/5 390/4 555/5 199/3 460/4 474/4 400/4 438/4 574/5 370/4 215/3 429/4 511/5 221/3 458/4'),
   p: { dog: [10, 28], straight: 0.2, elev: 1, fw: [1, 2], gs: [2, 3], cross: 0, w: { side: 0.25, green: 0.1 }, green: { size: [24, 32], slope: [0.012, 0.022] }, rows: 0.3 },
-  over: { 6: { bend: -60, shape: 'D', spec: { water: [{ from: 50, to: 500, side: 'L', w: 60 }] }, note: '繞著湖的大狗腿左五桿洞 · 越過湖切越多越近' },
+  over: { 6: { bend: -45, shape: 'D', spec: { water: [{ from: 50, to: 500, side: 'L', w: 60, gap: 6 }] }, note: '繞著湖的大狗腿左五桿洞 · 越過湖切越多越近' },
     16: { tok: ['wc'], note: '五桿洞 · 果嶺前是水' }, 17: { tok: ['wc'], note: '三桿洞 · 越過水打向斜放的果嶺' },
     18: { bend: 12, spec: { water: [{ g: 'R', size: [20, 34] }, { g: 'FR', size: [16, 14] }], bunkers: [{ g: 'BL' }, { g: 'L' }] }, note: '果嶺右邊與右前方是水池與石牆 · 冠軍推桿的舞台' } } });
 
@@ -553,7 +621,7 @@ add({ id: 'sedgefield', name: '塞奇菲爾德@C', en: 'Sedgefield Country Club 
   style: 'parkland', treeKind: 'longleaf', stimp: 12, firm: 1.1, altitude: 255, temp: 29, wind: [3, 10], fairwayW: 30, roughW: 14, corridor: 66, trees: 1.0,
   card: card('418/4 442/4 174/3 428/4 529/5 423/4 223/3 374/4 416/4 440/4 486/4 235/3 405/4 505/4 545/5 175/3 406/4 507/4'),
   p: { dog: [10, 28], straight: 0.2, elev: 6, fw: [1, 2], gs: [2, 3], cross: 0, w: {}, green: { size: [18, 26], slope: [0.01, 0.02], crown: 0.4 }, rows: 0.5 },
-  over: { 16: { tok: ['wc'], note: '越過水的三桿洞' } } });
+  over: { 8: { green: { slope: 0.012, side: 0 } }, 16: { tok: ['wc'], note: '越過水的三桿洞' } } });
 
 add({ id: 'spyglass', name: '望遠鏡山@C', en: 'Spyglass Hill Golf Course @C', area: '美國加州圓石灘', tier: 'pga', event: 'AT&T Pebble Beach Pro-Am（2 月，和圓石灘一起使用）', diff: 5,
   basis: '前五洞在太平洋邊的白色沙丘（洞名取自《金銀島》），第 6 洞起進入高聳的蒙特利松林；公認圓石灘一帶最難的球場。',
@@ -658,7 +726,7 @@ add({ id: 'taiheiyo', name: '太平洋俱樂部御殿場@C', en: 'Taiheiyo Club 
   style: 'parkland', treeKind: 'jpine', stimp: 11.5, firm: 1.05, altitude: 600, temp: 14, wind: [3, 10], fairwayW: 32, roughW: 14, corridor: 68, trees: 0.9,
   card: card('398/4 416/4 182/3 545/5 450/4 213/3 445/4 393/4 528/5 436/4 381/4 188/3 449/4 531/5 508/5 470/4 226/3 503/4'),
   p: { dog: [10, 28], straight: 0.2, elev: 8, fw: [1, 2], gs: [2, 3], cross: 0, w: { green: 0.08 }, green: { size: [24, 32], slope: [0.014, 0.024], tier: 0.3 }, rows: 0.5, up: 0.3 },
-  over: { 18: { tok: ['wc'], note: '果嶺前是池塘的收尾洞 · 背景是富士山' } } });
+  over: { 18: { tok: ['wc'], green: { tier: false }, note: '果嶺前是池塘的收尾洞 · 背景是富士山' } } });
 
 // ---------------------------------------------------------------- 業餘大賽場地 ----------------------------------------------------------------
 add({ id: 'chambersbay', name: '錢伯斯灣@C', en: 'Chambers Bay @C', area: '美國華盛頓州大學城（普吉特灣）', tier: 'amateur', event: '美國業餘錦標賽輪替（8 月）· 2015 美國公開賽', diff: 5,
