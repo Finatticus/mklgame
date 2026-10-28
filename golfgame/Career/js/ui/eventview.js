@@ -28,7 +28,9 @@ register('event', async body => {
   if (['usam', 'ryder', 'presidents', 'walker', 'palmer', 'jryder', 'jpres', 'skins'].includes(E.kind)) return matchEvent(body, st, E);
   const ci = cinfo(E.course);
   header(`<span>${esc(E.name)}</span>`);
-  const head = `<div class="cm-hero"><small>${esc(TOUR_ZH[E.tour] || '')} · ${E.year} 年第 ${E.w} 週</small><h2>${esc(E.name)}</h2><div class="meta">${esc(ci.name)} · Par ${ci.par} · ${ci.blackYards.toLocaleString()} 碼${E.purse && !st.status.amateur ? ' · 總獎金 ' + money(E.purse, { short: true }) : ''}</div>${E.note ? `<div class="meta" style="margin-top:6px">${esc(E.note)}</div>` : ''}</div>`;
+  const head = `<div class="cm-hero"><small>${esc(TOUR_ZH[E.tour] || '')} · ${E.year} 年第 ${E.w} 週</small><h2>${esc(E.name)}</h2><div class="meta">${esc(ci.name)} · Par ${ci.par} · ${ci.blackYards.toLocaleString()} 碼${E.purse && !st.status.amateur ? ' · 總獎金 ' + money(E.purse, { short: true }) : ''}</div>${E.note ? `<div class="meta" style="margin-top:6px">${esc(E.note)}</div>` : ''}<div style="margin-top:10px"><button class="cm-btn small ghost" data-evpl>素質・技能卡・裝備</button></div></div>`;
+  // 比賽週也能去球員頁加點、換卡、換裝備（首頁會帶回比賽）
+  if (!body.dataset.evpl) { body.dataset.evpl = 1; body.addEventListener('click', e => { if (e.target.closest('[data-evpl]')) go('player'); }); }
   if (E.day === 'mon') return monday(body, st, E, head);
   if (E.day === 'tue') return tuesday(body, st, E, head);
   if (E.day === 'wed') return wednesday(body, st, E, head);

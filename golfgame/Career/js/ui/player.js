@@ -13,8 +13,10 @@ import { drill, ironDrill } from '../childhood.js';
 register('player', (body, arg) => {
   const st = cur(); if (!st) return go('slots');
   const tab = (arg && arg.t) || 'stats';
-  body.innerHTML = `<div class="cm-seg" style="margin-bottom:12px">${[['stats', '素質'], ['cards', '技能卡'], ['gear', '裝備'], ['shop', '商店'], ['talent', '天賦與球風']].map(([k, n]) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div><div id="pl-body"></div>`;
+  const back = st.ev && !st.ev.done ? `<button class="cm-btn green" id="pl-back" style="width:100%;margin-bottom:10px">回到比賽：${esc(st.ev.name || '')}</button>` : '';
+  body.innerHTML = back + `<div class="cm-seg" style="margin-bottom:12px">${[['stats', '素質'], ['cards', '技能卡'], ['gear', '裝備'], ['shop', '商店'], ['talent', '天賦與球風']].map(([k, n]) => `<button data-t="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div><div id="pl-body"></div>`;
   body.querySelectorAll('[data-t]').forEach(b => b.onclick = () => go('player', { t: b.dataset.t }));
+  if (back) document.getElementById('pl-back').onclick = () => go('event');
   ({ stats, cards, gear, shop, talent })[tab](document.getElementById('pl-body'), st);
 });
 
