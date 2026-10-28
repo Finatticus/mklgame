@@ -226,11 +226,11 @@ function grow(st, age) {
 export function drill(st, o) {
   let n = 0, score = 0;
   // endAfter：教學用，打滿幾球之後可以按「結束練習」
-  const hud = () => `${esc(o.title)}　第 <b>${Math.min(n + 1, o.balls)}</b> / ${o.balls} 球　得分 <b>${score}</b><br><small>${esc(o.goal)}</small>${o.endAfter && n >= o.endAfter && n < o.balls ? '<br><button class="cm-btn small" data-drillend style="margin-top:6px">結束練習</button>' : ''}`;
+  const hud = () => `${esc(o.title)}　第 <b>${Math.min(n + 1, o.balls)}</b> / ${o.balls} 球　${o.stat ? o.stat() : `得分 <b>${score}</b>`}<br><small>${esc(o.goal)}</small>${o.endAfter && n >= o.endAfter && n < o.balls ? '<br><button class="cm-btn small" data-drillend style="margin-top:6px">結束練習</button>' : ''}`;
   const p = playRound({
     label: o.title, noHoleCard: true,
-    cfg: { courseId: 'maple', practice: true, startHole: 7, tee: 'black', holes: 'all', wind: 'calm', career: { drill: o.mode } },
-    drill: true,
+    cfg: { courseId: 'maple', practice: true, startHole: 7, tee: 'black', holes: 'all', wind: 'calm', ...(o.cfg || {}), career: { drill: o.mode } },      // o.cfg：換球場、洞（例如技巧賽的近旗用奧古斯塔 12 號）
+    drill: true, autoClub: !!o.autoClub,
     drillHud: hud,
     drillShot: (game, res) => {
       n++; score += o.score(res, game) || 0;

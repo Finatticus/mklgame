@@ -14,14 +14,14 @@ import { playRound } from './ingame.js';
 import { cinfo } from '../event.js';
 import { avatarSvg } from './create.js';
 
-const TABS = [['news', '新聞'], ['time', '年表'], ['res', '成績'], ['rank', '世界排名'], ['card', '生涯名片'], ['album', '相簿'], ['know', '知識卡'], ['weekly', '好友週賽'], ['opt', '系統選項']];
+const TABS = [['news', '新聞'], ['time', '年表'], ['res', '成績'], ['classic', '經典重現'], ['year', '年度回顧'], ['review', '生涯回顧'], ['rank', '世界排名'], ['card', '生涯名片'], ['album', '相簿'], ['know', '知識卡'], ['weekly', '好友週賽'], ['opt', '系統選項']];
 register('more', (body, arg) => {
   const st = cur(); if (!st) return go('slots');
   const t = arg || 'news';
   body.innerHTML = `<div class="cm-seg" style="margin-bottom:12px">${TABS.map(([k, n]) => `<button data-t="${k}" class="${t === k ? 'on' : ''}">${n}</button>`).join('')}${ui.ctx.session.isAdmin ? `<button data-t="admin" class="${t === 'admin' ? 'on' : ''}">測試員</button>` : ''}</div><div id="mo-body"></div>`;
   body.querySelectorAll('[data-t]').forEach(b => b.onclick = () => go('more', b.dataset.t));
   const el = document.getElementById('mo-body');
-  ({ news, time, res, rank, card, album, know, weekly, opt, admin })[t](el, st);
+  ({ news, time, res, classic, year, review, rank, card, album, know, weekly, opt, admin })[t](el, st);
 });
 
 function news(el, st) { el.innerHTML = `<div class="cm-card"><h3>新聞</h3>${st.news.map(n => `<div class="cm-news ${n.kind === 'major' ? 'major' : ''}"><small>${n.y}·W${n.w}</small>${esc(n.text)}</div>`).join('') || '<div class="cm-empty">還沒有新聞</div>'}</div>`; }
@@ -29,12 +29,94 @@ function time(el, st) {
   el.innerHTML = `<div class="cm-card"><h3>生涯年表</h3><div class="cm-list">${st.timeline.map(t => `<div class="cm-li"><div class="main"><b class="num" style="font-size:16px;display:inline">${t.age} 歲</b>　${esc(t.text)}</div><div class="side">${t.y}</div></div>`).join('')}</div></div>`;
 }
 function res(el, st) {
-  const list = st.results.slice().reverse();
-  const T = st.tally;
+  const T = st.tally, F = st._resF || { k: 'all', y: 'all' };
+  const years = [...new Set(st.results.map(r => r.y))].sort((a, b) => b - a);
+  const isMajor = r => ['masters', 'pgachamp', 'usopen', 'open'].includes(r.id);
+  const pass = r => (F.y === 'all' || r.y === Number(F.y)) && (F.k === 'all' || (F.k === 'win' && r.posN === 1) || (F.k === 'top10' && r.posN && r.posN <= 10) || (F.k === 'major' && isMajor(r)) || (F.k === 'pga' && (r.tour === 'pga' || isMajor(r))) || (F.k === 'pro' && !['junior', 'kids', 'am', 'ncaa'].includes(r.tour)) || (F.k === 'am' && ['junior', 'kids', 'am', 'ncaa'].includes(r.tour)));
+  const list = st.results.filter(pass).reverse();
+  const sub = { n: list.length, w: list.filter(r => r.posN === 1).length, t10: list.filter(r => r.posN && r.posN <= 10).length, cut: list.filter(r => r.pos !== 'CUT').length, prize: list.reduce((a, r) => a + (r.prize || 0), 0) };
+  const pb = st.pb || {}, cr = Object.entries(st.crec || {}).map(([k, v]) => v).sort((a, b) => (b.me ? 1 : 0) - (a.me ? 1 : 0) || a.tp - b.tp);
   el.innerHTML = `<div class="cm-card"><h3>生涯數據</h3><div class="cm-grid3">
       ${[['比賽', T.events], ['冠軍', T.wins], ['大賽', T.majors], ['前十', T.top10], ['晉級率', pct(T.cuts, T.events) + '%'], ['生涯獎金', money(st.money.careerPrize, { short: true })]].map(([k, v]) => `<div><span class="cm-k">${k}</span><div class="num" style="font-size:24px">${v}</div></div>`).join('')}</div></div>
-    <div class="cm-card"><h3>每一場</h3><div class="cm-scroll-x"><table class="lb"><tr><th>年</th><th>賽事</th><th>名次</th><th>總桿</th><th>獎金</th><th>打法</th></tr>${list.map(r => `<tr><td class="th">${r.y}</td><td>${esc(r.name)}<span class="ctry">${esc(r.courseName || '')}</span></td><td class="pos">${esc(r.pos)}</td><td class="th">${r.total || '—'}${r.toPar != null && r.total ? ` (${toPar(r.toPar)})` : ''}</td><td class="th">${r.prize ? money(r.prize, { short: true }) : '—'}</td><td class="th" style="font-size:11px">${esc(r.mode || '')}</td></tr>`).join('')}</table></div></div>`;
+    <div class="cm-card"><h3>個人最佳</h3><div class="cm-list">
+      <div class="cm-li"><div class="main"><b>最低一輪</b><span>${pb.low ? `${esc(pb.low.ev)} 第 ${pb.low.r} 輪 · ${esc(pb.low.course)} · ${pb.low.y}` : '還沒有紀錄'}</span></div><div class="side num" style="font-size:18px">${pb.low ? `${pb.low.s}（${toPar(pb.low.tp)}）` : '—'}</div></div>
+      <div class="cm-li"><div class="main"><b>最低四輪總桿</b><span>${pb.total ? `${esc(pb.total.ev)} · ${pb.total.y}` : '還沒有紀錄'}</span></div><div class="side num" style="font-size:18px">${pb.total ? `${pb.total.s}（${toPar(pb.total.tp)}）` : '—'}</div></div>
+      <div class="cm-li"><div class="main"><b>改寫球場紀錄</b><span>你打出過的單輪球場紀錄</span></div><div class="side num" style="font-size:18px">${st.cnt.courseRec || 0} 次</div></div>
+      <div class="cm-li"><div class="main"><b>贊助商挑戰</b><span>完成的次數</span></div><div class="side num" style="font-size:18px">${st.cnt.chalOk || 0} 次</div></div></div></div>
+    ${cr.length ? `<div class="cm-card"><h3>球場紀錄<small>你打過的比賽裡，所有球員的最低一輪</small></h3><div class="cm-scroll-x"><table class="lb"><tr><th>球場</th><th style="text-align:center">紀錄</th><th>保持人</th><th>年</th></tr>${cr.slice(0, 40).map(c => `<tr class="${c.me ? 'me' : ''}"><td>${esc(c.name)}</td><td class="th">${c.s}（${toPar(c.tp)}）</td><td>${esc(c.who)}</td><td class="th">${c.y}</td></tr>`).join('')}</table></div></div>` : ''}
+    <div class="cm-card"><h3>每一場<small>${sub.n} 場 · ${sub.w} 冠 · 前十 ${sub.t10} · 晉級 ${sub.cut} · ${money(sub.prize, { short: true })}</small></h3>
+      <div class="cm-chips sel" style="margin-bottom:6px">${[['all', '全部'], ['pro', '職業'], ['am', '業餘 / 青少年'], ['pga', 'PGA TOUR 與大賽'], ['major', '四大賽'], ['win', '冠軍'], ['top10', '前十']].map(([k, n]) => `<span data-rk="${k}" class="${F.k === k ? 'on' : ''}">${n}</span>`).join('')}</div>
+      <div class="cm-chips sel" style="margin-bottom:8px"><span data-ry="all" class="${F.y === 'all' ? 'on' : ''}">所有年份</span>${years.map(y => `<span data-ry="${y}" class="${String(F.y) === String(y) ? 'on' : ''}">${y}</span>`).join('')}</div>
+      <div class="cm-scroll-x"><table class="lb"><tr><th>年</th><th>賽事</th><th>名次</th><th>總桿</th><th>獎金</th><th>打法</th></tr>${list.map(r => `<tr><td class="th">${r.y}</td><td>${esc(r.name)}<span class="ctry">${esc(r.courseName || '')}</span></td><td class="pos">${esc(r.pos)}</td><td class="th">${r.total || '—'}${r.toPar != null && r.total ? ` (${toPar(r.toPar)})` : ''}</td><td class="th">${r.prize ? money(r.prize, { short: true }) : '—'}</td><td class="th" style="font-size:11px">${esc(r.mode || '')}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--mut)">沒有符合的比賽</td></tr>'}</table></div></div>`;
+  el.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { st._resF = { ...F, k: b.dataset.rk }; res(el, st); });
+  el.querySelectorAll('[data-ry]').forEach(b => b.onclick = () => { st._resF = { ...F, y: b.dataset.ry }; res(el, st); });
 }
+// 經典重現：贏下大賽等重要比賽時，最後一洞存成挑戰（同樣的球場、梯台、風、旗位）；可以用生涯球員或主帳號重打
+function classic(el, st) {
+  const list = (st.classics || []).slice().reverse();
+  el.innerHTML = `<div class="cm-card"><h3>經典重現<small>${list.length} 個時刻</small></h3><p class="cm-note">贏下四大賽、THE PLAYERS、TOUR Championship、自己的邀請賽，以及 PGA TOUR 首勝時，最後一洞會存在這裡。用同樣的風與旗位重打一次，桿數不比當年多就算成功。可以用生涯球員現在的素質，或用主帳號的素質。</p></div>
+    <div class="cm-card"><div class="cm-list">${list.map((c, i) => `<div class="cm-li"><div class="main"><b>${esc(c.label)}</b><span>${esc(c.courseName)} 第 18 洞 · Par ${c.par} · 當年 ${c.need} 桿${c.best != null ? ` · 你的最佳 ${c.best} 桿${c.best <= c.need ? '（成功）' : ''}` : ''}${c.tries ? ` · 挑戰 ${c.tries} 次` : ''}</span></div>
+      <div class="side"><button class="cm-btn small green" data-cl="${i}:0">生涯球員</button><br><button class="cm-btn small ghost" data-cl="${i}:1" style="margin-top:4px">主帳號</button></div></div>`).join('') || '<div class="cm-empty">贏下大賽或重要比賽之後，這裡會出現可以重打的時刻。</div>'}</div></div>`;
+  el.querySelectorAll('[data-cl]').forEach(b => b.onclick = async () => { const [i, m] = b.dataset.cl.split(':'); const { playClassic } = await import('../extras.js'); await playClassic(st, list[Number(i)], m === '1'); go('more', 'classic'); });
+}
+// ---------- 年度回顧：冠軍、最佳一輪、獎金、排名曲線、獎項、年表 ----------
+function year(el, st) {
+  const years = [...new Set(st.results.map(r => r.y))].sort((a, b) => b - a);
+  if (!years.length) { el.innerHTML = '<div class="cm-card"><div class="cm-empty">打完第一場比賽之後就有年度回顧。</div></div>'; return; }
+  const y = st._yr && years.includes(st._yr) ? st._yr : years[0];
+  const R = st.results.filter(r => r.y === y), wins = R.filter(r => r.posN === 1), t10 = R.filter(r => r.posN && r.posN <= 10).length, cuts = R.filter(r => r.pos !== 'CUT').length;
+  let best = null;
+  for (const r of R) { const n = (r.rounds || []).filter(x => typeof x === 'number'); if (!n.length || !r.total) continue; const par = (r.total - r.toPar) / n.length; for (const x of n) if (!best || x - par < best.tp) best = { s: x, tp: x - par, ev: r.name }; }
+  const money2 = (st.season[y] || {}).money || R.reduce((a, r) => a + (r.prize || 0), 0);
+  const A = (st.awards || {})[y], aw = A ? [['年度最佳球員', A.poy], ['年度新人', A.roy], ['最佳回春', A.comeback]].filter(x => x[1]) : [];
+  const H = (st.rankHist || []).filter(h => h[0] === y);
+  const chart = H.length > 1 ? (() => {
+    const W = 320, Hh = 120, lg = r => Math.log10(Math.min(1000, Math.max(1, r))), X = w => 10 + (w - 1) / 51 * (W - 20), Y = r => 10 + lg(r) / 3 * (Hh - 20);
+    const pts = H.map(h => `${X(h[1]).toFixed(1)},${Y(h[2]).toFixed(1)}`).join(' ');
+    return `<svg viewBox="0 0 ${W} ${Hh}" class="cm-rankchart">${[1, 10, 100, 1000].map(r => `<line x1="10" x2="${W - 10}" y1="${Y(r)}" y2="${Y(r)}" stroke="rgba(0,0,0,.08)"/><text x="${W - 8}" y="${Y(r) + 3}" font-size="8" fill="#888" text-anchor="end">${r}</text>`).join('')}<polyline points="${pts}" fill="none" stroke="var(--aug)" stroke-width="2"/>${wins.map(r => `<circle cx="${X(r.w)}" cy="${Y((H.find(h => h[1] >= r.w) || H[H.length - 1])[2])}" r="4" fill="var(--champ)"/>`).join('')}</svg>
+      <p class="cm-note">世界排名（對數刻度，越上面越好）· 金點 = 奪冠的那一週 · 年初第 ${H[0][2]} 名 → 年底第 ${H[H.length - 1][2]} 名（最佳 ${Math.min(...H.map(h => h[2]))}）</p>`;
+  })() : '<p class="cm-note">業餘時期沒有世界排名曲線。</p>';
+  el.innerHTML = `<div class="cm-card"><div class="cm-chips sel">${years.map(x => `<span data-yr="${x}" class="${x === y ? 'on' : ''}">${x}</span>`).join('')}</div></div>
+    <div class="cm-card"><h3>${y} 年<small>${st.player.birthYear ? y - st.player.birthYear + ' 歲' : ''}</small></h3>
+      <div class="cm-grid3">${[['比賽', R.length], ['冠軍', wins.length], ['前十', t10], ['晉級', cuts], ['獎金', money(money2, { short: true })], ['最佳一輪', best ? `${best.s}` : '—']].map(([k, v]) => `<div><span class="cm-k">${k}</span><div class="num" style="font-size:22px">${v}</div></div>`).join('')}</div>
+      ${best ? `<p class="cm-note" style="margin-top:6px">最佳一輪：${best.s} 桿（${toPar(Math.round(best.tp))}）· ${esc(best.ev)}</p>` : ''}</div>
+    <div class="cm-card"><h3>排名曲線</h3>${chart}</div>
+    ${wins.length ? `<div class="cm-card"><h3>冠軍</h3><div class="cm-list">${wins.map(r => `<div class="cm-li"><div class="main"><b>${esc(r.name)}</b><span>第 ${r.w} 週 · ${r.total}（${toPar(r.toPar)}）</span></div><div class="side num">${r.prize ? money(r.prize, { short: true }) : ''}</div></div>`).join('')}</div></div>` : ''}
+    ${aw.length ? `<div class="cm-card"><h3>年度獎項</h3><div class="cm-list">${aw.map(([n, a]) => `<div class="cm-li"><div class="main"><b>${n}</b></div><div class="side">${a.me ? '<b style="color:var(--aug)">你</b>' : esc(a.name)}</div></div>`).join('')}</div></div>` : ''}
+    <div class="cm-card"><h3>這一年</h3><div class="cm-list">${st.timeline.filter(t => t.y === y).map(t => `<div class="cm-li"><div class="main">${esc(t.text)}</div></div>`).join('') || '<div class="cm-empty">沒有紀錄</div>'}</div></div>`;
+  el.querySelectorAll('[data-yr]').forEach(b => b.onclick = () => { st._yr = Number(b.dataset.yr); year(el, st); });
+}
+
+// ---------- 生涯回顧：像影片一樣自動播放的幻燈片（序章、第一座冠軍、大賽、數據、宿敵、家人與收藏、結語）----------
+function review(el, st) {
+  const p = st.player, T = st.tally, ti = st.titles || [], pb = st.pb || {};
+  const first = st.timeline[0], firstWin = ti.find(t => !['junior', 'kids', 'am', 'ncaa'].includes(t.tour)), firstMajor = ti.find(t => ['masters', 'pgachamp', 'usopen', 'open'].includes(t.id));
+  const photo = n => { const ph = (st.photos || []).find(x => x.title.includes(n)); return ph ? ph.img : null; };
+  const rv = findPl(st, st.story.rival || st.story.friend), rh = (st.story.h2h || {})[st.story.rival || st.story.friend] || { w: 0, l: 0 };
+  const slides = [
+    { small: `${p.birthYear + 8} 年 · 8 歲`, title: '一切從這裡開始', text: first ? first.text : '那天晚上，你在電視前看到名人賽。', img: 'young-putting.jpg' },
+    firstWin && { small: `${firstWin.y} 年 · ${firstWin.y - p.birthYear} 歲`, title: '第一座職業冠軍', text: firstWin.name, img: photo(firstWin.name) || 'pebble-18.jpg' },
+    firstMajor && { small: `${firstMajor.y} 年 · ${firstMajor.y - p.birthYear} 歲`, title: '第一座大賽', text: firstMajor.name, img: photo(firstMajor.name) || 'augusta-10.jpg' },
+    { small: '生涯數據', title: `${T.wins} 座冠軍`, text: `大賽 ${T.majors} 座 · 比賽 ${T.events} 場 · 前十 ${T.top10} 次 · 生涯獎金 ${money(st.money.careerPrize, { short: true })}${pb.low ? ` · 最低一輪 ${pb.low.s} 桿` : ''}${st.cnt.no1Weeks ? ` · 世界第一 ${st.cnt.no1Weeks} 週` : ''}`, img: 'kiawah-18.jpg' },
+    rv && { small: '宿敵', title: nameOf(rv), text: `一起長大、互相追趕。對戰紀錄 ${rh.w} 勝 ${rh.l} 敗。`, img: 'green-sun.jpg' },
+    { small: '家人與收藏', title: (st.kids || []).length ? `${st.kids.map(k => k.name).join('、')}` : '一路上的人', text: `${(st.kids || []).length ? '孩子在看台上看著你打完最後一洞。' : ''}收藏室裡有 ${(st.collection || []).length} 件紀念品，獎盃室有 ${st.trophies.length} 座獎盃。`, img: 'augusta-clubhouse.jpg' },
+    { small: st.retired ? `${st.retired} 年 · ${st.retired - p.birthYear} 歲退休` : `${st.year} 年 · ${p.age} 歲`, title: st.retired ? '謝謝你' : '故事還在繼續', text: st.retired ? '從 8 歲的第一次揮桿到最後一推，這就是你的高爾夫人生。' : '生涯還沒結束：退休之後這裡會變成完整的回顧。', img: 'swilcan.jpg' },
+  ].filter(Boolean);
+  let k = 0, timer = null;
+  const draw = () => {
+    const sl = slides[k];
+    el.innerHTML = `<div class="cm-review"><div class="cm-rv-slide" style="background-image:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.75)),url('Career/img/s/${esc(sl.img)}')"><small>${esc(sl.small)}</small><h2>${esc(sl.title)}</h2><p>${esc(sl.text)}</p></div>
+      <div class="cm-rv-bar">${slides.map((_, i) => `<i class="${i === k ? 'on' : i < k ? 'done' : ''}"></i>`).join('')}</div>
+      <div class="cm-row" style="justify-content:center;gap:8px;margin-top:8px"><button class="cm-btn small ghost" id="rv-prev">‹ 上一張</button><button class="cm-btn small" id="rv-play">${timer ? '暫停' : '播放'}</button><button class="cm-btn small ghost" id="rv-next">下一張 ›</button></div></div>`;
+    document.getElementById('rv-prev').onclick = () => { k = (k + slides.length - 1) % slides.length; draw(); };
+    document.getElementById('rv-next').onclick = () => { k = (k + 1) % slides.length; draw(); };
+    document.getElementById('rv-play').onclick = () => { if (timer) { clearInterval(timer); timer = null; } else play(); draw(); };
+  };
+  const play = () => { clearInterval(timer); timer = setInterval(() => { if (!document.querySelector('.cm-review')) return clearInterval(timer); k = (k + 1) % slides.length; draw(); }, 4500); };
+  play(); draw();
+}
+const findPl = (st, id) => (id ? st.world.players.find(x => x.id === id) || (st.world.peers || []).find(x => x.id === id) : null);
+
 function rank(el, st) {
   const now = ABS(st.year, st.week);
   const list = rankList(st.world, st.player.pro ? { ...st.player, id: ME, ow: st.ow, pro: true, name: st.player.name } : null, now).slice(0, 60);
@@ -116,7 +198,7 @@ function opt(el, st) {
     <div class="cm-card"><h3>人生的決定</h3><div class="cm-row wrap">
       ${canPro ? '<button class="cm-btn" id="op-pro">提早轉職業</button>' : ''}
       ${canRetire ? '<button class="cm-btn ghost" id="op-retire">安排退休</button>' : ''}
-      <button class="cm-btn ghost" id="op-slots">換生涯欄位</button></div>
+      <button class="cm-btn ghost" id="op-slots">換生涯欄位</button><a class="cm-btn ghost" href="Career/career-plan.html#ref" target="_blank" rel="noopener">生涯說明書（完整參考）</a></div>
       <p class="cm-note" style="margin-top:8px">${canPro ? '大二以後拿到大賽邀請或贊助外卡時可以提早轉職業；轉職業後業餘的邀請失效。' : ''}${canRetire ? '38 歲以後隨時可以退休，退休前可以安排告別賽。' : ''}</p></div>`;
   el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { const k = b.dataset.o, v = b.dataset.v; o[k] = k === 'injuries' || k === 'realBonus' ? v === '1' : v; localSave(st); go('more', 'opt'); });
   const pr = document.getElementById('op-pro');
@@ -136,6 +218,7 @@ async function admin(el) {
 }
 
 // ---------- 紀錄頁的「生涯」分頁 ----------
+let recSlot = 'all';      // 紀錄頁「生涯」分頁的篩選：全部欄位 / 單一欄位
 export async function renderRecordsTab(ctx, el) {
   el.innerHTML = '<p class="small">讀取中…</p>';
   const { bind } = await import('../state.js');
@@ -144,8 +227,18 @@ export async function renderRecordsTab(ctx, el) {
   const keys = Object.keys(slots);
   if (!keys.length) { el.innerHTML = '<div class="cm-card"><p>還沒有生涯。到大廳按「生涯模式」開始。</p></div>'; return; }
   const { localLoad } = await import('../state.js');
-  let html = '';
+  // 篩選與所有生涯的個人最佳
+  const all = keys.map(k => [k, localLoad(ctx.session.user, Number(k))]).filter(([, s]) => s);
+  const pick = (f, better) => all.map(([k, s]) => [k, s, f(s)]).filter(x => x[2]).sort((a, b) => better(a[2], b[2]))[0];
+  const low = pick(s => s.pb && s.pb.low, (a, b) => a.tp - b.tp), tot = pick(s => s.pb && s.pb.total, (a, b) => a.tp - b.tp);
+  const sumT = k => all.reduce((a, [, s]) => a + ((s.tally || {})[k] || 0), 0);
+  let html = `<div class="cm-card"><h3>生涯紀錄<small>${all.length} 個欄位</small></h3>
+    <div class="cm-chips sel">${[['all', '全部欄位'], ...keys.map(k => [k, `欄位 ${k}：${esc(slots[k].name)}`])].map(([k, n]) => `<span data-rs="${k}" class="${recSlot === k ? 'on' : ''}">${n}</span>`).join('')}</div>
+    ${recSlot === 'all' ? `<div class="cm-grid3" style="margin-top:8px">${[['冠軍', sumT('wins')], ['大賽', sumT('majors')], ['比賽', sumT('events')]].map(([k, v]) => `<div><span class="cm-k">${k}</span><div class="num" style="font-size:22px">${v}</div></div>`).join('')}</div>
+      <div class="cm-list" style="margin-top:6px"><div class="cm-li"><div class="main"><b>最低一輪（所有生涯）</b><span>${low ? `${esc(low[1].player.name)} · ${esc(low[2].ev)} · ${low[2].y}` : '還沒有紀錄'}</span></div><div class="side num">${low ? `${low[2].s}（${toPar(low[2].tp)}）` : '—'}</div></div>
+      <div class="cm-li"><div class="main"><b>最低四輪總桿（所有生涯）</b><span>${tot ? `${esc(tot[1].player.name)} · ${esc(tot[2].ev)} · ${tot[2].y}` : '還沒有紀錄'}</span></div><div class="side num">${tot ? `${tot[2].s}（${toPar(tot[2].tp)}）` : '—'}</div></div></div>` : ''}</div>`;
   for (const k of keys) {
+    if (recSlot !== 'all' && recSlot !== k) continue;
     const st = localLoad(ctx.session.user, Number(k));
     if (st) {
       html += careerCardHtml(st) + `<div class="cm-card"><h3>年表</h3><div class="cm-list">${st.timeline.slice(-12).reverse().map(t => `<div class="cm-li"><div class="main"><b class="num" style="display:inline;font-size:15px">${t.age} 歲</b>　${esc(t.text)}</div></div>`).join('')}</div></div>`;
@@ -158,4 +251,5 @@ export async function renderRecordsTab(ctx, el) {
     }
   }
   el.innerHTML = `<div id="scr-career-mini" style="--aug:#0f5a33;--champ:#c9a85c;--champ2:#e7d29a;--pine:#1d3a2a;--mut:#6b6f66;--line:rgba(22,32,26,.12)">${html}</div>`;
+  el.querySelectorAll('[data-rs]').forEach(b => b.onclick = () => { recSlot = b.dataset.rs; renderRecordsTab(ctx, el); });
 }

@@ -1,9 +1,10 @@
 // 劇情的觸發：主線事件、隨機事件（每週約 22%）、事件效果、記者會、宿敵
 import { clamp, seeded, hash } from './util.js';
 import { MAIN, RANDOM, eventsFor, PRESS, MENUS, NEWS } from './data/story.js';
+import { PRESS2, PRESS_EDGY, MEDIA_IMAGE } from './data/story3.js';
 import { addNews, addTimeline, queueMain, fill, earn, spend } from './life.js';
 import { train, addXp, STAT_KEYS, capOf } from './growth.js';
-import { findP, nameOf, peerRating, rankList, ABS, ME } from './world.js';
+import { findP, nameOf, peerRating, rankList, ABS, ME, styleOf, STYLE_ZH } from './world.js';
 import { MASTERS_PAST, teamSide } from './data/players.js';
 
 export { queueMain };
@@ -16,10 +17,25 @@ export function vars(st, extra = {}) {
   return {
     name: st.player.name, home: st.player.home || '家鄉', friend: fr ? nameOf(fr) : '童年玩伴', rival: rv ? nameOf(rv) : '宿敵',
     mentor: MENTOR_NAME[st.player.origin] || '啟蒙導師', family_who: FAMILY_WHO[st.player.origin] || '媽媽', caddie: st.team.caddie ? st.team.caddie.name : '桿弟',
-    fed: '', champ: st.story.prologueChamp || '冠軍', ...extra,
+    fed: '', champ: st.story.prologueChamp || '冠軍', legend: legendName(st), prodigy: prodigyName(st), rivalStyle: rv ? STYLE_ZH[styleOf(rv.id)] : '', kid: (st.kids && st.kids[0] && st.kids[0].name) || '孩子', ...extra,
   };
 }
 export const text = (st, t, extra) => fill(t, vars(st, extra));
+// 孩子的名字（依國籍取一個小名）
+const kidName = st => (['小安', '小晴', '小宇', '小禾', '小樂', '小芸'][hash(st.seed + 'kidname') % 6]);
+// 退休的傳奇：世界裡已經退休、冠軍最多的真實球員（還沒有人退休時用最年長的真實球員）
+function legendName(st) {
+  const P = (st.world && st.world.players) || [];
+  const ret = P.filter(p => p.ret && p.real).sort((a, b) => (b.titles || []).length - (a.titles || []).length)[0];
+  const old = ret || P.filter(p => p.real).sort((a, b) => a.by - b.by)[0];
+  return old ? nameOf(old) : '老前輩';
+}
+// 年輕新星：23 歲以下實力最高的現役球員
+function prodigyName(st) {
+  const P = (st.world && st.world.players) || [];
+  const y = P.filter(p => !p.ret && st.year - p.by <= 23).sort((a, b) => b.r - a.r)[0];
+  return y ? nameOf(y) : '那位新星';
+}
 
 // ---------- 效果 ----------
 export function applyFx(st, fx = {}, log = []) {
@@ -39,6 +55,9 @@ export function applyFx(st, fx = {}, log = []) {
   if (fx.injury && st.opt.injuries && seeded(st, 'inj', st.year, st.week)() < fx.injury) { p.injury = 2; log.push('受傷了：休息 2 週'); }
   if (fx.flag) st.story.flags[fx.flag] = st.year;
   if (fx.skipEvent) st.story.flags.skipWeek = st.year * 100 + st.week;
+  if (fx.skipPractice) st.story.flags.skipPractice = 1;
+  if (fx.collect) { st.collection = st.collection || []; st.collection.push({ name: text(st, fx.collect[0]), kind: fx.collect[1], from: '事件', y: st.year }); log.push('收藏室多了一件：' + text(st, fx.collect[0])); }
+  if (fx.flag === 'parent' && !(st.kids || []).length) { st.kids = [{ name: kidName(st), by: st.year, g: hash(st.seed + 'kid') % 2 ? 'f' : 'm' }]; }      // 下一場比賽沒有練習輪（以前這個效果沒有作用）
   return log;
 }
 export const personality = p => { const v = p.pers || {}; const k = ['gent', 'conf', 'humor'].sort((a, b) => (v[b] || 0) - (v[a] || 0))[0]; return (v[k] || 0) >= 3 ? { gent: '紳士', conf: '自信', humor: '幽默' }[k] : '尚未定型'; };
@@ -111,10 +130,24 @@ export function rollRandom(st) {
     if (e.cashBelow && st.money.cash >= e.cashBelow) return false;
     if (e.cashAbove && st.money.cash < e.cashAbove) return false;
     if (e.grade && (!st.school || st.school.grade < e.grade)) return false;
-    return (done[e.id] || 0) < 2 && st.year - (st.story.rlast?.[e.id] || 0) >= 2;
+    // 劇情線：要先有的旗標 / 有了就不再出現；排名、大賽、人氣條件
+    if (e.need && !st.story.flags[e.need]) return false;
+    if (e.not && st.story.flags[e.not]) return false;
+    if (e.maxRank && (st.rankNow || 9999) > e.maxRank) return false;
+    if (e.minRank && (st.rankNow || 9999) < e.minRank) return false;
+    if (e.majors && (st.tally.majors || 0) < e.majors) return false;
+    if (e.minFame && p.fame < e.minFame) return false;
+    if (e.kidAge) { const k = (st.kids || [])[0], a = k ? st.year - k.by : -1; if (a < e.kidAge[0] || a > e.kidAge[1]) return false; }
+    if (e.need && st.story.flags[e.need] === st.year) return false;      // 劇情線的下一段至少隔一年
+    // 同一個事件隔 2 年才會再來；第 3 次以後隔 4 年。以前最多 2 次，職業生涯 6~7 年後就再也沒有隨機事件
+    const n = done[e.id] || 0;
+    return st.year - (st.story.rlast?.[e.id] || 0) >= (n >= 2 ? 4 : 2);
   });
   if (!pool.length) return null;
-  const e = pool[Math.floor(r() * pool.length)];
+  // 優先出還沒看過（或看過最少次）的事件
+  const least = Math.min(...pool.map(e => done[e.id] || 0));
+  const fresh = pool.filter(e => (done[e.id] || 0) === least);
+  const e = fresh[Math.floor(r() * fresh.length)];
   return e;
 }
 export function resolveRandom(st, e, i) {
@@ -127,15 +160,30 @@ export function resolveRandom(st, e, i) {
 
 // ---------- 記者會 ----------
 export function pressFor(st, kind) {
-  const list = PRESS.filter(q => q.when === kind);
+  const list = PRESS.concat(PRESS2).filter(q => q.when === kind);
   if (!list.length) return null;
-  return list[hash(st.seed + st.year + st.week + kind) % list.length];
+  const q = list[hash(st.seed + st.year + st.week + kind) % list.length];
+  // 舊題目只有三種回答：補上第四種「話題」
+  return q.a.some(a => a[0] === 'edgy') || !PRESS_EDGY[kind] ? q : { ...q, a: q.a.concat([['edgy', PRESS_EDGY[kind]]]) };
 }
+// 回答記者：個性與媒體形象累積；不同回答影響人氣、追蹤、贊助商、宿敵
 export function answerPress(st, q, i) {
-  const [k] = q.a[i];
-  st.player.pers[k] = (st.player.pers[k] || 0) + 1;
-  st.player.fame += 300;
+  const [k] = q.a[i], p = st.player;
+  if (k !== 'edgy') p.pers[k] = (p.pers[k] || 0) + 1;
+  st.media = st.media || {}; st.media[k] = (st.media[k] || 0) + 1;
+  p.fame += 300;
+  if (k === 'gent') { st.rel.sponsor = clamp(st.rel.sponsor + 1, 0, 100); p.fame += 200; }
+  if (k === 'conf') { p.fame += 600; st.rel.rival = clamp((st.rel.rival ?? 50) - 2, 0, 100); }
+  if (k === 'humor') p.followers += Math.round(500 + p.followers * 0.01);
+  if (k === 'edgy') { p.fame += 1500; p.followers += Math.round(1000 + p.followers * 0.02); st.rel.sponsor = clamp(st.rel.sponsor - 2, 0, 100); st.rel.rival = clamp((st.rel.rival ?? 50) - 4, 0, 100); }
   return k;
+}
+// 媒體形象：回答最多的那一種（回答 5 次以上才成形）
+export function mediaImage(st) {
+  const m = st.media || {}, tot = Object.values(m).reduce((a, b) => a + b, 0);
+  if (tot < 5) return null;
+  const k = Object.keys(m).sort((a, b) => m[b] - m[a])[0];
+  return { k, name: MEDIA_IMAGE[k], pct: Math.round(m[k] / tot * 100) };
 }
 
 // 名人賽的冠軍晚宴菜單（依國籍）

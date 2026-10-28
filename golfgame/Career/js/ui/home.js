@@ -2,16 +2,19 @@
 import { register, go, story, storyResult, dialog, toast, bar, header, refresh, ui } from './shell.js';
 import { cur, localSave, sync } from '../state.js';
 import { esc, money, toPar, weekLabel, isHoliday, examWeek, MONTH_OF_WEEK, clamp, seeded } from '../util.js';
-import { endWeek, weekEvents, upcoming, actionsFor, slotsOf, ACTIONS, CHAPTER_ZH, addTimeline, addNews, addPhoto, queueMain, spend, earn, giveItem, LENGTH, turnProCore, lengthXp, weekGoal, goalMet, lowCash, focusMul } from '../life.js';
+import { endWeek, eventsOfYear, weekEvents, upcoming, actionsFor, slotsOf, ACTIONS, CHAPTER_ZH, addTimeline, addNews, addPhoto, queueMain, spend, earn, giveItem, LENGTH, turnProCore, lengthXp, weekGoal, goalMet, lowCash, focusMul } from '../life.js';
 import { MAIN } from '../data/story.js';
 import { text, applyFx, checkMain, rollRandom, resolveRandom, personality, menuFor } from '../story.js';
 import { TRAIN, STYLES, playerRating, train, xpForLevel, STAT_ZH, STAT_KEYS } from '../growth.js';
-import { JUNIOR_COACHES, AGENTS, CADDIES, caddieById } from '../data/items.js';
+import { JUNIOR_COACHES, AGENTS, CADDIES, caddieById, SOCIAL, fanLevel } from '../data/items.js';
 import { TOUR_ZH, domesticName } from '../data/calendar.js';
 import { checkAch } from '../achievements.js';
+import { eligibility } from '../tours.js';
 import { createEvent, cinfo } from '../event.js';
 import { pendingResume } from './ingame.js';
 import { legacyWeek, hofCheck } from '../legacy.js';
+import { sponsorOffers } from './team.js';
+import { skillsOpen, skillsChallenge } from '../extras.js';
 
 // ---------- 報名（自動與手動）----------
 export function isEntered(st, ev) {
@@ -139,6 +142,8 @@ export const turnPro = (st, why) => turnProCore(st, why);
 register('home', async body => {
   const st = cur();
   if (!st) return go('slots');
+  // 年度頒獎典禮（年底結算後第一次回到首頁）
+  if (st.pendingAwards) { const { awardsCeremony } = await import('../extras.js'); if (await awardsCeremony(st) === 'year') return go('more', 'year'); }
   // 先跑完主線事件
   checkMain(st);
   if (st.story.queue.length) { await runQueue(st); header(); }
@@ -157,6 +162,9 @@ register('home', async body => {
   const res = pendingResume(st);
   const next = upcoming(st, 6).filter(e => e.key !== (ev && ev.key)).slice(0, 4);
   body.innerHTML = `
+    ${offerCard(st)}
+    ${skillsCard(st)}
+    ${qsCard(st)}
     ${res ? `<div class="cm-card" style="border-color:var(--champ)"><h3>上次沒打完的一輪</h3><p>${esc(res.m.label || '')}</p><button class="cm-btn green" id="hm-resume">接著打</button></div>` : ''}
     <div class="cm-hero"><small>${weekLabel(st.year, st.week)}${hol ? ' · 假期' : ''}${examWeek(st.week) && st.school ? ' · 考試週' : ''}</small><h2>${esc(CHAPTER_ZH[st.chapter] || '')}</h2>
       <div class="meta">${p.age} 歲 · ${esc(stageText(st))} · 個性：${personality(p)}</div>
@@ -166,7 +174,8 @@ register('home', async body => {
     </div>
     <div class="cm-card"><div class="cm-stat3">
       <div><span>體能 ${Math.round(p.energy)}</span>${bar(p.energy)}</div><div><span>心情 ${Math.round(p.mood)}</span>${bar(p.mood)}</div>
-      <div><span>手感 ${p.form > 0 ? '+' : ''}${p.form.toFixed(1)}</span>${bar(p.form + 3, 6)}</div></div>
+      <div><span>手感 ${p.form > 0 ? '+' : ''}${p.form.toFixed(1)}</span>${bar(p.form + 3, 6)}</div>
+      <div><span style="${(p.pain || 0) >= 60 ? 'color:var(--red)' : ''}">疼痛 ${Math.round(p.pain || 0)}</span>${bar(p.pain || 0)}</div></div>
       <div class="cm-row wrap" style="margin-top:10px;font-size:12px;color:var(--mut)"><span>實力 <b class="num" style="font-size:15px;color:var(--ink)">${playerRating(st).toFixed(1)}</b></span><span>Lv.${p.level} <b class="num" style="font-size:15px;color:var(--ink)">${p.xp}</b> / ${xpForLevel(p.level)}</span><span>技能點 <b class="num" style="font-size:15px;color:var(--ink)">${p.skillPts}</b></span>${st.school && st.status.amateur ? `<span>學業 <b class="num" style="font-size:15px;color:var(--ink)">${Math.round(st.school.grade)}</b> <a href="#" id="hm-school">說明</a></span>` : ''}<span>追蹤 <b class="num" style="font-size:15px;color:var(--ink)">${p.followers.toLocaleString()}</b></span></div>
       ${st.focus && st.focus.n > 1 ? `<p class="cm-note" style="margin-top:6px">專注：連續 ${st.focus.n} 週主練「${TRAIN[st.focus.kind].name}」，這一項訓練經驗 +${Math.round((focusMul(st, st.focus.kind) - 1) * 100)}%</p>` : ''}
     </div>
@@ -178,6 +187,9 @@ register('home', async body => {
       <p class="cm-note" style="margin-top:8px">快轉：之後每一週都照這一週的安排過（體能太低會自動排休息、存款不夠會自動排打工、考試前會排念書），直到下一場比賽、主線事件或隨機事件（最多 8 週）。結束後會列出這段時間做了什麼、加了哪些能力與錢。</p></div>` : ''}
     <div class="cm-card"><h3>接下來的比賽<small><a href="#" id="hm-cal">完整賽程 ›</a></small></h3><div class="cm-list">${next.length ? next.map(e => `<div class="cm-li"><div class="main"><b>${esc(e.name)}</b><span>${MONTH_OF_WEEK(e.w)} 月 · 第 ${e.w} 週 · ${esc(cinfo(e.course)?.name || '')}</span></div><div class="side">${isEntered(st, e) ? '<span class="cm-pill green">已報名</span>' : e.el.ok ? '<span class="cm-pill">可報名</span>' : '<span class="cm-pill red">沒有資格</span>'}</div></div>`).join('') : '<div class="cm-empty">近期沒有比賽</div>'}</div></div>
     <div class="cm-card"><h3>新聞</h3>${st.news.slice(0, 6).map(n => `<div class="cm-news ${n.kind === 'major' ? 'major' : ''}"><small>${n.y}·W${n.w}</small>${esc(n.text)}</div>`).join('') || '<div class="cm-empty">還沒有新聞</div>'}</div>`;
+  { const b = document.getElementById('hm-offers'); if (b) b.onclick = () => go('finance'); }
+  document.querySelectorAll('[data-qs]').forEach(q => q.onclick = () => { st.entered[q.dataset.qs] = true; localSave(st); toast('已報名'); go('home'); });
+  document.querySelectorAll('[data-skill]').forEach(b => b.onclick = async () => { const [k, sim] = b.dataset.skill.split(':'); await skillsChallenge(st, k, sim === '1'); go('home'); });
   if (res) document.getElementById('hm-resume').onclick = async () => { const { resumeRound } = await import('./eventview.js'); resumeRound(st, res); };
   if (ev) document.getElementById('hm-event').onclick = () => startEventWeek(st, ev);
   document.getElementById('hm-cal').onclick = e => { e.preventDefault(); go('calendar'); };
@@ -214,6 +226,7 @@ function defaultPlan(st, notes = []) {
     out[i] = { k, auto: true, was: out[i] }; notes.push(why);
   };
   if (p.energy < 35) swap('rest', `體能只剩 ${Math.round(p.energy)}：自動排了「休息」`, ['rest', 'work', 'study', 'tutor']);
+  if ((p.pain || 0) >= 70 && ok.has('treat')) swap('treat', `疼痛 ${Math.round(p.pain)}：自動排了「治療與按摩」`, ['rest', 'treat', 'work', 'study', 'tutor']);
   if (student && (examWeek(st.week) || examWeek(st.week + 1))) swap('study', '考試週快到了：自動排了「念書」', ['rest', 'work', 'study', 'tutor']);
   if (lowCash(st) && ok.has('work')) swap('work', `存款只剩 ${money(st.money.cash)}：自動排了「打工」`, ['rest', 'work', 'study', 'tutor']);
   return out;
@@ -256,16 +269,45 @@ function reportHtml(st, a, logs) {
     <h4>每週明細</h4><div class="cm-log">${logs.map(l => `<div class="${l.wk ? 'wk' : ''}">${esc(l.t)}</div>`).join('')}</div>
   </div>`;
 }
+// 明星技巧賽（第 45~47 週）：長打、近旗各一次，可以 3D 自己打或模擬
+// 沒有巡迴卡的職業選手：列出接下來 12 週內可以報名的資格賽（PGA TOUR 預選賽、DP World、亞巡、台巡），一鍵報名
+//   （資格賽不會自動報名，以前很容易整年都沒有比賽打）
+function qsCard(st) {
+  if (st.status.amateur || st.retired) return '';
+  const c = st.status.cards || {}, y = st.year;
+  if ((c.pga || 0) > y || (c.kft || 0) > y) return '';
+  const ids = ['q_pre', 'q_dp', 'q_asia', 'q_tpga'];
+  const list = [y, y + 1].flatMap(yy => eventsOfYear(st, yy).filter(e => ids.includes(e.id)).map(e => ({ ...e, ab: yy * 52 + e.w })))
+    .filter(e => e.ab >= y * 52 + st.week && e.ab <= y * 52 + st.week + 12 && !st.entered[e.key]).map(e => ({ ...e, el: eligibility(st, e) })).filter(e => e.el.ok);
+  if (!list.length) return '';
+  return `<div class="cm-card" style="border-color:var(--champ)"><h3>可以報名的資格賽<small>明年還沒有 PGA TOUR / Korn Ferry 卡</small></h3><p class="cm-note">資格賽不會自動報名。PGA TOUR Q-School（預選賽 → 第一關 → 第二關 → 決賽）決賽前 10 名直接拿 PGA TOUR 卡；DP World、亞巡、台巡的資格賽拿那個巡迴的卡。沒有卡的時候也可以到「賽程」報週一資格賽（前 4 名進正賽）或申請贊助外卡。</p>
+    <div class="cm-list">${list.map(e => `<div class="cm-li"><div class="main"><b>${esc(e.name)}</b><span>第 ${e.w} 週${e.fee ? ` · 報名費 ${money(e.fee)}` : ''}${e.note ? ' · ' + esc(e.note) : ''}</span></div><div class="side"><button class="cm-btn small green" data-qs="${e.key}">報名</button></div></div>`).join('')}</div></div>`;
+}
+function skillsCard(st) {
+  if (!skillsOpen(st) && !((st.skills || {})[st.year] && st.week <= 47 && st.week >= 45)) return '';
+  const S = (st.skills || {})[st.year] || {};
+  const row = (k, n, unit) => `<div class="cm-li"><div class="main"><b>${n}</b><span>${S[k] ? `你的成績 ${S[k].v} ${unit}，第 ${S[k].pos} 名` : k === 'drive' ? '6 球取最遠（左右 25 碼內）' : '奧古斯塔 12 號（155 碼），5 球取離旗桿最近'}</span></div><div class="side">${S[k] ? '' : `<button class="cm-btn small green" data-skill="${k}:0">3D 自己打</button> <button class="cm-btn small ghost" data-skill="${k}:1">模擬</button>`}</div></div>`;
+  return `<div class="cm-card" style="border-color:var(--champ)"><h3>明星技巧賽<small>季末表演 · 不計正式成績</small></h3><p class="cm-note">和 7 位明星球員比長打、近旗：冠軍獎金 $150,000、亞軍 $50,000。</p><div class="cm-list">${row('drive', '長打大賽', '碼')}${row('pin', '近旗賽', '公尺')}</div></div>`;
+}
+// 有贊助邀約時在首頁提醒（以前只有「財務」頁看得到，很多人一直沒簽到贊助）
+function offerCard(st) {
+  const list = sponsorOffers(st);
+  if (!list.length) return '';
+  const best = Math.max(...list.map(o => o.year));
+  return `<div class="cm-card" style="border-color:var(--champ)"><h3>贊助邀約 ${list.length} 份</h3><p>最高每年 ${money(best)}，到「財務」頁挑選簽約。</p><button class="cm-btn green" id="hm-offers">去看看</button></div>`;
+}
 const openInfo = new Set();      // 哪幾個行動的說明是展開的
 function drawPlan(st, plan, n, acts) {
   const box = document.getElementById('hm-plan');
   const sel = (i) => {
     const a = plan[i] || { k: 'rest' }, desc = ACTIONS[a.k].desc, tr = a.k === 'train' && TRAIN[a.sub || 'iron'];
     // 只顯示一行重點，按「更多資訊」才展開全部說明（練球的進度也收在裡面）
-    const short = tr ? tr.desc : desc.split(/[；。（]/)[0];
-    const full = desc + (tr ? '\n' + trainHint(st, a.sub || 'iron') : '');
+    const so = a.k === 'social' && SOCIAL[a.sub || 'daily'];
+    const short = tr ? tr.desc : so ? `${so.name}：${so.desc}` : desc.split(/[；。（]/)[0];
+    const full = desc + (tr ? '\n' + trainHint(st, a.sub || 'iron') : so ? '\n主題：' + Object.values(SOCIAL).map(t => `${t.name}（${t.desc}）`).join('；') : '');
     const more = full !== short ? `<button class="cm-more" data-more="${i}">${openInfo.has(i) ? '收起' : '更多資訊'}</button>` : '';
     return `<div class="cm-li"><div class="main"><b>行動 ${i + 1}</b><span>${esc(short)} ${more}</span>${openInfo.has(i) ? `<span class="cm-note" style="display:block;margin-top:4px;white-space:pre-line">${esc(full)}</span>` : ''}</div><div class="side"><select data-i="${i}" class="hm-a">${acts.map(x => `<option value="${x.k}" ${x.k === a.k ? 'selected' : ''}>${x.name}</option>`).join('')}</select>
+      ${a.k === 'social' ? `<select data-i="${i}" class="hm-s">${Object.entries(SOCIAL).map(([k, t]) => `<option value="${k}" ${k === (a.sub || 'daily') ? 'selected' : ''}>${t.name}</option>`).join('')}</select>` : ''}
       ${a.k === 'train' ? `<select data-i="${i}" class="hm-t">${Object.entries(TRAIN).map(([k, t]) => `<option value="${k}" ${k === a.sub ? 'selected' : ''}>${t.name}</option>`).join('')}</select><button class="cm-btn small ghost hm-drill" data-i="${i}">訓練關卡</button>` : ''}</div></div>`;
   };
   plan.length = Math.min(plan.length, n);
@@ -274,6 +316,7 @@ function drawPlan(st, plan, n, acts) {
   drawGoal(st, plan);
   box.querySelectorAll('.hm-a').forEach(s => s.onchange = () => { plan[Number(s.dataset.i)] = { k: s.value, sub: s.value === 'train' ? 'iron' : undefined }; drawPlan(st, plan, n, acts); localSave(st); });
   box.querySelectorAll('.hm-t').forEach(s => s.onchange = () => { plan[Number(s.dataset.i)].sub = s.value; drawPlan(st, plan, n, acts); localSave(st); });
+  box.querySelectorAll('.hm-s').forEach(s => s.onchange = () => { plan[Number(s.dataset.i)].sub = s.value; drawPlan(st, plan, n, acts); localSave(st); });
   box.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const i = Number(b.dataset.more); if (openInfo.has(i)) openInfo.delete(i); else openInfo.add(i); drawPlan(st, plan, n, acts); });
   box.querySelectorAll('.hm-drill').forEach(b => b.onclick = async () => {
     const i = Number(b.dataset.i), kind = plan[i].sub || 'iron';

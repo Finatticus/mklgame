@@ -1,7 +1,7 @@
 // 目錄：裝備（服裝、球具）、桿弟、教練、經紀人、專業團隊、贊助商類型、資產
 //   品牌都是虛構的；稀有度：一般、精良、稀有、傳奇、冠軍
 export const RARITY = { common: { name: '一般', color: '#8a8a80', mul: 1 }, fine: { name: '精良', color: '#3f8a4a', mul: 1.5 }, rare: { name: '稀有', color: '#2f6fb0', mul: 2.2 }, legend: { name: '傳奇', color: '#8a4ac0', mul: 3.2 }, champ: { name: '冠軍', color: '#c09a30', mul: 0 } };
-export const BRANDS = { north: 'Northfield', kes: 'Kestrel', aur: 'Aurum', pine: 'Pinecrest', van: 'Vanta', haru: 'Haru', link: 'Linkline' };
+export const BRANDS = { north: 'Northfield', kes: 'Kestrel', aur: 'Aurum', pine: 'Pinecrest', van: 'Vanta', haru: 'Haru', link: 'Linkline', collab: 'Vanta × Haru' };
 export const SLOTS = { hat: '帽子', top: '上衣', bottom: '下身', shoes: '鞋子', glove: '手套', acc: '配件', driver: '一號木', wood: '球道木 / 混血', irons: '鐵桿', wedge: '挖起桿', putter: '推桿', ball: '球' };
 export const CLOTHES = ['hat', 'top', 'bottom', 'shoes', 'glove', 'acc'];
 // 部位的分類（裝備頁、商店）
@@ -103,7 +103,43 @@ export const ITEMS = [
   // 冠軍專屬（純外觀與象徵，不加能力）
   I('jacket_green', 'top', '綠夾克', 'augusta', 'champ', {}, 0, { look: { shirt: '#1d6b3a', top: 'jacket', jacket: true }, note: '名人賽冠軍專屬：純外觀，象徵最高榮譽', champ: 'masters' }),
   I('claret_cap', 'hat', '銀壺紀念球帽', 'link', 'champ', {}, 0, { look: { cap: '#f2ead8', hat: 'cap' }, champ: 'open' }),
+  I('wanamaker_cap', 'hat', '華納梅克紀念球帽', '', 'champ', {}, 0, { look: { cap: '#1b2a4a', hat: 'cap' }, note: 'PGA 錦標賽冠軍紀念', champ: 'pgachamp' }),
+  I('usopen_medal', 'acc', 'U.S. Open 冠軍金牌', '', 'champ', {}, 0, { note: '美國公開賽冠軍紀念：掛在球袋上', champ: 'usopen' }),
+  I('players_vest', 'top', 'THE PLAYERS 冠軍背心', '', 'champ', {}, 0, { look: { shirt: '#f2ead8', top: 'vest', vest: '#1a3a6a' }, note: '第五大賽冠軍紀念', champ: 'players' }),
+  I('fedex_watch', 'acc', '聯邦快遞盃冠軍腕錶', '', 'champ', {}, 0, { note: '年度總冠軍紀念', champ: 'tourchamp' }),
+  I('olympic_medal', 'acc', '奧運金牌', '', 'champ', {}, 0, { note: '奧運高爾夫金牌', champ: 'olympic' }),
+  I('team_jacket', 'top', '團體賽冠軍隊服', '', 'champ', {}, 0, { look: { shirt: '#20324f', top: 'jacket' }, note: '萊德盃 / 總統盃勝隊的隊服', champ: 'team' }),
+  I('dp_cap', 'hat', 'Race to Dubai 年度冠軍帽', '', 'champ', {}, 0, { look: { cap: '#c09a30', hat: 'cap' }, note: 'DP World Tour 年度冠軍', champ: 'race' }),
+  I('slam_jacket', 'top', '大滿貫紀念外套', '', 'champ', {}, 0, { look: { shirt: '#c09a30', top: 'jacket' }, note: '四大賽都拿過冠軍的人才有', champ: 'slam' }),
+  // 聯名套裝（Vanta × Haru）：4 件穿齊，讀果嶺、抗壓再 +1
+  I('cl_cap', 'hat', 'Vanta × Haru 聯名球帽', 'collab', 'rare', { reading: 1 }, 900, { look: { hat: 'cap', cap: '#0e1a2a' }, set: 'vh' }),
+  I('cl_top', 'top', 'Vanta × Haru 聯名 Polo', 'collab', 'rare', { mental: 1 }, 1200, { look: { shirt: '#0e1a2a', top: 'polo' }, set: 'vh' }),
+  I('cl_bot', 'bottom', 'Vanta × Haru 聯名長褲', 'collab', 'rare', { consistency: 1 }, 1000, { look: { pants: '#e8e1d0', bottom: 'pants' }, set: 'vh' }),
+  I('cl_shoe', 'shoes', 'Vanta × Haru 聯名球鞋', 'collab', 'rare', { touch: 1 }, 1100, { set: 'vh' }),
+  // 季節限定（只在那幾週買得到）
+  I('sea_sakura', 'top', '櫻花季限定 Polo', 'aur', 'fine', { touch: 1 }, 380, { look: { shirt: '#f2c8d0', top: 'polo' }, season: [10, 18], note: '春季限定（第 10~18 週）' }),
+  I('sea_summer', 'hat', '盛夏涼感遮陽帽', 'pine', 'fine', { consistency: 1 }, 260, { look: { hat: 'visor', cap: '#bfe6f0' }, season: [24, 34], note: '夏季限定（第 24~34 週）' }),
+  I('sea_autumn', 'top', '楓葉季毛衣背心', 'link', 'rare', { mental: 1, reading: 1 }, 820, { look: { shirt: '#f2ead8', top: 'vest', vest: '#8a3a1a' }, season: [38, 46], note: '秋季限定（第 38~46 週）' }),
+  I('sea_winter', 'top', '冬季保暖外套', 'north', 'rare', { consistency: 1, power: 1 }, 900, { look: { shirt: '#2a3a2a', top: 'jacket' }, season: [47, 52], note: '冬季限定（第 47~52 週）' }),
+  I('sea_xmas', 'ball', '聖誕限定紅白球', 'kes', 'rare', { spin: 2, power: 1 }, 120, { season: [50, 52], note: '聖誕節限定（第 50~52 週）' }),
+  I('sea_lunar', 'acc', '新春開運球標', 'haru', 'fine', { reading: 1 }, 168, { season: [1, 6], note: '農曆新年限定（第 1~6 週）' }),
+  // 贊助商專屬（和那個品牌簽了服裝或球具合約才能領，穿著時每週贊助商好感 +0.3）
+  I('sp_kes_top', 'top', 'Kestrel 簽約球員 Polo', 'kes', 'legend', { consistency: 1, accuracy: 1, power: 1 }, 0, { look: { shirt: '#ffffff', top: 'polo' }, spon: 'Kestrel' }),
+  I('sp_kes_cap', 'hat', 'Kestrel 簽約球員球帽', 'kes', 'legend', { reading: 1, mental: 1 }, 0, { look: { hat: 'cap', cap: '#ffffff' }, spon: 'Kestrel' }),
+  I('sp_north_shoe', 'shoes', 'Northfield 簽約球鞋', 'north', 'legend', { consistency: 2, power: 1 }, 0, { spon: 'Northfield' }),
+  I('sp_aur_top', 'top', 'Aurum 簽約長袖', 'aur', 'legend', { accuracy: 2, touch: 1 }, 0, { look: { shirt: '#e8d9a8', top: 'long' }, spon: 'Aurum' }),
+  I('sp_van_drv', 'driver', 'Vanta 簽約一號木', 'van', 'legend', { power: 3, contact: 2, launch: 1 }, 0, { spon: 'Vanta' }),
+  I('sp_link_iron', 'irons', 'Linkline 簽約鐵桿', 'link', 'legend', { accuracy: 3, shaping: 2, consistency: 1 }, 0, { spon: 'Linkline' }),
+  I('sp_haru_putt', 'putter', 'Haru 簽約推桿', 'haru', 'legend', { touch: 3, line: 3 }, 0, { spon: 'Haru' }),
 ];
+// 品牌套裝：同一品牌穿 3 件 / 5 件的效果（聯名套裝 4 件）
+export const BRAND_SET = {
+  north: [{ consistency: 1 }, { consistency: 1, mental: 1 }], kes: [{ power: 1 }, { power: 1, contact: 1 }], aur: [{ accuracy: 1 }, { accuracy: 1, touch: 1 }],
+  pine: [{ recovery: 1 }, { recovery: 1, bunker: 1 }], van: [{ mental: 1 }, { mental: 1, spin: 1 }], haru: [{ touch: 1 }, { touch: 1, line: 1 }], link: [{ shaping: 1 }, { shaping: 1, reading: 1 }],
+};
+export const COLLAB_SET = { vh: { name: 'Vanta × Haru 聯名', need: 4, bonus: { reading: 1, mental: 1 } } };
+// 冠軍紀念品：贏了哪一場給哪一件
+export const CHAMP_GIFT = { masters: 'jacket_green', open: 'claret_cap', pgachamp: 'wanamaker_cap', usopen: 'usopen_medal', players: 'players_vest', tourchamp: 'fedex_watch' };
 export const itemById = id => ITEMS.find(x => x.id === id);
 // 兒童用的起始裝備（8 歲爺爺 / 媽媽買的第一組）
 export const STARTER = ['cap_basic', 'top_polo', 'bot_pants', 'shoe_basic', 'glove_syn', 'drv_start', 'fw_start', 'iron_start', 'wedge_start', 'putt_start', 'ball_two'];
@@ -146,8 +182,77 @@ export const STAFF = {
   fitness: { name: '體能教練', fee: 2500, desc: '體能恢復加快、35 歲後的老化變慢' },
   nutrition: { name: '營養師', fee: 1500, desc: '比賽週體能消耗 −15%' },
   physio: { name: '物理治療師', fee: 3000, desc: '傷病機率減半、復原時間縮短' },
-  psych: { name: '心理師', fee: 3500, desc: '手感下降減半、每輪一次「冷靜」' },
+  psych: { name: '心理師', fee: 3500, desc: '手感下降減半、每輪一次「冷靜」（壓力等級 −1）' },
+  analyst: { name: '數據分析師', fee: 4000, desc: '上場的讀果嶺 +2（計入加成上限）' },
 };
+// 粉絲團等級（依追蹤數）：merch = 每週周邊商品收入（每 1 萬追蹤，職業才有）
+export const FAN_LEVELS = [
+  { min: 0, name: '還沒有粉絲團', merch: 0 }, { min: 2000, name: '小小粉絲團', merch: 0 }, { min: 20000, name: '粉絲團', merch: 4 },
+  { min: 100000, name: '人氣選手', merch: 6 }, { min: 500000, name: '明星球員', merch: 8 }, { min: 2000000, name: '超級巨星', merch: 10 }, { min: 8000000, name: '國際偶像', merch: 12 },
+];
+export const fanLevel = f => { let i = 0; FAN_LEVELS.forEach((l, k) => { if (f >= l.min) i = k; }); return { lv: i, ...FAN_LEVELS[i], next: FAN_LEVELS[i + 1] }; };
+// 社群發文的主題：追蹤倍率、贊助商好感、其他效果
+export const SOCIAL = {
+  daily: { name: '日常生活', fol: 1, sponsor: 0, desc: '追蹤 ×1' },
+  train: { name: '練球花絮', fol: 0.8, sponsor: 0.5, desc: '追蹤 ×0.8、贊助商好感 +0.5、經驗 +5' },
+  gear: { name: '球具開箱（業配）', fol: 0.6, sponsor: 2, desc: '追蹤 ×0.6、贊助商好感 +2、收入（要有贊助）' },
+  charity: { name: '公益活動', fol: 0.9, sponsor: 1, desc: '追蹤 ×0.9、贊助商好感 +1、人氣 +200' },
+  hot: { name: '回應爭議話題', fol: 2, sponsor: -3, desc: '追蹤 ×2、人氣 +300、贊助商好感 −3、媒體形象往「話題」' },
+};
+// 頂級團隊：薪水 ×3、效果更強；需要世界前 50 或人氣 100,000
+export const STAFF_ELITE = {
+  fee: 3, need: { rank: 50, fame: 100000 },
+  desc: { fitness: '每週體能恢復 +7（原本 +4）、老化只剩 40%（原本 60%）', nutrition: '比賽週體能消耗 −30%', physio: '傷病機率只剩 1/5', psych: '手感下降只剩 30%、每輪兩次「冷靜」', analyst: '上場的讀果嶺 +3' },
+};
+
+// ---------- 住所（後期的花錢地方；換房子時舊房子以半價折抵）----------
+//   rest = 每次「休息」多恢復的體能；mood / fam = 每週心情、家人關係；fame = 每週人氣；upkeep = 每週維護費（取代生活費）
+export const HOMES = [
+  { name: '租的公寓', price: 0, upkeep: 0, rest: 0, mood: 0, fam: 0, fame: 0, desc: '生活費照舊（每週 $500，佛州 $900）' },
+  { name: '郊區獨棟住宅', price: 900000, upkeep: 1500, rest: 4, mood: 1, fam: 0.2, fame: 0, desc: '有院子和車庫，家人常來住' },
+  { name: '球場旁豪宅', price: 4500000, upkeep: 4000, rest: 7, mood: 2, fam: 0.4, fame: 100, desc: '後門就是球道，雜誌來拍過專題' },
+  { name: '海景莊園', price: 18000000, upkeep: 12000, rest: 10, mood: 3, fam: 0.6, fame: 300, desc: '私人碼頭、家族聚會的地方，名人堂級的住所' },
+];
+
+// ---------- 球具工坊訂製（職業）：每個部位選一項素質，最多訂製 3 級（每級 +1，計入加成上限）----------
+export const FIT_SLOTS = {
+  driver: ['power', 'contact', 'launch'], wood: ['launch', 'contact', 'accuracy'], irons: ['accuracy', 'consistency', 'shaping'],
+  wedge: ['spin', 'chipping', 'bunker'], putter: ['touch', 'line', 'reading'], ball: ['spin', 'consistency', 'power'],
+};
+export const FIT_COST = [80000, 350000, 1200000];      // Lv.1 / Lv.2 / Lv.3
+export const FIT_RESPEC = 50000;                         // 改訂製方向（等級保留）
+// 球桿手感：每個部位三選一，一項 +1、一項 −1（計入加成上限），換手感 $20,000
+export const FEEL = {
+  driver: [['std', '標準', {}], ['low', '低旋重心', { power: 1, launch: -1 }], ['high', '高拋重心', { launch: 1, power: -1 }]],
+  wood: [['std', '標準', {}], ['deep', '深桿頭', { power: 1, accuracy: -1 }], ['shallow', '淺桿頭', { launch: 1, power: -1 }]],
+  irons: [['std', '標準', {}], ['blade', '刀背', { shaping: 1, consistency: -1 }], ['cavity', '凹背', { consistency: 1, shaping: -1 }]],
+  wedge: [['std', '標準', {}], ['soft', '軟鐵鍛造', { spin: 1, bunker: -1 }], ['wide', '寬底', { bunker: 1, spin: -1 }]],
+  putter: [['std', '標準', {}], ['blade', '刀型', { touch: 1, line: -1 }], ['mallet', '槌型', { line: 1, touch: -1 }]],
+  ball: [['std', '標準', {}], ['soft', '軟殼', { touch: 1, power: -1 }], ['firm', '硬殼', { power: 1, spin: -1 }]],
+};
+export const FEEL_COST = 20000;
+// 桿身與握把（v97）：每一支都可以單獨選，一樣是一項 +1、一項 −1 的取捨（計入加成上限）；換一次 $30,000 / $8,000
+export const SHAFT = {
+  driver: [['std', '標準 S 桿身', {}], ['light', '輕量 R 桿身', { power: 1, consistency: -1 }], ['tour', '巡迴 X 桿身', { consistency: 1, power: -1 }], ['lowtq', '低扭力桿身', { accuracy: 1, launch: -1 }]],
+  wood: [['std', '標準 S 桿身', {}], ['light', '輕量 R 桿身', { power: 1, consistency: -1 }], ['tour', '巡迴 X 桿身', { consistency: 1, power: -1 }], ['highl', '高彈道桿身', { launch: 1, accuracy: -1 }]],
+  irons: [['std', '輕量鋼桿身', {}], ['steel', '重量鋼桿身', { consistency: 1, power: -1 }], ['graph', '碳纖維桿身', { power: 1, accuracy: -1 }], ['tour', '巡迴硬桿身', { accuracy: 1, launch: -1 }]],
+  wedge: [['std', '挖起桿專用桿身', {}], ['heavy', '重量桿身', { chipping: 1, spin: -1 }], ['spin', '高旋轉桿身', { spin: 1, chipping: -1 }]],
+  putter: [['std', '標準桿身', {}], ['counter', '配重桿身', { line: 1, touch: -1 }], ['soft', '軟調桿身', { touch: 1, line: -1 }]],
+};
+export const GRIP = {
+  club: [['std', '標準握把', {}], ['mid', '加粗握把', { consistency: 1, shaping: -1 }], ['slim', '細握把', { shaping: 1, consistency: -1 }], ['cord', '止滑線紋握把', { recovery: 1, touch: -1 }]],
+  putter: [['std', '標準推桿握把', {}], ['jumbo', '超粗握把', { line: 1, touch: -1 }], ['pistol', '手槍型握把', { touch: 1, line: -1 }]],
+};
+export const SHAFT_COST = 30000, GRIP_COST = 8000, PAINT_COST = 15000, ENGRAVE_COST = 2000;
+// 自選顏色的色票（也可以用調色盤選任何顏色）
+export const PAINTS = ['#d8dde0', '#15171a', '#2a2c30', '#b01a1a', '#1a3aa8', '#0f6a48', '#e8c050', '#c09a30', '#f2f2f2', '#6a1a8a', '#e86a1a', '#3a8a6a', '#8a8a80', '#1d3a2a', '#f2c8d0', '#5ad0f0'];
+// 試桿日：在練習場打 6 球，依數據建議桿頭、桿身、握把（建議的項目一年內 7 折）
+export const FITTING = { discount: 0.7, cost: 5000 };
+// 工坊的部位對應到 3D 的球桿（推桿、鐵桿、一號木…）
+export const PAINT_SLOT = { driver: 'driver', irons: 'iron', wedge: 'chipper', putter: 'putter' };
+// 球桿 / 球的外觀：用主遊戲星星商店的造型（生涯裡用錢訂製：星星數 × $5,000）
+export const SKIN_SLOT = { driver: 'driver', irons: 'iron', putter: 'putter', ball: 'ball', wedge: 'chipper' };
+export const SKIN_PRICE = 5000;
 
 // ---------- 贊助（球袋與帽子上的標誌）----------
 export const SPONSOR_KINDS = {
@@ -160,15 +265,46 @@ export const SPONSOR_NAMES = { apparel: ['Kestrel', 'Northfield', 'Aurum'], equi
 
 // ---------- 資產（後期重要的花錢地方）----------
 export const ASSETS = {
-  putting: { name: '後院推桿果嶺', price: 60000, desc: '每週一次免費的推桿訓練（不用花行動）' },
-  sim: { name: '室內模擬器', price: 350000, desc: '每週多一個長桿訓練關卡' },
-  shortarea: { name: '短桿練習區', price: 220000, desc: '短桿訓練 +20%' },
-  gym: { name: '家用健身房', price: 180000, desc: '體能恢復 +10、力量訓練 +20%' },
-  member: { name: '私人球場會籍', price: 250000, desc: '可以在那裡練習與舉辦活動（人氣 +）' },
-  share: { name: '家鄉球場股份（1/5）', price: 800000, desc: '分五次買下；主場加成提高，退休後成為球場主人', max: 5 },
-  foundation: { name: '慈善基金會', price: 500000, desc: '每季捐款：人氣、形象、年度人道獎' },
-  academy: { name: '青少年學院', price: 3000000, desc: '傳奇章節的第二人生與傳承：每年有學員' },
+  putting: { grp: 'train', name: '後院推桿果嶺', price: 60000, desc: '每週一次免費的推桿訓練（約一般練球的 60%，不用花行動）' },
+  sim: { grp: 'train', name: '室內模擬器', price: 350000, desc: '每週一次免費的長桿訓練（約一般練球的 60%，不用花行動）' },
+  shortarea: { grp: 'train', name: '短桿練習區', price: 220000, desc: '短桿訓練 +20%' },
+  gym: { grp: 'train', name: '家用健身房', price: 180000, desc: '每週體能恢復 +3、長桿訓練 +20%' },
+  member: { grp: 'life', name: '私人球場會籍', price: 250000, desc: '每週人氣 +80、心情 +1' },
+  share: { grp: 'biz', name: '家鄉球場股份（1/5）', price: 800000, desc: '分五次買下；主場加成提高，退休後成為球場主人', max: 5 },
+  foundation: { grp: 'legacy', name: '慈善基金會', price: 500000, desc: '每季自動捐款 $100,000：人氣 +3,000、贊助商好感 +2' },
+  academy: { grp: 'legacy', name: '青少年學院', price: 3000000, desc: '傳奇章節的第二人生與傳承：每年有學員' },
+  hawaii: { grp: 'villa', name: '夏威夷海灘別墅', price: 3500000, upkeep: 2000, desc: '休賽期（第 47 週到隔年第 2 週）每週體能 +4、心情 +4' },
+  alps: { grp: 'villa', name: '阿爾卑斯山中小屋', price: 2800000, upkeep: 1500, desc: '夏天（第 27~35 週）每週體能 +3、心情 +2' },
+  kyoto: { grp: 'villa', name: '京都町家', price: 2200000, upkeep: 1200, desc: '每週心情 +1、家人關係 +0.3' },
+  scotland: { grp: 'villa', name: '蘇格蘭林克斯小屋', price: 3000000, upkeep: 1500, desc: '英國公開賽那一週的旅費全免、心情 +6' },
+  jet: { grp: 'travel', name: '私人飛機', price: 22000000, upkeep: 15000, desc: '選「私人飛機」艙等時只付油錢（經濟艙的 1.5 倍）、比賽週心情 +2；每週維護 $15,000' },
+  bus: { grp: 'travel', name: '巡迴球隊巴士', price: 1200000, upkeep: 1500, desc: '北美比賽的旅費 −40%、體能消耗 −2' },
+  studio: { grp: 'biz', name: '個人媒體工作室', price: 2500000, upkeep: 2000, desc: '「社群發文」追蹤數 ×2、每週人氣 +150' },
+  winery: { grp: 'biz', name: '家族酒莊', price: 9000000, upkeep: 3000, desc: '每年 52 週收入約 $600,000、家人關係每週 +0.3' },
 };
+export const ASSET_GRP = { train: '訓練設施', life: '生活', villa: '度假別墅', travel: '交通', biz: '事業與收入', legacy: '公益與傳承' };
+
+// ---------- 投資（年底結算報酬；退休後照樣有）----------
+//   ret = 平均年報酬，vol = 波動（年報酬 = ret + vol × 常態亂數，最低 −60%）
+export const INVEST = {
+  bond: { name: '政府公債', ret: 0.035, vol: 0.02, desc: '最穩：每年約 3.5%' },
+  index: { name: '全球指數基金', ret: 0.07, vol: 0.14, desc: '長期約 7%，偶爾一年跌兩成' },
+  estate: { name: '商用不動產', ret: 0.055, vol: 0.07, desc: '約 5.5%，波動小' },
+  venture: { name: '新創公司', ret: 0.12, vol: 0.5, desc: '可能翻倍，也可能歸零大半' },
+};
+
+// ---------- 球場經營（買齊家鄉球場 5 股之後）：每週營收，退休後是主要收入 ----------
+export const COURSE_BASE = 9000;      // 每週基本營收
+export const COURSE_UP = {
+  club: { name: '會館與餐廳', cost: [1500000, 4000000, 10000000], inc: 0.35, desc: '營收 +35% / 級' },
+  turf: { name: '球道與果嶺整修', cost: [2000000, 5000000, 12000000], inc: 0.3, desc: '營收 +30% / 級，第 3 級可以辦職業賽' },
+  range: { name: '練習場與學院', cost: [1000000, 3000000, 8000000], inc: 0.25, desc: '營收 +25% / 級，學院學員多 1 位 / 級' },
+  hotel: { name: '度假酒店', cost: [6000000, 15000000, 30000000], inc: 0.6, desc: '營收 +60% / 級' },
+};
+
+// ---------- 自己辦一場邀請賽（每年第 50 週；職業，世界前 30 或大賽冠軍或人氣 300,000）----------
+export const HOST = { cost: 6000000, purse: 4000000, field: 30, fame: 25000, need: { rank: 30, fame: 300000 } };
+
 // 獎盃室等級
 export const ROOM_LEVELS = [
   { name: '童年書桌', price: 0, slots: 6 }, { name: '家裡的玻璃櫃', price: 3000, slots: 14 }, { name: '獎盃室', price: 120000, slots: 30 },

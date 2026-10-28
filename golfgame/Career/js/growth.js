@@ -1,4 +1,5 @@
 // 成長系統：年齡曲線、經驗值與等級、技能點、訓練、天賦、球風與上限、技能卡、實際上場用的素質（含加成上限）
+import { FEEL, SHAFT, GRIP, BRAND_SET, COLLAB_SET, itemById } from './data/items.js';
 import { STATS } from '../../js/stats.js';
 import { clamp, seeded } from './util.js';
 import { ratingOf } from './sim.js';
@@ -35,10 +36,10 @@ export function yearlyGrowth(age) {
 export const xpForLevel = lv => 120 + lv * 22;              // 從 lv 升到 lv+1 需要的經驗
 export const XP = { holePlayed: 14, holeSim: 4, finishBonus: 0.15, win: 400, top10: 120, cut: 40, milestone: 250 };
 // 年紀的成長速度（訓練與經驗值的倍率）：青少年慢慢來、22~29 歲是職業的黃金成長期、35 歲以後變慢
-export const ageMul = a => (a <= 17 ? 0.85 : a <= 21 ? 1 : a <= 29 ? 1.8 : a <= 34 ? 1.3 : 0.7);
+export const ageMul = a => (a <= 17 ? 0.85 : a <= 21 ? 1 : a <= 25 ? 2.2 : a <= 29 ? 0.6 : a <= 34 ? 0.35 : 0.25);      // 22~25 歲（剛轉職業）成長最快；之後放慢（v96：以前 43 歲平均約 75 勝）
 export const PTS_PER_LEVEL = 2;
 // 加 1 點素質要花的技能點：越高越貴
-export const skillCost = v => (v < 50 ? 1 : v < 65 ? 1 : v < 78 ? 2 : v < 88 ? 3 : 4);
+export const skillCost = v => (v < 65 ? 1 : v < 78 ? 2 : v < 84 ? 3 : v < 88 ? 4 : v < 92 ? 5 : 6);
 export function addXp(p, n, log) {
   p.xp += Math.round(n);
   let ups = 0;
@@ -148,6 +149,15 @@ export const cardDesc = (c, lv) => (c.kind === 'mull' ? c.lvText[clamp(lv, 1, 3)
 export const cardMulligans = (lv, holes) => (holes >= 18 ? [2, 3, 3] : holes >= 9 ? [1, 1, 2] : [0, 0, 0])[clamp(lv, 1, 3) - 1];
 export const cardSlots = p => clamp(2 + Math.floor((p.level || 1) / 15) + (p.legacyBonus ? 1 : 0), 2, 7);
 
+// 球具工坊的零件（桿頭手感、桿身、握把）合計的素質增減
+export function partStats(slot, f) {
+  const out = {}, addAll = o => { for (const k in o || {}) out[k] = (out[k] || 0) + o[k]; };
+  if (!f) return out;
+  const fe = f.feel && (FEEL[slot] || []).find(x => x[0] === f.feel); if (fe) addAll(fe[2]);
+  const sh = f.shaft && (SHAFT[slot] || []).find(x => x[0] === f.shaft); if (sh) addAll(sh[2]);
+  const gr = f.grip && (GRIP[slot === 'putter' ? 'putter' : 'club'] || []).find(x => x[0] === f.grip); if (gr && slot !== 'ball') addAll(gr[2]);
+  return out;
+}
 // ---------- 實際上場的素質 ----------
 //   基礎素質 + 球具 + 服裝 + 手感 + 主場 + 桿弟（每項固定加成合計最多 +8，素質最高 99）
 export const BONUS_CAP = 8;
@@ -157,6 +167,13 @@ export function effectiveStats(st, ctx = {}) {
   for (const it of equippedItems(st)) for (const k in it.stats || {}) add(k, it.stats[k] * (1 + ((it.lv || 1) - 1) * 0.25));
   const set = setBonus(st);
   for (const k in set) add(k, set[k]);
+  // 球具工坊訂製：每個部位一項素質 +1~+3
+  for (const [slot, f] of Object.entries(st.fit || {})) {
+    if (f && f.stat && f.lv) add(f.stat, f.lv);
+    for (const k in partStats(slot, f)) add(k, partStats(slot, f)[k]);
+  }
+  // 數據分析師：讀果嶺 +2（頂級 +3）
+  if (st.team && (st.team.staff || []).includes('analyst')) add('reading', (st.team.elite || []).includes('analyst') ? 3 : 2);
   if (ctx.home && p.talents.includes('home')) for (const [k, v] of Object.entries(TALENTS.home.home)) add(k, v);
   if (ctx.home) add('reading', st.homeBonus || 0);
   const cad = st.team && st.team.caddie;
@@ -164,7 +181,7 @@ export function effectiveStats(st, ctx = {}) {
   if (ctx.practiceRound) add('reading', 3);
   const out = {};
   // 手感 ±3 → 每項 ±3；體能低於 30 才開始扣（最多 −3）
-  const form = (p.form || 0) * 1.0, tired = p.energy < 30 ? -(30 - p.energy) / 10 : 0;
+  const form = (p.form || 0) * 1.0, tired = (p.energy < 30 ? -(30 - p.energy) / 10 : 0) - Math.min(3, Math.max(0, ((p.pain || 0) - 40) / 20));      // 體能低於 30、疼痛 40 以上都會扣
   for (const k of STAT_KEYS) out[k] = clamp(p.stats[k] + clamp(b[k] || 0, -8, BONUS_CAP) + form + tired, 5, 99);
   out._min = 5;
   out._spd = bodySpeed(p.age) * heightSpeed(p.height);
@@ -178,11 +195,17 @@ export function equippedItems(st) {
   const g = st.gear || {};
   return Object.values(g.eq || {}).map(id => (g.items || []).find(x => x.uid === id)).filter(Boolean);
 }
-// 同一個品牌穿滿 3 件：抗壓 +1（贊助商要求穿該品牌時就等於選套裝）
+// 品牌套裝：同一品牌穿 3 件、5 件各有效果（BRAND_SET）；聯名套裝穿齊 4 件（COLLAB_SET）
 export function setBonus(st) {
-  const cnt = {};
-  for (const it of equippedItems(st)) if (it.brand) cnt[it.brand] = (cnt[it.brand] || 0) + 1;
-  return Object.values(cnt).some(n => n >= 3) ? { mental: 1 } : {};
+  const cnt = {}, sets = {}, out = {};
+  const add = o => { for (const k in o) out[k] = (out[k] || 0) + o[k]; };
+  for (const it of equippedItems(st)) {
+    if (it.brand && BRAND_SET[it.brand]) cnt[it.brand] = (cnt[it.brand] || 0) + 1;
+    const base = itemById(it.id); if (base && base.set) sets[base.set] = (sets[base.set] || 0) + 1;
+  }
+  for (const [b, n] of Object.entries(cnt)) { if (n >= 5) add(BRAND_SET[b][1]); else if (n >= 3) add(BRAND_SET[b][0]); }
+  for (const [s, n] of Object.entries(sets)) if (COLLAB_SET[s] && n >= COLLAB_SET[s].need) add(COLLAB_SET[s].bonus);
+  return out;
 }
 
 // 綜合實力（給模擬用）

@@ -2,7 +2,7 @@
 import { story, storyResult, go, toast, dialog, ui, confirm2 } from './ui/shell.js';
 import { cur, setCur, localSave, sync, listSlots } from './state.js';
 import { esc, money, clamp, rng, hash } from './util.js';
-import { addTimeline, addNews, addPhoto, queueMain, endWeek, newCareer, spend, earn, eventsOfYear, CHAPTER_ZH } from './life.js';
+import { addTimeline, addNews, addPhoto, queueMain, endWeek, newCareer, spend, earn, eventsOfYear, CHAPTER_ZH, courseIncome, investTotal } from './life.js';
 import { MAIN } from './data/story.js';
 import { text, MENTOR_NAME, FAMILY_WHO } from './story.js';
 import { MAJORS } from './data/calendar.js';
@@ -66,7 +66,15 @@ export async function afterFarewell(st, E) {
   const m = MAIN.farewell;
   if (E.course === 'standrews') await story({ small: 'FAREWELL', title: m.title, img: m.img, paras: m.text });
   else await story({ small: 'FAREWELL', title: '最後一洞', img: 'green-sun.jpg', paras: ['最後一推進洞，全場觀眾起立鼓掌。你脫下帽子，向四周揮手。'] });
+  // 退休典禮：巡迴賽在第 18 洞果嶺旁辦的簡單儀式，最後一段致詞
+  const T = st.tally, rv = findP(st.world, st.story.rival || st.story.friend);
+  const i = await story({ small: 'RETIREMENT CEREMONY', title: '退休典禮', img: 'augusta-clubhouse.jpg', paras: [`巡迴賽主席把一面框好的旗子交給你，上面是 ${T.wins} 座冠軍${T.majors ? `、${T.majors} 座大賽` : ''}的名字。`, `${rv ? nameOf(rv) + '、' : ''}${MENTOR_NAME[st.player.origin] || '啟蒙導師'}、${FAMILY_WHO[st.player.origin] || '家人'}都站在果嶺邊。主持人把麥克風遞給你。`],
+    choices: [['「謝謝每一個在我身邊的人。」', '紳士'], ['「我拿到了我想拿的一切。」', '自信'], ['「我終於可以睡到自然醒了。」', '幽默']], skip: false });
+  st.player.pers[['gent', 'conf', 'humor'][Math.max(0, i)]] = (st.player.pers[['gent', 'conf', 'humor'][Math.max(0, i)]] || 0) + 2;
+  addPhoto(st, '退休典禮', 'augusta-clubhouse.jpg');
   await retire(st, true);
+  await storyResult('生涯回顧', '你的生涯做成了一段回顧影片。', ['之後隨時可以在「更多 → 生涯回顧」重看。']);
+  go('more', 'review');
   return true;
 }
 export async function retire(st, stay = false) {
@@ -92,8 +100,9 @@ export async function legacyHome(body, st) {
       <div class="cm-li click" data-a="captain"><div class="main"><b>團體賽隊長</b><span>${st.captainOffer ? '收到邀請：' + esc(st.captainOffer.name) : '大賽冠軍退休後，有機會被邀請擔任總統盃或萊德盃隊長'}</span></div><div class="side">›</div></div>
       <div class="cm-li click" data-a="design"><div class="main"><b>球場設計師</b><span>設計夢想球場（已設計 ${(st.designs || []).length} 座）</span></div><div class="side">›</div></div>
       <div class="cm-li click" data-a="academy"><div class="main"><b>青少年學院</b><span>${st.assets.academy ? `學員 ${(st.academy || []).length} 位` : '成立學院（財務 → 資產）'}</span></div><div class="side">›</div></div>
-      <div class="cm-li click" data-a="legacy"><div class="main"><b>傳承生涯</b><span>新的生涯從 8 歲開始，你是他的啟蒙導師：經驗 +20%、多一格技能卡</span></div><div class="side">›</div></div>
+      <div class="cm-li click" data-a="legacy"><div class="main"><b>傳承生涯</b><span>${(st.kids || []).length ? `用你的孩子 ${esc(st.kids[0].name)} 開始新的生涯（8 歲起）` : '新的生涯從 8 歲開始'}，你是他的啟蒙導師：經驗 +20%、多一格技能卡</span></div><div class="side">›</div></div>
     </div></div>
+    ${courseIncome(st) || investTotal(st) ? `<div class="cm-card"><h3>收入來源</h3><div class="cm-list">${courseIncome(st) ? `<div class="cm-li"><div class="main"><b>家鄉球場營收</b><span>每週，財務 → 球場經營可以升級設施</span></div><div class="side num">${money(courseIncome(st))}</div></div>` : ''}${investTotal(st) ? `<div class="cm-li"><div class="main"><b>投資市值</b><span>每年年底結算報酬</span></div><div class="side num">${money(investTotal(st), { short: true })}</div></div>` : ''}</div></div>` : ''}
     <div class="cm-card"><button class="cm-btn green block" id="lg-year">過一年（世界繼續轉）</button><p class="cm-note" style="margin-top:6px">名人賽冠軍退休後，每年名人賽第一天受邀榮譽開球。</p></div>
     <div class="cm-card"><h3>新聞</h3>${st.news.slice(0, 6).map(n => `<div class="cm-news"><small>${n.y}·W${n.w}</small>${esc(n.text)}</div>`).join('')}</div>`;
   body.querySelectorAll('[data-a]').forEach(el => el.onclick = () => action(st, el.dataset.a));
@@ -128,15 +137,7 @@ export function legacyWeek(st, logs) {
     const side = teamSide(st.player.country);
     if (ev && ((ev.kind === 'ryder' && side !== 'intl') || (ev.kind === 'presidents' && side !== 'eur'))) { st.captainOffer = { key: ev.key, name: ev.name, side }; logs.push(`受邀擔任 ${ev.name} 隊長`); }
   }
-  if (st.week === 52 && st.assets.academy) {
-    const r = rng(hash(st.seed + 'acad' + st.year));
-    st.academy = st.academy || [];
-    const n = makeName(r, st.player.country);
-    st.academy.push({ name: n, y: st.year, pot: 70 + r() * 20 });
-    logs.push(`學院收了一位新學員：${n}`);
-    // 學員長大成為職業選手（加入世界）
-    for (const s of st.academy) if (!s.pro && st.year - s.y >= 8 && s.pot >= 80) { s.pro = true; const won = r() < (s.pot - 78) / 15; if (won) { st.cnt.academyWin = 1; logs.push(`學院的學員 ${s.name} 拿到職業冠軍！`); } }
-  }
+  // 學院的學員：年底在 life.js 的 yearEnd 處理（extras.js 的 academyYear），現役時也一樣
   if (st.week === 52) hofCheck(st);
 }
 async function captain(st) {
@@ -156,32 +157,53 @@ async function captain(st) {
   st.captainOffer = null;
   checkAch(st); localSave(st); go('home');
 }
-async function design(st) {
-  const styles = [['links', '林克斯（海邊、強風、壺穴沙坑）'], ['parkland', '公園式（樹林、水塘）'], ['desert', '沙漠（荒地、仙人掌）'], ['mountain', '山地（高低落差、松樹）']];
+// 球場設計師：設計夢想球場（風格、長度、標準桿），用 @C 產生器做成可以打的 3D 球場；生涯裡可以下場、辦邀請賽，主遊戲的球場清單也看得到
+export async function design(st) {
+  const list = st.designs || [];
+  const { dreamId } = await import('../../js/courses-creative.js');
+  const { registerDreams } = await import('../../js/dream.js');
+  registerDreams(list, st.player.name);
+  if (list.length) {
+    const i = await story({ small: 'COURSE DESIGNER', title: '我設計的球場', img: 'green-sun.jpg', paras: [list.map(d => `「${d.name}」${d.y} 年 · Par ${d.holes.reduce((a, h) => a + h[0], 0)} · ${d.holes.reduce((a, h) => a + h[1], 0).toLocaleString()} 碼`).join('<br>'), '主遊戲的「非真實球場 → 我的夢想球場」也能選這些球場。'],
+      choices: list.map(d => [`下場打「${d.name}」`, '3D 練習一輪（不計成績）']).concat([['設計一座新的球場', ''], ['回去', '']]), skip: false });
+    if (i >= 0 && i < list.length) {
+      const d = list[i];
+      const { playRound } = await import('./ui/ingame.js');
+      await playRound({ label: `${d.name} · 練習`, practiceRound: true, quitText: '離開球場？', cfg: { courseId: dreamId(d, st.player.name), holeIdx: [...Array(18).keys()], tee: 'black', gimme: 1, mulligans: 3, wind: 'normal', career: { practice: true } }, bcast: () => ({ pos: '練習', score: 0, line: esc(d.name) }) });
+      return go('home');
+    }
+    if (i !== list.length) return go('home');
+  }
+  const styles = [['links', '林克斯（海邊、強風、壺穴沙坑、幾乎沒有樹）'], ['parkland', '公園式（樹林、水塘、小溪）'], ['desert', '沙漠（荒地、仙人掌、硬地）'], ['mountain', '山地（高低落差大、杉樹、溪谷）']];
   const i = await story({ small: 'COURSE DESIGNER', title: '設計夢想球場', img: 'green-sun.jpg', paras: ['在空白的地圖上畫下第一個果嶺。你想要哪一種風格？'], choices: styles.map(s => [s[1]]), skip: false });
-  const name = prompt('球場的名字', `${st.player.name}夢想球場`) || `${st.player.name}夢想球場`;
+  const L = await story({ small: 'COURSE DESIGNER', title: '球場的長度', paras: ['越長越難；職業比賽一般在 7,200 碼以上。'], choices: [['短而精緻（約 6,700 碼，Par 70）', ''], ['標準（約 7,200 碼，Par 72）', ''], ['怪物球場（約 7,700 碼，Par 72）', '']], skip: false });
+  const name = (prompt('球場的名字', `${st.player.name}夢想球場`) || `${st.player.name}夢想球場`).slice(0, 20);
   const r = rng(hash(st.seed + name));
-  const pars = r.shuffle([3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5]);
-  const d = { name, style: styles[Math.max(0, i)][0], y: st.year, holes: pars.map(p => [p, p === 3 ? 150 + Math.round(r() * 70) : p === 4 ? 380 + Math.round(r() * 90) : 520 + Math.round(r() * 80)]) };
-  st.designs = (st.designs || []).concat(d);
+  const pars = Math.max(0, L) === 0 ? r.shuffle([3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5]) : r.shuffle([3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5]);
+  const k = [0.93, 1, 1.07][Math.max(0, L)];
+  const d = { name, style: styles[Math.max(0, i)][0], y: st.year, holes: pars.map(p => [p, Math.round((p === 3 ? 150 + r() * 75 : p === 4 ? 380 + r() * 95 : 525 + r() * 85) * k)]) };
+  st.designs = list.concat(d);
   st.cnt.designer = 1;
-  addTimeline(st, `設計球場「${name}」並投稿`);
-  await storyResult('投稿完成', `「${name}」：Par ${pars.reduce((a, b) => a + b, 0)}、${d.holes.reduce((a, h) => a + h[1], 0).toLocaleString()} 碼。`, ['管理員會在測試員頁看到你的投稿；被採用就會成為主遊戲的自製球場。']);
+  registerDreams(st.designs, st.player.name);
+  addTimeline(st, `設計球場「${name}」`);
+  await storyResult('球場完成', `「${name}」：Par ${pars.reduce((a, b) => a + b, 0)}、${d.holes.reduce((a, h) => a + h[1], 0).toLocaleString()} 碼。`, ['回到「球場設計師」就能下場打；財務頁可以用它辦自己的邀請賽；主遊戲的球場清單「非真實球場 → 我的夢想球場」也看得到。']);
   checkAch(st); localSave(st); sync(); go('home');
 }
 async function academy(st) {
   if (!st.assets.academy) return toast('先到「財務 → 資產」成立學院');
-  const list = (st.academy || []).map(s => `${s.name}（${s.y} 年入學${s.pro ? '，已轉職業' : ''}）`);
-  await storyResult('青少年學院', list.length ? list.join('、') : '今年年底會收第一批學員。');
+  const { academyDlg } = await import('./extras.js');
+  academyDlg(st);
 }
 async function startLegacy(st) {
   const slots = await listSlots(st.user);
   const free = [1, 2, 3].find(s => !slots[s]);
   if (!free) return toast('3 個生涯欄位都滿了：先刪掉一個');
-  if (!(await confirm2(`在欄位 ${free} 開始傳承生涯？新球員從 8 歲開始，${st.player.name} 是他的啟蒙導師：經驗 +20%、多一格技能卡。`, '開始'))) return;
-  const name = prompt('新球員的名字', '') || `${st.player.name.slice(0, 1)}小${st.player.name.slice(-1)}`;
-  const ns = newCareer({ user: st.user, slot: free, name, country: st.player.country, home: st.player.home, family: 'wealthy', gender: st.player.gender, height: st.player.height, look: { ...st.player.look }, difficulty: st.opt.difficulty, length: st.opt.length });
-  ns.legacyOf = { name: st.player.name, slot: st.slot };
+  // 有孩子的話：直接用孩子開始（名字、性別照孩子；新的世界從 8 歲那年開始）
+  const kid = (st.kids || [])[0];
+  if (!(await confirm2(kid ? `在欄位 ${free} 用 ${kid.name} 開始傳承生涯？${kid.name} 從 8 歲開始，${st.player.name} 是他的父母兼啟蒙導師：經驗 +20%、多一格技能卡。` : `在欄位 ${free} 開始傳承生涯？新球員從 8 歲開始，${st.player.name} 是他的啟蒙導師：經驗 +20%、多一格技能卡。`, '開始'))) return;
+  const name = kid ? (prompt('孩子的名字', kid.name) || kid.name) : (prompt('新球員的名字', '') || `${st.player.name.slice(0, 1)}小${st.player.name.slice(-1)}`);
+  const ns = newCareer({ user: st.user, slot: free, name, country: st.player.country, home: st.player.home, family: 'wealthy', gender: kid ? kid.g : st.player.gender, height: st.player.height, look: { ...st.player.look }, difficulty: st.opt.difficulty, length: st.opt.length });
+  ns.legacyOf = { name: st.player.name, slot: st.slot, parent: !!kid };
   ns.player.legacyBonus = true;
   ns.player.origin = 'grandpa';
   addTimeline(st, `傳承：${name} 的啟蒙導師`);

@@ -17,7 +17,7 @@ export const ME = 'ME';
 
 // 各巡迴要維持的人數與新人實力（虛構球員）；真實球員的實力在 players.js 統一減 RATING_SHIFT
 export const RATING_SHIFT = 6;
-const POOL = { pga: { n: 150, lo: 71, hi: 76 }, dp: { n: 90, lo: 67, hi: 73 }, kft: { n: 110, lo: 66, hi: 71 }, asia: { n: 70, lo: 63, hi: 69 }, jp: { n: 55, lo: 63, hi: 69 }, tpga: { n: 45, lo: 56, hi: 64 }, pta: { n: 70, lo: 60, hi: 66 } };
+const POOL = { pga: { n: 150, lo: 71, hi: 76 }, dp: { n: 90, lo: 67, hi: 73 }, kft: { n: 110, lo: 62, hi: 67 }, asia: { n: 70, lo: 63, hi: 69 }, jp: { n: 55, lo: 63, hi: 69 }, tpga: { n: 45, lo: 56, hi: 64 }, pta: { n: 70, lo: 55, hi: 61 } };
 const TOUR_MIX = {
   pga: null, kft: null, pta: [['USA', 30], ['CAN', 8], ['MEX', 6], ['ARG', 5], ['COL', 5], ['CHI', 3], ['AUS', 2]],
   dp: [['ENG', 18], ['SCO', 6], ['IRL', 4], ['ESP', 9], ['SWE', 7], ['DEN', 6], ['GER', 5], ['FRA', 7], ['ITA', 5], ['NOR', 3], ['RSA', 10], ['AUS', 6], ['IND', 2], ['THA', 2], ['CHN', 2], ['JPN', 2]],
@@ -28,6 +28,11 @@ const TOUR_MIX = {
 
 // 球員物件（執行時用）：{ id, en, zh, c, by, r, pot, tour, ret, real, f(虛構的名字種子), titles:[[年, 賽事 id]], ow:[[絕對週, 積分]], wa（業餘排名積分）}
 export const nameOf = p => (p.id === ME ? p.name : p.zh || p.en);
+// 球員風格（v97）：依 id 固定，一輩子不變。比賽時依球場與輪次微調實力（見 event.js 的 styleAdj）
+export const STYLE_KINDS = ['long', 'steady', 'short', 'clutch'];
+export const STYLE_ZH = { long: '長打型', steady: '穩定型', short: '短桿型', clutch: '大場面型' };
+export const STYLE_DESC = { long: '長球場（7,400 碼以上）+0.6、短球場 −0.3', steady: '強風、美國公開賽的設定 +0.5', short: '快果嶺（Stimp 12 以上）+0.5、林克斯 +0.3', clutch: '大賽與最後一輪 +0.5、其他輪 −0.1' };
+export const styleOf = id => STYLE_KINDS[hash('style:' + id) % 4];
 export const shortName = p => { const n = nameOf(p); return /[a-zA-Z]/.test(n) ? n.split(' ').slice(-1)[0] : n; };
 
 function fictional(r, tour, year, opt = {}) {
@@ -37,7 +42,9 @@ function fictional(r, tour, year, opt = {}) {
   const cfg = POOL[tour] || { lo: 70, hi: 76 };
   const age = opt.age ?? (22 + Math.floor(r() * 12));
   const rr = opt.r ?? cfg.lo + r() * (cfg.hi - cfg.lo);
-  return { id: 'F' + f.toString(36), en: isEastern(c) ? '' : nm, zh: isEastern(c) ? nm : '', c, by: year - age, r: Math.round(rr * 10) / 10, pot: Math.round((rr + r() * 9) * 10) / 10, tour, titles: [], ow: [] };
+  // 潛力：最多比現在高 9，但不超過這個巡迴設定的上限 +1.5（以前沒有上限，新人幾年後普遍長到比設定高 4~5，整個世界越來越強）
+  const pot = Math.min(rr + r() * 9, Math.max(rr, cfg.hi + 1.5));
+  return { id: 'F' + f.toString(36), en: isEastern(c) ? '' : nm, zh: isEastern(c) ? nm : '', c, by: year - age, r: Math.round(rr * 10) / 10, pot: Math.round(pot * 10) / 10, tour, titles: [], ow: [] };
 }
 
 // 建立世界（玩家 8 歲那年的 4 月）
@@ -97,13 +104,49 @@ export function ageWorld(world, year, seed) {
     const retP = age >= 50 ? 0.35 : age >= 45 ? 0.12 + (p.r < 68 ? 0.2 : 0) : age >= 38 ? (p.r < 66 ? 0.25 : 0.04) : p.r < 60 ? 0.15 : 0;
     if (r() < retP) { p.ret = year; world.retired.push(p.id); }
   }
-  // 各巡迴補新人
+  // 北美三級（PGA TOUR → Korn Ferry → Americas）每年依實力重新排：最強的 150 人在 PGA TOUR、接下來 110 人在 Korn Ferry、其他在 Americas。
+  //   以前 PGA TOUR 每年降 25 個還很強的人到 Korn Ferry，Korn Ferry 前段越來越強（前 25 名要實力 75），剛轉職業的玩家要 5~7 年才上得去
+  { const na = world.players.filter(p => !p.ret && ['pga', 'kft', 'pta'].includes(p.tour)).sort((a, b) => b.r - a.r);
+    na.forEach((p, i) => { p.tour = i < POOL.pga.n ? 'pga' : i < POOL.pga.n + POOL.kft.n ? 'kft' : 'pta'; }); }
+  // 各巡迴人數超過上限：最弱的虛構球員退休（以前降級的人一直堆在下一級，Korn Ferry 十年後 250 人、平均實力比設定高 4~5，
+  //   整個世界越來越強，玩家怎麼練都追不上）
   for (const [tour, cfg] of Object.entries(POOL)) {
+    const list = world.players.filter(p => !p.ret && p.tour === tour);
+    if (list.length <= cfg.n) continue;
+    list.filter(p => !p.real && !p.titles.length).sort((a, b) => a.r - b.r).slice(0, list.length - cfg.n).forEach(p => { p.ret = year; world.retired.push(p.id); });
+  }
+  // 各巡迴補新人（北美三級合在一起算缺額：新人 25% 是 PGA TOUR 等級、35% Korn Ferry 等級、40% Americas 等級，隔年再依實力重排）
+  const naN = POOL.pga.n + POOL.kft.n + POOL.pta.n;
+  const naHave = world.players.filter(p => !p.ret && ['pga', 'kft', 'pta'].includes(p.tour)).length;
+  for (let i = naHave; i < naN; i++) { const x = r(), tour = x < 0.25 ? 'pga' : x < 0.6 ? 'kft' : 'pta', cfg = POOL[tour]; world.players.push(fictional(r, tour, year, { age: 21 + Math.floor(r() * 4), r: cfg.lo - 1 + r() * (cfg.hi - cfg.lo + 1) })); }
+  for (const [tour, cfg] of Object.entries(POOL)) {
+    if (['pga', 'kft', 'pta'].includes(tour)) continue;
     const have = world.players.filter(p => !p.ret && p.tour === tour).length;
     for (let i = have; i < cfg.n; i++) world.players.push(fictional(r, tour, year, { age: 21 + Math.floor(r() * 4), r: cfg.lo - 1 + r() * (cfg.hi - cfg.lo + 1) }));
   }
   // 退休超過 10 年、沒有冠軍的虛構球員從存檔移除（真實球員與冠軍留著：名人堂、歷史紀錄要用）
-  world.players = world.players.filter(p => !(p.ret && year - p.ret > 10 && !p.real && !p.titles.length));
+  // 存檔瘦身（v98）：退休球員不再需要世界排名積分；冠軍只留 PGA TOUR 與大賽（歷史比較、名人堂用），小巡迴的冠軍丟掉；
+  //   各巡迴的季積分只留最近兩年。36 歲的存檔約 616 KB → 一半左右（手機本機存檔上限約 5 MB，三個欄位都玩到後期會存不下）
+  const MINOR = /^(kft_|pta_|as_|jp_|tp_|dp_|jr_|nc_|q_|ch_|am_)/;
+  for (const p of world.players) if (p.ret) {
+    if (p.ow && p.ow.length) p.ow = [];
+    if (p.titles.length) p.titles = p.titles.filter(t => !MINOR.test(t[1]));
+    delete p.wa; delete p.jr;
+  }
+  const gone = new Map(world.players.filter(p => p.ret && year - p.ret > 10 && !p.real && !p.titles.length).map(p => [p.id, nameOf(p)]));
+  // 被移除的人如果在歷屆冠軍名單裡：把 id 換成「~名字」，名字才不會不見
+  if (gone.size) for (const ev of Object.values(world.hist || {})) for (const y in ev) if (gone.has(ev[y])) ev[y] = '~' + gone.get(ev[y]);
+  world.players = world.players.filter(p => !gone.has(p.id));
+  for (const y of Object.keys(world.season || {})) if (Number(y) < year - 2) delete world.season[y];
+  const alive = new Set(world.players.map(p => p.id)); world.retired = (world.retired || []).filter(id => alive.has(id));
+}
+
+// 歷屆冠軍的名字（id、玩家、已經從存檔移除的「~名字」）
+export function histName(world, id, me) {
+  if (id === ME) return me;
+  if (typeof id === 'string' && id[0] === '~') return id.slice(1);
+  const p = findP(world, id);
+  return p ? nameOf(p) : { usa: '美國隊', eur: '歐洲隊', intl: '國際隊', gbi: '英國與愛爾蘭隊' }[id] || '—';
 }
 
 // ---------- 巡迴之間的升降（季末）----------

@@ -173,10 +173,10 @@ const TPGA = [
 
 // ---------- 資格賽 ----------
 export const QSCHOOL = [
-  { w: 40, id: 'q_pre', name: 'PGA TOUR Q-School 預選賽', tour: 'qs', stage: 0, course: 'c_crestview', rounds: 3, field: 78, adv: 20, fee: 4000, region: 'na', tier: 'qs' },
-  { w: 42, id: 'q_first', name: 'PGA TOUR Q-School 第一關', tour: 'qs', stage: 1, course: 'c_hillcrest', rounds: 4, field: 78, adv: 20, fee: 5500, region: 'na', tier: 'qs' },
-  { w: 46, id: 'q_second', name: 'PGA TOUR Q-School 第二關', tour: 'qs', stage: 2, course: 'c_lacosta', rounds: 4, field: 78, adv: 20, fee: 0, region: 'na', tier: 'qs' },
-  { w: 50, id: 'q_final', name: 'PGA TOUR Q-School 決賽', tour: 'qs', stage: 3, course: 'sawgrass', rounds: 4, field: 156, adv: 5, fee: 0, region: 'na', tier: 'qs', note: '前 5 名（含同分）直接拿到 PGA TOUR 資格；其他依名次分到 Korn Ferry Tour 或 PGA TOUR Americas' },
+  { w: 40, id: 'q_pre', name: 'PGA TOUR Q-School 預選賽', tour: 'qs', stage: 0, course: 'c_crestview', rounds: 3, field: 78, adv: 30, fee: 4000, region: 'na', tier: 'qs' },
+  { w: 42, id: 'q_first', name: 'PGA TOUR Q-School 第一關', tour: 'qs', stage: 1, course: 'c_hillcrest', rounds: 4, field: 78, adv: 30, fee: 5500, region: 'na', tier: 'qs' },
+  { w: 46, id: 'q_second', name: 'PGA TOUR Q-School 第二關', tour: 'qs', stage: 2, course: 'c_lacosta', rounds: 4, field: 78, adv: 25, fee: 0, region: 'na', tier: 'qs' },
+  { w: 50, id: 'q_final', name: 'PGA TOUR Q-School 決賽', tour: 'qs', stage: 3, course: 'sawgrass', rounds: 4, field: 156, adv: 10, fee: 0, region: 'na', tier: 'qs', note: '前 10 名（含同分）直接拿到 PGA TOUR 資格；其他依名次分到 Korn Ferry Tour 或 PGA TOUR Americas' },
   { w: 2, id: 'q_asia', name: 'Asian Tour Q-School 決賽', tour: 'qs', stage: 9, course: 'c_sentosa', rounds: 5, field: 120, adv: 35, fee: 3500, region: 'asia', tier: 'qs', note: '前 35 名（含同分）拿到亞巡全季資格' },
   { w: 45, id: 'q_dp', name: 'DP World Tour Q-School 決賽', tour: 'qs', stage: 8, course: 'c_valderrama', rounds: 6, field: 156, adv: 20, fee: 4000, region: 'eu', tier: 'qs', note: '前 20 名拿到 DP World Tour 資格' },
   { w: 1, id: 'q_tpga', name: '台巡資格賽', tour: 'qs', stage: 7, course: 'hsingfu', rounds: 3, field: 90, adv: 40, fee: 600, region: 'tw', tier: 'qs' },

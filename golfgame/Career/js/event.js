@@ -5,7 +5,7 @@ import { rng, hash, clamp, sum } from './util.js';
 import { simEventScores, expectRound, holeAdjs, holeScore, roundMean, courseAdj } from './sim.js';
 import { makeName, pickCountry, isEastern } from './data/names.js';
 import { PAYOUT, MAJOR_ZH } from './data/calendar.js';
-import { ME, nameOf, peerRating, owgrAvg, rankList, ABS } from './world.js';
+import { ME, nameOf, peerRating, owgrAvg, rankList, ABS, styleOf } from './world.js';
 import { TIER, shareOf, fedexPts } from './tours.js';
 import { playerRating } from './growth.js';
 
@@ -32,6 +32,15 @@ export const WIND_CFG = ['light', 'normal', 'strong'];
 export const WIND_ZH = ['微風', '一般', '強風'];
 
 // 賽事的球場設定
+// 球員風格對這一輪的實力修正（只用在 AI；最多約 ±0.6，大概是一輪 0.1~0.2 桿）
+export function styleAdj(k, ci, E, ri, wx) {
+  const final = ri === E.rounds - 1, yd = ci.blackYards || 7200;
+  if (k === 'long') return yd >= 7400 ? 0.6 : yd < 7100 ? -0.3 : 0;
+  if (k === 'steady') return (wx || 0) >= 2 || E.id === 'usopen' ? 0.5 : 0;
+  if (k === 'short') return ((ci.stimp || 11) >= 12 ? 0.5 : 0) + (ci.style === 'links' ? 0.3 : 0);
+  if (k === 'clutch') return E.major || final ? 0.5 : -0.1;
+  return 0;
+}
 export const setupOf = ev => (ev.id === 'usopen' ? 'usopen' : ev.major ? 'major' : null);
 export const teeOf = (st, ev) => {
   const age = st.player.age;
@@ -84,7 +93,7 @@ export function buildField(st, ev, world) {
       break;
     }
     case 'qs': {
-      const lo = ev.stage === 3 ? 66 : ev.stage === 2 ? 64 : ev.stage === 1 ? 61 : ev.stage === 7 ? 54 : ev.stage === 9 ? 61 : ev.stage === 8 ? 63 : 58, hi = lo + 7;
+      const lo = ev.stage === 3 ? 64 : ev.stage === 2 ? 62 : ev.stage === 1 ? 59 : ev.stage === 7 ? 54 : ev.stage === 9 ? 61 : ev.stage === 8 ? 63 : 58, hi = lo + 7;
       list.push(...filler(r, n, lo, hi, ev.stage === 7 ? [['TPE', 1]] : ev.stage === 9 ? undefined : undefined, 'q'));
       break;
     }
@@ -131,10 +140,12 @@ export function prepareRound(st, E, ri) {
   const ci = cinfo(E.course);
   const wx = E.wx[ri] = weatherOf({ key: E.key, course: E.course }, ri);
   const o = { setup: setupOf(E), wind: wx, tee: ['junior', 'ncaa', 'am', 'kids'].includes(E.tour) ? 'junior' : null };
+  // 難度：AI 的實力加減（休閒 −0.3、寫實 +2.2，和 life.js 的 DIFF.ai 一致）。以前 DIFF.ai 寫了卻沒有用到，三種難度的對手一樣強
+  const dAi = ({ casual: -0.3, standard: 0, real: 2.2 })[st.opt && st.opt.difficulty] || 0;
   // 晉級線以後，沒晉級的 AI 不打
   for (const e of E.field) {
     if (e.cut) continue;
-    e.sc[ri] = simEventScores(hash(E.key + ':' + e.id + ':' + ri), ci.holes, e.R, ci, [o])[0];
+    e.sc[ri] = simEventScores(hash(E.key + ':' + e.id + ':' + ri), ci.holes, e.R + dAi + styleAdj(styleOf(e.id), ci, E, ri, wx), ci, [o])[0];
   }
   const R = st.meR = playerRating(st, { home: isHome(st, E), practiceRound: E.practice });
   const corr = personalCorr(st);

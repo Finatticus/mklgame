@@ -2,6 +2,7 @@
 //   能力點：主帳號只從生涯成就拿能力點，合計 40 點（伺服器每個成就最多加 3 點）
 import { ACH, ACH_CATS, unlock, save as saveProgress } from '../../js/progress.js';
 import { MAJORS } from './data/calendar.js';
+import { slamStatus } from './slam.js';
 
 const A = (id, tier, glyph, name, desc, sub, pts = 0) => ({ id: 'cm_' + id, cat: 'career', sub, tier, glyph, name, desc, pts });
 export const CAREER_ACH = [
@@ -36,7 +37,10 @@ export const CAREER_ACH = [
   A('green', 'legend', '綠', '綠夾克', '名人賽冠軍', 'major', 3), A('defend', 'legend', '衛', '名人賽衛冕', '連續兩年名人賽冠軍', 'major', 2),
   A('jug', 'legend', '壺', '英國公開賽冠軍', 'The Open Championship 冠軍', 'major', 2), A('usopen', 'legend', '美', '美國公開賽冠軍', 'U.S. Open 冠軍', 'major', 2),
   A('wanamaker', 'legend', '杯', 'PGA 錦標賽冠軍', 'PGA Championship 冠軍', 'major', 2), A('slam', 'legend', '滿', '生涯大滿貫', '四大賽都拿過冠軍', 'major', 3),
-  A('yslam', 'legend', '霸', '年度大滿貫', '同一年拿下四大賽', 'major', 3), A('gold', 'legend', '金', '奧運金牌', '奧運高爾夫金牌', 'major', 2),
+  A('yslam', 'legend', '霸', '年度大滿貫', '同一年拿下四大賽', 'major', 3), A('tslam', 'legend', '虎', '連續四大賽', '連續四場大賽都是冠軍（跨年也算）', 'major', 3),
+  A('dslam', 'legend', '雙', '雙料生涯大滿貫', '四大賽都拿過至少兩次', 'major', 3), A('major5', 'legend', '五', '大賽五冠', '累積 5 座大賽冠軍', 'major', 2),
+  A('host', 'gold', '主', '主辦人', '自己主辦一場邀請賽', 'tour'), A('estate', 'gold', '莊', '海景莊園', '住進海景莊園', 'tour'), A('owner', 'legend', '場', '球場主人', '家鄉球場四項設施全部升到 3 級', 'tour'),
+  A('skills', 'gold', '技', '技巧賽冠軍', '在明星技巧賽拿下長打或近旗冠軍', 'tour'), A('classic', 'gold', '憶', '經典重現', '在經典重現挑戰成功', 'tour'), A('gold', 'legend', '金', '奧運金牌', '奧運高爾夫金牌', 'major', 2),
   A('cup', 'gold', '盟', '總統盃 / 萊德盃勝利', '代表球隊贏得總統盃或萊德盃', 'major'),
   // 傳奇
   A('hof', 'legend', '堂', '名人堂', '入選世界高爾夫名人堂', 'legend', 3), A('captain', 'legend', '帥', '冠軍隊長', '以隊長身分贏得總統盃或萊德盃', 'legend'),
@@ -120,6 +124,12 @@ export function checkAch(st) {
   if (has('pgachamp')) U('wanamaker');
   if (MAJORS.every(m => has(m))) U('slam');
   if (Object.values(groupBy(t.filter(x => MAJORS.includes(x.id)), 'y')).some(a => new Set(a.map(z => z.id)).size === 4)) U('yslam');
+  { const sl = slamStatus(st); if (sl.tiger) U('tslam'); if (sl.slams >= 2) U('dslam'); if (sl.total >= 5) U('major5'); }
+  if (st.cnt.hosted) U('host');
+  if ((st.homeLv || 0) >= 3) U('estate');
+  if (st.courseUp && ['club', 'turf', 'range', 'hotel'].every(k => (st.courseUp[k] || 0) >= 3)) U('owner');
+  if (st.cnt.skillsWin) U('skills');
+  if (st.cnt.classicWin) U('classic');
   if (st.cnt.olyGold) U('gold');
   if (st.cnt.cupWin) U('cup');
   if (st.legacy && st.legacy.hof) U('hof');

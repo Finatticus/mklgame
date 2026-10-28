@@ -5,7 +5,10 @@ import { esc, money, toPar } from '../util.js';
 import { ROOM_LEVELS } from '../data/items.js';
 import { addTimeline, queueMain } from '../life.js';
 import { text } from '../story.js';
-import { findP, nameOf } from '../world.js';
+import { findP, nameOf, histName } from '../world.js';
+import { slamStatus, slamText, SLAM_RECORD } from '../slam.js';
+import { collectionHtml, bindCollection } from '../extras.js';
+import { MAJORS, MAJOR_ZH } from '../data/calendar.js';
 
 // 獎盃的小圖（SVG，依種類）
 export function trophySvg(t) {
@@ -33,11 +36,12 @@ register('trophy', body => {
   const room = ROOM_LEVELS[st.room || 0], list = st.trophies.slice().reverse();
   const shown = list.slice(0, room.slots);
   const jackets = st.trophies.filter(t => t.kind === 'jacket');
-  body.innerHTML = `<div class="cm-card"><h3>${esc(room.name)}<small>${st.trophies.length} 座 · 可以展示 ${room.slots} 座</small></h3>
+  body.innerHTML = slamHtml(st) + collectionHtml(st) + `<div class="cm-card"><h3>${esc(room.name)}<small>${st.trophies.length} 座 · 可以展示 ${room.slots} 座</small></h3>
       <div class="cm-row wrap"><button class="cm-btn green" id="tr-3d">走進獎盃室（3D）</button>${(st.room || 0) < ROOM_LEVELS.length - 1 ? `<span class="cm-note">升級（財務 → 資產）：${esc(ROOM_LEVELS[(st.room || 0) + 1].name)} ${money(ROOM_LEVELS[(st.room || 0) + 1].price, { short: true })}</span>` : ''}</div>
       ${jackets.length ? `<p style="margin-top:10px;color:var(--aug);font-weight:700">冠軍更衣櫃：綠夾克 ${jackets.map(j => j.y).join('、')}</p>` : ''}</div>
     <div class="cm-card">${shown.length ? `<div class="cm-trophy">${shown.map((t, i) => `<div data-i="${i}">${trophySvg(t)}<b>${esc(t.name)}</b>${t.y}</div>`).join('')}</div>` : '<div class="cm-empty">還沒有獎盃。第一座兒童盃會放在童年書桌上。</div>'}
       ${list.length > room.slots ? `<p class="cm-note" style="margin-top:8px">還有 ${list.length - room.slots} 座收在倉庫（升級獎盃室就能展示）</p>` : ''}</div>`;
+  bindCollection(st, body, () => go('trophy'));
   body.querySelectorAll('[data-i]').forEach(el => el.onclick = () => {
     const t = shown[Number(el.dataset.i)], r = st.results.find(x => x.y === t.y && x.id === t.id);
     dialog(`<div style="text-align:center">${trophySvg(t).replace('<svg', '<svg style="width:120px;height:120px"')}</div><p style="text-align:center"><b>${esc(t.name)}</b><br>${t.y} 年${t.course ? ' · ' + esc(t.course) : ''}${r && r.total ? `<br>${r.total} 桿（${toPar(r.toPar)}）` : ''}</p>`, { title: '獎盃' });
@@ -50,7 +54,7 @@ register('trophy', body => {
 
 // ---------- 綠夾克（名人賽冠軍）----------
 export async function greenJacket(st, E, rec) {
-  const id = (st.world.hist.masters || {})[E.year - 1], prev = id === 'ME' ? '（你自己——衛冕成功，由主席為你穿上）' : (id && findP(st.world, id) ? nameOf(findP(st.world, id)) : '上屆冠軍');
+  const id = (st.world.hist.masters || {})[E.year - 1], prev = id === 'ME' ? '（你自己——衛冕成功，由主席為你穿上）' : (id && histName(st.world, id, st.player.name) !== '—' ? histName(st.world, id, st.player.name) : '上屆冠軍');
   st.story.prevChamp = prev;
   const years = E.year - st.player.birthYear - 8;
   await story({ small: 'BUTLER CABIN · MASTERS TOURNAMENT CHAMPION', title: '綠夾克', img: 'augusta-10.jpg', skip: false, paras: [
@@ -69,4 +73,16 @@ export async function greenJacket(st, E, rec) {
 async function careerReview(st) {
   const lines = st.timeline.slice(-14).map(t => `${t.age} 歲　${t.text}`);
   await story({ small: 'CAREER REVIEW', title: '生涯回顧', img: 'masters-gallery.jpg', paras: lines, ok: '生涯繼續' });
+}
+
+// 大滿貫面板：四大賽各拿過幾次、哪幾年；生涯大滿貫、年度大滿貫、連續四大賽；和歷史紀錄比較
+function slamHtml(st) {
+  if (st.status.amateur && !(st.titles || []).some(t => MAJORS.includes(t.id))) return '';
+  const s = slamStatus(st);
+  const col = m => `<div class="cm-slam ${s.count[m] ? 'on' : ''}">${trophySvg({ kind: { masters: 'jacket', pgachamp: 'wanamaker', usopen: 'usopen', open: 'jug' }[m] })}<b>${MAJOR_ZH[m]}</b><span class="num">${s.count[m]}</span><small>${s.per[m].join('、') || '還沒拿過'}</small></div>`;
+  const badges = [s.slams ? slamText(s.slams) + (s.firstSlamYear ? `（${s.firstSlamYear} 年完成）` : '') : `生涯大滿貫：${4 - s.missing.length} / 4`, s.years.length ? `年度大滿貫 ${s.years.join('、')}` : '', s.tiger ? `連續四大賽 ×${s.tiger}` : ''].filter(Boolean);
+  return `<div class="cm-card"><h3>大滿貫<small>大賽冠軍 ${s.total} 座 · 歷史紀錄 ${SLAM_RECORD.majors} 座（${SLAM_RECORD.holder}）</small></h3>
+    <div class="cm-slams">${MAJORS.map(col).join('')}</div>
+    <div class="cm-chips" style="margin-top:8px">${badges.map(b => `<span>${esc(b)}</span>`).join('')}</div>
+    <p class="cm-note" style="margin-top:6px">四大賽都拿過一次 = 生涯大滿貫；每座都拿過兩次 = 雙料大滿貫。同一年拿下四座 = 年度大滿貫；連續四場大賽都贏（可以跨年）= 連續四大賽。完成時會拿到「大滿貫紀念外套」。</p></div>`;
 }

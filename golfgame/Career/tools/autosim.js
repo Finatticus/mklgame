@@ -98,5 +98,5 @@ export async function run(o = {}) {
     checkAch(st);
     if (st.week === 1) rows.push({ y: st.year - 1, age: st.player.age - 1, R: playerRating(st).toFixed(1), drive: driveCarry(effectiveStats(st).power, effectiveStats(st)._spd), stage: st.status.stage, rank: st.status.amateur ? 'wagr ' + st.wagr + ' / jr ' + st.jrRank : st.rankNow, wins: st.tally.wins, majors: st.tally.majors, cash: Math.round(st.money.cash), hours: Math.round(minutes / 60), cards: Object.entries(st.status.cards).filter(([t, y]) => y >= st.year).map(([t]) => t).join('+'), ev: st.results.filter(x => x.y === st.year - 1).length });
   }
-  return { marks, rows, logs, tally: st.tally, titles: st.titles.map(t => `${t.y} ${t.name}`).slice(-20), size: JSON.stringify(st).length };
+  return { marks, rows, logs, tally: st.tally, titles: st.titles.map(t => `${t.y} ${t.name}`).slice(-20), size: JSON.stringify(st).length, state: o.keep ? st : undefined };
 }

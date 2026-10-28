@@ -6,7 +6,9 @@ let ctx = null, st = null, syncTimer = null, syncing = false, pendingSync = fals
 
 export const bind = c => { ctx = c; };
 export const cur = () => st;
-export const setCur = s => { st = s; };
+import { registerDreams } from '../../js/dream.js';
+// 換生涯欄位時，把這個生涯設計的夢想球場加進球場清單（比賽、邀請賽才找得到）
+export const setCur = s => { st = s; if (s && s.designs && s.designs.length) registerDreams(s.designs, s.player.name); };
 const key = (user, slot) => `dixen.career.${user}.${slot}`;
 
 export function localLoad(user, slot) {

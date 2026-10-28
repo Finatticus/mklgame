@@ -5,12 +5,16 @@ import { cur, localSave, sync } from '../state.js';
 import { esc, money, toPar, sum, clamp, rng, hash, delay, seeded } from '../util.js';
 import { playFanfare } from '../../../js/audio.js';
 import { cinfo, prepareRound, leaderboard, finishMyRound, applyCut, finalStandings, playoffNeeded, playoffHole, prizeOf, myTotal, totalOf, WIND_CFG, WIND_ZH, teeOf, setupOf, projectedCut, isHome, roundsOf, createEvent } from '../event.js';
-import { ME, nameOf, findP, ABS } from '../world.js';
+import { ME, nameOf, findP, ABS, styleOf, STYLE_ZH, histName } from '../world.js';
+import { CHAMP_GIFT, itemById } from '../data/items.js';
 import { endWeek, settleEvent, addNews, addTimeline, addPhoto, spend, earn, travelCost, fill, START_YEAR, findEvent, queueMain, giveItem, turnProCore } from '../life.js';
 import { playRound, pendingResume, clearResume, tip } from './ingame.js';
 import { holeScore, roundMean, courseAdj, holeAdjs, driveCarry, simEventScores } from '../sim.js';
 import { effectiveStats, playerRating, addXp } from '../growth.js';
-import { pressFor, answerPress, text, rivalRecord, rivalKeepUp, checkMain } from '../story.js';
+import { pressFor, answerPress, text, rivalRecord, rivalKeepUp, checkMain, applyFx } from '../story.js';
+import { MAJOR_WEEK, MAJOR_AFTER } from '../data/story3.js';
+import { slamStatus, slamOnLine, slamText } from '../slam.js';
+import { offerChallenge, settleChallenge, updateRecords, saveClassic } from '../extras.js';
 import { checkAch } from '../achievements.js';
 import { NEWS } from '../data/story.js';
 import { MAJOR_ZH, TOUR_ZH } from '../data/calendar.js';
@@ -28,7 +32,7 @@ register('event', async body => {
   if (['usam', 'ryder', 'presidents', 'walker', 'palmer', 'jryder', 'jpres', 'skins'].includes(E.kind)) return matchEvent(body, st, E);
   const ci = cinfo(E.course);
   header(`<span>${esc(E.name)}</span>`);
-  const head = `<div class="cm-hero"><small>${esc(TOUR_ZH[E.tour] || '')} · ${E.year} 年第 ${E.w} 週</small><h2>${esc(E.name)}</h2><div class="meta">${esc(ci.name)} · Par ${ci.par} · ${ci.blackYards.toLocaleString()} 碼${E.purse && !st.status.amateur ? ' · 總獎金 ' + money(E.purse, { short: true }) : ''}</div>${E.note ? `<div class="meta" style="margin-top:6px">${esc(E.note)}</div>` : ''}<div style="margin-top:10px"><button class="cm-btn small ghost" data-evpl>素質・技能卡・裝備</button></div></div>`;
+  const head = `<div class="cm-hero"><small>${esc(TOUR_ZH[E.tour] || '')} · ${E.year} 年第 ${E.w} 週</small><h2>${esc(E.name)}</h2><div class="meta">${esc(ci.name)} · Par ${ci.par} · ${ci.blackYards.toLocaleString()} 碼${E.purse && !st.status.amateur ? ' · 總獎金 ' + money(E.purse, { short: true }) : ''}</div>${E.note ? `<div class="meta" style="margin-top:6px">${esc(E.note)}</div>` : ''}${E.major && !st.status.amateur && slamOnLine(st, E.id) && !E.settled ? `<div class="meta" style="margin-top:6px;color:var(--champ2,#e7d29a);font-weight:700">拿下這一座就完成${slamText(slamOnLine(st, E.id))}</div>` : ''}<div style="margin-top:10px"><button class="cm-btn small ghost" data-evpl>素質・技能卡・裝備</button></div></div>`;
   // 比賽週也能去球員頁加點、換卡、換裝備（首頁會帶回比賽）
   //   （綁定記號不能和按鈕用同一個 data-evpl：closest 會比對到內容區本身，任何點擊都會跳去球員頁）
   if (!body.dataset.evplBound) { body.dataset.evplBound = 1; body.addEventListener('click', e => { if (e.target.closest('button[data-evpl]')) go('player'); }); }
@@ -43,7 +47,7 @@ register('event', async body => {
 async function monday(body, st, E, head) {
   // 旅費（比賽週一開始就付）
   if (!E.paid) {
-    const t = travelCost(st, E.region);
+    const t = travelCost(st, E.region, E.id);
     spend(st, t.cost, `${E.name} 旅費與住宿`, 'cost');
     st.player.energy = clamp(st.player.energy - t.energy, 0, 100);
     st.player.mood = clamp(st.player.mood + t.mood, 0, 100);
@@ -53,6 +57,8 @@ async function monday(body, st, E, head) {
     E.paid = true; localSave(st);
   }
   if (E.how === 'mq' || E.how === 'qual') return qualifier(body, st, E, head);
+  await majorWeekStory(st, E, 'mon');
+  await offerChallenge(st, E);
   E.day = (E.tour === 'junior' || E.tour === 'ncaa' || E.tour === 'qs' || E.tour === 'kids') ? 'r0' : 'tue';
   if (!st.status.amateur && st.player.fame > 5000 && E.day === 'tue') { st.player.fame += 200; }
   localSave(st);
@@ -65,7 +71,7 @@ async function qualifier(body, st, E, head) {
     <div class="cm-seg" style="margin:10px 0" id="q-mode">${MODES.filter(m => m[0] !== 'nine').map(m => `<button data-m="${m[0]}">${m[1]}</button>`).join('')}</div><p class="cm-note">打法說明同正賽；資格賽不算世界排名。</p></div>`;
   body.querySelectorAll('#q-mode button').forEach(b => b.onclick = async () => {
     const ci = cinfo(E.course), mode = b.dataset.m, r = rng(hash(E.key + ':mq'));
-    const lvl = E.tour === 'kft' ? 64 : E.tour === 'pga' ? 68 : E.tour === 'tpga' ? 56 : 66;
+    const lvl = (E.tour === 'kft' ? 64 : E.tour === 'pga' ? 68 : E.tour === 'tpga' ? 56 : 66) + (({ casual: -0.3, real: 2.2 })[st.opt.difficulty] || 0);      // 難度加減同 event.js
     const others = Array.from({ length: field - 1 }, () => { let t = 0; for (let k = 0; k < (two ? 2 : 1); k++) t += Math.round(ci.par + roundMean(lvl + r.normal() * 3.5) + courseAdj(ci, {}) + r.normal() * 3); return t; }).sort((a, b) => a - b);
     let mine = 0;
     for (let k = 0; k < (two ? 2 : 1); k++) mine += await playQuick(st, E, mode, k);
@@ -91,12 +97,17 @@ export async function playQuick(st, E, mode, k) {
   if (mode === 'sim') return sum(sim) + 1;
   const holeIdx = mode === 'key' ? keyHoles(ci, 0, 1, false) : [...Array(18).keys()];
   const starts = mode === 'key' ? keyStarts(st, ci, holeIdx) : null;
-  const res = await playRound({ label: E.name + ' 資格賽', key: E.key, cfg: { courseId: E.course, holeIdx, tee: 'black', wind: 'normal', career: { starts } }, noHoleCard: mode === 'key', bcast: () => null });
+  let res;
+  do res = await playRound({ restartable: true, label: E.name + ' 資格賽', key: E.key, cfg: { courseId: E.course, holeIdx, tee: 'black', wind: 'normal', career: { starts } }, noHoleCard: mode === 'key', bcast: () => null });
+  while (res.restart);      // 重新開始這一輪
   return sum(ci.holes.map((h, i) => res.scores[i] ?? sim[i]));
 }
 
 // ---------- 週二：練習輪 ----------
 async function tuesday(body, st, E, head) {
+  await majorWeekStory(st, E, 'tue');
+  // 時差事件選了「多休息一天」：這一場沒有練習輪
+  if (st.story.flags.skipPractice) { delete st.story.flags.skipPractice; toast('時差還沒調好：這週跳過練習輪'); E.day = 'wed'; localSave(st); return go('event'); }
   // 名人賽週的週二晚上：衛冕冠軍主辦冠軍晚宴（決定菜單）
   if (E.id === 'masters' && st.titles.some(t => t.id === 'masters' && t.y === E.year - 1) && !E.dinner) {
     E.dinner = true;
@@ -121,6 +132,7 @@ async function tuesday(body, st, E, head) {
 
 // ---------- 週三：Pro-Am / 贊助拍攝 / 名人賽的三桿洞大賽 ----------
 async function wednesday(body, st, E, head) {
+  await majorWeekStory(st, E, 'wed');
   const pro = !st.status.amateur;
   const isMasters = E.id === 'masters';
   body.innerHTML = head + `<div class="cm-card"><h3>週三 · ${isMasters ? '三桿洞大賽' : 'Pro-Am'}</h3>
@@ -153,7 +165,7 @@ function roundScreen(body, st, E, head) {
   const meRow = lb.find(x => x.me), contending = meRow && meRow.posN <= 8;
   const rec = final && (E.major || contending) ? 'full' : E.tour === 'junior' || E.tour === 'ncaa' ? 'nine' : 'key';
   body.innerHTML = head + `<div class="cm-card"><h3>第 ${ri + 1} 輪<small>${['週四', '週五', '週六', '週日', '第五天', '第六天'][ri] || ''}</small></h3>
-      <div class="cm-row wrap" style="font-size:13px;margin-bottom:8px"><span class="cm-pill">天氣：${WIND_ZH[wx]}</span>${ri >= 2 && E.cutLine != null ? `<span class="cm-pill">晉級線 ${toPar(E.cutLine)}</span>` : ''}${E.practice ? '<span class="cm-pill green">練習輪：讀果嶺 +3</span>' : ''}${final && contending ? '<span class="cm-pill gold">最後一輪 · 爭冠</span>' : ''}</div>
+      <div class="cm-row wrap" style="font-size:13px;margin-bottom:8px"><span class="cm-pill">天氣：${WIND_ZH[wx]}</span>${ri >= 2 && E.cutLine != null ? `<span class="cm-pill">晉級線 ${toPar(E.cutLine)}</span>` : ''}${E.practice ? '<span class="cm-pill green">練習輪：讀果嶺 +3</span>' : ''}${(E.delay || {})[ri - 1] === 'storm' ? '<span class="cm-pill">上一輪雷雨延賽</span>' : ''}${final && contending ? '<span class="cm-pill gold">最後一輪 · 爭冠</span>' : ''}</div>
       <div class="cm-list" id="r-modes">${MODES.map(m => `<div class="cm-li click" data-m="${m[0]}"><div class="main"><b>${m[1]}${m[0] === rec ? ' <span class="cm-pill gold">建議</span>' : ''}</b><span>${m[2]}</span></div><div class="side">›</div></div>`).join('')}</div>
       <div id="r-nine" class="cm-seg" style="margin-top:8px;display:none"><button data-n="front">前九洞</button><button data-n="back" class="on">後九洞</button></div></div>
     <div class="cm-card"><h3>排行榜<small>${ri ? `第 ${ri} 輪後` : '開賽前'}</small></h3>${lbTable(lb, 12)}</div>`;
@@ -169,7 +181,7 @@ export function lbTable(rows, n = 10, opts = {}) {
   const me = rows.find(x => x.me);
   let list = rows.slice(0, n);
   if (me && !list.includes(me)) list = list.concat([{ gap: true }, me]);
-  return `<div class="cm-scroll-x"><table class="lb"><tr><th>名次</th><th>球員</th><th style="text-align:center">總計</th><th style="text-align:center">洞</th>${opts.today ? '<th style="text-align:center">今天</th>' : ''}</tr>${list.map(x => x.gap ? '<tr><td colspan="5" style="text-align:center;color:var(--mut)">⋯</td></tr>' : `<tr class="${x.me ? 'me' : ''} ${x.cut ? 'cut' : ''}"><td class="pos">${x.pos}</td><td>${esc(x.name)}${x.c ? `<span class="ctry">${x.c}</span>` : ''}${x.am ? '<span class="am">(a)</span>' : ''}</td><td class="tp ${x.toPar < 0 ? 'u' : ''}">${x.cut && x.thru === 'CUT' ? toPar(x.toPar) : toPar(x.toPar)}</td><td class="th">${x.thru === 18 ? 'F' : x.thru === 0 ? '—' : x.thru}</td>${opts.today ? `<td class="th">${x.today != null ? toPar(x.today) : ''}</td>` : ''}</tr>`).join('')}</table></div>`;
+  return `<div class="cm-scroll-x"><table class="lb"><tr><th>名次</th><th>球員</th><th style="text-align:center">總計</th><th style="text-align:center">洞</th>${opts.today ? '<th style="text-align:center">今天</th>' : ''}</tr>${list.map(x => x.gap ? '<tr><td colspan="5" style="text-align:center;color:var(--mut)">⋯</td></tr>' : `<tr class="${x.me ? 'me' : ''} ${x.cut ? 'cut' : ''}"><td class="pos">${x.pos}</td><td>${esc(x.name)}${!x.me && x.id ? `<span class="sty sty-${styleOf(x.id)}">${STYLE_ZH[styleOf(x.id)].replace('型', '')}</span>` : ''}${x.c ? `<span class="ctry">${x.c}</span>` : ''}${x.am ? '<span class="am">(a)</span>' : ''}</td><td class="tp ${x.toPar < 0 ? 'u' : ''}">${x.cut && x.thru === 'CUT' ? toPar(x.toPar) : toPar(x.toPar)}</td><td class="th">${x.thru === 18 ? 'F' : x.thru === 0 ? '—' : x.thru}</td>${opts.today ? `<td class="th">${x.today != null ? toPar(x.today) : ''}</td>` : ''}</tr>`).join('')}</table></div>`;
 }
 
 // 關鍵時刻：挑 4 洞（最後一輪爭冠時是最後 4 洞）
@@ -213,6 +225,7 @@ function pressureFor(st, E, ri) {
     if (final && holeNo === 18 && gap <= 1 && (E.major || E.playoff || E.tour === 'qs')) lvl = 3;
     if (E.tour === 'qs' && E.stage === 3 && final && holeNo >= 12 && Math.abs(me.posN - 5) <= 3) lvl = Math.max(lvl, 3);
     if (E.inPlayoff) lvl = 3;
+    if (final && holeNo >= 10 && me.posN <= 3 && E.major && slamOnLine(st, E.id)) lvl = Math.max(lvl, 2);
     return lvl;
   };
 }
@@ -231,29 +244,39 @@ async function playEventRound(st, E, ri, mode, nine) {
   const contend = (() => { const lb = leaderboard(E, ri, 0), me = lb.find(x => x.me); return me && me.posN <= 8; })();
   let holeIdx = mode === 'full' ? [...Array(18).keys()] : mode === 'nine' ? (nine === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : [9, 10, 11, 12, 13, 14, 15, 16, 17]) : mode === 'key' ? keyHoles(ci, ri, E.rounds, contend) : [];
   E.me.played[ri] = Array(18).fill(false);
+  await weatherDelay(st, E, ri);
   if (mode === 'sim') {
-    // 模擬：成績略保守（每洞 +0.03 桿）
+    // 模擬：成績略保守（每洞 3% 機率多 1 桿 = 每輪平均 +0.54 桿）。以前程式寫成 6%（每輪 +1.08 桿、一場 +4.3 桿），
+    //   和註解不一致，PGA TOUR 用模擬打一年半，世界排名從第 4 掉到 135
     const sc = E.me.sim[ri].slice(), r = rng(hash(E.key + ':cons:' + ri));
-    for (let h = 0; h < 18; h++) if (r() < 0.06) sc[h]++;
+    for (let h = 0; h < 18; h++) if (r() < 0.03) sc[h]++;
     E.me.sc[ri] = sc;
   } else {
-    // 精華 9 洞從後九開始時，前九先模擬完成
-    if (mode === 'nine' && nine === 'back') for (let h = 0; h < 9; h++) E.me.sc[ri][h] = E.me.sim[ri][h];
     const starts = mode === 'key' ? keyStarts(st, ci, holeIdx) : null;
     // 關鍵時刻：中間沒打的洞用模擬補上（排行榜依順序推進）
     const fillTo = h => { for (let k = 0; k < h; k++) if (E.me.sc[ri][k] == null && !holeIdx.includes(k)) E.me.sc[ri][k] = E.me.sim[ri][k]; };
-    if (holeIdx.length) fillTo(holeIdx[0]);
-    localSave(st);
-    const res = await playRound({
-      label: `${E.name} 第 ${ri + 1} 輪`, key: E.key, home: isHome(st, E), practiceRound: E.practice, major: !!E.major, round: ri, evId: E.id, final: ri === E.rounds - 1, qual: E.tour === 'qs',
-      cfg: { courseId: E.course, holeIdx, tee: teeOf(st, E), wind: WIND_CFG[E.wx[ri]], stimp: (ci.stimp || 10) + (E.major ? 1.5 : 0) + (E.id === 'usopen' || E.id === 'masters' ? 0.5 : 0), mulligans: st.opt.difficulty === 'casual' ? 1 : 0, seed: hash(E.key + ':seed:' + ri), career: { starts, ev: E.key, round: ri, ...sceneOf(E, ri) } },
-      onHole: (k, idx, s) => { E.me.sc[ri][idx] = s; E.me.played[ri][idx] = !(starts && starts[idx]); const nxt = holeIdx[k + 1]; fillTo(nxt == null ? 18 : nxt); localSave(st); },
-      bcast: g => bcastLine(E, ri),
-      holeCard: () => { const lb = leaderboard(E, ri, thruNow(E, ri)); return lbTable(lb, 5, { today: true }); },
-      pressure: pressureFor(st, E, ri),
-      leaderboard: () => showLb(E, ri),
-      noHoleCard: false,
-    });
+    let res;
+    // 「重新開始這一輪」（遊戲選單）：清掉這一輪的成績，從第一洞重新打（同樣的風、旗位；重打次數重新給）。不限次數，和重打是分開的
+    for (;;) {
+      E.me.sc[ri] = Array(18).fill(null); E.me.played[ri] = Array(18).fill(false);
+      // 精華 9 洞從後九開始時，前九先模擬完成
+      if (mode === 'nine' && nine === 'back') for (let h = 0; h < 9; h++) E.me.sc[ri][h] = E.me.sim[ri][h];
+      if (holeIdx.length) fillTo(holeIdx[0]);
+      localSave(st);
+      res = await playRound({ restartable: true,
+        label: `${E.name} 第 ${ri + 1} 輪`, key: E.key, home: isHome(st, E), farewell: st.farewell === E.key && ri === E.rounds - 1, practiceRound: E.practice, major: !!E.major, round: ri, evId: E.id, final: ri === E.rounds - 1, qual: E.tour === 'qs',
+        cfg: { courseId: E.course, holeIdx, tee: teeOf(st, E), wind: WIND_CFG[E.wx[ri]], stimp: (ci.stimp || 10) + (E.major ? 1.5 : 0) + (E.id === 'usopen' || E.id === 'masters' ? 0.5 : 0), mulligans: st.opt.difficulty === 'casual' ? 1 : 0, seed: hash(E.key + ':seed:' + ri), career: { starts, ev: E.key, round: ri, ...sceneOf(E, ri) } },
+        onHole: (k, idx, s) => { E.me.sc[ri][idx] = s; E.me.played[ri][idx] = !(starts && starts[idx]); const nxt = holeIdx[k + 1]; fillTo(nxt == null ? 18 : nxt); localSave(st); },
+        bcast: g => bcastLine(E, ri),
+        holeCard: () => { const lb = leaderboard(E, ri, thruNow(E, ri)); return lbTable(lb, 5, { today: true }); },
+        pressure: pressureFor(st, E, ri),
+        leaderboard: () => showLb(E, ri),
+        noHoleCard: false,
+      });
+      if (!res.restart) break;
+      st.cnt.restarts = (st.cnt.restarts || 0) + 1; E.restarts = (E.restarts || 0) + 1;
+      toast(`第 ${ri + 1} 輪從第一洞重新開始`);
+    }
     if (res.quit) addNews(st, `${st.player.name} 第 ${ri + 1} 輪提早離場（剩下的洞用模擬完成）`);
     // 個人修正：自己打的洞和預期的差
     const playedHoles = holeIdx.filter(i => res.scores[i] != null && !(starts && starts[i]));
@@ -285,7 +308,9 @@ async function afterRound(st, E, ri, total) {
   if (total <= 59 && !st.status.amateur && E.tour !== 'junior') st.cnt.fiftynine = 1;
   if (total < (st.cnt.best18 || 999)) st.cnt.best18 = total;
   // 疲勞
-  st.player.energy = clamp(st.player.energy - (E.me.mode[ri] === '模擬' ? 2 : 4) * (st.team.staff.includes('nutrition') ? 0.85 : 1), 0, 100);
+  st.player.energy = clamp(st.player.energy - (E.me.mode[ri] === '模擬' ? 2 : 4) * (st.team.staff.includes('nutrition') ? ((st.team.elite || []).includes('nutrition') ? 0.7 : 0.85) : 1), 0, 100);
+  // 疼痛：每打一輪累積（年紀越大越多）
+  st.player.pain = clamp((st.player.pain || 0) + 0.9 + Math.max(0, st.player.age - 32) * 0.06, 0, 100);
   let msg = [`第 ${ri + 1} 輪 ${total} 桿（${toPar(total - par)}），目前 ${me.pos}（${toPar(me.toPar)}）`];
   // 晉級線
   if (ri === 1 && E.rounds > 2 && E.cutTop) {
@@ -327,6 +352,11 @@ async function results(body, st, E, head) {
     afterSettle(st, E, rows, rec);
     localSave(st); sync();
     if (rec.posN === 1) playFanfare();      // 頒獎配樂（只在第一次看到結果時）
+    // 大賽結束後的小劇情：奪冠 / 差一點
+    if (E.major && !st.status.amateur) {
+      const a = rec.posN === 1 ? MAJOR_AFTER.win[E.id] : rec.posN <= 5 ? MAJOR_AFTER.close : null;
+      if (a) await storyResult(a[0], text(st, a[1]), rec.posN === 1 ? [slamLine(st)] : []);
+    }
   }
   const rows = finalStandings(E), rec = E.rec, me = rows.find(x => x.id === ME);
   const win = rec.posN === 1;
@@ -335,6 +365,8 @@ async function results(body, st, E, head) {
       <div class="cm-stat3"><div><span>名次</span><b class="num" style="font-size:28px">${esc(rec.pos)}</b></div><div><span>總桿</span><b class="num" style="font-size:28px">${rec.total}</b> ${tpHtml(rec.toPar)}</div><div><span>${st.status.amateur ? '世界業餘積分' : '獎金'}</span><b class="num" style="font-size:22px">${st.status.amateur ? '—' : money(rec.prize)}</b></div></div>
       <p class="cm-note" style="margin-top:8px">各輪：${(rec.rounds || []).filter(Boolean).join(' · ')}${rec.pts ? `　·　積分 +${rec.pts}` : ''}${E.playoffWinner ? '　·　延長賽決定冠軍' : ''}</p>
       ${E.qsMsg ? `<p style="margin-top:8px;font-weight:700;color:var(--aug)">${E.qsMsg.map(esc).join('<br>')}</p>` : ''}
+      ${E.chal ? `<p style="margin-top:8px">${esc(E.chal.sp)} 的挑戰「${esc(E.chal.text)}」：${E.chal.ok ? `<b style="color:var(--aug)">成功，獎金 ${money(E.chal.reward)}</b>` : '沒有達成（贊助商好感 −1）'}</p>` : ''}
+      ${(E.recMsg || []).length ? `<p style="margin-top:6px;font-weight:700;color:var(--champ)">${E.recMsg.map(esc).join('<br>')}</p>` : ''}
       ${win ? '<button class="cm-btn ghost" id="rs-cert" style="margin-top:10px">冠軍證書</button>' : ''}
     </div>
     <div class="cm-card"><h3>最終排行榜</h3>${lbTable(rows.map(x => ({ ...x, pos: x.cut ? 'CUT' : (x.tie ? 'T' : '') + x.pos, posN: x.pos || 999, toPar: x.total - E.par * (x.cut ? 2 : E.rounds), thru: 18, me: x.id === ME })), 15)}</div>
@@ -346,7 +378,7 @@ async function results(body, st, E, head) {
     if (kind && !st.status.amateur || (win && kind)) {
       const q = pressFor(st, kind);
       if (q) {
-        const i = await story({ small: 'PRESS CONFERENCE', title: '記者會', img: win ? 'augusta-leaderboard.jpg' : null, paras: [`記者：「${text(st, q.q)}」`], choices: q.a.map(a => [{ gent: '紳士', conf: '自信', humor: '幽默' }[a[0]] + '　' + text(st, a[1])]), skip: true });
+        const i = await story({ small: 'PRESS CONFERENCE', title: '記者會', img: win ? 'augusta-leaderboard.jpg' : null, paras: [`記者：「${text(st, q.q)}」`], choices: q.a.map(a => [{ gent: '紳士', conf: '自信', humor: '幽默', edgy: '話題' }[a[0]] + '　' + text(st, a[1])]), skip: true });
         answerPress(st, q, Math.max(0, i));
       }
     }
@@ -387,6 +419,18 @@ export function afterSettle(st, E, rows, rec) {
     addTimeline(st, `${E.name} 冠軍`);
     addPhoto(st, `${E.name} 冠軍`, E.id === 'masters' ? 'augusta-10.jpg' : E.id === 'open' ? 'swilcan.jpg' : E.id === 'players' ? 'sawgrass-17.jpg' : E.major ? 'kiawah-18.jpg' : E.tour === 'pga' ? 'pebble-18.jpg' : E.tour === 'junior' || E.tour === 'kids' ? 'boy-flag.jpg' : E.tour === 'am' || E.tour === 'ncaa' ? 'augusta-clubhouse.jpg' : 'green-sun.jpg');
     if (E.tour === 'pga' || E.tour === 'major') { if (T.pgaWins === 1) queueMain(st, 'first_win'); }
+    // 戰場晉升（真實規則）：同一季 Korn Ferry 贏 3 場 → 馬上拿到 PGA TOUR 卡；PGA TOUR Americas 贏 2 場 → 馬上升 Korn Ferry
+    if (!st.status.amateur && (E.tour === 'kft' || E.tour === 'pta')) {
+      const n = st.titles.filter(t => t.y === E.year && t.tour === E.tour).length, s = st.status;
+      if (E.tour === 'kft' && n >= 3 && !hasCard(st, 'pga', E.year)) {
+        s.cards.pga = E.year + 1; s.mainTour = 'pga'; if (s.stage === 'road') { s.stage = 'tour'; s.rookieYear = s.rookieYear || E.year; }
+        addTimeline(st, '戰場晉升：一季 Korn Ferry 三勝，直接升上 PGA TOUR'); addNews(st, `${p.name} 拿下本季 Korn Ferry 第三勝，戰場晉升 PGA TOUR！`, 'me'); queueMain(st, 'pga_card');
+      }
+      if (E.tour === 'pta' && n >= 2 && !hasCard(st, 'kft', E.year) && !hasCard(st, 'pga', E.year)) {
+        s.cards.kft = E.year + 1; s.mainTour = 'kft';
+        addTimeline(st, '戰場晉升：一季 PGA TOUR Americas 兩勝，直接升上 Korn Ferry'); addNews(st, `${p.name} 拿下本季 Americas 第二勝，戰場晉升 Korn Ferry Tour！`, 'me');
+      }
+    }
     if ((E.region === 'tw' && p.country === 'TPE') || (E.region === 'jp' && p.country === 'JPN')) if (!st.status.amateur) st.cnt.homeWin = 1;
     // 大逆轉：最後一輪開始時落後 5 桿以上
     const before = finalBefore(E);
@@ -395,12 +439,42 @@ export function afterSettle(st, E, rows, rec) {
     if (E.id === 'jr_school') st.cnt.schoolGold = 1;
     if (E.tour === 'olympic') st.cnt.olyGold = 1;
     // 冠軍專屬裝備
-    if (E.id === 'masters') { giveItem(st, 'jacket_green'); st.story.prevChamp = prevMastersChamp(st, E.year); }
-    if (E.id === 'open') giveItem(st, 'claret_cap');
+    if (E.id === 'masters') st.story.prevChamp = prevMastersChamp(st, E.year);
+    if (CHAMP_GIFT[E.id] && !st.gear.items.some(x => x.id === CHAMP_GIFT[E.id])) { giveItem(st, CHAMP_GIFT[E.id]); addNews(st, `冠軍紀念品：${itemById(CHAMP_GIFT[E.id]).name}（球員 → 裝備）`); }
+    if (E.tour === 'olympic' && !st.gear.items.some(x => x.id === 'olympic_medal')) giveItem(st, 'olympic_medal');
+    // 收藏室：大賽、THE PLAYERS、TOUR Championship 的第 18 洞旗（大家簽名）
+    if (E.major || ['players', 'tourchamp', 'host'].includes(E.id)) { st.collection = st.collection || []; st.collection.push({ name: `${E.year} ${E.name} 第 18 洞旗（簽名）`, kind: 'flag', from: '冠軍', y: E.year }); }
+    if (E.major) {
+      const sl = slamStatus(st), before = st.cnt.slams || 0, tg = st.cnt.tiger || 0;
+      if (sl.slams > before) {
+        st.cnt.slams = sl.slams;
+        queueMain(st, sl.slams === 1 ? 'slam_done' : 'slam_double');
+        addTimeline(st, slamText(sl.slams)); addNews(st, `${p.name} 完成${slamText(sl.slams)}！`, 'major');
+        if (!st.gear.items.some(x => x.id === 'slam_jacket')) giveItem(st, 'slam_jacket');
+        st.trophies.push({ y: E.year, id: 'slam' + sl.slams, name: slamText(sl.slams), tier: 'major', tour: 'major', kind: 'plate' });
+      }
+      if (sl.tiger > tg) { st.cnt.tiger = sl.tiger; queueMain(st, 'tiger_slam'); addTimeline(st, '連續四大賽冠軍'); addNews(st, `${p.name} 同時握有四大賽冠軍！`, 'major'); }
+    }
   } else if (rec.posN <= 10) addNews(st, fill(NEWS.top10[0], { name: p.name, event: E.name, pos: rec.pos, top10: T.top10 }));
   else if (rec.pos === 'CUT' && !st.status.amateur) addNews(st, fill(NEWS.cut_missed[0], { name: p.name, event: E.name }));
   if (E.tour === 'olympic' && rec.posN <= 3) { st.trophies.push({ y: E.year, id: 'olympics', name: `奧運${['金', '銀', '銅'][rec.posN - 1]}牌`, tier: 'olympic', tour: 'olympic', kind: 'medal' }); addTimeline(st, `奧運${['金', '銀', '銅'][rec.posN - 1]}牌`); }
   if (E.id.startsWith('jr_asiangames') && rec.posN <= 3) st.cnt.asianMedal = 1;
+  // 常碰到的對手：同一場比賽名次比較前面的算贏（虛構的補位球員不算）
+  { const H = st.h2h = st.h2h || {}, my = rec.pos === 'CUT' ? 999 : rec.posN;
+    for (const x of rows) {
+      if (x.id === ME || String(x.id).startsWith('X')) continue;
+      const th = x.cut ? 999 : x.pos;
+      if (my === 999 && th === 999) continue;
+      const h = H[x.id] = H[x.id] || { n: 0, w: 0, l: 0 };
+      h.n++; h.name = x.name; h.y = E.year; if (my < th) h.w++; else if (th < my) h.l++;
+    }
+    const keys = Object.keys(H); if (keys.length > 160) keys.sort((a, b) => H[a].n - H[b].n).slice(0, keys.length - 160).forEach(k => delete H[k]); }
+  // 贊助商挑戰、個人最佳與球場紀錄、經典重現
+  settleChallenge(st, E, rec);
+  E.recMsg = updateRecords(st, E, rec);
+  saveClassic(st, E, rec);
+  // 自己主辦的邀請賽
+  if (E.id === 'host') { p.fame += 25000; st.rel.sponsor = clamp(st.rel.sponsor + 10, 0, 100); st.cnt.hosted = (st.cnt.hosted || 0) + 1; addNews(st, `${p.name} 主辦的邀請賽圓滿落幕${win ? '，而且自己拿下冠軍' : ''}`); }
   // 大賽的紀錄（隔年的資格）
   if (E.id === 'masters') { st.prevMasters = rec.posN; if (st.status.amateur && rec.pos !== 'CUT') { const ams = rows.filter(x => x.am && !x.cut); if (!ams.length || ams.every(a => a.total >= rec.total)) { st.cnt.lowam = 1; addTimeline(st, '名人賽最佳業餘（銀盃）'); st.trophies.push({ y: E.year, id: 'lowam', name: '名人賽最佳業餘銀盃', tier: 'major', tour: 'am', kind: 'silver' }); } } }
   if (E.id === 'usopen') st.prevUSOpen = rec.posN;
@@ -422,6 +496,9 @@ export function afterSettle(st, E, rows, rec) {
   }
   // 宿敵
   const h2h = rivalRecord(st, rows);
+  // 收藏室：對宿敵每贏 5 次，他送你一顆簽名球（不服輸的那種）
+  { const rid = st.story.rival || st.story.friend, rh = rid && (st.story.h2h || {})[rid];
+    if (rh && rh.w && rh.w % 5 === 0 && st.cnt.rivalBall !== rh.w) { st.cnt.rivalBall = rh.w; const rv = findP(st.world, rid); st.collection = st.collection || []; st.collection.push({ name: `${rv ? nameOf(rv) : '宿敵'} 的簽名球（第 ${rh.w} 勝）`, kind: 'ball', from: '宿敵', y: E.year }); } }
   rivalKeepUp(st, playerRating(st));
   // 知識卡
   if (E.major) giveKnow(st, 'major');
@@ -435,7 +512,49 @@ function finalStandingsBefore(E) {
   const mine = myTotal(E, r), best = Math.min(...E.field.filter(e => !e.cut).map(e => totalOf(e, r)), mine);
   return mine - best;
 }
-const prevMastersChamp = (st, y) => { const id = (st.world.hist.masters || {})[y - 1]; const p = id && findP(st.world, id); return p ? nameOf(p) : '上屆冠軍'; };
+const prevMastersChamp = (st, y) => { const id = (st.world.hist.masters || {})[y - 1]; const n = id && histName(st.world, id, st.player.name); return n && n !== '—' ? n : '上屆冠軍'; };
+
+// 天氣與延賽：雷雨暫停（隔天早上續打）、濃霧延後開球；有專屬的選擇與體能消耗（每一輪最多一次，種子固定）
+async function weatherDelay(st, E, ri) {
+  E.delay = E.delay || {};
+  if (E.delay[ri] !== undefined) return;
+  const r = rng(hash(E.key + ':delay:' + ri)), wx = E.wx[ri] || 0, links = cinfo(E.course).style === 'links', x = r();
+  const kind = x < (wx >= 1 ? 0.06 : 0.03) && !links ? 'storm' : x > (ri <= 1 ? 0.95 : 0.98) ? 'fog' : null;
+  E.delay[ri] = kind; localSave(st);
+  if (!kind) return;
+  const p = st.player;
+  if (kind === 'storm') {
+    const i = Math.max(0, await story({ small: `${E.name} · 第 ${ri + 1} 輪`, title: '雷雨暫停', img: null, paras: ['空氣突然變得很重，遠方傳來雷聲。喇叭響了三聲長音：所有人立刻離開球場。', '雷雨下了三個小時，天黑前沒辦法打完，這一輪改到隔天早上 7 點續打。每個人都要早起，體能 −6。'], choices: [['在會館休息、早點睡', '體能 +4'], ['去室內推桿練習區', '手感 +0.3、體能 −2'], ['和其他球員聊天打牌', '心情 +5']], skip: false }));
+    p.energy = clamp(p.energy - 6 + [4, -2, 0][i], 0, 100);
+    if (i === 1) p.form = clamp(p.form + 0.3, -3, 3);
+    if (i === 2) p.mood = clamp(p.mood + 5, 0, 100);
+  } else {
+    const i = Math.max(0, await story({ small: `${E.name} · 第 ${ri + 1} 輪`, title: '濃霧延後開球', img: null, paras: ['清晨的球場被濃霧蓋住，從發球台看不到 50 碼外的旗桿。', '委員會宣布開球延後兩個小時，所有開球時間往後排。'], choices: [['多熱身一點', '手感 +0.2、體能 −2'], ['回車上補眠', '體能 +3']], skip: false }));
+    if (i === 0) { p.form = clamp(p.form + 0.2, -3, 3); p.energy = clamp(p.energy - 2, 0, 100); } else p.energy = clamp(p.energy + 3, 0, 100);
+  }
+  st.cnt.delays = (st.cnt.delays || 0) + 1;
+  localSave(st);
+}
+
+// 大賽週的小劇情：週一 / 週二 / 週三各一段（每一天只出一次）
+async function majorWeekStory(st, E, day) {
+  const W = E.major && MAJOR_WEEK[E.id], list = W && W[day];
+  if (!list || !list.length || st.status.amateur && day === 'mon') return;
+  E.mw = E.mw || {};
+  if (E.mw[day]) return;
+  E.mw[day] = 1;
+  const [title, para, choices] = list[E.year % list.length];
+  const i = Math.max(0, await story({ small: `${MAJOR_ZH[E.id]} · ${{ mon: '週一', tue: '週二', wed: '週三' }[day]}`, title, paras: [text(st, para)], choices: choices.map(c => [c[0]]), skip: false }));
+  const log = applyFx(st, choices[i][1]);
+  await storyResult(choices[i][0], text(st, choices[i][2]), log);
+  localSave(st);
+}
+// 大滿貫進度的一句話（拿到大賽冠軍時）
+export function slamLine(st) {
+  const won = ['masters', 'pgachamp', 'usopen', 'open'].filter(m => st.titles.some(t => t.id === m));
+  const left = ['masters', 'pgachamp', 'usopen', 'open'].filter(m => !won.includes(m)).map(m => MAJOR_ZH[m]);
+  return left.length ? `大滿貫進度：${won.length} / 4（還差${left.join('、')}）` : '你完成了生涯大滿貫！';
+}
 
 // 冠軍證書
 function certificate(st, E, rec) {

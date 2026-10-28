@@ -6,7 +6,7 @@ import { effectiveStats, CARDS, TALENTS, cardLv, cardMul, cardMulligans } from '
 import { ratingOf } from '../sim.js';
 import { caddieById } from '../data/items.js';
 import { YD, MPH, toYd } from '../../../js/util.js';
-import { SURF } from '../../../js/physics.js';
+import { SURF, carryAt } from '../../../js/physics.js';
 import { startAmbience, stopAmbience, setWindSound, setPressureSound, playApplause, playRoar, playGroan, playDistantRoar } from '../../../js/audio.js';
 
 let ctx = null, sess = null;
@@ -26,6 +26,11 @@ export function gamePlayer(st, opt = {}) {
     if (it && it.look) Object.assign(look, it.look);
   }
   if (st.lookOverride) Object.assign(look, st.lookOverride);
+  // 球具工坊訂製的球桿 / 球外觀（主遊戲星星商店的造型）
+  const SK = { driver: 'drvSkin', iron: 'ironSkin', putter: 'putSkin', chipper: 'chipSkin', ball: 'ballSkin' };
+  for (const [slot, id] of Object.entries(st.clubLook || {})) if (SK[slot] && id) look[SK[slot]] = id;
+  // 自選顏色（桿頭、桿身、握把）：取代星星商店的造型
+  if (st.clubColor && Object.keys(st.clubColor).length) look.customSkins = { ...st.clubColor };
   // 基礎角色外觀（主遊戲的經典角色：膚色、髮色、上衣、褲子、帽子的顏色）；look.model = 寫實角色（David、Louise…）時外觀由模型決定
   look.hair = look.hairColor || look.hair;
   return { user: p.name, stats: effectiveStats(st, opt), look, local: true };
@@ -56,7 +61,7 @@ export function playRound(o) {
     overlay(true);
     // 比賽氣氛：訓練與練習輪只有風聲、鳥叫；比賽依規模有觀眾
     startAmbience({ crowd: o.drill || o.practiceRound ? 0 : (cfg.career.crowd ?? (cfg.career.gallery || 1)) });
-    await ctx.startGame(cfg, [gamePlayer(st, { home: o.home, practiceRound: o.practiceRound })], o.resume || null);
+    await ctx.startGame(cfg, [o.player || gamePlayer(st, { home: o.home, practiceRound: o.practiceRound })], o.resume || null);
   });
 }
 // APP 被關掉之後接續：存下來的回合（只接續同一個生涯欄位）
@@ -77,6 +82,11 @@ const HOOKS = {
     const s = p.stats, mental = s.mental || 50;
     let lvl = sess.pressure ? sess.pressure(game, p) : (pressure ? 1 : 0);
     if (sess.calm && lvl > 0) lvl--;
+    // 心理師：每輪一次「冷靜」（頂級兩次），壓力等級 2 以上自動用掉
+    else if (lvl >= 2 && st.team.staff.includes('psych') && (sess.psyUsed || 0) < ((st.team.elite || []).includes('psych') ? 2 : 1) && !game.cfg.practice) {
+      sess.psyUsed = (sess.psyUsed || 0) + 1; lvl--;
+      tip('<b>心理師</b>：照平常的節奏，呼吸，出桿。（冷靜：這一桿壓力等級 −1）');
+    }
     const tal = st.player.talents.includes('heart') ? TALENTS.heart.pressure : 1;
     let m = 1 + lvl * 0.13 * clamp(1.45 - mental / 100, 0.45, 1.3) * tal;
     // 實力還低時，正式比賽的誤差稍微放大（最多 ×1.2，綜合實力 50 以上不影響）；童年、練習、家人下場不放大
@@ -129,7 +139,16 @@ const HOOKS = {
   turn(game, p) {
     const st = cur(); if (!st || !sess) return;
     setWindSound(Math.hypot(game.wind[0], game.wind[1]) / MPH);
+    // 技巧賽的近旗：練習場模式預設拿一號木，第一球之前自動換成這個距離的球桿（之後玩家可以自己換）
+    if (sess.autoClub && !sess.clubSet && game.autoClub) { sess.clubSet = true; const c = game.autoClub(p, game.distPin(p)); if (c && c.id !== game.pClub) { game.pClub = c.id; return game.beginTurn(game.cur); } }
     if (sess.drill) return drillTurn(game, p);
+    if (sess.alt) altTurn(game, p);
+    // 告別賽的最後一洞：觀眾起立鼓掌
+    if (sess.farewell && game.holeNo === 18 && !sess.farewellShown) {      // 關鍵時刻從第二桿開始也要觸發
+      sess.farewellShown = true;
+      playApplause(1); setTimeout(() => playRoar(0.6), 900);
+      tip('<b>最後一洞</b>：看台上的觀眾全部站了起來，掌聲一直沒有停。你摘下帽子，向四周揮手。', 8000);
+    }
     updateBcast(game);
     caddieTip(game, p, st);
     // 大賽：偶爾聽到遠方其他洞的歡呼
@@ -164,6 +183,18 @@ const HOOKS = {
     overlay(false);
     clearResume();
     setTimeout(() => { game.quit(); ctx.show('scr-career'); s.res({ scores: s.scores, quit: false }); }, 50);
+  },
+  // 遊戲選單的「重新開始這一輪」：只有正式比賽的一輪才有（練習、訓練關卡、技巧賽沒有）
+  canRestart() { return !!(sess && sess.restartable); },
+  restart(game) {
+    const s = sess;
+    if (!s || !s.restartable) return;
+    if (!confirm('從第一洞重新開始這一輪？\n這一輪目前的成績會清掉，用同樣的風和旗位重打一次（重打次數會重新給，和重打是分開的）。')) return;
+    sess = null; overlay(false); clearResume();
+    stopAmbience();
+    game.quit();
+    ctx.show('scr-career');
+    s.res({ scores: {}, restart: true });
   },
   quit(game) {
     const s = sess;
@@ -259,6 +290,22 @@ export function tip(html, ms = 5200) {
   clearTimeout(tipTimer); tipTimer = setTimeout(() => e.classList.add('hide'), ms);
 }
 
+// 輪流擊球（Foursomes）：兩人輪流擊同一顆球。單數洞你開球、雙數洞隊友開球；輪到隊友時由電腦瞄準旗桿、依距離表選力道打
+function altTurn(game, p) {
+  const starterMe = game.k % 2 === 0, mine = (p.strokes % 2 === 0) === starterMe;
+  game.input.enabled = mine; game.hud.enableControls(mine);
+  if (mine) return;
+  tip(`<b>${esc(sess.alt.mate)}</b> 擊球`, 2600);
+  setTimeout(() => {
+    if (!sess || !sess.alt || game.flight || game.swingAnim || game.holeDone || !game.running) return;
+    const d = game.distPin(p);
+    let power;
+    if (game.club.putter) power = Math.min(1, d / game.puttScale * 1.04);
+    else if (game.club.chipper) power = Math.min(1, d / game.puttScale);
+    else { const full = carryAt(p.table[game.club.id], 1); power = Math.min(1, Math.max(0.15, d / Math.max(1, full) * 0.98)); }
+    game.onSwing({ power, curve: 0 });
+  }, 1800);
+}
 // 桿弟的建議（情報為主）
 function caddieTip(game, p, st) {
   const t = st.team.caddie; if (!t || !p.local) return;
@@ -282,7 +329,7 @@ function caddieTip(game, p, st) {
       msg = `實際距離 ${Math.round(dist)} 碼，${Math.abs(plays - dist) >= 3 ? `打起來像 ${plays} 碼` : '照距離打'}${cad.ability === 'wind' && Math.abs(head) > 4 ? '，多拿一支、壓低打' : ''}。`;
     }
     if (cad.ability === 'spread' && !(st.opt.difficulty === 'real')) {
-      const s = p.stats, side = Math.round(dist * (2.6 - (s.accuracy || 50) * 0.019) * 0.045 * 10) / 10, len = Math.round(dist * (0.06 - (s.consistency || 50) * 0.00045) * 1.1 * 10) / 10;
+      const s = p.stats, side = Math.round(dist * (2.2 - (s.accuracy || 50) * 0.016) * 0.045 * 10) / 10, len = Math.round(dist * (0.024 - (s.consistency || 50) * 0.00014) * 1.3 * 10) / 10;
       msg = `落點範圍（70%）：左右 ±${side} 碼、前後 ±${len} 碼。`;
     }
   }

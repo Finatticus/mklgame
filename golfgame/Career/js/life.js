@@ -5,15 +5,18 @@ import { createWorld, ageWorld, makePeers, peersTurnPro, peerRating, rankList, o
 import { STAT_KEYS, startStats, statsAtAge, yearlyGrowth, train, addXp, XP, TALENTS, capOf, cardSlots, CARDS, ageMul, TRAIN } from './growth.js';
 import { yearEvents, eligibility, seasonEndCards, qschoolResult, teamSelection, hasCard, majorEligibility } from './tours.js';
 import { simBackground, owgrPoints, fedexFor, tourPoints, amPoints, prizeOf, cinfo } from './event.js';
-import { STARTER, itemById, ROOM_LEVELS, CADDIES, FLIGHT, LODGE, STAFF, COACH_TIER, ASSETS } from './data/items.js';
+import { STARTER, itemById, ROOM_LEVELS, CADDIES, FLIGHT, LODGE, STAFF, STAFF_ELITE, COACH_TIER, ASSETS, HOMES, INVEST, COURSE_BASE, COURSE_UP, SOCIAL, fanLevel } from './data/items.js';
 import { MAJORS, MAJOR_ZH, TOUR_ZH, homeCourses } from './data/calendar.js';
 import { NEWS, eventsFor } from './data/story.js';
 import { teamSide } from './data/players.js';
+import { academyYear } from './extras.js';
 
 export const START_YEAR = 2026;
 export const CHAPTER_ZH = ['序章', '第一章 · 童年', '第二章 · 青少年', '第三章 · 大學與業餘', '第四章 · 職業之路', '第五章 · PGA TOUR', '第六章 · 大賽挑戰者', '第七章 · 綠夾克', '第八章 · 傳奇'];
-export const DIFF = { casual: { name: '休閒', ai: -2.5, xp: 1.3, mull: 1 }, standard: { name: '標準', ai: 0, xp: 1, mull: 0 }, real: { name: '寫實', ai: 1.5, xp: 1, mull: 0, injuries: true, noSpread: true } };
-export const LENGTH = { fast: { name: '快速', events: 0.6, weeks: 0.7, xp: 1.9 }, standard: { name: '標準', events: 1, weeks: 1, xp: 1 }, full: { name: '完整', events: 1.25, weeks: 1.2, xp: 0.75 } };
+// v99 平衡（30 年模擬調出來的）：休閒 AI −0.3、經驗 ×1.05（再加每輪一次重打）；寫實 AI +2.2（一輪約 0.45 桿）
+export const DIFF = { casual: { name: '休閒', ai: -0.3, xp: 1.05, mull: 1 }, standard: { name: '標準', ai: 0, xp: 1, mull: 0 }, real: { name: '寫實', ai: 2.2, xp: 1, mull: 0, injuries: true, noSpread: true } };
+// 生涯長度只影響成長速度（events / weeks 沒有用到）。v99：快速 ×1.9 會讓球員 28 歲實力 89、生涯 118 勝，改成 ×1.15；完整 ×0.95
+export const LENGTH = { fast: { name: '快速', events: 0.6, weeks: 0.7, xp: 1.15 }, standard: { name: '標準', events: 1, weeks: 1, xp: 1 }, full: { name: '完整', events: 1.25, weeks: 1.2, xp: 0.95 } };
 export const FAMILY = { modest: { name: '小康家庭', allow: 15, share: 0.4, cash: 200 }, middle: { name: '中產家庭', allow: 40, share: 0.7, cash: 800 }, wealthy: { name: '富裕家庭', allow: 120, share: 1, cash: 4000 } };
 
 // ---------- 建立生涯 ----------
@@ -95,7 +98,9 @@ export const ACTIONS = {
   team: { name: '校隊練習', desc: '和校隊一起練：隨機一項訓練（約一般練球的 75%）、學業 +1、心情 +3', energy: -6, mood: 3, need: s => s === 'junior' },
   work: { name: '打工', desc: '青少年：家鄉球場桿弟（$60~120，家鄉讀果嶺加成 +0.25）；大學：夏令營助教（$250，暑假 $800）；職業：開班教學', energy: -8, mood: 0 },
   family: { name: '陪家人', desc: '家人關係 +6、心情 +8', energy: 2, mood: 8 },
-  social: { name: '社群發文', desc: '追蹤數增加（精彩的比賽會讓追蹤數暴增）', energy: -1, mood: 2, need: (s, st) => st.player.age >= 15 },
+  social: { name: '社群發文', desc: '追蹤數增加（精彩的比賽會讓追蹤數暴增）；可以選主題，業配、公益、爭議話題會影響贊助商好感', energy: -1, mood: 2, need: (s, st) => st.player.age >= 15 },
+  stream: { name: '直播', desc: '開直播和粉絲聊天、示範揮桿：追蹤增加、粉絲打賞（追蹤越多越多）；體能 −4', energy: -4, mood: 2, need: (s, st) => st.player.age >= 16 && st.player.followers >= 2000 },
+  treat: { name: '治療與按摩', desc: '物理治療、按摩、冰敷：疼痛 −25（職業 $800，業餘 $150、家人分擔一部分）', energy: 4, mood: 1, need: (s, st) => (st.player.pain || 0) >= 10 },
   sponsor: { name: '贊助活動', desc: '拍廣告、出席活動：收入與人氣，體能 −10', energy: -10, mood: -1, need: (s, st) => st.sponsors.length > 0 },
   corp: { name: '企業球敘', desc: '陪企業客戶打球：收入高，但佔掉整週', energy: -12, mood: -2, full: true, need: (s, st) => !st.status.amateur && (st.player.fame >= 20000) },
   clinic: { name: '球迷營隊', desc: '開球迷營隊、教學：收入與人氣', energy: -6, mood: 4, need: (s, st) => !st.status.amateur && st.player.fame >= 50000 },
@@ -121,6 +126,7 @@ export function doAction(st, a, sub, log) {
       const fm = a === 'team' ? 1 : focusMul(st, kind), gm = g0 && g0.id === 'focus' && g0.sub === kind && a === 'train' ? 1.3 : 1;
       const amt = (24 + r() * 6) * coachMul(st, kind) * (p.talents.includes('grinder') ? 1.15 : 1) * lengthXp(st) * assetMul(st, kind) * fm * gm * (limited ? 0.5 : 1) * (a === 'team' ? 0.75 : 1);
       const g = train(p, kind, amt);
+      p.pain = clamp((p.pain || 0) + (kind === 'long' || kind === 'gym' ? 1 : 0.5), 0, 100);      // 練長桿、健身房比較容易痠痛
       const xp = Math.round(15 * lengthXp(st));
       addXp(p, xp, x => log.push(x));
       const prog = TRAIN[kind].stats.map(k => `${STAT_NAME[k]} ${Math.round(p.trainXp[k] || 0)}/${trainNeedOf(p.stats[k])}`).join('、');
@@ -130,7 +136,7 @@ export function doAction(st, a, sub, log) {
       log.push(`${a === 'team' ? '校隊練習' : '練球'}（${TRAIN_SHORT[kind]}）：訓練經驗${TRAIN[kind].stats.length > 1 ? '每項' : ''} +${per}${tags ? `（${tags}）` : ''}${g.length ? '，' + g.map(k => STAT_NAME[k] + ' +1').join('、') : ''} · 經驗 +${xp}${a === 'team' ? ' · 學業 +1' : ''}｜進度 ${prog}`);
       break;
     }
-    case 'rest': log.push(`休息：體能 +${A.energy}、心情 +${A.mood}`); break;
+    case 'rest': { p.pain = Math.max(0, (p.pain || 0) - 8); const hb = st.homeLv ? HOMES[st.homeLv].rest : 0; if (hb) p.energy = clamp(p.energy + hb, 0, 100); log.push(`休息：體能 +${A.energy + hb}${hb ? `（${HOMES[st.homeLv].name} +${hb}）` : ''}、心情 +${A.mood}`); break; }
     case 'study': st.school.grade = clamp((st.school.grade || 60) + 6, 0, 100); log.push(`念書：學業 +6（現在 ${Math.round(st.school.grade)}）`); break;
     case 'tutor': { const paid = spend(st, 60, '補習費'); st.school.grade = clamp((st.school.grade || 60) + 10, 0, 100); log.push(`補習：學業 +10（現在 ${Math.round(st.school.grade)}）· 學費 ${money(paid)}${paid < 60 ? '（其餘家人出）' : ''}`); break; }
     case 'work': {
@@ -143,9 +149,29 @@ export function doAction(st, a, sub, log) {
     }
     case 'family': st.rel.family = clamp(st.rel.family + 6, 0, 100); log.push(`陪家人：家人關係 +6（現在 ${Math.round(st.rel.family)}）、心情 +${A.mood}`); break;
     case 'social': {
-      let add = Math.round(20 + p.followers * 0.01 + p.fame * 0.02 + r() * 40);
+      const T = SOCIAL[sub] || SOCIAL.daily;
+      let add = Math.round((20 + p.followers * 0.01 + p.fame * 0.02 + r() * 40) * T.fol);
       if (g0 && g0.id === 'social') add *= 2;
-      p.followers += add; log.push(`社群發文：追蹤 +${add.toLocaleString()}${g0 && g0.id === 'social' ? '（本週目標 ×2）' : ''}`);
+      if (st.assets.studio) add *= 2;
+      p.followers += add;
+      if (T.sponsor) st.rel.sponsor = clamp(st.rel.sponsor + T.sponsor, 0, 100);
+      if (sub === 'train') addXp(p, 5);
+      if (sub === 'charity') p.fame += 200;
+      if (sub === 'hot') { p.fame += 300; st.media = st.media || {}; st.media.edgy = (st.media.edgy || 0) + 1; }
+      let pay = 0; if (sub === 'gear' && st.sponsors.length) { pay = 1000 * st.sponsors.length + Math.round(p.followers * 0.002); earn(st, pay, '球具開箱業配', 'spon'); }
+      log.push(`社群發文（${T.name}）：追蹤 +${add.toLocaleString()}${T.sponsor ? `、贊助商好感 ${T.sponsor > 0 ? '+' : ''}${T.sponsor}` : ''}${pay ? `、業配 ${money(pay)}` : ''}${g0 && g0.id === 'social' ? '（本週目標 ×2）' : ''}${st.assets.studio ? '（媒體工作室 ×2）' : ''}`);
+      break;
+    }
+    case 'stream': {
+      const add = Math.round(300 + p.followers * 0.012 + r() * 200), tip = Math.round(50 + p.followers * 0.003);
+      p.followers += add; earn(st, tip, '直播的粉絲打賞', 'other');
+      log.push(`直播：追蹤 +${add.toLocaleString()}、粉絲打賞 ${money(tip)}`);
+      break;
+    }
+    case 'treat': {
+      const cost = s === 'junior' || s === 'college' ? 150 : 800;
+      const paid = spend(st, cost, '治療與按摩'); p.pain = Math.max(0, (p.pain || 0) - 25);
+      log.push(`治療與按摩：疼痛 −25（現在 ${Math.round(p.pain)}）· ${money(paid)}`);
       break;
     }
     case 'sponsor': {
@@ -206,14 +232,30 @@ export function weeklyCost(st) {
   let c = 0;
   if (st.team.coach) c += st.team.coach.fee || 0;
   if (st.team.caddie && st.team.caddie.fee && !s.amateur) c += st.team.caddie.fee;
-  for (const k of st.team.staff) c += (STAFF[k] && STAFF[k].fee) || 0;
-  if (!s.amateur) c += st.base === 'florida' ? 900 : 500;
+  for (const k of st.team.staff) c += staffFee(st, k);
+  if (!s.amateur) c += livingCost(st);
+  for (const k in st.assets) if (st.assets[k] && ASSETS[k] && ASSETS[k].upkeep) c += ASSETS[k].upkeep;
   return c;
 }
+// 專業團隊的週薪（頂級 ×3）
+export const isElite = (st, k) => (st.team.elite || []).includes(k);
+export const staffFee = (st, k) => ((STAFF[k] && STAFF[k].fee) || 0) * (isElite(st, k) ? STAFF_ELITE.fee : 1);
+const hasStaff = (st, k) => st.team.staff.includes(k);
+// 生活費：租房（家鄉 $500、佛州 $900），買了房子就改成房子的維護費
+export const livingCost = st => (st.homeLv ? HOMES[st.homeLv].upkeep : st.base === 'florida' ? 900 : 500);
+// 球場經營：每週營收（家鄉球場 5 股都買齊才有）
+export function courseIncome(st) {
+  if ((st.assets.share || 0) < 5) return 0;
+  const up = st.courseUp || {};
+  return Math.round(COURSE_BASE * (1 + Object.entries(COURSE_UP).reduce((a, [k, u]) => a + (up[k] || 0) * u.inc, 0)));
+}
+// 投資的總市值
+export const investTotal = st => Object.values(st.invest || {}).reduce((a, b) => a + b, 0);
 export const lowCash = st => st.money.cash < (st.status.amateur ? 30 : Math.max(500, weeklyCost(st) * 2));
 
 const STAT_NAME = { power: '力量', contact: '擊球效率', launch: '彈道', accuracy: '準度', consistency: '穩定度', shaping: '曲球', spin: '旋轉', chipping: '切球', bunker: '沙坑', recovery: '脫困', touch: '推桿距離感', line: '推桿方向', reading: '讀果嶺', mental: '抗壓' };
-export const lengthXp = st => LENGTH[st.opt.length].xp * DIFF[st.opt.difficulty].xp * (st.legacyOf ? 1.2 : 1) * ageMul(st.player.age);      // 生涯長度、難度、傳承（+20%）、年紀
+// 生涯長度的倍率只用在 25 歲以前（決定多快打上 PGA TOUR），之後一樣；以前全部年紀都乘，快速模式後期太強
+export const lengthXp = st => (st.player.age <= 25 ? LENGTH[st.opt.length].xp : 1) * DIFF[st.opt.difficulty].xp * (st.legacyOf ? 1.2 : 1) * ageMul(st.player.age);      // 生涯長度、難度、傳承（+20%）、年紀
 // 教練加成
 export function coachMul(st, kind) {
   let m = 1;
@@ -250,12 +292,17 @@ export function spend(st, amt, what, cat = 'cost') {
 // 旅費（依基地與比賽地區、艙等）
 const REGION_HOME = { TPE: 'tw', JPN: 'jp', KOR: 'asia', CHN: 'asia', USA: 'na' };
 export function baseRegion(st) { return st.base === 'florida' ? 'na' : REGION_HOME[st.player.country] || (teamSide(st.player.country) === 'eur' ? 'eu' : 'asia'); }
-export function travelCost(st, region) {
+export function travelCost(st, region, evId) {
   const b = baseRegion(st);
   const near = { tw: ['tw'], jp: ['jp', 'tw', 'asia'], asia: ['asia', 'tw', 'jp'], na: ['na', 'latam'], eu: ['eu', 'me'], latam: ['latam', 'na'], oce: ['oce'], me: ['me', 'eu'] };
   const base = region === b ? (b === 'tw' ? 80 : 350) : (near[b] || []).includes(region) ? 700 : 1600;
   const fl = FLIGHT[st.flight || 'eco'], lodge = LODGE[st.lodge || (st.status.amateur ? 'motel' : 'hotel')];
-  return { cost: Math.round(base * fl.mul + lodge.cost * 6), energy: region === b ? 3 : fl.energy, mood: lodge.mood };
+  // 自己的私人飛機：只付油錢；巡迴球隊巴士：北美比賽 −40%、體能少 2；蘇格蘭小屋：英國公開賽那一週免費
+  const ownJet = (st.flight || 'eco') === 'jet' && st.assets.jet;
+  let cost = base * (ownJet ? 1.5 : fl.mul) + lodge.cost * 6, energy = region === b ? 3 : fl.energy, mood = lodge.mood + (ownJet ? 2 : 0);
+  if (st.assets.bus && region === 'na') { cost *= 0.6; energy = Math.max(0, energy - 2); }
+  if (st.assets.scotland && evId === 'open') { cost = 0; mood += 6; }
+  return { cost: Math.round(cost), energy, mood };
 }
 // 稅：依基地所在地（佛州沒有州所得稅）＋賽事所在地（在美國以外比賽、外國基地在美國比賽多 5%）
 export function taxRate(st, region) {
@@ -267,7 +314,9 @@ export function taxRate(st, region) {
 // 一年的賽程（快取在記憶體，不放進存檔）
 const yevCache = new Map();
 export function eventsOfYear(st, y) {
-  const k = `${st.seed}:${y}:${st.player.country}:${st.player.age >= 50 ? 1 : 0}`;
+  // 快取的鍵要包含自辦邀請賽（決定主辦之後賽程要重新產生）
+  const h = (st.host || {})[y];
+  const k = `${st.seed}:${y}:${st.player.country}:${st.player.age >= 50 ? 1 : 0}:${h ? h.course : ''}`;
   if (!yevCache.has(k)) { if (yevCache.size > 6) yevCache.clear(); yevCache.set(k, yearEvents(y, st)); }
   return yevCache.get(k);
 }
@@ -310,7 +359,8 @@ export function worldWeek(st, skip = null) {
     st.fedexRank = st.tourRank.pga || 999;
   }
   // 世界排名
-  if (st.player.pro) { st.rankNow = myWorldRank(st, now); st.bestRank = Math.min(st.bestRank || 9999, st.rankNow); if (st.rankNow === 1) st.cnt.no1Weeks = (st.cnt.no1Weeks || 0) + 1; }
+  if (st.player.pro) { st.rankNow = myWorldRank(st, now); st.bestRank = Math.min(st.bestRank || 9999, st.rankNow); if (st.rankNow === 1) st.cnt.no1Weeks = (st.cnt.no1Weeks || 0) + 1;
+    if (!st.retired) { st.rankHist = st.rankHist || []; st.rankHist.push([st.year, st.week, st.rankNow]); if (st.rankHist.length > 52 * 40) st.rankHist.splice(0, st.rankHist.length - 52 * 40); } }
   if (w % 4 === 0) prune(st.world, now);
 }
 export function myWorldRank(st, now) {
@@ -422,11 +472,14 @@ export function endWeek(st, plan, opts = {}) {
     delete st._wg;
   }
   // 自然變化：體能恢復、心情回到 60、手感回到 0
-  p.energy = clamp(p.energy + 10 + (st.team.staff.includes('fitness') ? 4 : 0) + (st.assets.gym ? 3 : 0), 0, 100);
+  p.energy = clamp(p.energy + 10 + (hasStaff(st, 'fitness') ? (isElite(st, 'fitness') ? 7 : 4) : 0) + (st.assets.gym ? 3 : 0), 0, 100);
   p.mood = clamp(p.mood + (60 - p.mood) * 0.08 + (st.rel.family - 60) * 0.02, 0, 100);
   const r = seeded(st, 'form', st.year, st.week);
   // 手感：每週回到 0 附近（上一週的六成 + 隨機），心情很差時往下一點
-  p.form = clamp(Math.round((p.form * 0.6 + r.normal() * 0.7 + (p.mood - 55) / 120) * 10) / 10, -3, 3);
+  let nf = p.form * 0.6 + r.normal() * 0.7 + (p.mood - 55) / 120;
+  // 心理師：手感往下掉的部分減半（頂級只剩 30%）
+  if (hasStaff(st, 'psych') && nf < p.form) nf = p.form - (p.form - nf) * (isElite(st, 'psych') ? 0.3 : 0.5);
+  p.form = clamp(Math.round(nf * 10) / 10, -3, 3);
   // 學業
   if (st.school && (st.status.stage === 'junior' || st.status.stage === 'college')) {
     if (!plan.some(a => a.k === 'study' || a.k === 'tutor' || a.k === 'team')) st.school.grade = clamp((st.school.grade || 60) - (st.school.sports ? 0.4 : 0.8), 0, 100);
@@ -435,8 +488,19 @@ export function endWeek(st, plan, opts = {}) {
   }
   // 每週的固定收入與支出
   weeklyMoney(st, log);
+  assetsWeek(st, log);
   // 傷病（寫實難度，或玩家打開傷病）
-  if (st.opt.injuries && p.injury <= 0 && p.energy < 25 && r() < (st.team.staff.includes('physio') ? 0.03 : 0.07)) { p.injury = 1 + Math.floor(r() * 3); log.push(`小傷：需要休息 ${p.injury} 週`); }
+  // 疼痛管理：每週自然恢復 3（物理治療師 +3、頂級 +5、家用健身房 +1）；體能太低、35 歲以後會慢慢累積
+  p.pain = clamp((p.pain || 0) - 3 - (hasStaff(st, 'physio') ? (isElite(st, 'physio') ? 5 : 3) : 0) - (st.assets.gym ? 1 : 0) + (p.energy < 30 ? 2 : 0) + (p.age >= 35 ? 0.5 : 0), 0, 100);
+  if (p.pain >= 60 && p.pain - 2 < 60) log.push(`疼痛 ${Math.round(p.pain)}：該休息或去治療了（60 以上手感會往下掉）`);
+  if (p.pain >= 60) p.form = clamp(p.form - 0.2, -3, 3);
+  // 疼痛 75 以上一直不處理：打開傷病選項的生涯，每週 10% 變成長期傷病（4~10 週）
+  if (st.opt.injuries && p.injury <= 0 && p.pain >= 75 && r() < 0.1) {
+    p.injury = 4 + Math.floor(r() * 7); p.pain = 40; st.cnt.longInj = (st.cnt.longInj || 0) + 1;
+    log.push(`長期傷病：疼痛拖太久，醫生要你休息 ${p.injury} 週`); addNews(st, `${p.name} 因傷休養 ${p.injury} 週`); addTimeline(st, `因傷休養 ${p.injury} 週`);
+  }
+  if (p.injury > 0) { const ij = st.cnt.injWeeks = st.cnt.injWeeks || {}; ij[st.year] = (ij[st.year] || 0) + 1; }
+  if (st.opt.injuries && p.injury <= 0 && p.energy < 25 && r() < (hasStaff(st, 'physio') ? (isElite(st, 'physio') ? 0.014 : 0.035) : 0.07)) { p.injury = 1 + Math.floor(r() * 3); log.push(`小傷：需要休息 ${p.injury} 週`); }
   else if (p.injury > 0) p.injury--;
   worldWeek(st, opts.eventKey || null);
   if (st.status.amateur) amRanks(st);
@@ -447,6 +511,44 @@ export function endWeek(st, plan, opts = {}) {
   st.player.age = st.year - st.player.birthYear;
   updateChapter(st);
   return log;
+}
+// 資產、住所、度假別墅、球場經營的每週效果
+function assetsWeek(st, log) {
+  const p = st.player, A = st.assets || {}, w = st.week;
+  const H = st.homeLv ? HOMES[st.homeLv] : null;
+  if (H) { p.mood = clamp(p.mood + H.mood, 0, 100); st.rel.family = clamp(st.rel.family + H.fam, 0, 100); p.fame += H.fame; }
+  const free = (kind, label) => { const amt = 26 * 0.6 * lengthXp(st) * coachMul(st, kind); const g = train(p, kind, amt); log.push(`${label}：${TRAIN[kind].name}訓練經驗每項 +${Math.round(amt / TRAIN[kind].stats.length * 1.3)}${g.length ? '，' + g.map(k => STAT_NAME[k] + ' +1').join('、') : ''}`); };
+  if (A.putting) free('putt', '後院推桿果嶺');
+  if (A.sim) free('long', '室內模擬器');
+  if (A.member) { p.fame += 80; p.mood = clamp(p.mood + 1, 0, 100); }
+  if (A.studio) p.fame += 150;
+  if (A.foundation && w % 13 === 0) { spend(st, 100000, '慈善基金會季度捐款'); p.fame += 3000; st.rel.sponsor = clamp(st.rel.sponsor + 2, 0, 100); st.cnt.donated = (st.cnt.donated || 0) + 100000; log.push('慈善基金會捐款 $100,000：人氣 +3,000、贊助商好感 +2'); }
+  if (A.winery) { earn(st, Math.round(600000 / 52), '家族酒莊營收', 'other'); st.rel.family = clamp(st.rel.family + 0.3, 0, 100); }
+  if (A.hawaii && (w >= 47 || w <= 2)) { p.energy = clamp(p.energy + 4, 0, 100); p.mood = clamp(p.mood + 4, 0, 100); }
+  if (A.alps && w >= 27 && w <= 35) { p.energy = clamp(p.energy + 3, 0, 100); p.mood = clamp(p.mood + 2, 0, 100); }
+  if (A.kyoto) { p.mood = clamp(p.mood + 1, 0, 100); st.rel.family = clamp(st.rel.family + 0.3, 0, 100); }
+  // 穿著贊助商專屬裝備（而且合約還在）：每件贊助商好感 +0.3
+  const sponWear = Object.values(st.gear.eq || {}).map(uid => (st.gear.items || []).find(x => x.uid === uid)).map(it => it && itemById(it.id)).filter(b => b && b.spon && st.sponsors.some(s => s.name === b.spon)).length;
+  if (sponWear) st.rel.sponsor = clamp(st.rel.sponsor + 0.3 * sponWear, 0, 100);
+  const ci = courseIncome(st);
+  if (ci) earn(st, ci, '家鄉球場營收', 'other');
+  // 粉絲團的周邊商品（職業才有）：每 1 萬追蹤每週幾美元
+  const fl = fanLevel(p.followers || 0);
+  if (!st.status.amateur && fl.merch && !st.retired) earn(st, Math.round(p.followers / 10000 * fl.merch), `周邊商品（${fl.name}）`, 'other');
+}
+// 投資：年底結算（每一項獨立的報酬，最低 −60%）
+function investYear(st, y, log) {
+  const inv = st.invest || {}, r = seeded(st, 'invest', y);
+  const parts = [];
+  for (const k in inv) {
+    if (!inv[k] || !INVEST[k]) continue;
+    const g = Math.max(-0.6, INVEST[k].ret + INVEST[k].vol * r.normal());
+    const d = Math.round(inv[k] * g);
+    inv[k] += d;
+    st.money.season.invest = (st.money.season.invest || 0) + d;
+    parts.push(`${INVEST[k].name} ${g >= 0 ? '+' : ''}${(g * 100).toFixed(1)}%（${money(d, { plus: true, short: true })}）`);
+  }
+  if (parts.length) { log.push('投資年報酬：' + parts.join('、')); st.money.ledger.unshift({ y, w: 52, what: '投資年報酬（' + parts.join('、') + '）', amt: 0 }); }
 }
 function weeklyMoney(st, log) {
   const s = st.status;
@@ -467,10 +569,21 @@ function weeklyMoney(st, log) {
   const fees = [];
   if (st.team.coach) fees.push([st.team.coach.fee, st.team.coach.name]);
   if (st.team.caddie && st.team.caddie.fee && !s.amateur) fees.push([st.team.caddie.fee, '桿弟 ' + st.team.caddie.name]);
-  for (const k of st.team.staff) fees.push([STAFF[k].fee, STAFF[k].name]);
+  for (const k of st.team.staff) fees.push([staffFee(st, k), (isElite(st, k) ? '頂級' : '') + STAFF[k].name]);
   for (const [f, n] of fees) if (f) spend(st, f, n);
   // 生活費（職業後自己付）
-  if (!s.amateur) spend(st, (st.base === 'florida' ? 900 : 500) * (st.money.cash < 0 ? 0.6 : 1), st.money.cash < 0 ? '生活費（省吃儉用）' : '生活費與房租');
+  if (!s.amateur) spend(st, livingCost(st) * (st.money.cash < 0 && !st.homeLv ? 0.6 : 1), st.homeLv ? `${HOMES[st.homeLv].name}維護與生活費` : st.money.cash < 0 ? '生活費（省吃儉用）' : '生活費與房租');
+  for (const k in st.assets) if (st.assets[k] && ASSETS[k] && ASSETS[k].upkeep) spend(st, ASSETS[k].upkeep, ASSETS[k].name + '維護');
+  // 存款變負的、手上有投資：先自動賣投資補回來（公債 → 不動產 → 指數 → 新創），補到 $50,000
+  if (st.money.cash < 0 && investTotal(st) > 0) {
+    let need = 50000 - st.money.cash;
+    for (const k of ['bond', 'estate', 'index', 'venture']) {
+      const v = (st.invest || {})[k] || 0; if (!v || need <= 0) continue;
+      const x = Math.min(v, need); st.invest[k] = Math.round(v - x); st.money.cash += x; need -= x;
+      st.money.ledger.unshift({ y: st.year, w: st.week, what: `存款不夠：自動賣出 ${INVEST[k].name}`, amt: Math.round(x) });
+      log.push(`存款不夠，自動賣出 ${INVEST[k].name} ${money(x)}`);
+    }
+  }
   if (st.money.cash < 0 && !st.story.flags.debtWarn) { st.story.flags.debtWarn = st.year; log.push('存款變成負的了！接教學、打工，或少打幾站。'); }
   // 剛轉職業的前幾年：存款見底時家人每個月寄一筆生活費（家人關係越好越多）
   if (!s.amateur && st.money.cash < 0 && st.player.age <= 25 && st.week % 4 === 0 && st.rel.family >= 40) { const aid = Math.round(FAMILY[st.player.family].cash * 1.5 * st.rel.family / 70); earn(st, aid, '家人寄來的生活費', 'other'); st.rel.family = clamp(st.rel.family - 1, 0, 100); }
@@ -589,6 +702,11 @@ export function yearEnd(st, log) {
   }
   st.lastRanks = ranks;
   st.prevFedex = ranks.pga || 999;
+  investYear(st, y, log);
+  academyYear(st, log);
+  // 存檔瘦身：3 年前的比賽紀錄只留畫面用得到的欄位
+  for (const r of st.results) if (r.y < y - 2 && r.key) { delete r.key; delete r.tourZh; delete r.age; delete r.course; delete r.pts; if (!r.major) delete r.major; if (!r.mode) delete r.mode; }
+  if (ranks.dp === 1 && !st.gear.items.some(x => x.id === 'dp_cap')) { giveItem(st, 'dp_cap'); log.push('Race to Dubai 年度冠軍：拿到年度冠軍帽'); }
   if (!st.retired) for (const t of seasonEndCards(st, y, ranks)) { log.push(t); addNews(st, t); }      // 退休了就不再算巡迴卡
   promote(W, stand);
   stageAdvance(st, y, log);
@@ -598,7 +716,7 @@ export function yearEnd(st, log) {
   const g = yearlyGrowth(p.age);
   for (const k in g) {
     const mul = g[k] > 0 && p.talents.includes('long') && k === 'power' ? 1.15 : 1;
-    const slow = g[k] < 0 && st.team.staff.includes('fitness') ? 0.6 : 1;
+    const slow = g[k] < 0 && hasStaff(st, 'fitness') ? (isElite(st, 'fitness') ? 0.4 : 0.6) : 1;
     p.stats[k] = clamp(p.stats[k] + g[k] * mul * slow, 1, capOf(p, k));
   }
   // 世界的老化、退休、新人
@@ -661,10 +779,24 @@ export function turnProCore(st, why) {
 }
 
 function awards(st, y, ranks, log) {
-  if (!st.player.pro) return;
+  if (!st.player.pro || st.retired) return;
+  // 年度頒獎典禮（隔年第一次回到首頁時播放）：年度最佳球員、年度新人、最佳回春
+  const W = st.world, S = (W.season[y] || {}).pga || {};
+  const top = Object.entries(S).sort((a, b) => b[1] - a[1]).map(([id]) => findP(W, id)).filter(Boolean);
+  const aiPoy = top[0], aiRoy = top.find(p => y - p.by <= 24) || top[3], aiCome = top.slice(0, 40).find(p => y - p.by >= 33 && hash(p.id + y) % 3 === 0) || top[6];
+  const hist = st.rankHist || [], lastY = hist.filter(h => h[0] === y - 1).pop(), nowR = st.rankNow || 9999;
+  const inj = (st.cnt.injWeeks || {})[y - 1] || 0;
+  const meComeback = st.player.pro && ((lastY && lastY[2] > 100 && nowR <= 30) || (inj >= 6 && nowR <= 50));
+  const A = { y, money: (st.season[y] || {}).money || 0, wins: st.titles.filter(t => t.y === y).length };
   const wins = st.titles.filter(t => t.y === y && (t.tour === 'pga' || t.tour === 'major'));
   if (ranks.pga === 1 || (wins.length >= 3 && wins.some(t => t.tour === 'major'))) { st.tally.poy = (st.tally.poy || 0) + 1; addTimeline(st, `${y} 年度最佳球員`); log.push('年度最佳球員！'); st.cnt.poy = (st.cnt.poy || 0) + 1; }
   if (st.status.rookieYear === y && (ranks.pga || 999) <= 40) { st.tally.rookie = y; queueMain(st, 'rookie_year'); addTimeline(st, `${y} 年度最佳新人（Arnold Palmer Award）`); }
+  A.poy = st.cnt.poy && st.titles.some(t => t.y === y) && (ranks.pga === 1 || st.titles.filter(t => t.y === y && (t.tour === 'pga' || t.tour === 'major')).length >= 3) ? { me: true, name: st.player.name } : aiPoy ? { name: nameOf(aiPoy) } : null;
+  A.roy = st.tally.rookie === y ? { me: true, name: st.player.name } : aiRoy ? { name: nameOf(aiRoy) } : null;
+  A.comeback = meComeback ? { me: true, name: st.player.name } : aiCome ? { name: nameOf(aiCome) } : null;
+  if (meComeback) { st.cnt.comebackAward = (st.cnt.comebackAward || 0) + 1; addTimeline(st, `${y} 年度最佳回春`); }
+  st.awards = st.awards || {}; st.awards[y] = A;
+  st.pendingAwards = y;
 }
 // 主線事件排進佇列（下一次回到生涯首頁時顯示）
 export function queueMain(st, id) { if (!st.story.done[id] && !st.story.queue.includes(id)) st.story.queue.push(id); }

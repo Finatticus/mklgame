@@ -55,6 +55,7 @@ tr:last-child td { border-bottom:none; }
 td.n { font:600 15px "Barlow Condensed"; white-space:nowrap; }
 .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:14px; margin:14px 0; }
 .grid2x2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:14px 0; }
+.oldnote { margin:6px 0 12px; padding:8px 12px; border-radius:10px; background:#fff6e0; border:1px solid #ecd9a8; font-size:12.5px; color:#7a5a1a; }
 .grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:14px 0; }
 .card { background:var(--card); border-radius:14px; padding:16px 18px; box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(6,21,15,.05); }
 .card p, .card li { font-size:14.3px; }
@@ -177,7 +178,7 @@ footer a { color:var(--gold2); }
 </header>
 
 <nav class="toc"><div class="wrap">
-  <a href="#s1">產品概要</a><a href="#s0m">說明書</a><a href="#s2">開放權限</a><a href="#s3">生涯全貌</a><a href="#s4">序章與劇情</a><a href="#s5">童年</a><a href="#s6">青少年</a><a href="#s7">大學與業餘</a><a href="#s8">職業之路</a><a href="#s9">PGA TOUR</a><a href="#s10">名人賽</a><a href="#s11">大賽與團體賽</a><a href="#s11c">球場規劃</a><a href="#s12">比賽系統</a><a href="#s13">成長系統</a><a href="#s14">經濟</a><a href="#s15">團隊</a><a href="#s16">人際與媒體</a><a href="#s16b">獎盃室</a><a href="#s17">傳奇與退休</a><a href="#s18">系統選項</a><a href="#s19">與主遊戲</a><a href="#s20">美術方向</a><a href="#s21">角色與裝備</a><a href="#s22">遊戲畫面</a><a href="#s23">技術規劃</a><a href="#s24">開發排程</a><a href="#s25">素材授權</a>
+  <a href="#s1">產品概要</a><a href="#s0m">說明書</a><a href="#ref">完整參考</a><a href="#s2">開放權限</a><a href="#s3">生涯全貌</a><a href="#s4">序章與劇情</a><a href="#s5">童年</a><a href="#s6">青少年</a><a href="#s7">大學與業餘</a><a href="#s8">職業之路</a><a href="#s9">PGA TOUR</a><a href="#s10">名人賽</a><a href="#s11">大賽與團體賽</a><a href="#s11c">球場規劃</a><a href="#s12">比賽系統</a><a href="#s13">成長系統</a><a href="#s14">經濟</a><a href="#s15">團隊</a><a href="#s16">人際與媒體</a><a href="#s16b">獎盃室</a><a href="#s17">傳奇與退休</a><a href="#s18">系統選項</a><a href="#s19">與主遊戲</a><a href="#s20">美術方向</a><a href="#s21">角色與裝備</a><a href="#s22">遊戲畫面</a><a href="#s23">技術規劃</a><a href="#s24">開發排程</a><a href="#s25">素材授權</a>
 </div></nav>
 
 <main class="wrap">
@@ -224,8 +225,8 @@ footer a { color:var(--gold2); }
 
 <!-- ===================================================== 說明書 -->
 <section class="ch" id="s0m">
-  <div class="chead"><div class="num">00</div><small>Manual · v93</small><h2>說明書：已經做好的內容與怎麼玩</h2></div>
-  <p class="lede">這份企劃書的六個階段都已經做進遊戲（版本 v92；v93 加了每週目標與週報、技能卡升級、裝備分部位、觀眾與聲音、80 座 @C 精修）。這一章是「說明書」：每個系統在遊戲的哪裡、怎麼操作；做的時候和原本企劃不一樣的地方，也都寫在這裡，之後各章的內容以這一章為準。</p>
+  <div class="chead"><div class="num">00</div><small>Manual · v97</small><h2>說明書：已經做好的內容與怎麼玩</h2></div>
+  <p class="lede">這份企劃書的六個階段都已經做進遊戲（版本 v92；v93 加了每週目標與週報、技能卡升級、裝備分部位、觀眾與聲音、80 座 @C 精修；v96 加了後期的花錢地方、更多商品與劇情、大滿貫系統、技巧賽、經典重現、輪流擊球自己打，並把拿到 PGA TOUR 卡的時間縮短到約 3 年；v97 加了完整的球具工坊、對手風格、年度頒獎與回顧、天氣延賽、粉絲與媒體、疼痛管理、收藏室、夢想球場、告別賽與生涯回顧、孩子長大。<b>所有系統的說明集中在本章的「完整參考」，可以搜尋</b>）。這一章是「說明書」：每個系統在遊戲的哪裡、怎麼操作；做的時候和原本企劃不一樣的地方，也都寫在這裡，之後各章的內容以這一章為準。</p>
 
   <h3>開始</h3>
   <div class="grid3">
@@ -295,6 +296,192 @@ footer a { color:var(--gold2); }
     <div class="card"><h4>獎盃 · 更多</h4><p>2D 獎盃櫃、可以走進去的 3D 獎盃室（拖曳轉頭、點地板走路、點獎盃拉近）；新聞、年表、成績、世界排名、生涯名片（含歷史比較）、相簿、知識卡、好友週賽、系統選項、管理員的測試員摘要。</p></div>
   </div>
 
+  <h3>v96 新增：後期與更多玩法</h3>
+  <div class="grid3">
+    <div class="card"><h4>住所與資產</h4><p>財務頁：住所（郊區獨棟 → 球場旁豪宅 → 海景莊園，休息恢復更多、每週心情與家人關係，換房舊屋半價折抵、維護費取代生活費）；資產分成訓練設施、生活、度假別墅（夏威夷、阿爾卑斯、京都、蘇格蘭）、交通（私人飛機、巡迴球隊巴士）、事業與收入（媒體工作室、家族酒莊、家鄉球場股份）、公益與傳承。</p></div>
+    <div class="card"><h4>投資與球場經營</h4><p>投資四種（公債、指數基金、商用不動產、新創），年底結算報酬，可能賠錢，退休後照樣結算。買齊家鄉球場 5 股後可以經營球場：會館、球道整修、練習場與學院、度假酒店各 3 級，每週營收，退休後也有收入。</p></div>
+    <div class="card"><h4>自辦邀請賽 · 頂級團隊</h4><p>世界前 30、大賽冠軍或人氣 300,000：花 $6M 在第 48 週以前決定，第 50 週辦一場 30 人邀請賽（自己也打）。專業團隊多了數據分析師，每一位都可以升級頂級（週薪 ×3、效果更強，需要世界前 50 或人氣 100,000）。</p></div>
+    <div class="card"><h4>球具工坊</h4><p>職業之後在「球員 → 裝備」最下面：一號木、球道木、鐵桿、挖起桿、推桿、球各選一項素質訂製（+1~+3，$80K / $350K / $1.2M，改方向 $50K）、手感三選一（一項 +1、一項 −1）、外觀用主遊戲星星商店的造型（3D 畫面看得到）。</p></div>
+    <div class="card"><h4>商品</h4><p>品牌套裝（同品牌 3 件、5 件各有效果）、Vanta × Haru 聯名套裝（4 件）、季節限定（春、夏、秋、冬、聖誕、農曆新年，只在那幾週買得到）、贊助商專屬裝備（和那個品牌簽服裝或球具合約才能領，穿著時贊助商好感上升）。冠軍紀念品：四大賽、THE PLAYERS、TOUR Championship、奧運金牌、團體賽、Race to Dubai、生涯大滿貫。</p></div>
+    <div class="card"><h4>大滿貫</h4><p>獎盃頁最上面：四大賽各拿過幾次、哪幾年，生涯大滿貫（可以累積幾次）、年度大滿貫、連續四大賽（可以跨年），和歷史紀錄（Jack Nicklaus 18 座）比較。大滿貫在線上時比賽標頭會提醒、最後一輪後九洞壓力提高；完成時有主線劇情與紀念外套。</p></div>
+    <div class="card"><h4>巡迴卡與節奏</h4><p>賽程頁最上面「我的巡迴卡」：現在有哪些卡、今年的目標、巡迴卡是什麼與怎麼升上 PGA TOUR。升級門檻：Americas 前 20 → Korn Ferry 前 30 → PGA TOUR；Q-School 決賽前 10 直接拿 PGA TOUR 卡；戰場晉升（一季 Korn Ferry 三勝、Americas 兩勝當場升級）。北美三級每年依實力重排，世界不會越來越強；22~25 歲成長最快。轉職業後平均 2~3 年拿到 PGA TOUR 卡。</p></div>
+    <div class="card"><h4>贊助商挑戰 · 紀錄</h4><p>有贊助時，比賽週一約一半的機率收到挑戰（晉級、前 25、前 10、奪冠、每輪低於標準桿、最後一輪 68 以下），接受後成功拿獎金與好感、失敗好感 −1。成績頁有個人最佳、球場紀錄（你打過的比賽裡所有球員最低的一輪）與篩選。</p></div>
+    <div class="card"><h4>技巧賽 · 經典重現 · 學院</h4><p>每年第 45~47 週，PGA TOUR 會員或世界前 100 可以參加明星技巧賽：長打 6 球、近旗 150 碼 5 球（3D 自己打或模擬），和 7 位明星比。經典重現見上表。青少年學院的學員每年長大、轉職業、拿冠軍（學院分紅），可以花 $50,000 親自指導。</p></div>
+  </div>
+
+  <h3 id="ref">完整參考（v97）：生涯模式的每一個系統</h3>
+  <p>這一節把生涯模式所有東西集中在一起：在哪一頁、怎麼玩、數字是多少。用下面的搜尋框輸入關鍵字（例如「疼痛」「桿身」「巡迴卡」），只會留下有提到的段落。</p>
+  <div class="card" style="margin:10px 0"><input id="ref-q" placeholder="搜尋說明書：疼痛、桿身、巡迴卡、大滿貫、粉絲…" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font:inherit"><p class="ref-hint" style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">目錄：<a href="#ref-map">畫面地圖</a> · <a href="#ref-week">每週行動</a> · <a href="#ref-state">狀態值</a> · <a href="#ref-grow">素質與成長</a> · <a href="#ref-event">比賽</a> · <a href="#ref-card">巡迴卡</a> · <a href="#ref-major">大賽與大滿貫</a> · <a href="#ref-money">錢</a> · <a href="#ref-gear">裝備與工坊</a> · <a href="#ref-fan">粉絲與媒體</a> · <a href="#ref-people">人與劇情</a> · <a href="#ref-record">紀錄與回顧</a> · <a href="#ref-retire">退休與第二人生</a> · <a href="#ref-main">和主遊戲的連動</a> · <a href="#ref-tips">小技巧</a></p></div>
+
+  <div class="ref">
+  <h4 id="ref-map">畫面地圖（下方 7 個分頁）</h4>
+  <div class="scroll"><table>
+    <tr><th>分頁</th><th>裡面有什麼</th></tr>
+    <tr><td>首頁</td><td>狀態（體能、心情、手感、疼痛）、本週目標、這一週的行動安排（每個行動只顯示一行重點，「更多資訊」展開）、開始這一週 / 快轉、比賽週入口、贊助邀約提醒、明星技巧賽（第 45~47 週）、接下來的比賽、上次沒打完的一輪。年底結算後第一次回來會先播年度頒獎典禮。</td></tr>
+    <tr><td>賽程</td><td>最上面「我的巡迴卡」（手上的卡、今年的目標、巡迴卡是什麼、怎麼升上 PGA TOUR）；全年行事曆（我的比賽 / 全部、今年 / 明年），每一場寫資格與為什麼不能打；報名、取消、週一資格賽、申請贊助外卡。</td></tr>
+    <tr><td>球員</td><td>素質（加點）、技能卡（裝備、升級）、裝備（穿戴、強化、只換外觀、球具工坊、試桿日）、商店（篩選部位、季節限定、贊助商專屬、聯名）、天賦與球風（也能換角色外觀）。</td></tr>
+    <tr><td>團隊</td><td>教練、桿弟、經紀人、專業團隊（含頂級升級、數據分析師）、人際關係、宿敵（風格與對戰紀錄）、粉絲團、常碰到的對手、媒體形象、家人（孩子）。</td></tr>
+    <tr><td>財務</td><td>資金與本季收支、投資市值、贊助合約與新邀約、旅行方式、球場設計、住所、資產（訓練、生活、度假別墅、交通、事業、公益）、獎盃室升級、投資、球場經營、自辦邀請賽、收支明細。</td></tr>
+    <tr><td>獎盃</td><td>大滿貫面板、收藏室與每季的拍賣會、獎盃櫃、3D 獎盃室。</td></tr>
+    <tr><td>更多</td><td>新聞、年表、成績（個人最佳、球場紀錄、比賽篩選）、經典重現、年度回顧、生涯回顧、世界排名、生涯名片、相簿、知識卡、好友週賽、系統選項（難度、長度、傷病、轉職業、安排退休）。</td></tr>
+  </table></div>
+
+  <h4 id="ref-week">每週行動</h4>
+  <p>每週 2~3 個行動（青少年、大學平常 2 個、假期 3 個；職業 3 個）。預設沿用上一次的安排，並自動處理：體能低於 35 排休息、疼痛 70 以上排治療、考試週前排念書、存款不夠排打工（自動排的會寫原因）。</p>
+  <div class="scroll"><table>
+    <tr><th>行動</th><th>效果</th><th>條件</th></tr>
+    <tr><td>練球</td><td>選一項訓練（長桿、鐵桿精準、短桿與沙坑、推桿、心理、體能）：訓練經驗累積滿了那一項素質 +1；連續幾週練同一項有「專注」加成；可以改打訓練關卡（經驗更多）。體能 −8，疼痛 +0.5（長桿、健身 +1）。</td><td>—</td></tr>
+    <tr><td>休息</td><td>體能 +22（住所再加 4 / 7 / 10）、心情 +5、疼痛 −8。</td><td>—</td></tr>
+    <tr><td>治療與按摩</td><td>疼痛 −25、體能 +4。職業 $800、業餘 $150（家人分擔一部分）。</td><td>疼痛 10 以上</td></tr>
+    <tr><td>念書 / 補習</td><td>學業 +6 / +10（補習 $60）。</td><td>青少年、大學</td></tr>
+    <tr><td>校隊練習</td><td>隨機一項訓練（約 75%）、學業 +1、心情 +3。</td><td>青少年</td></tr>
+    <tr><td>打工</td><td>青少年：家鄉球場桿弟（$60~120、家鄉讀果嶺加成）；大學：夏令營助教；職業：開班教學。</td><td>—</td></tr>
+    <tr><td>陪家人</td><td>家人關係 +6、心情 +8。</td><td>—</td></tr>
+    <tr><td>社群發文</td><td>選主題：日常（追蹤 ×1）、練球花絮（×0.8、贊助商 +0.5、經驗 +5）、球具開箱業配（×0.6、贊助商 +2、收入，要有贊助）、公益（×0.9、贊助商 +1、人氣 +200）、回應爭議話題（×2、人氣 +300、贊助商 −3、媒體形象往「話題」）。媒體工作室追蹤 ×2。</td><td>15 歲以上</td></tr>
+    <tr><td>直播</td><td>追蹤 +（300 + 追蹤的 1.2%）、粉絲打賞（約追蹤的 0.3%）、體能 −4。</td><td>16 歲以上、追蹤 2,000 以上</td></tr>
+    <tr><td>贊助活動 / 企業球敘 / 球迷營隊</td><td>收入與人氣；企業球敘佔掉整週。</td><td>有贊助 / 人氣 20,000 / 人氣 50,000</td></tr>
+  </table></div>
+  <p>本週目標：每週一個（例如「主練一項」「兩種不同的訓練」「休息一次」），安排符合就有額外獎勵。週報 / 快轉總結列出素質增減、收支、每一週的明細。</p>
+
+  <h4 id="ref-state">狀態值</h4>
+  <div class="scroll"><table>
+    <tr><th>狀態</th><th>怎麼變</th><th>影響</th></tr>
+    <tr><td>體能（0~100）</td><td>每週 +10（體能教練 +4、頂級 +7、家用健身房 +3）；行動消耗；比賽每輪 −2（模擬）/ −4（自己打），營養師 −15%、頂級 −30%；旅費依艙等扣。</td><td>低於 30：上場素質每少 10 扣 1；低於 25：小傷機率（打開傷病時）。</td></tr>
+    <tr><td>心情（0~100）</td><td>每週往 60 回歸；家人關係、住所、事件會加減。</td><td>影響手感。</td></tr>
+    <tr><td>手感（−3~+3）</td><td>每週＝上週 ×0.6 + 隨機 + 心情修正；心理師讓往下掉的部分減半（頂級只剩 30%）。</td><td>上場素質每項 ±手感。</td></tr>
+    <tr><td>疼痛（0~100）</td><td>比賽每打一輪 +0.9（32 歲以後再多）、練長桿 / 健身 +1、其他練球 +0.5；體能低於 30 每週 +2、35 歲以後每週 +0.5。每週自然 −3（物理治療師再 −3、頂級 −5、家用健身房 −1）；休息 −8；治療 −25。</td><td>40 以上：上場素質每 20 扣 1（最多 −3）；60 以上：每週手感 −0.2；75 以上一直不處理：打開「傷病」選項的生涯每週 10% 變成長期傷病（休 4~10 週，疼痛回到 40）。沒開傷病選項只有扣素質、手感。</td></tr>
+    <tr><td>受傷</td><td>事件、疲勞（傷病選項）、長期傷病。</td><td>受傷期間不能比賽。受傷 6 週以上、隔年排名回到前 50 → 有機會拿「最佳回春」。</td></tr>
+  </table></div>
+
+  <h4 id="ref-grow">素質與成長</h4>
+  <ul>
+    <li>14 項素質，基礎值 + 加成（裝備、套裝、工坊、桿弟、數據分析師、主場、手感、體能、疼痛）= 上場的素質。固定加成每項最多 +8。上限由 17 歲選的球風決定（重砲手、精準射手、短桿魔術師、推桿名手、全能型）。</li>
+    <li>訓練經驗的年齡倍率：17 歲以前 ×0.85、18~21 ×1、<b>22~25 ×2.2（剛轉職業成長最快）</b>、26~29 ×0.6、30~34 ×0.35、35 以後 ×0.25。35 歲以後力量、擊球效率慢慢下降（體能教練讓老化變慢）。</li>
+    <li>技能點：升級時拿到，用來加素質。加 1 點要花：65 以下 1 點、65~77 2 點、78~83 3 點、84~87 4 點、88~91 5 點、92 以上 6 點。</li>
+    <li><b>實力與成績</b>（v99 校正）：綜合實力每 1 點，一輪平均約差 0.2 桿（48~84 之間；84 以上稍微放緩）。參考：實力 60 在一般難度的黑梯約 +1.3、66 約平標準桿、70 約 −0.75（Korn Ferry 前段）、73 約 −1.35（PGA TOUR 平均）、80 約 −2.75、88 約 −4。這個斜率是用機器人在 3D 裡實際打球量出來的（實力 50 → 90 約差 8 桿）。</li>
+    <li><b>難度</b>：休閒（AI 實力 −0.3、經驗 ×1.05、每輪 1 次重打）、標準、寫實（AI 實力 +2.2、傷病開啟）。<b>生涯長度</b>只影響 25 歲以前的成長速度（多快打上 PGA TOUR）：快速 ×1.15、標準 ×1、完整 ×0.95；之後的成長一樣。</li>
+    <li><b>平衡的目標與實測</b>（30 年模擬）：標準難度轉職業後 1~3 年拿到 PGA TOUR 卡、28 歲左右世界前 10、42 歲中位 40 勝與 4 座大賽，大約一半的生涯拿到綠夾克；休閒中位 48 勝、寫實 26 勝、快速 60 勝（比較早成名）、完整 39 勝。</li>
+    <li>技能卡 26 種（球員 → 技能卡）：特定情況下減少誤差，最多減到 60%；生效次數夠了可以花技能點升到 Lv.2 / Lv.3。欄位 Lv.1 有 2 格、每 15 級多 1 格。</li>
+  </ul>
+
+  <h4 id="ref-event">比賽</h4>
+  <ul>
+    <li><b>比賽週</b>：週一（旅費、資格賽、大賽週的小劇情、贊助商挑戰）→ 週二練習輪（讀果嶺 +3）→ 週三 Pro-Am / 三桿洞大賽 → 每一輪選打法 → 晉級線 → 延長賽 → 頒獎、記者會。</li>
+    <li><b>打法</b>：完整 18 洞、精華 9 洞、關鍵時刻（4 顆關鍵球）、模擬（每洞 3% 多一桿，每輪平均 +0.54 桿）。</li>
+    <li><b>重新開始這一輪</b>：自己打的時候，遊戲選單（右上 ☰）有「重新開始這一輪」：這一輪目前的成績清掉，從這一輪的第一洞重新打，風和旗位都一樣（比洞賽的比數歸零、對手成績也一樣重來）。不限次數，和「重打」是分開的：重打是同一洞重打一桿，次數另外算，重新開始後會重新給。正式比賽、資格賽、比洞賽都可以；練習、訓練關卡、技巧賽沒有。</li>
+    <li><b>天氣與延賽</b>：每一輪開始前，雷雨暫停（一般風 6%、平靜 3%；林克斯不會）或濃霧延後（前兩輪 5%、之後 2%）。雷雨：隔天早上 7 點續打，體能 −6，選擇休息（+4）、推桿練習（手感 +0.3、體能 −2）或聊天（心情 +5）；濃霧：熱身（手感 +0.2）或補眠（體能 +3）。</li>
+    <li><b>對手的風格</b>：每個 AI 球員一輩子固定一種：長打型（7,400 碼以上的長球場 +0.6、7,100 碼以下 −0.3）、穩定型（強風、美國公開賽 +0.5）、短桿型（Stimp 12 以上 +0.5、林克斯 +0.3）、大場面型（大賽與最後一輪 +0.5、其他 −0.1）。排行榜上名字旁邊有標籤；修正只影響 AI，大約一輪 0.1~0.2 桿。</li>
+    <li><b>壓力</b>：Par 推、晉級線邊緣、最後一輪爭冠、最後一洞、延長賽、大滿貫在線上時壓力等級提高，誤差變大（抗壓素質、大心臟天賦、冷靜可以減少）。</li>
+    <li><b>贊助商挑戰</b>：有贊助時週一約 50% 收到兩個條件（晉級、前 25、前 10、奪冠、每輪低於標準桿、最後一輪 68 以下），接受後成功拿獎金（贊助年額的 4% × 倍率）與好感 +5，失敗好感 −1。</li>
+    <li><b>記者會</b>：冠軍、大賽冠軍、前十、領先、沒晉級時。四種回答：紳士（贊助商 +1、人氣）、自信（人氣 +600、宿敵 −2）、幽默（追蹤）、話題（人氣 +1,500、追蹤、贊助商 −2、宿敵 −4）。回答會累積成媒體形象。</li>
+    <li><b>團體賽</b>：萊德盃 / 總統盃 / 業餘團體賽三天：輪流擊球（可以自己打：單數洞你開球、雙數洞隊友開球，隊友的球由電腦打）、四球賽（自己打或模擬）、單人賽。</li>
+  </ul>
+
+  <h4 id="ref-card">巡迴卡與升上 PGA TOUR</h4>
+  <ul>
+    <li>巡迴卡 = 巡迴賽的會員資格：有卡才能自動報名那個巡迴；沒有卡只能打週一資格賽（前 4 名進正賽）或申請贊助外卡（每季 7 次）。</li>
+    <li>北美：PGA TOUR Americas 積分前 20 → Korn Ferry Tour；Korn Ferry 積分前 40 → PGA TOUR（前 75 保卡，其他降到 Americas）；PGA TOUR 聯邦快遞盃前 100 保全卡、101~150 降 Korn Ferry 但保留部分資格。</li>
+    <li>戰場晉升：同一季 Korn Ferry 贏 3 場、或 Americas 贏 2 場，當場升級。</li>
+    <li>Q-School：預選賽前 30 → 第一關前 30 → 第二關前 25 → 決賽前 10 名直接拿 PGA TOUR 卡、前 45 名 Korn Ferry；沒過的拿 Americas 資格。<b>資格賽不會自動報名</b>（過了預選賽之後的關卡才會）：明年沒有 PGA TOUR / Korn Ferry 卡時，首頁會列出 12 週內可以報名的資格賽，一鍵報名。</li>
+    <li>其他：DP World Tour 積分前 10 名（非 PGA TOUR 會員）拿 PGA TOUR 卡；亞巡、日巡前 2 名升 DP World Tour；台巡前 3 名升亞巡；PGA TOUR 比賽奪冠直接拿兩年全卡。大學：PGA TOUR University 第 1 名 PGA TOUR、前 10 Korn Ferry、前 25 Americas。</li>
+    <li>北美三級每年依實力重新排（前 150 人 PGA TOUR、接下來 110 人 Korn Ferry），世界不會越打越強。實測轉職業到拿 PGA TOUR 卡平均約 3 年。</li>
+  </ul>
+
+  <h4 id="ref-major">大賽與大滿貫</h4>
+  <ul>
+    <li>四大賽：名人賽（固定奧古斯塔國家@C）、PGA 錦標賽、美國公開賽、英國公開賽。資格：世界排名、近年冠軍、大賽前段等（賽程頁每一場都寫）。業餘：U.S. Amateur、The Amateur、亞太業餘冠軍拿邀請。</li>
+    <li>大賽週：週一到週三各一段小劇情（名人賽的木蘭大道、三桿洞大賽…），奪冠或前 5 名有結尾劇情。名人賽冠軍：綠夾克頒獎、隔年冠軍晚宴、退休後榮譽開球。</li>
+    <li>大滿貫面板（獎盃頁）：四大賽各幾次、哪幾年；生涯大滿貫（可以累積：雙料、三料…）、年度大滿貫、連續四大賽（可以跨年）；和歷史紀錄 18 座（Jack Nicklaus）比較。大滿貫在線上時比賽標頭提醒、最後一輪後九洞壓力提高；完成時主線劇情、大滿貫紀念外套、獎盃。</li>
+    <li>冠軍紀念品：綠夾克、銀壺紀念球帽、華納梅克紀念球帽、U.S. Open 金牌、THE PLAYERS 背心、聯邦快遞盃腕錶、奧運金牌、團體賽隊服、Race to Dubai 年度冠軍帽、大滿貫紀念外套（純外觀）。</li>
+  </ul>
+
+  <h4 id="ref-money">錢：收入、支出、花錢的地方</h4>
+  <div class="scroll"><table>
+    <tr><th>項目</th><th>內容</th></tr>
+    <tr><td>收入</td><td>獎金（扣稅、桿弟分紅）、贊助合約（每週入帳，經紀人抽成；首頁會提醒新邀約）、贊助活動、企業球敘、球迷營隊、教學、直播打賞、球具開箱業配、周邊商品（粉絲團）、球場營收、家族酒莊、投資、學院分紅、贊助商挑戰。</td></tr>
+    <tr><td>支出</td><td>生活費（家鄉 $500 / 佛州 $900；買房後改成房子維護費）、教練、桿弟、專業團隊、旅費住宿、報名費、資產維護、裝備與工坊、治療。存款低於 −$5,000 團隊會離開；剛轉職業時家人會寄生活費。</td></tr>
+    <tr><td>住所</td><td>郊區獨棟 $0.9M（休息 +4、每週心情 +1、家人 +0.2，維護 $1,500/週）、球場旁豪宅 $4.5M（+7、+2、+0.4、人氣 +100，$4,000/週）、海景莊園 $18M（+10、+3、+0.6、人氣 +300，$12,000/週）。換房舊屋半價折抵。</td></tr>
+    <tr><td>資產</td><td>訓練：後院推桿果嶺、室內模擬器（每週免費訓練約 60%）、短桿練習區、家用健身房。生活：私人球場會籍。度假別墅：夏威夷（休賽期體能、心情）、阿爾卑斯（夏天）、京都（心情、家人）、蘇格蘭（英國公開賽旅費全免）。交通：私人飛機 $22M（私人飛機艙等只付油錢）、巡迴球隊巴士（北美旅費 −40%）。事業：媒體工作室（發文 ×2）、家族酒莊（每年約 $600K）、家鄉球場股份（5 股）。公益與傳承：慈善基金會（每季捐 $100K）、青少年學院。</td></tr>
+    <tr><td>投資</td><td>公債 3.5%、全球指數 7%（波動大）、商用不動產 5.5%、新創 12%（可能大賠）。年底結算，最低 −60%，退休後照樣結算。</td></tr>
+    <tr><td>球場經營</td><td>買齊家鄉球場 5 股：每週營收 $9,000 起，會館、球道整修、練習場與學院、度假酒店各 3 級提高營收（練習場與學院 2 級以上每年收 2 位學員）。</td></tr>
+    <tr><td>自辦邀請賽</td><td>世界前 30、大賽冠軍或人氣 300,000：第 48 週以前花 $6M，第 50 週辦 30 人邀請賽（可以用自己設計的夢想球場），結束時人氣 +25,000、贊助商 +10。</td></tr>
+    <tr><td>專業團隊</td><td>體能教練、營養師、物理治療師、心理師、數據分析師（讀果嶺 +2）；每一位都能升頂級（週薪 ×3、效果更強，需要世界前 50 或人氣 100,000）。</td></tr>
+  </table></div>
+
+  <h4 id="ref-gear">裝備、商店與球具工坊</h4>
+  <ul>
+    <li>12 個部位（球具 6、服裝 6），稀有度一般 / 精良 / 稀有 / 傳奇 / 冠軍。強化 1 級 = 能力 ×1.25（Lv.5 ×2）。14 歲以前只有一般與精良；傳奇要職業或 Lv.25。業餘時期家人分擔一部分。</li>
+    <li>品牌套裝：同一品牌 3 件、5 件各有效果（Northfield 穩定、Kestrel 力量、Aurum 準度、Pinecrest 脫困、Vanta 抗壓、Haru 推桿、Linkline 曲球）；Vanta × Haru 聯名 4 件穿齊讀果嶺、抗壓 +1。季節限定（春、夏、秋、冬、聖誕、農曆新年，只在那幾週買得到）。贊助商專屬（和那個品牌簽服裝 / 球具 / 球 / 推桿合約才能免費領，穿著時每週贊助商好感 +0.3）。</li>
+    <li><b>球具工坊</b>（職業，球員 → 裝備最下面）：一號木、球道木、鐵桿、挖起桿、推桿、球各自訂製。<br>
+      訂製方向：選一項素質 +1 / +2 / +3（$80K / $350K / $1.2M，改方向 $50K、等級保留）。<br>
+      桿頭（球則是球心）：三選一（$20K）。桿身：三~四種（$30K），例如一號木的輕量 R（力量 +1、穩定 −1）、巡迴 X（穩定 +1、力量 −1）、低扭力（準度 +1、彈道 −1）。握把（$8K）：加粗、細、止滑線紋；推桿是超粗、手槍型。<br>
+      自選顏色：桿頭、桿身、握把各自選色（16 個色票或調色盤任意顏色）、金屬光澤，烤漆 $15K，比賽的 3D 畫面看得到；也可以改用星星商店的造型（星星數 × $5,000）。刻字 $2K（最多 8 個字）。全部計入加成上限 +8。<br>
+      試桿日（$5K）：在練習場用一號木打 6 球（或快速分析），依 Carry、左右散布、彈道高度建議桿頭、桿身、握把；建議的零件標 ★、一年內 7 折。</li>
+  </ul>
+
+  <h4 id="ref-fan">粉絲、社群與媒體</h4>
+  <ul>
+    <li>粉絲團等級（追蹤）：小小粉絲團 2,000 · 粉絲團 20,000 · 人氣選手 100,000 · 明星球員 500,000 · 超級巨星 2,000,000 · 國際偶像 8,000,000。職業到「粉絲團」以上每週有周邊商品收入（每 1 萬追蹤 $4~12）。</li>
+    <li>追蹤來源：社群發文（主題）、直播、記者會（幽默、話題）、比賽成績、事件。</li>
+    <li>媒體形象（團隊頁）：記者會回答 5 次以上成形，取最多的那種：紳士形象（贊助邀約 +15%）、強者形象（人氣成長快）、開心果（追蹤、贊助 +5%）、話題人物（人氣暴漲、贊助邀約 −10%、宿敵更火爆）。</li>
+  </ul>
+
+  <h4 id="ref-people">人、宿敵與劇情</h4>
+  <ul>
+    <li>隨機事件 198 個（青少年、大學、職業之路、PGA TOUR、傳奇），每週約 22%，同一個事件隔 2 年才會再出現（第 3 次以後隔 4 年），優先出沒看過的。劇情線：宿敵四段、童年玩伴（退休當教練、帶學生來）、結婚 → 孩子 → 孩子長大（3 歲拿推桿、上學、第一場兒童賽當桿弟、青春期想放棄、幫你揹球袋）、背傷 → 復出、傳奇球員與新星的對話。</li>
+    <li>宿敵：童年玩伴或之後的對手，有自己的風格（團隊頁顯示）；記者會、事件會影響關係；對宿敵每贏 5 次拿到簽名球。</li>
+    <li>常碰到的對手（團隊頁）：同一場比賽名次比較前面的算贏，列出同場最多的 14 位與勝敗、風格。</li>
+    <li>主線事件：序章、各章開始、經紀人、基地、第一張巡迴卡、PGA TOUR 卡、首勝、大滿貫、名人堂、退休等。</li>
+  </ul>
+
+  <h4 id="ref-record">紀錄、獎項與回顧</h4>
+  <ul>
+    <li>成績（更多）：生涯數據、個人最佳（最低一輪、最低四輪、改寫球場紀錄次數、贊助商挑戰）、球場紀錄表、每一場比賽（依職業 / 業餘 / PGA TOUR 與大賽 / 四大賽 / 冠軍 / 前十 / 年份篩選）。</li>
+    <li>年度頒獎典禮：年底結算後第一次回到首頁播放：年度最佳球員、年度新人、最佳回春（前一年排名 100 以外、今年進前 30，或受傷 6 週以上後回到前 50）。得獎可以上台致詞（影響媒體形象）。</li>
+    <li>年度回顧（更多）：每一年的比賽、冠軍、前十、晉級、獎金、最佳一輪、世界排名曲線（金點是奪冠的週）、年度獎項、這一年的年表。</li>
+    <li>生涯回顧（更多）：像影片一樣自動播放的幻燈片：8 歲的開始、第一座職業冠軍、第一座大賽、生涯數據、宿敵、家人與收藏、結語；退休時自動播放。</li>
+    <li>經典重現（更多）：大賽、THE PLAYERS、TOUR Championship、自己的邀請賽、PGA TOUR 首勝的最後一洞，用生涯球員或主帳號重打。</li>
+    <li>收藏室（獎盃頁）：第 18 洞簽名旗（大賽等冠軍）、團體賽交換的球衣、宿敵簽名球、事件裡傳奇 / 新星 / 宿敵送的簽名物、每季拍賣會的歷史紀念品（羽毛球、古塔膠球、老推桿、第一屆名人賽球標…）。</li>
+    <li>明星技巧賽：每年第 45~47 週（PGA TOUR 會員或世界前 100），長打 6 球（左右 25 碼內）、近旗 150 碼 5 球，3D 自己打或模擬，冠軍 $150K。</li>
+    <li>成就 71 個（生涯）＋主遊戲的成就；能力點加在主帳號。</li>
+  </ul>
+
+  <h4 id="ref-retire">退休與第二人生</h4>
+  <ul>
+    <li>38 歲以後在「更多 → 系統選項」安排退休：選一場告別賽（英國公開賽在聖安德魯斯那年可以走過 Swilcan Bridge）。告別賽最後一洞觀眾起立鼓掌；打完有退休典禮（致詞三選一）、生涯回顧影片。</li>
+    <li>第二人生：PGA TOUR Champions（50 歲以上）、團體賽隊長、球場設計師、青少年學院（學員每年長大、轉職業、奪冠分紅，可以花 $50K 親自指導）、傳承生涯（有孩子就直接用孩子開始，經驗 +20%、多一格技能卡）、名人堂（得票 75%）。</li>
+    <li>球場設計：30 歲以後（或拿過大賽）在財務頁、退休後在第二人生：選風格（林克斯、公園式、沙漠、山地）、長度（約 6,700 / 7,200 / 7,700 碼）、名字，用 @C 產生器做成 3D 球場；可以下場練習、辦自己的邀請賽。</li>
+  </ul>
+
+  <h4 id="ref-main">和主遊戲的連動</h4>
+  <ul>
+    <li>夢想球場：主遊戲的球場選單「非真實球場 → 我的夢想球場（生涯模式設計）」可以選（只在這台手機）。</li>
+    <li>紀錄頁的「生涯」分頁：可以篩選欄位，列出所有生涯的最佳一輪、最低四輪、冠軍與大賽。大廳會顯示生涯稱號（例如綠夾克得主）。</li>
+    <li>經典重現可以用主帳號的素質重打；星星商店的球桿造型可以在工坊用錢買給生涯用。</li>
+    <li>現實練球也算數：實際下場有紀錄的那一週，生涯多一次免費訓練。</li>
+  </ul>
+
+  <h4 id="ref-tips">小技巧</h4>
+  <ul>
+    <li>剛轉職業的 22~25 歲成長最快：多練球、少打工，先拿 Americas / Korn Ferry 卡。</li>
+    <li>疼痛 40 以上就開始扣素質：比賽密集的時候每 3~4 週安排一次休息或治療，或請物理治療師。</li>
+    <li>贊助商好感影響邀約金額：多選紳士回答、公益發文、穿贊助商專屬裝備、完成挑戰。</li>
+    <li>大賽前一週可以先打練習輪（讀果嶺 +3）；強風的林克斯球場可以換防風外套、低旋桿頭。</li>
+    <li>錢太多？投資、球場經營、度假別墅、收藏室拍賣會、自辦邀請賽、頂級團隊、工坊的整套訂製。</li>
+  </ul>
+  </div>
+  <script>
+  // 說明書搜尋：只留下有關鍵字的段落（表格列、清單項目）
+  (function () {
+    const q = document.getElementById('ref-q'); if (!q) return;
+    const box = document.querySelector('.ref');
+    q.oninput = () => {
+      const k = q.value.trim();
+      box.querySelectorAll('tr, li, p').forEach(el => { if (el.closest('tr') && el.tagName !== 'TR') return; el.style.display = !k || el.textContent.includes(k) || (el.tagName === 'TR' && !el.querySelector('td')) ? '' : 'none'; });
+    };
+  })();
+  </script>
+
   <h3>和原本企劃不一樣的地方</h3>
   <div class="scroll"><table>
     <tr><th>項目</th><th>原本</th><th>實作</th></tr>
@@ -302,12 +489,12 @@ footer a { color:var(--gold2); }
     <tr><td>實力尺度</td><td>—</td><td>真實球員的實力統一換算（PGA TOUR 平均 73、Scheffler 88），和玩家的成長表一致</td></tr>
     <tr><td>開放名單</td><td><code>Career/access.js</code></td><td><code>js/config.js</code> 的 <code>CAREER_USERS</code>（主程式要先知道名單才決定要不要顯示入口；名單外的人不會下載 <code>Career/</code> 的任何檔案）</td></tr>
     <tr><td>童年的小型高爾夫</td><td>借用奇幻球場的短洞</td><td>練習場的推桿練習（不需要先載入奇幻球場）</td></tr>
-    <tr><td>輪流擊球（Foursomes）</td><td>新的輪替邏輯</td><td>由隊友上場、以模擬完成；玩家打四球賽與單人賽</td></tr>
-    <tr><td>隨機事件</td><td>約 200 個</td><td>144 個（依階段：青少年、大學、職業之路、PGA TOUR、傳奇）</td></tr>
-    <tr><td>成就</td><td>60 個、能力點 1~5</td><td>63 個（「韓」改成「晉」、「年滿」改成「霸」）、能力點 1~3（伺服器每個成就最多加 3 點），合計 40 點</td></tr>
-    <tr><td>個人紀錄的篩選（一般 / 生涯 / 全部）</td><td>個人紀錄分頁加篩選</td><td>沒有做：個人紀錄只算一般回合；生涯的數據在紀錄頁的「生涯」分頁</td></tr>
+    <tr><td>輪流擊球（Foursomes）</td><td>新的輪替邏輯</td><td>每天一場可以自己打：兩人輪流擊同一顆球，單數洞你開球、雙數洞隊友開球，輪到隊友時由電腦瞄準旗桿打；其他場次模擬</td></tr>
+    <tr><td>隨機事件</td><td>約 200 個</td><td>198 個（依階段：青少年、大學、職業之路、PGA TOUR、傳奇；含宿敵四段劇情線、童年玩伴、結婚生子、背傷復出、傳奇與新星）＋四大賽週一到週三的小劇情、大賽奪冠 / 差一點的結尾</td></tr>
+    <tr><td>成就</td><td>60 個、能力點 1~5</td><td>71 個（「韓」改成「晉」、「年滿」改成「霸」；v96 加了連續四大賽、雙料大滿貫、大賽五冠、主辦人、海景莊園、球場主人、技巧賽冠軍、經典重現）、能力點 1~3（伺服器每個成就最多加 3 點）</td></tr>
+    <tr><td>個人紀錄的篩選（一般 / 生涯 / 全部）</td><td>個人紀錄分頁加篩選</td><td>紀錄頁的「生涯」分頁可以篩選全部欄位 / 單一欄位，並列出所有生涯的個人最佳（最低一輪、最低四輪總桿）；生涯裡「更多 → 成績」可以依職業、業餘、PGA TOUR 與大賽、四大賽、冠軍、前十、年份篩選。一般回合的個人紀錄仍然只算一般回合</td></tr>
     <tr><td>觀戰房</td><td>朋友用驗證碼進來陪打、彈幕</td><td>沒有做（需要主遊戲的連線加一個觀戰身分）；改成「好友週賽」：每週一座球場，用生涯球員打，排行榜共用</td></tr>
-    <tr><td>經典重現</td><td>用主帳號重打生涯的關鍵一桿</td><td>沒有做</td></tr>
+    <tr><td>經典重現</td><td>用主帳號重打生涯的關鍵一桿</td><td>做了：贏下四大賽、THE PLAYERS、TOUR Championship、自己的邀請賽與 PGA TOUR 首勝時，最後一洞存成挑戰（同樣的球場、梯台、風、旗位），在「更多 → 經典重現」用生涯球員或主帳號重打，桿數不比當年多就成功</td></tr>
     <tr><td>朋友參觀獎盃室</td><td>唯讀參觀</td><td>沒有做（只能看自己的；生涯名片可以截圖分享）</td></tr>
     <tr><td>相簿</td><td>自動截下遊戲畫面</td><td>重要時刻自動留一張（用授權的實景照片 + 說明）</td></tr>
     <tr><td>招牌慶祝、球標與球袋自訂</td><td>可以自選</td><td>沒有做（沿用主遊戲的特效與外觀）</td></tr>
@@ -330,6 +517,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 2 -->
 <section class="ch" id="s2">
   <div class="chead"><div class="num">02</div><small>Access Control</small><h2>開放權限：只有測試員與管理員</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">生涯模式在開發期間只開放給測試員帳號 <code>test</code> 與管理員 <code>Michael</code>。其他玩家完全看不到入口，也不會下載任何生涯模式的程式與圖片。</p>
   <div class="grid2">
     <div class="card"><h4>畫面上</h4><ul><li>大廳的「生涯模式」卡片、紀錄頁的「生涯」分頁、大廳名字旁的生涯稱號，只有名單內的帳號才會出現。</li><li>帳號比對分大小寫（和現在的帳號規則一樣），名單是 <code>test</code> 與 <code>Michael</code>。</li></ul></div>
@@ -342,6 +530,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 3 -->
 <section class="ch" id="s3">
   <div class="chead"><div class="num">03</div><small>The Journey</small><h2>生涯全貌</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">一季等於一年。童年是五個關鍵時刻的新手引導，青少年以後用「週」前進。每個章節有自己的節奏、目標、賽事與人物。</p>
   <div class="path">
     <div style="background-image:url(img/boy-flag.jpg)"><small>PROLOGUE · 8</small><b>序章</b><span>電視上的名人賽、第一次走進練習場</span></div>
@@ -360,6 +549,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 4 -->
 <section class="ch" id="s4">
   <div class="chead"><div class="num">04</div><small>Prologue &amp; Narrative</small><h2>序章與劇情系統</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
 
   <div class="band" style="background-image:url(img/masters-gallery.jpg)">
     <span class="cr">Masters Tournament 2015 · Shannon McGee · CC BY-SA 2.0</span>
@@ -381,7 +571,7 @@ footer a { color:var(--gold2); }
   <h3>劇情系統</h3>
   <div class="grid2">
     <div class="card"><h4>主線事件</h4><p>每個章節有 8～15 個固定的主線事件（第一支自己的球桿、第一次破百、拜師、大學錄取、轉職業、第一張巡迴卡、第一勝、收到名人賽邀請函），用插畫卡 + 對話呈現，可以跳過。</p></div>
-    <div class="card"><h4>隨機事件</h4><p>144 個小事件，依年齡、章節、人際關係觸發：同學邀你週末去看電影（放棄練球）、球具店老闆讓你試打新桿、颱風停課、家人生病、球迷寫信。每個事件 2～3 個選項。</p></div>
+    <div class="card"><h4>隨機事件</h4><p>144 個小事件，依年齡、章節、人際關係觸發：同學邀你週末去看電影（放棄練球）、球具店老闆讓你試打新桿、颱風停課、家人生病、球迷寫信。每個事件 2～3 個選項。每週約 22% 機率發生；同一個事件至少隔 2 年才會再出現（第 3 次以後隔 4 年），優先出還沒看過的事件。</p></div>
     <div class="card"><h4>關係</h4><p>重要人物都有「關係值」：家人、導師、童年玩伴、宿敵、教練、桿弟、經紀人、贊助商、隊友。關係影響支持（資金、心情）、特殊事件、名人堂介紹人人選。</p></div>
     <div class="card"><h4>個性</h4><p>對話選擇累積三種個性傾向：<b>紳士</b>、<b>自信</b>、<b>幽默</b>。個性影響贊助商類型、宿敵的態度、球迷的組成、記者會的題目。</p></div>
   </div>
@@ -404,6 +594,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 5 -->
 <section class="ch" id="s5">
   <div class="chead"><div class="num">05</div><small>Chapter 1 · Age 8–12 · Tutorial</small><h2>第一章　童年：新手引導</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="figrow">
     <figure class="fig"><img src="img/kids-camp.jpg" alt=""><figcaption>第一次揮桿</figcaption></figure>
     <figure class="fig"><img src="img/minigolf.jpg" alt=""><figcaption>小型高爾夫</figcaption></figure>
@@ -428,6 +619,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 6 -->
 <section class="ch" id="s6">
   <div class="chead"><div class="num">06</div><small>Chapter 2 · Age 13–17</small><h2>第二章　青少年</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="band" style="background-image:url(img/young-putting.jpg)">
     <span class="cr">U.S. Navy photo · Public domain</span>
     <div class="in"><small>CHAPTER 2</small><h3>拜師</h3><p>國一那年，三位教練看了你的比賽。技術派要你重新打掉揮桿、數據派給你一份三年的訓練表、心理派只問了一句：「你為什麼打球？」</p></div>
@@ -467,6 +659,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 7 -->
 <section class="ch" id="s7">
   <div class="chead"><div class="num">07</div><small>Chapter 3 · Age 18–21</small><h2>第三章　大學與業餘</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="figrow">
     <figure class="fig"><img src="img/pebble-18.jpg" alt=""><figcaption>美國業餘賽的舞台</figcaption></figure>
     <figure class="fig"><img src="img/augusta-clubhouse.jpg" alt=""><figcaption>業餘冠軍收到的名人賽邀請</figcaption></figure>
@@ -507,6 +700,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 8 -->
 <section class="ch" id="s8">
   <div class="chead"><div class="num">08</div><small>Chapter 4 · Age 21–24</small><h2>第四章　職業之路</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="band" style="background-image:url(img/range-puttenham.jpg)">
     <span class="cr">Puttenham Golf Club · Mertbiol · CC0</span>
     <div class="in"><small>CHAPTER 4</small><h3>沒有人認識你的週一</h3><p>週一資格賽，早上六點半開球。一百五十個人搶四個正賽名額。你的車停在停車場最遠的角落，後車廂是全部家當。</p></div>
@@ -519,14 +713,14 @@ footer a { color:var(--gold2); }
     <tr><td>台灣 PGA 巡迴賽（TPGA）</td><td>台灣</td><td>獎金榜前段 → 亞巡資格賽免前段</td></tr>
     <tr><td>Asian Tour（亞洲巡迴賽）</td><td>亞洲、中東</td><td>獎金榜冠軍可以拿到其他大型巡迴賽資格；亞巡賽事是亞洲選手累積世界排名的主要來源</td></tr>
     <tr><td>Japan Golf Tour（日巡）</td><td>日本</td><td>獎金榜前段有大賽邀請</td></tr>
-    <tr><td>PGA TOUR Americas</td><td>美洲</td><td>積分前段 → Korn Ferry Tour</td></tr>
-    <tr><td>Korn Ferry Tour</td><td>美國</td><td>積分榜前 20 名 → PGA TOUR 全季資格（近年制度）</td></tr>
+    <tr><td>PGA TOUR Americas</td><td>美洲</td><td>積分前 20 名 → Korn Ferry Tour（遊戲裡；同一季兩勝當場升級）</td></tr>
+    <tr><td>Korn Ferry Tour</td><td>美國</td><td>積分榜前 40 名 → PGA TOUR 全季資格（遊戲裡放寬，真實制度是前 20 名；同一季三勝當場升級）</td></tr>
     <tr><td>DP World Tour（歐巡）</td><td>歐洲、全球</td><td>積分前段 → PGA TOUR 資格</td></tr>
   </table></div>
 
   <h3>資格賽（Q-School）</h3>
   <ul>
-    <li><b>PGA TOUR Q-School</b>：預選賽 → 第一關 → 第二關 → 決賽。決賽前 5 名直接拿到 PGA TOUR 資格，其餘依名次分到 Korn Ferry Tour 或 PGA TOUR Americas。</li>
+    <li><b>PGA TOUR Q-School</b>：預選賽 → 第一關 → 第二關 → 決賽。決賽前 10 名直接拿到 PGA TOUR 資格（遊戲裡；真實制度是前 5 名），前 45 名 Korn Ferry Tour，其餘 PGA TOUR Americas。</li>
     <li><b>Asian Tour Q-School</b>、<b>DP World Tour Q-School</b>：可以同一年分開報名，但報名費與旅費都很重。</li>
     <li>資格賽決賽最後一天，晉級線附近的每一桿都是最高壓力。</li>
   </ul>
@@ -545,6 +739,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 9 -->
 <section class="ch" id="s9">
   <div class="chead"><div class="num">09</div><small>Chapter 5 · Age 24–27</small><h2>第五章　PGA TOUR</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="figrow">
     <figure class="fig"><img src="img/sawgrass-17.jpg" alt=""><figcaption>THE PLAYERS · TPC Sawgrass 17th</figcaption></figure>
     <figure class="fig"><img src="img/sawgrass-17b.jpg" alt=""><figcaption>島嶼果嶺空拍</figcaption></figure>
@@ -576,6 +771,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 10 -->
 <section class="ch" id="s10">
   <div class="chead"><div class="num">10</div><small>Chapter 7 · The Masters</small><h2>名人賽與綠夾克</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="band" style="background-image:url(img/hogan-bridge.jpg);min-height:380px">
     <span class="cr">Augusta National, 12th hole · Florian Fritsch · CC BY-SA 3.0</span>
     <div class="in"><small>THE GOAL</small><h3>Amen Corner</h3><p>第 11、12、13 洞。名人賽常常在星期天的這三個洞決定冠軍。第 12 洞前面是 Rae's Creek，後面是杜鵑花，風從松樹梢上轉向，沒有人知道它下一秒往哪裡吹。</p></div>
@@ -620,6 +816,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 11 -->
 <section class="ch" id="s11">
   <div class="chead"><div class="num">11</div><small>Majors, Team Events &amp; Olympics</small><h2>四大賽、團體賽與奧運</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="scroll"><table>
     <tr><th>賽事</th><th>月份</th><th>遊戲內場地</th><th>獎盃 / 傳統</th></tr>
     <tr><td><b>Masters Tournament</b></td><td>4 月</td><td>奧古斯塔國家@C（固定）</td><td>綠夾克、冠軍晚宴、三桿洞大賽、榮譽開球</td></tr>
@@ -650,6 +847,7 @@ footer a { color:var(--gold2); }
 
 <section class="ch" id="s11c">
   <div class="chead"><div class="num">11+</div><small>Course Library</small><h2>球場規劃：80 座非真實球場（@C）</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">現有 70 座球場（台灣 29、國外真實 12、自創寫實 9、奇幻 20）再加上 80 座<b>非真實球場</b>，總共 150 座。非真實球場的名稱照真實球場、後面加「@C」；每洞的標準桿與冠軍梯碼數照公開的真實計分卡（查不到的標「約略」），知名的洞照公開描述做出特徵，其他洞依當地的地形、樹種、沙坑與水的特色設計。80 座都已經做進遊戲（版本 v91），在選擇球場的「非真實球場」分頁，比照一般球場：計入排行、可以蓋章，另有一組非真實球場的成就。</p>
   <div class="note"><b>固定場地每年回去、輪替場地 8～9 年一次</b>：PGA TOUR 一般賽事照真實傳統每年同一週回到同一座球場；三大賽在 8～9 座之間輪替；業餘、大學、Korn Ferry、亞巡的比賽每年從該層級的球場裡挑選，同一座大約 3～5 年才遇到一次。</div>
   <div class="grid3">
@@ -666,6 +864,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 12 -->
 <section class="ch" id="s12">
   <div class="chead"><div class="num">12</div><small>Tournament System</small><h2>比賽系統</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <h3>每一輪的打法</h3>
   <div class="scroll"><table>
     <tr><th>打法</th><th>內容</th><th>時間</th><th>經驗值</th></tr>
@@ -706,6 +905,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 13 -->
 <section class="ch" id="s13">
   <div class="chead"><div class="num">13</div><small>Progression</small><h2>成長系統</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <h3>素質</h3>
   <p>沿用主遊戲的 14 項素質（力量、擊球效率、彈道、準度、穩定度、曲球、旋轉、切球、沙坑、脫困、推桿距離感、推桿方向、讀果嶺、抗壓），但生涯的素質可以低於 50：8 歲平均約 20（一號木約 90～110 碼），成年前自然成長到 40 上下，之後靠訓練與比賽。</p>
 
@@ -747,6 +947,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 14 -->
 <section class="ch" id="s14">
   <div class="chead"><div class="num">14</div><small>Economy</small><h2>經濟系統：收入與支出</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="figrow">
     <figure class="fig"><img src="img/bag-scottish.jpg" alt=""><figcaption>球袋上的每一個標誌都是一份合約 · CC0</figcaption></figure>
     <figure class="fig"><img src="img/bag-clubs.jpg" alt=""><figcaption>球具合約與試打調整 · CC0</figcaption></figure>
@@ -825,6 +1026,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 15 -->
 <section class="ch" id="s15">
   <div class="chead"><div class="num">15</div><small>Team</small><h2>團隊：教練、桿弟、經紀人</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="band" style="background-image:url(img/caddies-vintage.jpg);background-position:center 30%">
     <span class="cr">Caddies for golf, Baltusrol · Bain News Service · Public domain</span>
     <div class="in"><small>CADDIES</small><h3>球袋的另一頭</h3><p>好的桿弟不會幫你揮桿，但會在你想打旗桿的時候說：「這個果嶺後面比較好救。」</p></div>
@@ -852,6 +1054,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 16 -->
 <section class="ch" id="s16">
   <div class="chead"><div class="num">16</div><small>Rivals, Media &amp; Fans</small><h2>宿敵、媒體與人氣</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="grid2">
     <div class="card"><h4>三位宿敵</h4><ul><li><b>童年玩伴</b>（第二章）：一起長大的朋友變成對手，劇情可能和好也可能決裂</li><li><b>PGA 同期新人</b>（第五章）：新人王、首勝的競爭對手</li><li><b>現任世界第一</b>（第六章）：你在大賽要打倒的那個人，也可能是為你穿上綠夾克的上屆冠軍</li></ul><p>宿敵的素質會跟著你成長，永遠在你附近；生涯首頁有對戰紀錄。朋友的生涯球員可以設為宿敵。</p></div>
     <div class="card"><h4>新聞與記者會</h4><p>每輪、每場結束後自動產生新聞頭條（依真實成績組合）；重要結果之後有一題三選一的記者會，回答累積個性（紳士 / 自信 / 幽默），影響贊助商類型與宿敵態度。</p></div>
@@ -862,6 +1065,7 @@ footer a { color:var(--gold2); }
 
 <section class="ch" id="s16b">
   <div class="chead"><div class="num">16+</div><small>Trophy Room</small><h2>獎盃室與冠軍更衣櫃</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">獎盃室是一個<b>真的可以走進去的 3D 房間</b>：深色胡桃木牆板、綠色布面牆、天花板格柵與黃銅崁燈、玻璃展示櫃、一路鋪到底的綠色地毯。最深處是冠軍更衣櫃，綠夾克掛在裡面，櫃上的黃銅名牌刻著你的名字與年份。以下是用遊戲引擎（Three.js）直接算出來的原型畫面，所有模型都由程式產生，沒有使用外部模型。</p>
   <div class="grid2x2">
     <figure class="fig" style="aspect-ratio:16/10"><img src="img/render-room.jpg" alt=""><figcaption>獎盃室全景：地毯一路通往冠軍更衣櫃</figcaption></figure>
@@ -900,6 +1104,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 17 -->
 <section class="ch" id="s17">
   <div class="chead"><div class="num">17</div><small>Legacy</small><h2>傳奇、名人堂與退休</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="band" style="background-image:url(img/hof-main.jpg)">
     <span class="cr">World Golf Hall of Fame · Michael Rivera · CC BY-SA 4.0</span>
     <div class="in"><small>WORLD GOLF HALL OF FAME</small><h3>名人堂</h3><p>門檻照真實制度：15 場正式冠軍，或 2 座大賽（四大賽 + THE PLAYERS），並且滿 45 歲或退休滿 3 年。符合門檻後每年由委員會投票。</p></div>
@@ -932,6 +1137,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 18 -->
 <section class="ch" id="s18">
   <div class="chead"><div class="num">18</div><small>Game Options</small><h2>系統選項</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="grid3">
     <div class="card"><h4>難度三段</h4><ul><li><b>休閒</b>：AI 弱一點、經驗 +30%、每輪 1 次重打</li><li><b>標準</b>：預設</li><li><b>寫實</b>：AI 強、不能看落點範圍圈、模擬更保守、傷病開啟</li></ul></div>
     <div class="card"><h4>傷病</h4><p>體能長期太低時有機率小傷，休息 1～3 週；物理治療師與傷病保險可以降低影響。預設只在寫實難度開啟，也可以單獨關閉。</p></div>
@@ -951,6 +1157,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 19 -->
 <section class="ch" id="s19">
   <div class="chead"><div class="num">19</div><small>Integration</small><h2>和主遊戲的關係</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">生涯模式像一個外掛：拿掉它，主遊戲完全照常；有它，主遊戲的數字也不會被弄亂。</p>
   <div class="scroll"><table>
     <tr><th>系統</th><th>規則</th></tr>
@@ -1000,6 +1207,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 20 -->
 <section class="ch" id="s20">
   <div class="chead"><div class="num">20</div><small>Art Direction</small><h2>美術方向</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">整個遊戲朝「電視轉播 + 實景攝影」的質感升級：介面像高爾夫轉播的圖卡，場景用寫實的材質與植物，人物用真實比例、乾淨的材質與可以替換的服裝零件。生涯模式先做，主遊戲同步受益。</p>
 
   <div class="grid2">
@@ -1019,6 +1227,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 21 -->
 <section class="ch" id="s21">
   <div class="chead"><div class="num">21</div><small>Characters &amp; Gear</small><h2>角色與裝備</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">角色不做捏臉，而是提供清楚的基礎選項，再用「裝備」讓球員越來越有個人風格，而且裝備會加能力。全部用程式直接做在遊戲裡，不需要安裝任何軟體、不使用付費或外部模型。</p>
 
   <h3>做法</h3>
@@ -1072,6 +1281,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 22 -->
 <section class="ch" id="s22">
   <div class="chead"><div class="num">22</div><small>Screens</small><h2>遊戲畫面</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p class="lede">以下是主要畫面的示意。背景使用實景照片，表示目標的 3D 畫面質感；介面元件就是實作時的設計。</p>
 
   <div class="phones">
@@ -1404,6 +1614,7 @@ footer a { color:var(--gold2); }
 <!-- ===================================================== 23 -->
 <section class="ch" id="s23">
   <div class="chead"><div class="num">23</div><small>Technical Plan</small><h2>技術規劃</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <h3>Career 資料夾</h3>
 <pre>Career/
   career-plan.html      本企劃書（也是說明書）
@@ -1492,6 +1703,7 @@ function careerAuth_(req) { const acc = auth_(req); if (CAREER_ACCESS.indexOf(ac
 <!-- ===================================================== 24 -->
 <section class="ch" id="s24">
   <div class="chead"><div class="num">24</div><small>Roadmap</small><h2>開發排程</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <div class="scroll"><table>
     <tr><th>階段</th><th>內容</th><th>狀態（v92）</th></tr>
     <tr><td><b>1. 地基</b></td><td>Career 資料夾、開放名單、主程式接點與隔離測試、存檔、AI 世界、模擬公式、轉播風格介面元件</td><td>完成</td></tr>
@@ -1507,6 +1719,7 @@ function careerAuth_(req) { const acc = auth_(req); if (CAREER_ACCESS.indexOf(ac
 <!-- ===================================================== 25 -->
 <section class="ch" id="s25">
   <div class="chead"><div class="num">25</div><small>Credits</small><h2>素材來源與授權</h2></div>
+  <p class="oldnote">這一章是原始企劃，做進遊戲時有些數字和規則調整過；實際的數字、位置與玩法以<a href="#ref">說明書的「完整參考」</a>為準。</p>
   <p>本企劃書的照片全部來自 Wikimedia Commons，使用公有領域、CC0 或 Creative Commons 姓名標示授權，檔案放在 <code>Career/img/</code>，完整資料在 <code>Career/img/credits.json</code>。照片僅用於本企劃書與遊戲示意；比賽與組織名稱屬於各自的擁有者，本遊戲為私人、非營利用途。</p>
   <div class="scroll"><table>
     <tr><th>檔案</th><th>作者</th><th>授權</th></tr>

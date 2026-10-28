@@ -29,6 +29,9 @@ export function yearEvents(year, st) {
   ];
   // 季外：表演賽、Skins Game、長青巡迴（50 歲以上）
   all.push({ w: 48, id: 'skins', name: 'Skins Game（季末表演賽）', tour: 'exh', course: 'pebble', field: 4, kind: 'skins', tier: 'exh', exh: true, region: 'na', year, purse: 1e6, note: '四人表演賽：每洞獎金，同分累積到下一洞' });
+  // 自己主辦的邀請賽（財務 → 事業；第 50 週，30 人、不計正式積分）
+  const h = (st.host || {})[year];
+  if (h) all.push({ w: 50, id: 'host', name: h.name, tour: 'exh', course: h.course, field: 30, cut: 0, tier: 'exh', exh: true, hosted: true, region: h.region || 'na', year, purse: 4e6, note: '你主辦的邀請賽：獎金由你出，冠軍獎盃上刻著你的名字' });
   if (st.player.age >= 50) all.push(...champions(year));
   return all.map(e => ({ ...e, key: `${year}:${e.id}`, course: resolveCourse(e.course, year) }));
 }
@@ -85,6 +88,7 @@ export function eligibility(st, ev) {
   }
   if (ev.tour === 'exh') {
     if (ev.kind === 'skins') return st.tally.majors >= 1 || (st.tally.wins >= 3 && myRank(st) <= 20) ? { ok: true, how: 'invite' } : no('只邀請大賽冠軍與明星球員');
+    if (ev.id === 'host') return { ok: true, how: 'invite', why: '主辦人' };
     if (ev.id === 'hero') return myRank(st) <= 20 && !am ? { ok: true, how: 'invite' } : no('只邀請世界前 20 名');
   }
   if (ev.tour === 'champions') return age >= 50 && !am ? { ok: true, how: 'exempt' } : no('50 歲以上');
@@ -166,6 +170,8 @@ export function majorEligibility(st, ev) {
 }
 
 // ---------- 季末：升降、保卡（玩家）----------
+// 升級門檻（v96 放寬：轉職業後平均 2~3 年拿到 PGA TOUR 卡）：Korn Ferry 積分前 40、PGA TOUR Americas 前 20 升 Korn Ferry、Q-School 決賽前 10
+export const KFT_UP = 40, PTA_UP = 20, QS_PGA = 10;
 export function seasonEndCards(st, year, ranks) {
   const s = st.status, out = [];
   const give = (tour, until, text) => { s.cards[tour] = Math.max(s.cards[tour] || 0, until); out.push(text); };
@@ -175,9 +181,10 @@ export function seasonEndCards(st, year, ranks) {
       else if ((ranks.pga || 999) <= 150) { give('kft', year + 1, `聯邦快遞盃第 ${ranks.pga} 名：下一季降到 Korn Ferry Tour（保有部分 PGA TOUR 資格）`); s.cards.pgaPartial = year + 1; }
       else if (!((s.cards.pga || 0) > year)) give('kft', year + 1, '沒有保住 PGA TOUR 卡：下一季回到 Korn Ferry Tour');
     }
-    if (hasCard(st, 'kft', year) && (ranks.kft || 999) <= 20) give('pga', year + 1, `Korn Ferry Tour 積分第 ${ranks.kft} 名：拿到 PGA TOUR 卡！`);
+    if (hasCard(st, 'kft', year) && (ranks.kft || 999) <= KFT_UP) give('pga', year + 1, `Korn Ferry Tour 積分第 ${ranks.kft} 名：拿到 PGA TOUR 卡！`);
     else if (hasCard(st, 'kft', year) && (ranks.kft || 999) <= 75) give('kft', year + 1, `Korn Ferry Tour 積分第 ${ranks.kft} 名：保住下一季 Korn Ferry 卡`);
-    if (hasCard(st, 'pta', year) && (ranks.pta || 999) <= 10) give('kft', year + 1, `PGA TOUR Americas 第 ${ranks.pta} 名：升上 Korn Ferry Tour`);
+    else if (hasCard(st, 'kft', year) && !hasCard(st, 'pga', year + 1)) give('pta', year + 1, `Korn Ferry Tour 積分第 ${ranks.kft || '—'} 名：沒保住 Korn Ferry 卡，下一季降到 PGA TOUR Americas`);
+    if (hasCard(st, 'pta', year) && (ranks.pta || 999) <= PTA_UP) give('kft', year + 1, `PGA TOUR Americas 第 ${ranks.pta} 名：升上 Korn Ferry Tour`);
     else if (hasCard(st, 'pta', year) && (ranks.pta || 999) <= 60) give('pta', year + 1, '保住 PGA TOUR Americas 卡');
     if (hasCard(st, 'dp', year) && (ranks.dp || 999) <= 10 && !hasCard(st, 'pga', year + 1)) give('pga', year + 1, `Race to Dubai 第 ${ranks.dp} 名：拿到 PGA TOUR 卡！`);
     if (hasCard(st, 'dp', year) && (ranks.dp || 999) <= 115) give('dp', year + 1, '保住 DP World Tour 卡');
@@ -201,8 +208,8 @@ export function qschoolResult(st, ev, pos, tieN) {
   else if (ev.stage === 1) { if (pos <= ev.adv) { s.qs = 'second'; out.push('通過第一關，晉級第二關'); } else card('pta', '第一關沒過：拿到 PGA TOUR Americas 的部分資格'); }
   else if (ev.stage === 2) { if (pos <= ev.adv) { s.qs = 'final'; out.push('通過第二關，晉級決賽！'); } else card('pta', '第二關沒過：拿到 PGA TOUR Americas 資格'); }
   else if (ev.stage === 3) {
-    if (pos <= 5) card('pga', `Q-School 決賽第 ${pos} 名：直接拿到 PGA TOUR 資格！`);
-    else if (pos <= 40) card('kft', `Q-School 決賽第 ${pos} 名：拿到 Korn Ferry Tour 資格`);
+    if (pos <= QS_PGA) card('pga', `Q-School 決賽第 ${pos} 名：直接拿到 PGA TOUR 資格！`);
+    else if (pos <= 45) card('kft', `Q-School 決賽第 ${pos} 名：拿到 Korn Ferry Tour 資格`);
     else card('pta', `Q-School 決賽第 ${pos} 名：拿到 PGA TOUR Americas 資格`);
     s.qs = null;
   } else if (ev.stage === 9) { if (pos <= ev.adv) card('asia', `亞巡資格賽第 ${pos} 名：拿到亞巡卡`); }

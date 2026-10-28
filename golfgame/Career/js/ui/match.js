@@ -1,5 +1,5 @@
 // 比洞賽：U.S. Amateur / The Amateur（36 洞比桿資格 → 64 人比洞賽）、團體賽（萊德盃、總統盃、沃克盃、Palmer Cup、青少年盃）、Skins Game
-//   四球賽（Four-ball）與單人賽自己打；輪流擊球（Foursomes）由模擬完成（兩人打同一顆球需要另外的輪替，畫面上用觀戰的方式呈現）
+//   四球賽（Four-ball）與單人賽自己打；輪流擊球（Foursomes）可以自己打（和隊友輪流擊同一顆球：單數洞你開球，隊友的球由電腦打）或模擬
 import { go, story, storyResult, toast, header, dialog } from './shell.js';
 import { cur, localSave, sync } from '../state.js';
 import { esc, money, toPar, sum, clamp, rng, hash } from '../util.js';
@@ -31,11 +31,13 @@ const head = (E, ci, extra = '') => `<div class="cm-hero"><small>${E.year} 年�
 //   mine = { R }、opp = [{ name, R }]（四球賽兩人取好的）、mate = 隊友（四球賽）
 //   回傳 { result: 1 贏 / 0.5 平 / 0 輸, text: '3&2' }
 async function playMatch(st, E, ci, o) {
-  const r = rng(hash(E.key + ':m:' + o.tag));
+  let r = rng(hash(E.key + ':m:' + o.tag));
   const per = R => (roundMean(R) + courseAdj(ci, { setup: 'major' })) / 18;
   const adjs = holeAdjs(ci.holes, 75);
-  const oppHole = (i) => Math.min(...o.opp.map(x => holeScore(r, ci.holes[i][0], per(x.R) + adjs[i], x.R)));
-  const mateHole = (i) => (o.mate ? holeScore(r, ci.holes[i][0], per(o.mate.R) + adjs[i], o.mate.R) : 99);
+  // 輪流擊球：兩人打同一顆球，用兩人實力的平均抽一個成績
+  const avgR = a => a.reduce((s, x) => s + x.R, 0) / a.length;
+  const oppHole = (i) => (o.alt ? holeScore(r, ci.holes[i][0], per(avgR(o.opp)) + adjs[i], avgR(o.opp)) : Math.min(...o.opp.map(x => holeScore(r, ci.holes[i][0], per(x.R) + adjs[i], x.R))));
+  const mateHole = (i) => (o.mate && !o.alt ? holeScore(r, ci.holes[i][0], per(o.mate.R) + adjs[i], o.mate.R) : 99);
   let status = 0, played = 0;
   const label = () => (status === 0 ? 'ALL SQUARE' : `${Math.abs(status)} ${status > 0 ? 'UP' : 'DOWN'}`);
   const decided = () => Math.abs(status) > 18 - played;
@@ -43,24 +45,31 @@ async function playMatch(st, E, ci, o) {
   if (o.mode === 'sim') {
     const myR = playerRating(st);
     for (let i = 0; i < 18 && !decided(); i++) {
-      const a = Math.min(holeScore(r, ci.holes[i][0], per(myR) + adjs[i] + 0.02, myR), mateHole(i)), b = oppHole(i);
+      const tR = o.alt ? (myR + o.mate.R) / 2 : myR;
+      const a = Math.min(holeScore(r, ci.holes[i][0], per(tR) + adjs[i] + 0.02, tR), mateHole(i)), b = oppHole(i);
       if (a < b) status++; else if (b < a) status--; played++;
     }
   } else {
-    await playRound({
-      label: o.label, key: E.key, cfg: { courseId: E.course, holeIdx: [...Array(18).keys()], tee: teeOf(st, E), wind: WIND_CFG[1], mode: 'stroke', career: { match: o.tag } },
-      quitText: '離開這場比洞賽？剩下的洞用模擬完成。',
-      onHole: (k, idx, s) => {
-        const mate = mateHole(idx), b = oppHole(idx), a = Math.min(s, mate);
-        if (a < b) status++; else if (b < a) status--;
-        played++;
-        o.lastHole = `你 ${s}${o.mate ? `、${o.mate.name} ${mate}` : ''} vs ${o.opp.map(x => x.name).join('、')} ${b}`;
-        return decided() ? 'end' : undefined;
-      },
-      holeCard: () => `<p class="cm-note">${esc(o.lastHole || '')}</p><p style="font:700 22px Barlow Condensed;color:var(--aug)">${label()}</p>`,
-      bcast: () => ({ pos: label().replace('ALL SQUARE', 'AS'), score: 0, line: `${esc(o.label)}<br>剩 ${18 - played} 洞` }),
-      pressure: () => (Math.abs(status) <= 1 && played >= 14 ? 2 : 0),
-    });
+    // 「重新開始這一輪」：比數歸零、對手的成績用同一組亂數重來
+    for (;;) {
+      status = 0; played = 0; o.lastHole = ''; r = rng(hash(E.key + ':m:' + o.tag));
+      const res = await playRound({ restartable: true,
+        label: o.label, key: E.key, cfg: { courseId: E.course, holeIdx: [...Array(18).keys()], tee: teeOf(st, E), wind: WIND_CFG[1], mode: 'stroke', career: { match: o.tag } }, alt: o.alt ? { mate: o.mate.name } : null,
+        quitText: '離開這場比洞賽？剩下的洞用模擬完成。',
+        onHole: (k, idx, s) => {
+          const mate = mateHole(idx), b = oppHole(idx), a = Math.min(s, mate);
+          if (a < b) status++; else if (b < a) status--;
+          played++;
+          o.lastHole = `你 ${s}${o.mate ? `、${o.mate.name} ${mate}` : ''} vs ${o.opp.map(x => x.name).join('、')} ${b}`;
+          return decided() ? 'end' : undefined;
+        },
+        holeCard: () => `<p class="cm-note">${esc(o.lastHole || '')}</p><p style="font:700 22px Barlow Condensed;color:var(--aug)">${label()}</p>`,
+        bcast: () => ({ pos: label().replace('ALL SQUARE', 'AS'), score: 0, line: `${esc(o.label)}<br>剩 ${18 - played} 洞` }),
+        pressure: () => (Math.abs(status) <= 1 && played >= 14 ? 2 : 0),
+      });
+      if (!res.restart) break;
+      st.cnt.restarts = (st.cnt.restarts || 0) + 1;
+    }
     // 沒打完（離開）就模擬剩下的洞
     const myR = playerRating(st);
     for (let i = played; i < 18 && !decided(); i++) { const a = Math.min(holeScore(r, ci.holes[i][0], per(myR) + adjs[i], myR), mateHole(i)), b = oppHole(i); if (a < b) status++; else if (b < a) status--; played++; }
@@ -175,7 +184,7 @@ async function teamCup(body, st, E, ci) {
   giveKnow(st, 'team');
   if (T.day >= 3) return;
   const score = `<div class="cm-row" style="justify-content:center;gap:20px;margin:6px 0"><div style="text-align:center"><span class="cm-k">${SIDE_ZH[R.sides[0]]}</span><div class="num" style="font-size:34px">${T.pts[0]}</div></div><div style="text-align:center"><span class="cm-k">${SIDE_ZH[R.sides[1]]}</span><div class="num" style="font-size:34px">${T.pts[1]}</div></div></div>`;
-  body.innerHTML = head(E, ci, score) + `<div class="cm-card"><h3>${DAYS[T.day]}</h3><p>你是<b>${SIDE_ZH[R.mine]}</b>的一員。${T.day < 2 ? '你和隊友打一場四球賽；輪流擊球的比賽由隊友上場（模擬）。' : '12 場單人賽，每一分都很重要。'}</p>
+  body.innerHTML = head(E, ci, score) + `<div class="cm-card"><h3>${DAYS[T.day]}</h3><p>你是<b>${SIDE_ZH[R.mine]}</b>的一員。${T.day < 2 ? '你和隊友打一場輪流擊球、一場四球賽（都可以自己打或模擬），其他場次由隊友上場。' : '12 場單人賽，每一分都很重要。'}</p>
     ${T.log.length ? `<p class="cm-note" style="margin-top:8px">${T.log.slice(-8).map(esc).join('<br>')}</p>` : ''}<button class="cm-btn green" id="tc-go" style="margin-top:10px">開始${DAYS[T.day].split(' · ')[0]}</button></div>
     <div class="cm-card"><h3>隊員</h3><p class="cm-note">${esc(myTeam.map(x => x.name).join('、'))}</p></div>`;
   document.getElementById('tc-go').onclick = async () => {
@@ -183,8 +192,12 @@ async function teamCup(body, st, E, ci) {
     const add = (side, v) => { T.pts[side] += v; };
     const mi = mineI, oi = 1 - mineI;
     if (T.day < 2) {
-      // 輪流擊球 4 場（模擬）
-      for (let k = 0; k < 4; k++) { const a = r.shuffle(myTeam.filter(x => !x.me)).slice(0, 2), b = r.shuffle(opTeam).slice(0, 2), v = simMatch(E, ci, a, b, `fs${T.day}${k}`); add(mi, v); add(oi, 1 - v); T.log.push(`輪流擊球：${a.map(x => x.name).join('/')} ${v === 1 ? '勝' : v === 0 ? '敗' : '平'}`); }
+      // 輪流擊球 4 場：其中一場可以自己打（和隊友輪流擊同一顆球），其他模擬
+      const fm = r.pick(myTeam.filter(x => !x.me)), fo = r.shuffle(opTeam).slice(0, 2);
+      const fi = await modePick('輪流擊球', `你和 ${fm.name} 對 ${fo.map(x => x.name).join('、')}：兩人輪流擊同一顆球。單數洞你開球、雙數洞 ${fm.name} 開球，隊友的球由電腦打。`);
+      const fr = await playMatch(st, E, ci, { mode: fi === 1 ? 'sim' : 'play', opp: fo, mate: fm, alt: true, tag: 'fs' + T.day, label: `輪流擊球：你 / ${fm.name}` });
+      add(mi, fr.result); add(oi, 1 - fr.result); T.log.push(`輪流擊球（你 / ${fm.name}）：${fr.result === 1 ? '勝 ' + fr.text : fr.result === 0 ? '敗 ' + fr.text : '平手'}`);
+      for (let k = 0; k < 3; k++) { const a = r.shuffle(myTeam.filter(x => !x.me && x !== fm)).slice(0, 2), b = r.shuffle(opTeam).slice(0, 2), v = simMatch(E, ci, a, b, `fs${T.day}${k}`); add(mi, v); add(oi, 1 - v); T.log.push(`輪流擊球：${a.map(x => x.name).join('/')} ${v === 1 ? '勝' : v === 0 ? '敗' : '平'}`); }
       // 四球賽 4 場（其中一場自己打）
       const mate = r.pick(myTeam.filter(x => !x.me)), opp = r.shuffle(opTeam).slice(0, 2);
       const i = await modePick('四球賽', `你和 ${mate.name} 對 ${opp.map(x => x.name).join('、')}：每洞取兩人比較好的成績。`);
@@ -209,7 +222,9 @@ async function teamCup(body, st, E, ci) {
       const rec = { y: E.year, w: E.w, age: st.player.age, key: E.key, id: E.id, name: E.name, tour: E.tour, tourZh: '團體賽', course: E.course, courseName: ci.name, pos: won ? '勝' : '敗', posN: won ? 1 : 2, rounds: [], total: 0, prize: 0, pts: T.mine || 0, mode: '比洞賽' };
       st.results.push(rec); st.tally.events++;
       st.world.hist[E.id] = st.world.hist[E.id] || {}; st.world.hist[E.id][E.year] = won ? R.mine : R.sides[1 - mineI];
-      if (won) { st.trophies.push({ y: E.year, id: E.id, name: E.name, tier: 'team', tour: E.tour, kind: 'teamcup' }); addTimeline(st, `${E.name} 冠軍隊伍`); if (E.tour === 'team') st.cnt.cupWin = (st.cnt.cupWin || 0) + 1; }
+      if (won) { st.trophies.push({ y: E.year, id: E.id, name: E.name, tier: 'team', tour: E.tour, kind: 'teamcup' }); addTimeline(st, `${E.name} 冠軍隊伍`); if (E.tour === 'team') { st.cnt.cupWin = (st.cnt.cupWin || 0) + 1; if (!st.gear.items.some(x => x.id === 'team_jacket')) giveItem(st, 'team_jacket'); } }
+      // 收藏室：賽後和對手交換球衣
+      { const opp = ((mineI === 0 ? R.b : R.a) || []).filter(x => x && !x.me).map(x => x.name); const who = opp.length ? opp[hash(E.key) % opp.length] : `${SIDE_ZH[R.sides[1 - mineI]]}的隊員`; st.collection = st.collection || []; st.collection.push({ name: `${who} 的 ${E.name} 球衣（交換）`, kind: 'jersey', from: '團體賽', y: E.year }); }
       addNews(st, `${E.name}：${won ? SIDE_ZH[R.mine] : SIDE_ZH[R.sides[1 - mineI]]}以 ${Math.max(...T.pts)} : ${Math.min(...T.pts)} 獲勝`);
       st.player.fame += won ? 8000 : 3000; addXp(st.player, 400);
       checkAch(st);

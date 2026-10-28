@@ -28,6 +28,9 @@ export const MAIN = {
   base: { ch: 4, title: '選擇基地', img: 'green-sun.jpg', text: ['留在{home}：家人近，但每次出國比賽都很累。', '搬到美國佛州：去哪裡比賽都近，佛州沒有州所得稅，但離家很遠。'], choose: 'base' },
   first_caddie: { ch: 4, title: '第一位全職桿弟', img: 'caddies-vintage.jpg', text: ['好的桿弟不會幫你揮桿，但會在你想打旗桿的時候說：「這個果嶺後面比較好救。」'], choose: 'caddie' },
   first_card: { ch: 4, title: '第一張巡迴卡', img: 'swing-sunset.jpg', text: ['{tour} 的會員卡寄到了。卡片很輕，但你拿著它的手一直在抖。'], fx: { mood: 20 } },
+  slam_done: { ch: 7, title: '生涯大滿貫', img: 'augusta-clubhouse.jpg', text: ['四大賽的獎盃，現在都有你的名字。', '在高爾夫的歷史上，只有極少數人做到這件事。記者會上有人問你下一個目標，你想了很久。'], fx: { mood: 40, fame: 60000 } },
+  slam_double: { ch: 7, title: '雙料大滿貫', img: 'swilcan.jpg', text: ['每一座大賽，你都贏了至少兩次。', '{legend} 傳來一則訊息：「歡迎來到很小很小的俱樂部。」'], fx: { mood: 30, fame: 80000 } },
+  tiger_slam: { ch: 7, title: '連續四大賽', img: 'kiawah-18.jpg', text: ['你同時擁有四大賽的冠軍獎盃。', '媒體替這個成就取了一個名字，而這個名字以後會跟著你一輩子。'], fx: { mood: 40, fame: 100000 } },
   pga_card: { ch: 4, title: 'PGA TOUR 卡', img: 'sawgrass-17.jpg', text: ['你拿到了 PGA TOUR 的全季資格。', '下個月，你會和電視上那些名字站在同一個發球台。'], fx: { mood: 30, fame: 15000 } },
   // 第五章
   ch5_start: { ch: 5, title: 'PGA TOUR 新人', img: 'sawgrass-17b.jpg', text: ['置物櫃上貼著你的名字。隔壁是一位大賽冠軍，他點頭跟你說：「歡迎來到 TOUR。」'] },
@@ -124,7 +127,8 @@ export const RANDOM = [
 
 // 第二批（data/story2.js）合在一起
 import { RANDOM2 } from './story2.js';
-RANDOM.push(...RANDOM2);
+import { RANDOM3 } from './story3.js';
+RANDOM.push(...RANDOM2, ...RANDOM3);
 // 依階段與年紀過濾
 export const eventsFor = stage => RANDOM.filter(e => e.s === stage || (e.s === 'tour' && stage === 'legend'));
 
