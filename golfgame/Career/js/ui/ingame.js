@@ -26,8 +26,8 @@ export function gamePlayer(st, opt = {}) {
     if (it && it.look) Object.assign(look, it.look);
   }
   if (st.lookOverride) Object.assign(look, st.lookOverride);
-  // 升級外觀（臉、髮型、帽型、年齡比例；js/character.js 的 applyV2）
-  look.v2 = true; look.age = p.age; look.height = p.height; look.hair = look.hairColor || look.hair;
+  // 基礎角色外觀（主遊戲的經典角色：膚色、髮色、上衣、褲子、帽子的顏色）；look.model = 寫實角色（David、Louise…）時外觀由模型決定
+  look.hair = look.hairColor || look.hair;
   return { user: p.name, stats: effectiveStats(st, opt), look, local: true };
 }
 
@@ -79,9 +79,9 @@ const HOOKS = {
     if (sess.calm && lvl > 0) lvl--;
     const tal = st.player.talents.includes('heart') ? TALENTS.heart.pressure : 1;
     let m = 1 + lvl * 0.13 * clamp(1.45 - mental / 100, 0.45, 1.3) * tal;
-    // 實力還低（青少年、兒童）時誤差再放大：主遊戲的素質公式在 50 以下差異很小，自己打會比模擬的同實力好太多
-    //   綜合實力 58 以上不影響；45 約 ×1.45；39 約 ×1.67；最多 ×1.8
-    m *= 1 + clamp((58 - ratingOf(s)) * 0.035, 0, 0.8);
+    // 實力還低時，正式比賽的誤差稍微放大（最多 ×1.2，綜合實力 50 以上不影響）；童年、練習、家人下場不放大
+    //   v93 曾放大到 ×1.8，方向與距離亂到沒辦法打，已經改回溫和的版本
+    if (sess.evId) m *= 1 + clamp((50 - ratingOf(s)) * 0.012, 0, 0.2);
     // 技能卡（同一種誤差最多減到原本的 60%）
     const holeNo = game.holeNo, putt = club.putter, par = game.hole.par, k = game.k;
     const prevD = k > 0 && p.scores[k - 1] && p.pars ? p.scores[k - 1] - p.pars[k - 1] : 0;

@@ -1,6 +1,7 @@
 // 建立球員：外觀（基礎選項）→ 國籍、家鄉與家庭 → 名字 → 系統選項；之後進入序章
 import { register, go, ui, story, toast } from './shell.js';
 import { esc } from '../util.js';
+import { CHARACTERS } from '../../../js/config.js';
 import { setCur, localSave, sync } from '../state.js';
 import { newCareer, skipChildhood, FAMILY, DIFF, LENGTH } from '../life.js';
 import { COUNTRY_ZH } from '../data/players.js';
@@ -59,13 +60,15 @@ export function avatarSvg(L, age = 8) {
 }
 
 register('create', (body, arg) => {
-  const d = { step: 0, gender: 'm', skin: SKINS8[2], hairStyle: 'short', hairColor: HAIR_COLORS[0], eyes: EYES[0], brows: 'natural', build: 'normal', height: 176, country: 'TPE', home: HOME_DEFAULT.TPE, family: 'middle', name: '', difficulty: 'standard', length: 'standard', injuries: false, skip: false };
+  const d = { model: 'classic', step: 0, gender: 'm', skin: SKINS8[2], hairStyle: 'short', hairColor: HAIR_COLORS[0], eyes: EYES[0], brows: 'natural', build: 'normal', height: 176, country: 'TPE', home: HOME_DEFAULT.TPE, family: 'middle', name: '', difficulty: 'standard', length: 'standard', injuries: false, skip: false };
   const draw = () => {
     const sw = (key, arr) => `<div class="cm-swatches">${arr.map(c => `<button data-k="${key}" data-v="${c}" class="${d[key] === c ? 'on' : ''}" style="background:${c}"></button>`).join('')}</div>`;
     const seg = (key, arr) => `<div class="cm-seg">${arr.map(([v, n]) => `<button data-k="${key}" data-v="${v}" class="${String(d[key]) === String(v) ? 'on' : ''}">${n}</button>`).join('')}</div>`;
     const steps = ['外觀', '國籍與家庭', '名字', '系統選項'];
     let inner = '';
-    if (d.step === 0) inner = `<div class="cm-grid2"><div>${avatarSvg({ ...d, shirt: '#f2ead8' }, 8)}<p class="cm-note" style="text-align:center">8 歲的你（會隨年齡長大）</p></div><div>
+    if (d.step === 0) inner = `<div class="cm-field"><label>角色</label>${seg('model', CHARACTERS.map(c => [c.id, c.id === 'classic' ? '經典（可換顏色）' : c.name]))}
+      <p class="cm-note" style="margin-top:6px">${d.model === 'classic' ? '經典角色：膚色、髮色在下面選，上衣、褲子、帽子跟著裝備換顏色。' : `寫實角色 ${esc(d.model)}：外觀由模型決定（第一次選用要下載約 1.5～6 MB）。之後可以在「球員 → 天賦與球風」換角色。`}</p></div>
+      <div class="cm-grid2"><div>${d.model === 'classic' ? avatarSvg({ ...d, shirt: '#f2ead8' }, 8) : `<div class="cm-empty" style="padding:40px 10px">寫實角色<br><b>${esc(d.model)}</b></div>`}</div><div>
       <div class="cm-field"><label>性別</label>${seg('gender', [['m', '男'], ['f', '女']])}</div>
       <div class="cm-field"><label>膚色</label>${sw('skin', SKINS8)}</div>
       <div class="cm-field"><label>眼睛</label>${sw('eyes', EYES)}</div></div></div>
@@ -106,7 +109,7 @@ async function create(d, slot) {
   const ctx = ui.ctx;
   ctx.ui.loading(true, '建立世界：球員、巡迴賽、賽程…');
   await new Promise(r => setTimeout(r, 50));
-  const look = { body: d.gender, skin: d.skin, hair: d.hairColor, hairColor: d.hairColor, hairStyle: d.hairStyle, eyes: d.eyes, brows: d.brows, build: d.build, beard: 'none', shirt: '#f2ead8', pants: '#2a3442', cap: '#1d3a2a', shoes: '#f4f1ea', glove: '#ffffff' };
+  const look = { model: d.model === 'classic' ? undefined : d.model, body: d.gender, skin: d.skin, hair: d.hairColor, hairColor: d.hairColor, hairStyle: d.hairStyle, eyes: d.eyes, brows: d.brows, build: d.build, beard: 'none', shirt: '#f2ead8', pants: '#2a3442', cap: '#1d3a2a', shoes: '#f4f1ea', glove: '#ffffff' };
   const st = newCareer({ user: ctx.session.user, slot, name: d.name, country: d.country, home: d.home, family: d.family, gender: d.gender, height: d.height, look, difficulty: d.difficulty, length: d.length });
   st.opt.injuries = !!d.injuries || d.difficulty === 'real';
   setCur(st);

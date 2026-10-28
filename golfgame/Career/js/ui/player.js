@@ -7,6 +7,7 @@ import { ITEMS, SLOTS, RARITY, BRANDS, itemById, upgradeCost, CLOTHES, SLOT_GROU
 import { giveItem, spend, lengthXp, coachMul, familyPart, FAMILY } from '../life.js';
 const FAMILY_NAME = Object.fromEntries(Object.entries(FAMILY).map(([k, v]) => [k, v.name]));
 import { ratingOf, driveCarry } from '../sim.js';
+import { CHARACTERS } from '../../../js/config.js';
 import { drill, ironDrill } from '../childhood.js';
 
 register('player', (body, arg) => {
@@ -142,11 +143,14 @@ function shop(el, st) {
   });
 }
 function talent(el, st) {
-  const p = st.player;
-  el.innerHTML = `<div class="cm-card"><h3>天賦</h3><div class="cm-list">${p.talents.map(t => `<div class="cm-li"><div class="main"><b>${TALENTS[t].name}</b><span>${TALENTS[t].desc}</span></div></div>`).join('') || '<div class="cm-empty">還沒有天賦</div>'}</div></div>
+  const p = st.player, model = p.look.model || 'classic';
+  el.innerHTML = `<div class="cm-card"><h3>角色外觀</h3><div class="cm-seg" style="flex-wrap:wrap">${CHARACTERS.map(c => `<button data-model="${c.id}" class="${model === c.id ? 'on' : ''}">${c.id === 'classic' ? '經典' : esc(c.name)}</button>`).join('')}</div>
+      <p class="cm-note" style="margin-top:6px">經典角色的上衣、褲子、帽子跟著裝備換顏色；寫實角色的外觀由模型決定（第一次選用要下載約 1.5～6 MB）。</p></div>
+    <div class="cm-card"><h3>天賦</h3><div class="cm-list">${p.talents.map(t => `<div class="cm-li"><div class="main"><b>${TALENTS[t].name}</b><span>${TALENTS[t].desc}</span></div></div>`).join('') || '<div class="cm-empty">還沒有天賦</div>'}</div></div>
     <div class="cm-card"><h3>球風</h3>${p.style ? `<p><b>${STYLES[p.style].name}</b>：${STYLES[p.style].desc}</p>` : '<p class="cm-note">青少年的最後一年決定球風；之前每一項的上限都是 99。</p>'}
       ${Object.keys(p.breaks || {}).length ? `<p class="cm-note" style="margin-top:6px">突破：${Object.entries(p.breaks).map(([k, v]) => `${STAT_ZH[k]} +${v}`).join('、')}</p>` : ''}</div>
     <div class="cm-card"><h3>身高與體型</h3><p class="cm-note">成年身高 ${p.height} cm（${p.age < 18 ? '還在長' : '已經長完'}）</p></div>`;
+  el.querySelectorAll('[data-model]').forEach(b => b.onclick = () => { p.look.model = b.dataset.model === 'classic' ? undefined : b.dataset.model; localSave(st); talent(el, st); toast('角色外觀已更換（下一輪開始生效）'); });
 }
 
 // ---------- 訓練關卡（練習場；比一般練球多一倍的經驗）----------
