@@ -256,11 +256,16 @@ function reportHtml(st, a, logs) {
     <h4>每週明細</h4><div class="cm-log">${logs.map(l => `<div class="${l.wk ? 'wk' : ''}">${esc(l.t)}</div>`).join('')}</div>
   </div>`;
 }
+const openInfo = new Set();      // 哪幾個行動的說明是展開的
 function drawPlan(st, plan, n, acts) {
   const box = document.getElementById('hm-plan');
   const sel = (i) => {
-    const a = plan[i] || { k: 'rest' };
-    return `<div class="cm-li"><div class="main"><b>行動 ${i + 1}</b><span>${esc(ACTIONS[a.k].desc)}${a.k === 'train' && TRAIN[a.sub || 'iron'] ? '<br>' + esc(trainHint(st, a.sub || 'iron')) : ''}</span></div><div class="side"><select data-i="${i}" class="hm-a">${acts.map(x => `<option value="${x.k}" ${x.k === a.k ? 'selected' : ''}>${x.name}</option>`).join('')}</select>
+    const a = plan[i] || { k: 'rest' }, desc = ACTIONS[a.k].desc, tr = a.k === 'train' && TRAIN[a.sub || 'iron'];
+    // 只顯示一行重點，按「更多資訊」才展開全部說明（練球的進度也收在裡面）
+    const short = tr ? tr.desc : desc.split(/[；。（]/)[0];
+    const full = desc + (tr ? '\n' + trainHint(st, a.sub || 'iron') : '');
+    const more = full !== short ? `<button class="cm-more" data-more="${i}">${openInfo.has(i) ? '收起' : '更多資訊'}</button>` : '';
+    return `<div class="cm-li"><div class="main"><b>行動 ${i + 1}</b><span>${esc(short)} ${more}</span>${openInfo.has(i) ? `<span class="cm-note" style="display:block;margin-top:4px;white-space:pre-line">${esc(full)}</span>` : ''}</div><div class="side"><select data-i="${i}" class="hm-a">${acts.map(x => `<option value="${x.k}" ${x.k === a.k ? 'selected' : ''}>${x.name}</option>`).join('')}</select>
       ${a.k === 'train' ? `<select data-i="${i}" class="hm-t">${Object.entries(TRAIN).map(([k, t]) => `<option value="${k}" ${k === a.sub ? 'selected' : ''}>${t.name}</option>`).join('')}</select><button class="cm-btn small ghost hm-drill" data-i="${i}">訓練關卡</button>` : ''}</div></div>`;
   };
   plan.length = Math.min(plan.length, n);
@@ -268,7 +273,8 @@ function drawPlan(st, plan, n, acts) {
   box.innerHTML = n ? `<div class="cm-list">${Array.from({ length: n }, (_, i) => sel(i)).join('')}</div>` : '<div class="cm-empty">這一週的行動都用完了</div>';
   drawGoal(st, plan);
   box.querySelectorAll('.hm-a').forEach(s => s.onchange = () => { plan[Number(s.dataset.i)] = { k: s.value, sub: s.value === 'train' ? 'iron' : undefined }; drawPlan(st, plan, n, acts); localSave(st); });
-  box.querySelectorAll('.hm-t').forEach(s => s.onchange = () => { plan[Number(s.dataset.i)].sub = s.value; drawGoal(st, plan); });
+  box.querySelectorAll('.hm-t').forEach(s => s.onchange = () => { plan[Number(s.dataset.i)].sub = s.value; drawPlan(st, plan, n, acts); localSave(st); });
+  box.querySelectorAll('[data-more]').forEach(b => b.onclick = () => { const i = Number(b.dataset.more); if (openInfo.has(i)) openInfo.delete(i); else openInfo.add(i); drawPlan(st, plan, n, acts); });
   box.querySelectorAll('.hm-drill').forEach(b => b.onclick = async () => {
     const i = Number(b.dataset.i), kind = plan[i].sub || 'iron';
     const { trainingDrill } = await import('./player.js');
