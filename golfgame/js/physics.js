@@ -16,16 +16,18 @@ const CUP_R = 0.054;
 export const AERO = { CD0: 0.215, CDK: 0.30, CLK: 1.8, CLQ: 1.5, CL_MAX: 0.34, WIND: 1.2, SPIN_EXP: 0.2, LAUNCH_LOW: 12 };
 const SPIN_TAU = 25;
 
-// 各地面：e = 法向恢復係數；keep = 落地切向速度保留；crr = 滾動阻力係數
+// 各地面：e = 法向恢復係數；keep = 落地切向速度保留；crr = 滾動阻力係數；
+//   kv = 草的拖曳（減速度 = kv × 速度，1/秒）：滾得越快被草拖得越多，球道上的下坡不會用幾乎等速一直滑下去；
+//   lsd / lsv = 低速（lsv m/s 以下）時球陷進草裡多出來的阻力倍率（見 simulate 的滾動）。果嶺 / 果嶺邊的推桿距離公式依賴 kv = 0、lsd = 0.8
 export const GROUND = {
-  [SURF.TEE]: { e: 0.30, keep: 0.62, crr: 0.12 },
-  [SURF.FAIRWAY]: { e: 0.32, keep: 0.70, crr: 0.11 },
-  [SURF.FRINGE]: { e: 0.27, keep: 0.62, crr: 0.085 },
-  [SURF.GREEN]: { e: 0.22, keep: 0.62, crr: 0.05 },
-  [SURF.ROUGH]: { e: 0.15, keep: 0.42, crr: 0.36 },
-  [SURF.DEEP]: { e: 0.07, keep: 0.22, crr: 0.75 },
-  [SURF.SAND]: { e: 0.03, keep: 0.10, crr: 1.6 },
-  [SURF.WASTE]: { e: 0.20, keep: 0.50, crr: 0.30 },
+  [SURF.TEE]: { e: 0.30, keep: 0.62, crr: 0.12, kv: 0.18, lsd: 1.6, lsv: 1.0 },
+  [SURF.FAIRWAY]: { e: 0.32, keep: 0.70, crr: 0.11, kv: 0.18, lsd: 1.6, lsv: 1.0 },
+  [SURF.FRINGE]: { e: 0.27, keep: 0.62, crr: 0.085, kv: 0, lsd: 0.8 },
+  [SURF.GREEN]: { e: 0.22, keep: 0.62, crr: 0.05, kv: 0, lsd: 0.8 },
+  [SURF.ROUGH]: { e: 0.15, keep: 0.42, crr: 0.36, kv: 0.6, lsd: 1.6, lsv: 1.0 },
+  [SURF.DEEP]: { e: 0.07, keep: 0.22, crr: 0.75, kv: 1.0, lsd: 1.6, lsv: 1.0 },
+  [SURF.SAND]: { e: 0.03, keep: 0.10, crr: 1.6, kv: 1.5, lsd: 1.6, lsv: 1.0 },
+  [SURF.WASTE]: { e: 0.20, keep: 0.50, crr: 0.30, kv: 0.4, lsd: 1.6, lsv: 1.0 },
 };
 
 export function airDensity(altitude, tempC) {
@@ -161,10 +163,11 @@ export function simulate(launch, env, terrain) {
       const slopeAcc = Math.hypot(gx, gz);
       // 低速時球陷進草裡，滾動阻力變大（0.5 m/s 以下逐漸增加，停下前約 1.8 倍）：
       //   球會越滾越慢直到停住，不會在斜坡上用幾乎等速的速度一直「飄」
-      const crr = gnd.crr * (1 + LOW_SPEED_DRAG * Math.max(0, 1 - sp / LOW_SPEED_V));
+      //   草地（球道、長草…）陷得比較深（lsd 1.6），而且有和速度成正比的拖曳（kv）
+      const crr = gnd.crr * (1 + (gnd.lsd ?? LOW_SPEED_DRAG) * Math.max(0, 1 - sp / (gnd.lsv || LOW_SPEED_V)));
       if (sp < 0.05 && slopeAcc < crr * G) { vx = vz = 0; break; }
       let ax = gx, az = gz;
-      if (sp > 1e-4) { ax -= crr * G * vx / sp; az -= crr * G * vz / sp; }
+      if (sp > 1e-4) { const dec = crr * G + (gnd.kv || 0) * sp; ax -= dec * vx / sp; az -= dec * vz / sp; }
       const ovx = vx, ovz = vz;
       vx += ax * dt; vz += az * dt;
       // 阻力不能讓球反向
@@ -293,7 +296,7 @@ export function makeLaunch(input, ctx) {
   const over = Math.max(0, pw - 1);
   const speedF = pw <= 1 ? pw : 1 + over * 1.0;
   const sig = 1 + over * 1.5;
-  const acc = (2.6 - d.faceSigma) / 0.019;                         // 準度素質（faceSigma = 2.6 − 準度 × 0.019 反推）
+  const acc = (2.2 - d.faceSigma) / 0.016;                         // 準度素質（faceSigma = 2.2 − 準度 × 0.016 反推）
   const dirSig = 1 + over * (9 - acc * 0.06);
 
   // 球位影響
@@ -314,7 +317,7 @@ export function makeLaunch(input, ctx) {
 
   const clubMph = d.driverMph * club.ratio * speedF;
   const powerNoise = 1 + n() * (shortGame ? d.chipSigma : d.powerSigma) * sig * pm;
-  const mis = Math.min(Math.abs(n()), over > 0 ? 2.5 : 9) * d.mishitSigma * sig * pm * lieSig;
+  const mis = Math.min(Math.abs(n()), 2.2) * d.mishitSigma * sig * pm * lieSig;
   const smash = club.smash * d.smashMul * (1 - mis * 1.6);
   const ballMph = clubMph * powerNoise * smash * lieKeep;
 
