@@ -165,7 +165,7 @@ register('home', async body => {
     ${offerCard(st)}
     ${skillsCard(st)}
     ${qsCard(st)}
-    ${res ? `<div class="cm-card" style="border-color:var(--champ)"><h3>上次沒打完的一輪</h3><p>${esc(res.m.label || '')}</p><button class="cm-btn green" id="hm-resume">接著打</button></div>` : ''}
+    ${res ? `<div class="cm-card" style="border-color:var(--champ)"><h3>上次沒打完的一輪</h3><p>${esc(res.m.label || '')}</p><p class="cm-note">從第 ${res.r.holeNo || (res.r.state.k + 1)} 洞的第一桿接著打（離開時那一洞打到一半的桿數不算）</p><button class="cm-btn green" id="hm-resume">接著打</button></div>` : ''}
     <div class="cm-hero"><small>${weekLabel(st.year, st.week)}${hol ? ' · 假期' : ''}${examWeek(st.week) && st.school ? ' · 考試週' : ''}</small><h2>${esc(CHAPTER_ZH[st.chapter] || '')}</h2>
       <div class="meta">${p.age} 歲 · ${esc(stageText(st))} · 個性：${personality(p)}</div>
       ${ev ? `<div class="ev"><span>這一週的比賽 · ${esc(TOUR_ZH[ev.tour] || '')}</span><b>${esc(ev.name)}</b><span>${esc(cinfo(ev.course)?.name || '')}${ev.purse && !st.status.amateur ? ' · 總獎金 ' + money(ev.purse, { short: true }) : ''}${ev.el.how === 'mq' ? ' · 要先打週一資格賽' : ''}</span>

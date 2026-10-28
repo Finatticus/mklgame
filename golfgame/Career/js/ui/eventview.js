@@ -160,20 +160,27 @@ async function wednesday(body, st, E, head) {
 function roundScreen(body, st, E, head) {
   const ri = Number(E.day.slice(1)), ci = cinfo(E.course);
   if (!E.me.sc[ri]) { prepareRound(st, E, ri); localSave(st); }
-  const lb = leaderboard(E, ri, 0);
+  // 上次這一輪打到一半關掉遊戲／跳出去：接著打（從離開的那一洞第一桿開始）
+  const pr = pendingResume(st), resumable = pr && pr.m.key === E.key && pr.m.label === `${E.name} 第 ${ri + 1} 輪` && pr.r.state ? pr : null;
+  if (pr && !resumable) clearResume();
+  const lb = leaderboard(E, ri, resumable ? thruNow(E, ri) : 0);
   const wx = E.wx[ri], final = ri === E.rounds - 1;
   const meRow = lb.find(x => x.me), contending = meRow && meRow.posN <= 8;
   const rec = final && (E.major || contending) ? 'full' : E.tour === 'junior' || E.tour === 'ncaa' ? 'nine' : 'key';
-  body.innerHTML = head + `<div class="cm-card"><h3>第 ${ri + 1} 輪<small>${['週四', '週五', '週六', '週日', '第五天', '第六天'][ri] || ''}</small></h3>
+  body.innerHTML = head + (resumable ? `<div class="cm-card" style="border-color:var(--champ)"><h3>上次沒打完的第 ${ri + 1} 輪</h3>
+      <p>已打完 ${thruNow(E, ri)} 洞，從第 ${resumable.r.holeNo || resumable.r.state.k + 1} 洞的第一桿接著打（離開時那一洞打到一半的桿數不算）。排行榜和你離開時一樣。</p>
+      <button class="cm-btn green" id="r-resume">接著打</button></div>` : '') + `<div class="cm-card"><h3>第 ${ri + 1} 輪<small>${['週四', '週五', '週六', '週日', '第五天', '第六天'][ri] || ''}</small></h3>
       <div class="cm-row wrap" style="font-size:13px;margin-bottom:8px"><span class="cm-pill">天氣：${WIND_ZH[wx]}</span>${ri >= 2 && E.cutLine != null ? `<span class="cm-pill">晉級線 ${toPar(E.cutLine)}</span>` : ''}${E.practice ? '<span class="cm-pill green">練習輪：讀果嶺 +3</span>' : ''}${(E.delay || {})[ri - 1] === 'storm' ? '<span class="cm-pill">上一輪雷雨延賽</span>' : ''}${final && contending ? '<span class="cm-pill gold">最後一輪 · 爭冠</span>' : ''}</div>
       <div class="cm-list" id="r-modes">${MODES.map(m => `<div class="cm-li click" data-m="${m[0]}"><div class="main"><b>${m[1]}${m[0] === rec ? ' <span class="cm-pill gold">建議</span>' : ''}</b><span>${m[2]}</span></div><div class="side">›</div></div>`).join('')}</div>
       <div id="r-nine" class="cm-seg" style="margin-top:8px;display:none"><button data-n="front">前九洞</button><button data-n="back" class="on">後九洞</button></div></div>
-    <div class="cm-card"><h3>排行榜<small>${ri ? `第 ${ri} 輪後` : '開賽前'}</small></h3>${lbTable(lb, 12)}</div>`;
+    <div class="cm-card"><h3>排行榜<small>${resumable ? '目前' : ri ? `第 ${ri} 輪後` : '開賽前'}</small></h3>${lbTable(lb, 12, resumable ? { today: true } : {})}</div>`;
+  if (resumable) document.getElementById('r-resume').onclick = () => resumeRound(st, resumable);
   let nine = 'back';
   body.querySelectorAll('#r-nine button').forEach(b => b.onclick = () => { nine = b.dataset.n; body.querySelectorAll('#r-nine button').forEach(x => x.classList.toggle('on', x === b)); });
   body.querySelectorAll('#r-modes [data-m]').forEach(el => el.onclick = async () => {
     const m = el.dataset.m;
     if (m === 'nine' && document.getElementById('r-nine').style.display === 'none') { document.getElementById('r-nine').style.display = ''; el.querySelector('.side').textContent = '開始 ›'; return; }
+    if (resumable) { if (!confirm('放棄上次沒打完的進度，這一輪從第一洞重新打？')) return; clearResume(); }
     await playEventRound(st, E, ri, m, nine);
   });
 }
@@ -579,12 +586,20 @@ export async function resumeRound(st, res) {
   const ri = Number(String(E.day).slice(1));
   if (!(ri >= 0)) { clearResume(); return go('event'); }
   const cfg = res.r.cfg;
+  // 比洞賽、表演賽、資格賽沒有接續（不是這一週的正式比賽輪）
+  if (cfg.career.match || cfg.career.skins || cfg.career.par3 || /資格賽/.test(res.m.label || '')) { clearResume(); return go('event'); }
   const ci = cinfo(E.course);
   const result = await playRound({
-    label: res.m.label, key: E.key, cfg, resume: { local: true, state: res.r.state, pendingShot: res.r.pendingShot }, home: isHome(st, E), major: !!E.major, round: ri, evId: E.id,
+    restartable: true, label: res.m.label, key: E.key, cfg, resume: { local: true, state: res.r.state, pendingShot: res.r.pendingShot }, home: isHome(st, E), major: !!E.major, round: ri, evId: E.id,
     onHole: (k, idx, s) => { E.me.sc[ri][idx] = s; E.me.played[ri] = E.me.played[ri] || Array(18).fill(false); E.me.played[ri][idx] = true; localSave(st); },
     bcast: () => bcastLine(E, ri), holeCard: () => lbTable(leaderboard(E, ri, thruNow(E, ri)), 5, { today: true }), pressure: pressureFor(st, E, ri), leaderboard: () => showLb(E, ri),
   });
+  // 接續後又選「重新開始這一輪」：用原本的打法從第一洞重打
+  if (result.restart) {
+    st.cnt.restarts = (st.cnt.restarts || 0) + 1; E.restarts = (E.restarts || 0) + 1;
+    const mode = { '自己打': 'full', '精華 9 洞': 'nine', '關鍵時刻': 'key' }[E.me.mode[ri]] || 'full';
+    return playEventRound(st, E, ri, mode, (cfg.holeIdx || [0])[0] >= 9 ? 'back' : 'front');
+  }
   const total = finishMyRound(E, ri);
   afterRound(st, E, ri, total);
 }
