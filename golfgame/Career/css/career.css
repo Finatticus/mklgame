@@ -192,3 +192,31 @@ body.cm-round #h-players { display: none !important; }
 .cm-chips.sel span.on { background: var(--aug); color: #fff; border-color: var(--aug); }
 /* 每週行動：「更多資訊」小連結 */
 .cm-more { background: none; border: 0; padding: 0 2px; color: var(--pine); font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+/* 大滿貫面板 */
+.cm-slams { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.cm-slam { text-align: center; padding: 8px 4px; border-radius: 10px; background: rgba(0,0,0,.03); opacity: .55; }
+.cm-slam.on { opacity: 1; background: linear-gradient(180deg, #fffaf0, #fff); box-shadow: inset 0 0 0 1px var(--champ); }
+.cm-slam svg { width: 44px; height: 44px; }
+.cm-slam b { display: block; font-size: 12px; }
+.cm-slam .num { display: block; font-size: 22px; color: var(--aug); }
+.cm-slam small { display: block; font-size: 10px; color: var(--mut); line-height: 1.3; }
+@media (max-width: 420px) { .cm-slams { grid-template-columns: repeat(2, 1fr); } }
+/* 球具工坊：色票、預覽 */
+.ws-sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -2px; margin-left: 3px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.ws-sw.big { width: 26px; height: 26px; margin: 3px; cursor: pointer; }
+.ws-sw.big.on { box-shadow: 0 0 0 3px var(--champ), inset 0 0 0 1px rgba(0,0,0,.25); }
+.ws-paint { display: flex; flex-wrap: wrap; align-items: center; }
+.ws-paint input[type=color] { width: 34px; height: 30px; border: 0; padding: 0; margin-left: 6px; background: none; }
+.ws-prev { display: flex; gap: 6px; margin-bottom: 4px; }
+.ws-prev i { flex: 1; height: 18px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.cm-seg.wrap { flex-wrap: wrap; }
+/* 球員風格標籤 */
+.sty { display: inline-block; font-size: 10px; padding: 0 5px; margin-left: 4px; border-radius: 6px; color: #fff; vertical-align: 1px; line-height: 16px; }
+.sty-long { background: #b0502a; } .sty-steady { background: #3a6a8a; } .sty-short { background: #3a8a5a; } .sty-clutch { background: #8a6a1a; }
+/* 年度回顧的排名曲線 */
+.cm-rankchart { width: 100%; height: auto; display: block; }
+/* 生涯回顧（幻燈片） */
+.cm-rv-slide { height: 360px; border-radius: 16px; background-size: cover; background-position: center; color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 22px; animation: cmRvIn .9s ease; }
+.cm-rv-slide small { letter-spacing: .12em; opacity: .85; } .cm-rv-slide h2 { margin: 4px 0; font-size: 30px; } .cm-rv-slide p { margin: 0; line-height: 1.6; }
+@keyframes cmRvIn { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+.cm-rv-bar { display: flex; gap: 4px; margin-top: 8px; } .cm-rv-bar i { flex: 1; height: 4px; border-radius: 2px; background: rgba(0,0,0,.12); } .cm-rv-bar i.on { background: var(--champ); } .cm-rv-bar i.done { background: var(--aug); }
