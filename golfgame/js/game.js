@@ -107,6 +107,7 @@ export class Game {
     this.cfg = cfg;
     careerRun = !!cfg.career;
     this.resumeKey = cfg.career ? 'dixen.cresume' : 'dixen.resume';      // 生涯的中斷存檔另外放，不會蓋掉一般回合的
+    this.savedHoleK = -1;
     this.net = net;
     $('btn-chat').classList.toggle('hidden', !net);          // 對話按鈕只有連線時才有
     $('chat-bar').classList.add('hidden'); $('danmaku').innerHTML = '';
@@ -186,9 +187,10 @@ export class Game {
   }
 
   // 單人回合的進度存在手機裡：每一桿開始前存一次，回合打完才清掉（連線、練習場、挑戰不存）
-  //   生涯模式：揮桿的結果一算出來就先存（pendingShot），APP 被關掉再打開時直接播放那一桿，不能重打
+  //   生涯模式：只在每一洞的第一桿前存，APP 被關掉或跳出去，下次從那一洞的第一桿重新打（那一洞打到一半的桿數不算）
   saveLocal(turn, pendingShot = null) {
     if (this.net || this.cfg.practice || this.level || this.roundOver || !this.authority) return;
+    if (this.cfg.career) { if (pendingShot || this.savedHoleK === this.k) return; this.savedHoleK = this.k; pendingShot = null; }
     const me = this.players.find(p => p.local) || this.players[0];
     try {
       localStorage.setItem(this.resumeKey || 'dixen.resume', JSON.stringify({ v: 1, at: Date.now(), user: me.user, cfg: this.cfg, state: this.serialize(turn), pendingShot: pendingShot || this.replaying || null,
