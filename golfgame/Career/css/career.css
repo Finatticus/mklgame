@@ -169,3 +169,24 @@ body.cm-round #h-players { display: none !important; }
 .cm-cert .nm { font-size: 30px; margin: 10px 0; border-bottom: 1px solid #c9a85c; display: inline-block; padding: 0 20px 4px; }
 .cm-cert p { font-size: 14px; line-height: 1.9; }
 .cm-cert .seal { display: inline-block; margin-top: 10px; width: 64px; height: 64px; border-radius: 50%; border: 3px solid #a3302a; color: #a3302a; font-size: 14px; line-height: 1.2; padding-top: 14px; transform: rotate(-12deg); }
+
+/* 本週目標、週報 / 快轉總結（v93） */
+.cm-goal { border: 1px dashed rgba(201,168,92,.8); background: #fbf6e8; border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; font-size: 13px; }
+.cm-goal b { display: inline-block; font-size: 11px; letter-spacing: .1em; color: #8a6d1f; margin-right: 8px; }
+.cm-goal span { display: block; color: var(--mut); font-size: 12px; margin-top: 2px; }
+.cm-goal.ok { border-style: solid; border-color: #3f8a4a; background: #eef7ef; }
+.cm-goal.ok b { color: #2f6f3a; }
+.cm-report h4 { margin: 14px 0 6px; font-size: 12px; letter-spacing: .12em; color: var(--mut); border-bottom: 1px solid var(--line); padding-bottom: 3px; }
+.cm-report h4:first-child { margin-top: 0; }
+.cm-kv { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 2px 0; }
+.cm-kv.total { border-top: 1px solid var(--line); margin-top: 3px; padding-top: 4px; font-weight: 600; }
+.cm-report .pos { color: #2f7a3c; } .cm-report .neg { color: var(--red); }
+.cm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cm-chips span { background: #eef7ef; color: #2f6f3a; border: 1px solid rgba(63,138,74,.4); border-radius: 12px; padding: 2px 9px; font-size: 12px; }
+.cm-chips span.neg { background: #fbeeee; color: var(--red); border-color: rgba(198,40,40,.35); }
+.cm-log { max-height: 34vh; overflow: auto; font-size: 12px; line-height: 1.55; background: #f6f7f3; border-radius: 8px; padding: 8px 10px; }
+.cm-log .wk { font-weight: 700; margin-top: 6px; color: var(--ink); }
+.cm-log .wk:first-child { margin-top: 0; }
+.cm-log div:not(.wk) { color: #3d4a40; padding-left: 8px; }
+.cm-chips.sel span { cursor: pointer; background: #f3f4ef; color: var(--ink); border-color: var(--line); }
+.cm-chips.sel span.on { background: var(--aug); color: #fff; border-color: var(--aug); }
