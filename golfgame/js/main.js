@@ -4,6 +4,7 @@ import { session, call, isLocalMode, peek, refresh, refreshWith, setCache, prefe
 import { getSetting, setSetting, ADMIN_USER, CHARACTERS, characterDef, ANIM_BASE, careerAllowed } from './config.js';
 import { STATS, STAT_DETAIL, BASE, MAX, costFor, spentFor, normalizeStats, DEFAULT_LOOK, LOOK_OPTIONS, START_RESPECS, levelOf } from './stats.js';
 import { CREATIVE_TIERS } from './courses-creative.js';
+import { loadDreamsFromStorage } from './dream.js';
 import { COURSES, COURSE_GROUPS, TEE_SETS, courseYards, teeYards, courseById, loadCourseMaps, nineCombo, holeLabel, teeKey, teeList } from './courses.js';
 import { World } from './render.js';
 import { Hud } from './hud.js';
@@ -188,6 +189,7 @@ async function refreshMyBest() {
 // 登入後在背景先把排行、回合紀錄、實際下場讀好，點進去就有資料（每個帳號每次開啟 APP 讀一次，之後點進去時再背景更新）
 const prefetched = new Set();
 function enterLobby() {
+  if (careerAllowed(session.user)) loadDreamsFromStorage(session.user);      // 生涯設計的夢想球場加進球場清單
   const h = new Date().getHours();
   $('lb-greet').textContent = h < 11 ? 'GOOD MORNING' : h < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING';
   const cTitle = careerAllowed(session.user) ? getSetting('careerTitle.' + session.user, null) : null;      // 生涯稱號（生涯模式存的摘要）
@@ -466,6 +468,7 @@ function holeFeatures(course, spec) {
 
 // 球場選單：上方切換一般球場（台灣、海邊、山地、沙漠）/ 奇幻球場，再依群組列出；之後新增球場會自動出現在對應群組
 function openCoursePicker(kind) {
+  if (session.user && careerAllowed(session.user)) loadDreamsFromStorage(session.user);      // 生涯設計的夢想球場（剛設計完的也要出現）
   if (!kind) { const g0 = courseById(setup.courseId).group; kind = g0 === 'fantasy' ? 'fantasy' : g0 === 'custom' ? 'custom' : g0 === 'creative' ? 'creative' : 'real'; }       // 打開時停在目前球場那一類
   $('cp-kind').querySelectorAll('button').forEach(b => {
     b.classList.toggle('on', b.dataset.k === kind);
@@ -849,7 +852,10 @@ function initGameMenu() {
     $('gm-card').innerHTML = game ? scorecardHtml(game) : '';
     // 挑戰模式：可以直接重新挑戰這一關；離開按鈕改成「放棄挑戰」
     const lv = game && game.level;
-    $('gm-retry').classList.toggle('hidden', !lv);
+    // 生涯的正式比賽：可以從第一洞重新開始這一輪
+    const cr = game && game.cfg.career && game.careerHooks && game.careerHooks.canRestart && game.careerHooks.canRestart(game);
+    $('gm-retry').classList.toggle('hidden', !lv && !cr);
+    $('gm-retry').textContent = cr ? '重新開始這一輪' : '重新挑戰';
     $('gm-quit').textContent = game.cfg.preview ? '回編輯器' : lv ? '放棄挑戰' : '離開回合';
     // 真實球場：這一洞的打法建議（依球場官網介紹整理）
     const sp = game && game.hole && game.hole.spec;
@@ -863,6 +869,7 @@ function initGameMenu() {
   };
   $('gm-close').onclick = () => $('dlg-menu').classList.remove('open');
   $('gm-retry').onclick = () => {
+    if (game.cfg.career && game.careerHooks && game.careerHooks.restart) { $('dlg-menu').classList.remove('open'); game.careerHooks.restart(game); return; }
     const lv = game.level;
     if (!lv || !confirm('從第 1 桿重新挑戰這一關？')) return;
     $('dlg-menu').classList.remove('open');

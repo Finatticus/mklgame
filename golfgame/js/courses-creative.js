@@ -982,3 +982,25 @@ export const CREATIVE_TIERS = [
   { id: 'asia', name: '亞洲巡迴賽場地' }, { id: 'amateur', name: '業餘大賽場地' }, { id: 'kft', name: 'Korn Ferry Tour 場地' }, { id: 'college', name: '大學聯賽場地' }, { id: 'junior', name: '青少年賽事場地' },
 ];
 export const CREATIVE_COURSES = DEFS.map(build);
+CREATIVE_TIERS.push({ id: 'dream', name: '我的夢想球場（生涯模式設計）' });
+
+// ---------- 生涯的「夢想球場」：玩家退休後設計（風格、每洞標準桿與碼數），用同一套 @C 產生器做成可以打的 3D 球場 ----------
+//   d = { name, style: links | parkland | desert | mountain, y, holes: [[標準桿, 碼數]…] }；owner = 設計者（生涯球員的名字）
+const DREAM_STYLE = {
+  links: { style: 'links', treeKind: 'gorse', stimp: 11, firm: 1.25, altitude: 10, temp: 17, wind: [8, 18], fairwayW: 36, roughW: 18, corridor: 82, trees: 0.2,
+    p: { dog: [5, 18], straight: 0.4, elev: 3, fw: [0, 1], gs: [3, 5], cross: 0.3, w: {}, green: { size: [26, 36], slope: [0.012, 0.028], tier: 0.2 }, rows: 0.3 }, zh: '林克斯' },
+  parkland: { style: 'parkland', treeKind: 'oak', stimp: 12, firm: 1.05, altitude: 120, temp: 24, wind: [3, 10], fairwayW: 34, roughW: 12, corridor: 68, trees: 1.1,
+    p: { dog: [8, 24], straight: 0.3, elev: 6, fw: [1, 3], gs: [2, 4], cross: 0.2, w: { side: 0.08, creek: 0.06 }, green: { size: [22, 32], slope: [0.008, 0.022] }, rows: 0.4 }, zh: '公園式' },
+  desert: { style: 'parkland', treeKind: 'desert', stimp: 12, firm: 1.2, altitude: 600, temp: 30, wind: [4, 12], fairwayW: 32, roughW: 6, corridor: 60, trees: 0.4,
+    p: { dog: [8, 22], straight: 0.3, elev: 5, fw: [1, 3], gs: [2, 4], cross: 0.25, w: { green: 0.05 }, green: { size: [22, 30], slope: [0.01, 0.024] }, rows: 0.2 }, zh: '沙漠' },
+  mountain: { style: 'parkland', treeKind: 'fir', stimp: 11.5, firm: 1.0, altitude: 1200, temp: 18, wind: [3, 11], fairwayW: 32, roughW: 10, corridor: 64, trees: 1.0,
+    p: { dog: [10, 26], straight: 0.25, elev: 11, fw: [0, 2], gs: [2, 3], cross: 0.15, w: { creek: 0.08 }, green: { size: [22, 30], slope: [0.008, 0.02] }, rows: 0.3 }, zh: '山地' },
+};
+export const dreamId = (d, owner) => 'c_dream_' + (hashStr(owner + ':' + d.name + ':' + d.y) % 1e9).toString(36);
+export function buildDream(d, owner) {
+  const S = DREAM_STYLE[d.style] || DREAM_STYLE.parkland, { p, zh, ...rest } = S;
+  const card = d.holes.map(h => [h[1], h[0]]);
+  const c = { id: dreamId(d, owner).slice(2), name: d.name, en: `${d.name} (Dream Course)`, area: `${owner} 設計 · ${zh}`, tier: 'dream', event: '生涯模式：自己設計的夢想球場', diff: 3,
+    basis: '', desc: `${owner} 在生涯模式退休後設計的${zh}球場（${d.y} 年）。Par ${card.reduce((a, x) => a + x[1], 0)}、${card.reduce((a, x) => a + x[0], 0).toLocaleString()} 碼。只存在這台手機。`, ...rest, card, p, over: {}, dream: true };
+  return build(c);
+}

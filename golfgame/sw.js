@@ -7,7 +7,7 @@ const CORE = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
   './js/main.js', './js/game.js', './js/render.js', './js/terrain.js', './js/physics.js', './js/character.js',
   './js/hud.js', './js/input.js', './js/net.js', './js/api.js', './js/config.js', './js/stats.js', './js/clubs.js',
-  './js/courses.js', './js/courses-creative.js', './js/util.js', './js/audio.js', './js/mixamo.js', './js/progress.js', './js/challenge.js', './js/challenge-gen.js', './js/challenge-gen3.js', './js/career.js', './js/tutorial.js', './js/real.js', './js/stamps.js', './js/custom.js', './js/editor.js',
+  './js/courses.js', './js/courses-creative.js', './js/util.js', './js/audio.js', './js/mixamo.js', './js/progress.js', './js/challenge.js', './js/challenge-gen.js', './js/challenge-gen3.js', './js/career.js', './js/tutorial.js', './js/real.js', './js/stamps.js', './js/custom.js', './js/editor.js', './js/dream.js',
   './assets/textures/grass_d.jpg', './assets/textures/grass_n.jpg', './assets/textures/sand_d.jpg', './assets/textures/sand_n.jpg',
   './assets/textures/rock_d.jpg', './assets/textures/rock_n.jpg', './assets/textures/sky.hdr',
   './assets/icons/icon-192.png', './assets/icons/apple-touch-icon.png', './README.html', './version.js',

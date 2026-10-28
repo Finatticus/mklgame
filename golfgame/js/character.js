@@ -196,7 +196,7 @@ export class ProceduralGolfer {
     if (lenOverride) g.len = lenOverride;      // 寫實角色依站位算出的長度
     const chrome = new THREE.MeshStandardMaterial({ color: 0xd8dde0, roughness: 0.18, metalness: 1 });
     const black = new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.35, metalness: 0.3 });
-    const grip = new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.9 });
+    const grip = new THREE.MeshStandardMaterial({ color: skin && skin.grip != null ? skin.grip : 0x1b1b1b, roughness: 0.9 });      // 生涯訂製可以換握把顏色
     // 皮膚：桿頭顏色 / 金屬感 / 自發光，桿身換色
     const skinHead = skin ? new THREE.MeshStandardMaterial({ color: skin.head, roughness: skin.metal ? 0.2 : 0.35, metalness: skin.metal ? 1 : 0.4, emissive: skin.glow || 0x000000, emissiveIntensity: skin.glow ? 0.8 : 0 }) : null;
     const shaftMat = skin ? new THREE.MeshStandardMaterial({ color: skin.shaft, roughness: 0.25, metalness: 0.8, emissive: skin.glow || 0x000000, emissiveIntensity: skin.glow ? 0.25 : 0 }) : chrome;

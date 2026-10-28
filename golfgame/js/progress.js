@@ -147,6 +147,8 @@ export function buySkin(s) {
 // look.fxOff = 關掉特效的欄位（例如 ['ball', 'driver']）：外觀照樣換，只是不噴粒子
 export function equippedSkins(look = {}) {
   const sk = { driver: skinById('driver', look.drvSkin), iron: skinById('iron', look.ironSkin), putter: skinById('putter', look.putSkin), chipper: skinById('chipper', look.chipSkin), ball: skinById('ball', look.ballSkin) };
+  // 生涯的球具工坊：自選桿頭、桿身、握把顏色（look.customSkins[槽位] = { head, shaft, grip, metal }，顏色是 0xRRGGBB）
+  for (const [slot, c] of Object.entries(look.customSkins || {})) if (c && sk[slot] && slot !== 'ball') sk[slot] = { id: 'cust_' + [c.head, c.shaft, c.grip, c.metal ? 1 : 0].join('_'), slot, name: '訂製', head: c.head, shaft: c.shaft, grip: c.grip, metal: !!c.metal };
   for (const slot of look.fxOff || []) if (sk[slot] && sk[slot].fx) sk[slot] = { ...sk[slot], fx: null };
   return sk;
 }
