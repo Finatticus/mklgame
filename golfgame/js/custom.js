@@ -24,6 +24,9 @@ export const CLASS = [
   { id: 7, name: '車道', color: [190, 176, 160] },
   { id: 8, name: '深草', color: [64, 104, 46] },
   { id: 9, name: '果嶺邊', color: [160, 214, 106] },
+  // 描圖球場才有的地面（Kiawah 的廢沙地等）：編輯器沒有這兩種筆刷，但打開現有球洞時要畫得出來（以前缺這兩個，打開就出錯）
+  { id: 10, name: '長草', color: [104, 150, 66] },
+  { id: 11, name: '荒地', color: [222, 202, 154] },
 ];
 export const NEW_W_M = 360, NEW_H_M = 640, NEW_MPP = 0.6, HG_CELL = 4;
 export const TEE_IDS = ['black', 'blue', 'white', 'red'];

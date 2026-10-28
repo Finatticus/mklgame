@@ -329,6 +329,7 @@ export class ProceduralGolfer {
     this.e1c = V(1, 0, 0).sub(this.e2c.clone().multiplyScalar(this.e2c.x)).normalize();
     this.nc = this.e1c.clone().cross(this.e2c).normalize().negate();
     this.buildClub(clubIcon);
+    this.ballL = ballLocal.clone();
     // 角色整體：本地 x→目標方向 d，z→右向量 r（面向球）
     const d = V(Math.sin(yaw), 0, -Math.cos(yaw)), r = V(Math.cos(yaw), 0, Math.sin(yaw));
     const m = new THREE.Matrix4().makeBasis(d, UP, r);
@@ -407,14 +408,27 @@ export class ProceduralGolfer {
     P.chest.scale.set((this.female ? 1.12 : 1.28) * (this.bodyW || 1), 1, 0.72 * (this.bodyW || 1));
     if (P.vest.visible) { P.vest.position.copy(P.chest.position); P.vest.quaternion.copy(P.chest.quaternion); P.vest.scale.set((this.female ? 1.16 : 1.32) * (this.bodyW || 1), 1, 0.78 * (this.bodyW || 1)); }
     const neckBase = B.chest.clone().addScaledVector(cUp, 0.08);
-    // 頭：保持準備姿勢時的位置，眼睛看球（下桿到送桿後才跟著轉）
-    const headPos = this.headLock && ph < 2.15 ? this.headLock.clone() : neckBase.clone().addScaledVector(cUp, 0.08).add(V(0, 0.09, 0.03));
-    if (!this.headLock && ph === 0) this.headLock = headPos.clone();
+    // 頭：上桿到下桿大致留在準備姿勢的位置，但會跟著身體動一點（七成留在原位），脖子最多比自然長度長 8%，不會被拉長；
+    //   擊球後（2.1 → 2.6）慢慢放開，隨著送桿抬起來；眼睛一直看著球，擊球後轉向目標看球飛
+    const natural = neckBase.clone().addScaledVector(cUp, 0.08).add(V(0, 0.09, 0.03));
+    let headPos = natural;
+    if (!this.headLock && ph === 0) this.headLock = natural.clone();
+    if (this.headLock) {
+      const hold = ph < 2.1 ? 0.7 : ph < 2.6 ? 0.7 * (1 - (ph - 2.1) / 0.5) : 0;
+      headPos = natural.clone().lerp(this.headLock, hold);
+      const nd = headPos.clone().sub(neckBase), nat = natural.distanceTo(neckBase);
+      if (nd.length() > nat * 1.08) headPos = neckBase.clone().addScaledVector(nd.normalize(), nat * 1.08);
+    }
     placeLimb(P.neck, neckBase, headPos);
     P.head.position.copy(headPos);
-    const look = ph > 2.3 ? V(1, -0.1, 0.4).normalize() : V(0.05, -0.85, 0.5).normalize();
-    const hRight = V(0, 1, 0).cross(look).normalize().negate();
-    const hUp = look.clone().cross(hRight).negate().normalize();
+    const toBall = this.ballL ? this.ballL.clone().sub(headPos).normalize() : V(0.05, -0.85, 0.5).normalize();
+    const follow = this.isPutt ? V(0.55, -0.6, 0.55).normalize() : V(1, -0.08, 0.32).normalize();
+    const fk = this.isPutt ? clamp((ph - 2.4) / 0.5, 0, 1) * 0.5 : clamp((ph - 2.12) / 0.6, 0, 1);
+    const look = toBall.lerp(follow, fk * fk * (3 - 2 * fk)).normalize();
+    let hRight = V(0, 1, 0).cross(look);
+    if (hRight.lengthSq() < 1e-6) hRight = cRight.clone();
+    hRight.normalize();
+    const hUp = look.clone().cross(hRight).normalize();
     const headM = new THREE.Matrix4().makeBasis(hRight, hUp, look);
     P.head.quaternion.setFromRotationMatrix(headM);
     const hk = this.headK || 1;

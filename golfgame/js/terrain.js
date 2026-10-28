@@ -440,13 +440,32 @@ export function buildHole(course, holeIdx, opts = {}) {
   if (MG && par > 3 && !drawn) {
     let n = 0, fwc = 0;
     for (let s = 45; s < Lp - 30; s += 4) { const p = pointAt(s), ci = cellAt(p[0], p[1]); n++; if (ci >= 0 && MG.g[ci] === 2) fwc++; }
-    if (n && fwc / n < 0.45) {
-      const r = 12 / MG.mpp;
-      for (let s = 45; s < Lp - 25; s += 1.5) {
+    // 沿中心線 s0 ~ s1 補一條球道（半徑 rm 公尺），只蓋掉長草 / 深草（樹叢、沙坑、水不動）
+    const paintFw = (s0, s1, rm) => {
+      const r = rm / MG.mpp;
+      for (let s = s0; s < s1; s += 1.5) {
         const p = pointAt(s), ci0 = (p[0] - MG.u0) / MG.mpp, cj0 = (MG.v0 - p[1]) / MG.mpp;
         for (let j = Math.floor(cj0 - r); j <= cj0 + r; j++) for (let i = Math.floor(ci0 - r); i <= ci0 + r; i++) {
           if (i < 0 || j < 0 || i >= MG.W || j >= MG.H || (i - ci0) ** 2 + (j - cj0) ** 2 > r * r) continue;
-          if (MG.g[j * MG.W + i] === 1) MG.g[j * MG.W + i] = 2;
+          const g = MG.g[j * MG.W + i];
+          if (g === 1 || (g === 8 && s1 - s0 < Lp)) MG.g[j * MG.W + i] = 2;
+        }
+      }
+    };
+    if (n && fwc / n < 0.45) paintFw(45, Lp - 25, 12);
+    else if (n) {
+      // 球道中間斷掉（兩段球道之間，或最後一段球道到果嶺前）：中心線上連續 40 公尺以上都是長草 / 深草，那一段補上球道
+      //   描圖時漏畫、或官網圖的球道畫得太短；開球區到第一段球道之間的長草（要飛越的那一段）不補
+      const gAt = s => { const p = pointAt(s), ci = cellAt(p[0], p[1]); return ci >= 0 ? MG.g[ci] : -1; };
+      let first = -1;
+      for (let s = 45; s < Lp - 30; s += 3) if (gAt(s) === 2) { first = s; break; }
+      if (first >= 0) {
+        let run = -1;
+        const end = Lp - 22;
+        for (let s = first; s <= end; s += 3) {
+          const g = gAt(s), rough = g === 1 || g === 8;
+          if (rough && run < 0) run = s;
+          if ((!rough || s + 3 > end) && run >= 0) { if (s - run >= 40) paintFw(run - 4, Math.min(end, s + 4), 11); run = -1; }
         }
       }
     }
@@ -1558,14 +1577,38 @@ export function buildHole(course, holeIdx, opts = {}) {
       return [t.u, H(t.u, -t.v) + 0.0213, -t.v];   // 球心在地面上一個半徑
     },
     // 生涯模式的兒童梯 / 年齡梯台：沿洞線離果嶺 yards 碼的地方開球（落在水、沙坑、界外就往果嶺方向找乾地）
+    //   在目標位置前後（往果嶺 45 公尺、往後 25 公尺）與左右 15 公尺內找最好的站位：發球台 / 球道最好、其次長草；
+    //   深草、荒地、沙坑、水、樹叢（描圖的樹林區）、果嶺不要；前方 50 公尺的球路上有樹也不要；越接近目標距離越好
     teeAt(yards) {
-      let s = clamp(Lp - yards * YD, 0, Lp - 30);
-      for (let k = 0; k < 60; k++, s = Math.min(Lp - 30, s + 3)) {
-        const p = pointAt(s), sf = surface(p[0], p[1]);
-        if (sf !== SURF.WATER && sf !== SURF.CHASM && sf !== SURF.OB && sf !== SURF.SAND && sf !== SURF.GREEN) break;
+      const s0 = clamp(Lp - yards * YD, 0, Lp - 30);
+      const tgtOf = s => (par === 3 ? [G[0], G[1]] : pointAt(Math.min(Lp - 20, s + 120)));
+      const woods = (u, v) => { if (!map) return false; const ci = cellAt(u, v); return ci >= 0 && MG.g[ci] === 7; };
+      const treeLine = (u, v, s) => {
+        const [tu, tv] = tgtOf(s), D = Math.hypot(tu - u, tv - v) || 1, du = (tu - u) / D, dv = (tv - v) / D, y0 = height(u, v);
+        for (let d = 3; d <= Math.min(50, D - 5); d += 2) if (api.treeAt(u + du * d, y0 + 0.5 + d * 0.12, -(v + dv * d))) return true;
+        return false;
+      };
+      let best = null;
+      // 先找目標附近；整段都是水（越水的三桿洞）就往前一路找到果嶺前、往後找到真正的梯台
+      const range = pass => (pass === 0 ? [-25, 45, 3] : [-s0, Lp - 30 - s0, 4]);
+      for (let pass = 0; pass < 2 && !best; pass++) for (let ds = range(pass)[0]; ds <= range(pass)[1]; ds += range(pass)[2]) {
+        const s = clamp(s0 + ds, 0, Lp - 30), c = pointAt(s), dir = dirAt(s);
+        for (const lat of [0, -5, 5, -10, 10, -15, 15]) {
+          const u = c[0] + dir[1] * lat, v = c[1] - dir[0] * lat, sf = surface(u, v);
+          const pen = sf === SURF.TEE || sf === SURF.FAIRWAY ? 0 : sf === SURF.ROUGH || sf === SURF.FRINGE ? 1 : 9;
+          if (pen > 1 || woods(u, v)) continue;
+          // 四周 2 公尺也要是乾地
+          let dry = true;
+          for (const [a, b] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) { const q = surface(u + a, v + b); if (q === SURF.WATER || q === SURF.CHASM || q === SURF.SAND || q === SURF.OB) dry = false; }
+          if (!dry) continue;
+          const cost = pen * 30 + Math.abs(ds) * 0.6 + Math.abs(lat) * 1.2 + (ds < 0 ? 4 : 0);
+          if (best && cost >= best.cost) continue;
+          if (treeLine(u, v, s)) continue;
+          best = { u, v, cost };
+        }
       }
-      const p = pointAt(s);
-      return [p[0], H(p[0], -p[1]) + 0.0213, -p[1]];
+      if (!best) { const p = pointAt(s0); best = { u: p[0], v: p[1] }; }
+      return [best.u, H(best.u, -best.v) + 0.0213, -best.v];
     },
     // 果嶺高度統計：平均高度與最大高低差（色階用）
     greenStats() {
