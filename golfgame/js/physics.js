@@ -280,7 +280,7 @@ export function makeLaunch(input, ctx) {
     //   長草、深草、沙坑、荒地改用「挑起來」的出球（飛過果嶺邊的長草），球位只稍微吃距離：長草少 5%、荒地少 5%、深草少 15%、沙坑少 25%
     const want = Math.max(0.5, input.power * ctx.puttScale);
     const pop = lie === SURF.ROUGH || lie === SURF.DEEP || lie === SURF.SAND || lie === SURF.WASTE;
-    const keep = lie === SURF.ROUGH ? 0.95 : lie === SURF.DEEP ? 0.85 : lie === SURF.SAND ? 0.75 : lie === SURF.WASTE ? 0.95 : 1;
+    const keep = lie === SURF.ROUGH ? 0.975 : lie === SURF.DEEP ? 0.925 : lie === SURF.SAND ? 0.75 : lie === SURF.WASTE ? 0.95 : 1;
     const wild = lie === SURF.ROUGH ? 1.2 : lie === SURF.DEEP ? 1.8 : lie === SURF.SAND ? 2.4 : lie === SURF.WASTE ? 1.2 : 1;
     const vn = chipSpeed(want, ctx.stimp, pop);
     const v0 = vn * keep * (1 + n() * (d.touchSigma * 1.35 + 0.012) * wild * pm);
@@ -302,8 +302,9 @@ export function makeLaunch(input, ctx) {
   // 球位影響
   let lieKeep = 1, lieSpin = 1, lieSig = 1, launchAdd = 0;
   const shortGame = ctx.distToPin < 55 && club.wedge;
-  if (lie === SURF.ROUGH) { lieKeep = d.roughKeep; lieSpin = 0.62; lieSig = d.roughSigma; launchAdd = 1.2; }
-  else if (lie === SURF.DEEP) { lieKeep = d.roughKeep * 0.84; lieSpin = 0.45; lieSig = d.roughSigma * 1.5; launchAdd = 3; }
+  // v95：長草、深草對距離的影響減半（球速損失、後旋減少、發射角加成都只算一半）
+  if (lie === SURF.ROUGH) { lieKeep = (1 + d.roughKeep) / 2; lieSpin = 0.81; lieSig = d.roughSigma; launchAdd = 0.6; }
+  else if (lie === SURF.DEEP) { lieKeep = (1 + d.roughKeep * 0.84) / 2; lieSpin = 0.72; lieSig = d.roughSigma * 1.5; launchAdd = 1.5; }
   else if (lie === SURF.WASTE) { lieKeep = (d.roughKeep + 0.05) * 0.95; lieSpin = 0.7; lieSig = d.roughSigma * 1.1; }
   else if (lie === SURF.SAND) {
     if (shortGame) { lieKeep = d.sandShortKeep; lieSpin = 0.55; launchAdd = 6; }      // 果嶺邊沙坑（爆炸球）：照舊
