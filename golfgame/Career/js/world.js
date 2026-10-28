@@ -139,7 +139,8 @@ function peer(r, by, c, year, top) {
 // 同儕在某個年紀的實力：用潛力乘上年齡曲線（和玩家的平均成長大致相同）
 export function peerRating(p, year) {
   const age = year - p.by;
-  const k = age <= 8 ? 0.27 : age <= 12 ? lerpAge(age, 8, 12, 0.27, 0.42) : age <= 17 ? lerpAge(age, 12, 17, 0.42, 0.66) : age <= 21 ? lerpAge(age, 17, 21, 0.66, 0.82) : age <= 26 ? lerpAge(age, 21, 26, 0.82, 0.95) : 1;
+  //   青少年的頂尖同儕（潛力 85 以上）17 歲約 59（藍梯約平標準桿），比玩家的平均成長快一點：要靠自己打或訓練才追得上
+  const k = age <= 8 ? 0.27 : age <= 12 ? lerpAge(age, 8, 12, 0.27, 0.43) : age <= 17 ? lerpAge(age, 12, 17, 0.43, 0.68) : age <= 21 ? lerpAge(age, 17, 21, 0.68, 0.83) : age <= 26 ? lerpAge(age, 21, 26, 0.83, 0.95) : 1;
   return Math.round(p.pot * k * 10) / 10;
 }
 const lerpAge = (a, a0, a1, v0, v1) => v0 + (v1 - v0) * (a - a0) / (a1 - a0);

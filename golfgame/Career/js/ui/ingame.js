@@ -2,10 +2,12 @@
 //   轉播風格的名次條、壓力等級（誤差倍率與畫面暗角）、桿弟建議、每洞結束的成績卡、訓練關卡的計分
 import { cur, localSave } from '../state.js';
 import { clamp, esc, toPar } from '../util.js';
-import { effectiveStats, CARDS, TALENTS } from '../growth.js';
+import { effectiveStats, CARDS, TALENTS, cardLv, cardMul, cardMulligans } from '../growth.js';
+import { ratingOf } from '../sim.js';
 import { caddieById } from '../data/items.js';
 import { YD, MPH, toYd } from '../../../js/util.js';
 import { SURF } from '../../../js/physics.js';
+import { startAmbience, stopAmbience, setWindSound, setPressureSound, playApplause, playRoar, playGroan, playDistantRoar } from '../../../js/audio.js';
 
 let ctx = null, sess = null;
 const $ = id => document.getElementById(id);
@@ -39,11 +41,21 @@ export function playRound(o) {
     sess = { ...o, res, scores: {}, calmUsed: false, tips: 0, last: null };
     const cfg = { mode: 'stroke', gimme: 0, mulligans: 0, stimp: null, wind: 'normal', holes: 'all', seed: Math.floor(Math.random() * 2 ** 31), ...o.cfg };
     cfg.career = { ...(o.cfg.career || {}), slot: st.slot, user: st.user };
+    // 技能卡「重來的機會」：自己打的洞 18 洞以上多 2 次、9 洞以上多 1 次（依卡片等級）
+    if (!o.drill && !o.practiceRound && !(o.cfg.career && o.cfg.career.practice) && (st.player.cardEq || []).includes('mulligan')) {
+      const starts = (o.cfg.career && o.cfg.career.starts) || {};
+      const own = (o.cfg.holeIdx || Array.from({ length: 18 }, (_, i) => i)).filter(h => !starts[h]).length;
+      const add = cardMulligans(cardLv(st.player, 'mulligan'), own);
+      cfg.mulligans = (cfg.mulligans || 0) + add;
+      sess.cardMull = add; sess.mullStart = cfg.mulligans;
+    }
     if (cfg.stimp == null) delete cfg.stimp;
     try { localStorage.setItem('dixen.cresume.meta', JSON.stringify({ user: st.user, slot: st.slot, label: o.label || '', key: o.key || '' })); } catch (e) { /* 略過 */ }
     await ctx.ensureWorld();
     ctx.game().careerHooks = HOOKS;
     overlay(true);
+    // 比賽氣氛：訓練與練習輪只有風聲、鳥叫；比賽依規模有觀眾
+    startAmbience({ crowd: o.drill || o.practiceRound ? 0 : (cfg.career.crowd ?? (cfg.career.gallery || 1)) });
     await ctx.startGame(cfg, [gamePlayer(st, { home: o.home, practiceRound: o.practiceRound })], o.resume || null);
   });
 }
@@ -67,29 +79,74 @@ const HOOKS = {
     if (sess.calm && lvl > 0) lvl--;
     const tal = st.player.talents.includes('heart') ? TALENTS.heart.pressure : 1;
     let m = 1 + lvl * 0.13 * clamp(1.45 - mental / 100, 0.45, 1.3) * tal;
+    // 實力還低（青少年、兒童）時誤差再放大：主遊戲的素質公式在 50 以下差異很小，自己打會比模擬的同實力好太多
+    //   綜合實力 58 以上不影響；45 約 ×1.45；39 約 ×1.67；最多 ×1.8
+    m *= 1 + clamp((58 - ratingOf(s)) * 0.035, 0, 0.8);
     // 技能卡（同一種誤差最多減到原本的 60%）
-    const holeNo = game.holeNo, putt = club.putter;
-    const on = { last3: holeNo >= 16, putt2: putt && dist <= 2 * YD, sand: lie === SURF.SAND, rough: lie === SURF.ROUGH || lie === SURF.DEEP, press2: lvl >= 2, tee: lie === SURF.TEE && club.id === 'D', approach: !putt && dist <= 150 * YD && dist > 30 * YD, chip: !putt && dist <= 30 * YD, majorWeekend: sess.major && sess.round >= 2, home: sess.home, first: holeNo === game.holeList[0] + 1 && game.k === 0, masters: sess.evId === 'masters' };
-    let cardMul = 1;
-    for (const id of st.player.cardEq || []) { const c = CARDS[id]; if (c && on[c.when]) cardMul *= c.mul; }
-    m *= Math.max(0.6, cardMul);
+    const holeNo = game.holeNo, putt = club.putter, par = game.hole.par, k = game.k;
+    const prevD = k > 0 && p.scores[k - 1] && p.pars ? p.scores[k - 1] - p.pars[k - 1] : 0;
+    const windMph = Math.hypot(game.wind[0], game.wind[1]) / MPH;
+    const on = {
+      last3: holeNo >= 16, putt2: putt && dist <= 2 * YD, sand: lie === SURF.SAND, rough: lie === SURF.ROUGH || lie === SURF.DEEP, press2: lvl >= 2, tee: lie === SURF.TEE && club.id === 'D',
+      approach: !putt && dist <= 150 * YD && dist > 30 * YD, chip: !putt && dist <= 30 * YD, majorWeekend: sess.major && sess.round >= 2, home: sess.home, first: holeNo === game.holeList[0] + 1 && k === 0, masters: sess.evId === 'masters',
+      fairway: lie === SURF.FAIRWAY && !putt, par3: par === 3 && lie === SURF.TEE, par5: par === 5, wind: windMph >= 12, longPutt: putt && dist >= 8 * YD, bounce: prevD >= 1, hot: prevD <= -1,
+      parPutt: putt && p.strokes + 1 === par, wedge: !!club.wedge && !putt && dist >= 30 * YD && dist <= 110 * YD, opening: k <= 2 && !game.cfg.practice, final: !!sess.final, qual: !!sess.qual, links: (game.course && game.course.style) === 'links',
+    };
+    let cm = 1;
+    const use = st.player.cardUse = st.player.cardUse || {};
+    for (const id of st.player.cardEq || []) {
+      const c = CARDS[id];
+      if (!c || !c.when || !on[c.when]) continue;
+      cm *= cardMul(c, cardLv(st.player, id));
+      if (!game.cfg.practice && !sess.drill && !sess.practiceRound) use[id] = (use[id] || 0) + 1;      // 升級進度：自己打的回合裡生效的次數
+    }
+    m *= Math.max(0.6, cm);
     // 桿弟（Mac 強風日、Big Joe 大賽）
     const cad = st.team.caddie && caddieById(st.team.caddie.id), chem = (st.team.caddie && st.team.caddie.chem) || 1;
     if (cad && cad.id === 'mac' && chem >= 3 && Math.hypot(game.wind[0], game.wind[1]) / MPH >= 11) m *= 0.9;
     if (cad && cad.id === 'joe' && sess.major) m *= 0.95;
     showPress(lvl);
+    setPressureSound(lvl);
     return m;
+  },
+  // 每一桿的結果：觀眾的反應
+  shotDone(game, p, r, o) {
+    if (!sess || sess.drill || o.party) return;
+    const par = game.hole.par;
+    if (r.result === 'water' || r.result === 'chasm') return setTimeout(playGroan, 400);
+    if (r.result === 'holed') {
+      const d = p.strokes - par, long = (game.shotCtx && game.shotCtx.dist || 0) > 4 * YD;
+      if (d <= -1) playRoar(d <= -2 ? 1 : 0.65);
+      else if (d === 0 && long) playRoar(0.45);
+      else playApplause(d === 0 ? 0.35 : 0.2);
+      return;
+    }
+    if (r.result !== 'rest') return;
+    const end = r.end, dp = game.hole.distToPin(end[0], end[2]) / YD, onG = game.hole.surface(end[0], end[2]) === SURF.GREEN;
+    if (o.club.putter && o.lieBefore === SURF.GREEN) { if (dp < 0.6) setTimeout(playGroan, 150); return; }       // 差一點進
+    if (onG && o.lieBefore !== SURF.GREEN) { if (dp < 3) playRoar(0.4); else if (dp < 10) playApplause(0.45); else playApplause(0.2); }
   },
   turn(game, p) {
     const st = cur(); if (!st || !sess) return;
+    setWindSound(Math.hypot(game.wind[0], game.wind[1]) / MPH);
     if (sess.drill) return drillTurn(game, p);
     updateBcast(game);
     caddieTip(game, p, st);
+    // 大賽：偶爾聽到遠方其他洞的歡呼
+    if ((game.cfg.career.gallery || 0) >= 3 && Math.random() < 0.18) setTimeout(playDistantRoar, 1500 + Math.random() * 4000);
   },
   holeDone(game, last) {
     const st = cur(), k = game.k, idx = game.holeList[k], p = game.players[0], strokes = p.scores[k];
     sess.scores[idx] = strokes;
     if (strokes && strokes - game.hole.par <= -1) { st.cnt.birdie = (st.cnt.birdie || 0) + 1; }
+    // 技能卡的條件：自己打的洞、老鷹、連續小鳥
+    const starts = (game.cfg.career && game.cfg.career.starts) || {};
+    if (strokes && !game.cfg.practice && !sess.drill && !sess.practiceRound && !starts[idx]) {
+      st.cnt.holesOwn = (st.cnt.holesOwn || 0) + 1;
+      if (strokes - game.hole.par <= -2) st.cnt.eagle = 1;
+      sess.bStreak = strokes - game.hole.par <= -1 ? (sess.bStreak || 0) + 1 : 0;
+      if (sess.bStreak >= 3) st.cnt.birdie3 = 1;
+    }
     return (async () => {
       const r = sess.onHole ? await sess.onHole(k, idx, strokes, game) : undefined;
       localSave();
@@ -101,6 +158,8 @@ const HOOKS = {
   },
   roundDone(game) {
     const s = sess; sess = null;
+    stopAmbience();
+    cardMullUsed(game, s);
     roundStats(game);
     overlay(false);
     clearResume();
@@ -111,12 +170,21 @@ const HOOKS = {
     const txt = s.quitText || '離開這一輪？沒打完的洞會用模擬完成（成績略保守）。';
     if (!confirm(txt)) return;
     sess = null; overlay(false); clearResume();
+    stopAmbience();
+    cardMullUsed(game, s);
     game.quit();
     ctx.show('scr-career');
     s.res({ scores: s.scores, quit: true });
   },
   drillShot(game, r, p, mode) { if (sess && sess.drillShot) sess.drillShot(game, r, p, mode); },
 };
+// 重來卡用掉的次數（升級進度）
+function cardMullUsed(game, s) {
+  const st = cur(), p = game.players[0];
+  if (!st || !s || !s.cardMull || !p) return;
+  const used = Math.min(s.cardMull, Math.max(0, s.mullStart - (p.mulligans || 0)));
+  if (used) { const u = st.player.cardUse = st.player.cardUse || {}; u.mulligan = (u.mulligan || 0) + used; }
+}
 // 一輪的統計（技能卡的解鎖條件）：推桿數、標準桿上果嶺、救 Par
 function roundStats(game) {
   const st = cur(), p = game.players[0]; if (!st || !p || game.cfg.practice) return;
@@ -129,9 +197,21 @@ function roundStats(game) {
   if (putts <= 26) st.cnt.putts26 = 1;
   if (gir >= 16) st.cnt.gir16 = 1;
   if (saves >= 6) st.cnt.saves6 = 1;
+  // 新技能卡的條件
+  const d = game.holeList.map((h, k) => (p.scores[k] ? p.scores[k] - p.pars[k] : 0));
+  const tot = d.reduce((a, v) => a + v, 0);
+  if ((p.fwHit || 0) >= 13) st.cnt.fw13 = 1;
+  if (game.holeList.every((h, k) => p.pars[k] !== 3 || d[k] <= 0)) st.cnt.par3clean = 1;
+  if (d.every(v => v <= 0)) st.cnt.bogeyFree = 1;
+  if (d.filter(v => v <= -1).length >= 5) st.cnt.birdies5 = 1;
+  let bb = 0;
+  for (let k = 1; k < d.length; k++) if (d[k - 1] >= 1 && d[k] <= -1) bb++;
+  if (bb >= 2) st.cnt.bounce2 = 1;
+  if (tot < 0 && game.cfg.wind === 'strong') st.cnt.windUnder = 1;
+  if (tot < 0 && game.course && game.course.style === 'links') st.cnt.linksUnder = 1;
   st.cnt.rounds18 = (st.cnt.rounds18 || 0) + 1;
 }
-export const endDrill = game => { const s = sess; sess = null; overlay(false); game.quit(); ctx.show('scr-career'); if (s) s.res({ scores: {}, quit: false, drill: s.drillResult }); };
+export const endDrill = game => { const s = sess; sess = null; stopAmbience(); overlay(false); game.quit(); ctx.show('scr-career'); if (s) s.res({ scores: {}, quit: false, drill: s.drillResult }); };
 
 // ---------- 疊在 3D 畫面上的元件 ----------
 function overlay(on) {
@@ -143,7 +223,12 @@ function overlay(on) {
   host.insertAdjacentHTML('beforeend', `<div class="cm-press" id="cm-press" data-l="0"></div><div class="cm-bcast" id="cm-bcast"></div><div class="cm-tip hide" id="cm-tip"></div>${sess && sess.leaderboard ? '<button class="cm-lbbtn" id="cm-lbbtn">排行榜</button>' : ''}${sess && sess.drill ? '<div class="cm-drill" id="cm-drill"></div>' : ''}`);
   const b = $('cm-lbbtn');
   if (b) b.onclick = e => { e.stopPropagation(); sess.leaderboard(); };
-  if (sess && sess.drill) $('cm-bcast').style.display = 'none';
+  if (sess && sess.drill) {
+    $('cm-bcast').style.display = 'none';
+    const d = $('cm-drill');
+    d.addEventListener('pointerdown', e => { if (e.target.closest('[data-drillend]')) e.stopPropagation(); });
+    d.addEventListener('click', e => { if (e.target.closest('[data-drillend]')) { e.stopPropagation(); endDrill(ctx.game()); } });
+  }
 }
 function showPress(l) { const e = $('cm-press'); if (e) e.dataset.l = l; }
 // 名次條放在左邊的面板（球洞資訊、工具按鈕、球員）下面；排行榜按鈕放在右邊的風向 / 小地圖面板下面（跟著螢幕方向與字體大小）

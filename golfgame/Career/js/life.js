@@ -2,7 +2,7 @@
 //   每週的世界（背景賽事、世界排名）、比賽結果的結算、年底（長大、老化、巡迴卡、獎項、國家隊）
 import { clamp, seeded, rng, hash, sum, isHoliday, examWeek, money, MONTH_OF_WEEK } from './util.js';
 import { createWorld, ageWorld, makePeers, peersTurnPro, peerRating, rankList, owgrAvg, prune, promote, ABS, ME, nameOf, findP, addPts } from './world.js';
-import { STAT_KEYS, startStats, statsAtAge, yearlyGrowth, train, addXp, XP, TALENTS, capOf, cardSlots, CARDS, ageMul } from './growth.js';
+import { STAT_KEYS, startStats, statsAtAge, yearlyGrowth, train, addXp, XP, TALENTS, capOf, cardSlots, CARDS, ageMul, TRAIN } from './growth.js';
 import { yearEvents, eligibility, seasonEndCards, qschoolResult, teamSelection, hasCard, majorEligibility } from './tours.js';
 import { simBackground, owgrPoints, fedexFor, tourPoints, amPoints, prizeOf, cinfo } from './event.js';
 import { STARTER, itemById, ROOM_LEVELS, CADDIES, FLIGHT, LODGE, STAFF, COACH_TIER, ASSETS } from './data/items.js';
@@ -88,10 +88,12 @@ export function updateChapter(st) {
 
 // ---------- 每週的行動 ----------
 export const ACTIONS = {
-  train: { name: '練球', desc: '選一項訓練（可以打訓練關卡，經驗更多）', energy: -8, mood: 0 },
+  train: { name: '練球', desc: '訓練經驗累積滿了，那一項素質 +1；連續幾週練同一項有「專注」加成；也可以打訓練關卡（經驗更多）', energy: -8, mood: 0 },
   rest: { name: '休息', desc: '體能 +22、心情 +5', energy: 22, mood: 5 },
-  study: { name: '念書', desc: '學業 +6', energy: -3, mood: -2, need: s => s === 'junior' || s === 'college' },
-  work: { name: '打工', desc: '青少年：家鄉球場桿弟；大學：夏令營助教；職業：開班教學', energy: -8, mood: 0 },
+  study: { name: '念書', desc: '學業 +6（體能 −3、心情 −2）', energy: -3, mood: -2, need: s => s === 'junior' || s === 'college' },
+  tutor: { name: '補習', desc: '學業 +10，學費 $60（家人分擔一部分）；體能 −5、心情 −4', energy: -5, mood: -4, need: s => s === 'junior' || s === 'college' },
+  team: { name: '校隊練習', desc: '和校隊一起練：隨機一項訓練（約一般練球的 75%）、學業 +1、心情 +3', energy: -6, mood: 3, need: s => s === 'junior' },
+  work: { name: '打工', desc: '青少年：家鄉球場桿弟（$60~120，家鄉讀果嶺加成 +0.25）；大學：夏令營助教（$250，暑假 $800）；職業：開班教學', energy: -8, mood: 0 },
   family: { name: '陪家人', desc: '家人關係 +6、心情 +8', energy: 2, mood: 8 },
   social: { name: '社群發文', desc: '追蹤數增加（精彩的比賽會讓追蹤數暴增）', energy: -1, mood: 2, need: (s, st) => st.player.age >= 15 },
   sponsor: { name: '贊助活動', desc: '拍廣告、出席活動：收入與人氣，體能 −10', energy: -10, mood: -1, need: (s, st) => st.sponsors.length > 0 },
@@ -111,27 +113,39 @@ export function doAction(st, a, sub, log) {
   const p = st.player, s = st.status.stage, A = ACTIONS[a], r = seeded(st, 'act', st.year, st.week, a, sub || '', log.length);
   p.energy = clamp(p.energy + (A.energy || 0) * staffMul(st, 'energy'), 0, 100);
   p.mood = clamp(p.mood + (A.mood || 0), 0, 100);
+  const g0 = st._wg || null;      // 這一週達成的本週目標（倍率型的獎勵在行動裡套用）
   switch (a) {
-    case 'train': {
-      const kind = sub || 'iron', amt = (24 + r() * 6) * coachMul(st, kind) * (p.talents.includes('grinder') ? 1.15 : 1) * lengthXp(st) * assetMul(st, kind);
+    case 'train': case 'team': {
+      const kind = a === 'team' ? ['long', 'iron', 'short', 'putt'][Math.floor(r() * 4)] : sub || 'iron';
+      const limited = st.story.flags.limit === st.year * 100 + st.week;
+      const fm = a === 'team' ? 1 : focusMul(st, kind), gm = g0 && g0.id === 'focus' && g0.sub === kind && a === 'train' ? 1.3 : 1;
+      const amt = (24 + r() * 6) * coachMul(st, kind) * (p.talents.includes('grinder') ? 1.15 : 1) * lengthXp(st) * assetMul(st, kind) * fm * gm * (limited ? 0.5 : 1) * (a === 'team' ? 0.75 : 1);
       const g = train(p, kind, amt);
-      addXp(p, 15 * lengthXp(st), x => log.push(x));
-      log.push(`練球（${({ long: '長桿', iron: '鐵桿', short: '短桿', putt: '推桿', mind: '心理', gym: '體能' })[kind]}）${g.length ? '：' + g.map(k => STAT_NAME[k] + ' +1').join('、') : ''}`);
+      const xp = Math.round(15 * lengthXp(st));
+      addXp(p, xp, x => log.push(x));
+      const prog = TRAIN[kind].stats.map(k => `${STAT_NAME[k]} ${Math.round(p.trainXp[k] || 0)}/${trainNeedOf(p.stats[k])}`).join('、');
+      const tags = [fm > 1 ? `專注 +${Math.round((fm - 1) * 100)}%` : '', gm > 1 ? '本週目標 +30%' : '', limited ? '被限制練球 −50%' : ''].filter(Boolean).join('、');
+      if (a === 'team') st.school.grade = clamp((st.school.grade || 60) + 1, 0, 100);
+      const per = Math.round(amt / TRAIN[kind].stats.length * (kind === 'mind' || kind === 'gym' ? 1 : 1.3));
+      log.push(`${a === 'team' ? '校隊練習' : '練球'}（${TRAIN_SHORT[kind]}）：訓練經驗${TRAIN[kind].stats.length > 1 ? '每項' : ''} +${per}${tags ? `（${tags}）` : ''}${g.length ? '，' + g.map(k => STAT_NAME[k] + ' +1').join('、') : ''} · 經驗 +${xp}${a === 'team' ? ' · 學業 +1' : ''}｜進度 ${prog}`);
       break;
     }
-    case 'rest': log.push('休息：體能恢復'); break;
-    case 'study': st.school.grade = clamp((st.school.grade || 60) + 6, 0, 100); log.push('念書：學業 +6'); break;
+    case 'rest': log.push(`休息：體能 +${A.energy}、心情 +${A.mood}`); break;
+    case 'study': st.school.grade = clamp((st.school.grade || 60) + 6, 0, 100); log.push(`念書：學業 +6（現在 ${Math.round(st.school.grade)}）`); break;
+    case 'tutor': { const paid = spend(st, 60, '補習費'); st.school.grade = clamp((st.school.grade || 60) + 10, 0, 100); log.push(`補習：學業 +10（現在 ${Math.round(st.school.grade)}）· 學費 ${money(paid)}${paid < 60 ? '（其餘家人出）' : ''}`); break; }
     case 'work': {
-      const pay = s === 'junior' ? 60 + Math.round(r() * 60) : s === 'college' ? (isHoliday(st.week, true) ? 800 : 250) : 1500 + Math.round(p.fame / 200);
+      let pay = s === 'junior' ? 60 + Math.round(r() * 60) : s === 'college' ? (isHoliday(st.week, true) ? 800 : 250) : 1500 + Math.round(p.fame / 200);
+      if (g0 && g0.id === 'work') pay = Math.round(pay * 1.5);
       earn(st, pay, s === 'junior' ? '桿弟打工' : s === 'college' ? '夏令營助教' : '教學收入', 'other');
       if (s === 'junior') { st.homeBonus = Math.min(5, (st.homeBonus || 0) + 0.25); }
-      log.push(`打工：${money(pay)}`);
+      log.push(`打工：收入 ${money(pay)}${g0 && g0.id === 'work' ? '（本週目標 ×1.5）' : ''}${s === 'junior' ? ' · 家鄉讀果嶺加成 +0.25' : ''}`);
       break;
     }
-    case 'family': st.rel.family = clamp(st.rel.family + 6, 0, 100); log.push('陪家人：家人關係 +6'); break;
+    case 'family': st.rel.family = clamp(st.rel.family + 6, 0, 100); log.push(`陪家人：家人關係 +6（現在 ${Math.round(st.rel.family)}）、心情 +${A.mood}`); break;
     case 'social': {
-      const add = Math.round(20 + p.followers * 0.01 + p.fame * 0.02 + r() * 40);
-      p.followers += add; log.push(`社群發文：追蹤 +${add}`);
+      let add = Math.round(20 + p.followers * 0.01 + p.fame * 0.02 + r() * 40);
+      if (g0 && g0.id === 'social') add *= 2;
+      p.followers += add; log.push(`社群發文：追蹤 +${add.toLocaleString()}${g0 && g0.id === 'social' ? '（本週目標 ×2）' : ''}`);
       break;
     }
     case 'sponsor': {
@@ -144,6 +158,60 @@ export function doAction(st, a, sub, log) {
     case 'clinic': { const pay = Math.round(10000 + p.fame * 0.05); earn(st, pay, '球迷營隊', 'other'); p.fame += 800; log.push(`球迷營隊：${money(pay)}`); break; }
   }
 }
+const TRAIN_SHORT = { long: '長桿', iron: '鐵桿', short: '短桿', putt: '推桿', mind: '心理', gym: '體能' };
+const trainNeedOf = v => Math.round(100 * (1 + Math.max(0, v - 30) / 30));
+// 專注：連續幾週把同一項當主要訓練，每多一週 +5%（最多 +20%）
+export function focusMul(st, kind) { const f = st.focus; return f && f.kind === kind && f.n > 1 ? 1 + Math.min(4, f.n - 1) * 0.05 : 1; }
+function updateFocus(st, plan) {
+  const cnt = {};
+  for (const a of plan) if (a.k === 'train') cnt[a.sub || 'iron'] = (cnt[a.sub || 'iron'] || 0) + 1;
+  const main = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0];
+  if (!main) { st.focus = null; return; }
+  st.focus = st.focus && st.focus.kind === main ? { kind: main, n: st.focus.n + 1 } : { kind: main, n: 1 };
+}
+
+// ---------- 本週目標（每週不一樣：教練、家人、球場給的小任務，安排符合就有額外獎勵）----------
+const isStudent = st => !!st.school && st.status.amateur && (st.status.stage === 'junior' || st.status.stage === 'college');
+export function weekGoal(st) {
+  const r = seeded(st, 'wgoal', st.year, st.week), p = st.player, list = [];
+  const k = ['long', 'iron', 'short', 'putt'][Math.floor(r() * 4)];
+  list.push({ id: 'focus', sub: k, w: 3, text: `教練：這週至少練兩次「${TRAIN[k].name}」`, reward: '這一項的訓練經驗 +30%、經驗 +40' });
+  list.push({ id: 'mix', w: 2, text: '均衡發展：這週練兩種不同的訓練', reward: '經驗 +60' });
+  list.push({ id: 'family', w: 2, text: '家人：這週一起吃頓飯（陪家人一次）', reward: '家人關係再 +4、心情 +6' });
+  if (p.energy < 55) list.push({ id: 'rest', w: 3, text: '防護員：體能偏低，這週至少休息一次', reward: '體能再 +10' });
+  if (isStudent(st) && (examWeek(st.week) || examWeek(st.week + 1))) list.push({ id: 'exam', w: 6, text: '考試快到了：念書或補習一次', reward: '學業再 +4' });
+  list.push({ id: 'work', w: st.money.cash < 200 ? 4 : 1, text: st.status.amateur ? '家鄉球場缺人手：打工一次' : '球迷想上你的課：開班教學（打工）一次', reward: '這次打工的收入 ×1.5' });
+  if (p.age >= 15) list.push({ id: 'social', w: 1, text: '粉絲想看你練球：社群發文一次', reward: '這次發文的追蹤數 ×2' });
+  const tot = list.reduce((s, g) => s + g.w, 0);
+  let x = r() * tot;
+  for (const g of list) { x -= g.w; if (x <= 0) return g; }
+  return list[0];
+}
+export function goalMet(st, g, plan) {
+  const has = k => plan.some(a => a.k === k);
+  switch (g.id) {
+    case 'focus': return plan.filter(a => a.k === 'train' && (a.sub || 'iron') === g.sub).length >= 2;
+    case 'mix': return new Set(plan.filter(a => a.k === 'train').map(a => a.sub || 'iron')).size >= 2;
+    case 'family': return has('family');
+    case 'rest': return has('rest');
+    case 'exam': return has('study') || has('tutor');
+    case 'work': return has('work');
+    case 'social': return has('social');
+  }
+  return false;
+}
+// 每週固定的開銷（給「存款不夠時自動排打工」判斷）
+export function weeklyCost(st) {
+  const s = st.status;
+  let c = 0;
+  if (st.team.coach) c += st.team.coach.fee || 0;
+  if (st.team.caddie && st.team.caddie.fee && !s.amateur) c += st.team.caddie.fee;
+  for (const k of st.team.staff) c += (STAFF[k] && STAFF[k].fee) || 0;
+  if (!s.amateur) c += st.base === 'florida' ? 900 : 500;
+  return c;
+}
+export const lowCash = st => st.money.cash < (st.status.amateur ? 30 : Math.max(500, weeklyCost(st) * 2));
+
 const STAT_NAME = { power: '力量', contact: '擊球效率', launch: '彈道', accuracy: '準度', consistency: '穩定度', shaping: '曲球', spin: '旋轉', chipping: '切球', bunker: '沙坑', recovery: '脫困', touch: '推桿距離感', line: '推桿方向', reading: '讀果嶺', mental: '抗壓' };
 export const lengthXp = st => LENGTH[st.opt.length].xp * DIFF[st.opt.difficulty].xp * (st.legacyOf ? 1.2 : 1) * ageMul(st.player.age);      // 生涯長度、難度、傳承（+20%）、年紀
 // 教練加成
@@ -166,10 +234,13 @@ export function earn(st, amt, what, cat = 'other') {
   st.money.ledger.unshift({ y: st.year, w: st.week, what, amt: Math.round(amt) });
   st.money.ledger = st.money.ledger.slice(0, 60);
 }
+// 業餘時期家人分擔的金額（依家庭背景與家人關係）：商店與升級的價格標示也用這個
+export function familyPart(st, amt) {
+  if (!st.status.amateur || amt <= 0) return 0;
+  return Math.min(amt, Math.round(amt * FAMILY[st.player.family].share * clamp(st.rel.family / 80, 0.4, 1.1)));
+}
 export function spend(st, amt, what, cat = 'cost') {
-  // 業餘時期家人分擔一部分（依家庭背景與家人關係）
-  let paid = amt, fam = 0;
-  if (st.status.amateur && amt > 0) { fam = Math.round(amt * FAMILY[st.player.family].share * clamp(st.rel.family / 80, 0.4, 1.1)); fam = Math.min(fam, amt); paid = amt - fam; }
+  const fam = familyPart(st, amt), paid = amt - fam;
   st.money.cash -= paid;
   st.money.season[cat] = (st.money.season[cat] || 0) + paid;
   st.money.ledger.unshift({ y: st.year, w: st.week, what: what + (fam ? `（家人出 ${money(fam)}）` : ''), amt: -Math.round(paid) });
@@ -209,7 +280,8 @@ export function upcoming(st, n = 12) {
   for (let k = 0; k < 52 && out.length < n; k++) {
     let w = st.week + k, y = st.year;
     if (w > 52) { w -= 52; y++; }
-    for (const e of weekEvents(st, y, w)) if (e.el.ok || ['major', 'pga', 'team', 'olympic'].includes(e.tour) || (e.tour === st.mainTour)) out.push(e);
+    // 業餘時期只列可以報名的比賽與四大賽（PGA TOUR 的一般賽事對青少年沒有意義）
+    for (const e of weekEvents(st, y, w)) if (e.el.ok || e.tour === 'major' || (!st.status.amateur && ['pga', 'team', 'olympic'].includes(e.tour)) || e.tour === st.status.mainTour) out.push(e);
   }
   return out;
 }
@@ -333,7 +405,22 @@ export function addPhoto(st, title, img) {
 //   plan = [行動, …]；回傳這一週發生的事（文字）
 export function endWeek(st, plan, opts = {}) {
   const p = st.player, log = [];
-  if (!opts.eventWeek) for (const a of plan) doAction(st, a.k, a.sub, log);
+  if (!opts.eventWeek) {
+    updateFocus(st, plan);
+    const g = weekGoal(st);
+    st._wg = goalMet(st, g, plan) ? g : null;
+    for (const a of plan) doAction(st, a.k, a.sub, log);
+    if (st._wg) {
+      const w = st._wg;
+      if (w.id === 'focus') addXp(p, 40, x => log.push(x));
+      if (w.id === 'mix') addXp(p, 60, x => log.push(x));
+      if (w.id === 'family') { st.rel.family = clamp(st.rel.family + 4, 0, 100); p.mood = clamp(p.mood + 6, 0, 100); }
+      if (w.id === 'rest') p.energy = clamp(p.energy + 10, 0, 100);
+      if (w.id === 'exam' && st.school) st.school.grade = clamp(st.school.grade + 4, 0, 100);
+      log.push(`本週目標達成：${w.text.replace(/^.*?：/, '')} → ${w.reward}`);
+    }
+    delete st._wg;
+  }
   // 自然變化：體能恢復、心情回到 60、手感回到 0
   p.energy = clamp(p.energy + 10 + (st.team.staff.includes('fitness') ? 4 : 0) + (st.assets.gym ? 3 : 0), 0, 100);
   p.mood = clamp(p.mood + (60 - p.mood) * 0.08 + (st.rel.family - 60) * 0.02, 0, 100);
@@ -342,8 +429,9 @@ export function endWeek(st, plan, opts = {}) {
   p.form = clamp(Math.round((p.form * 0.6 + r.normal() * 0.7 + (p.mood - 55) / 120) * 10) / 10, -3, 3);
   // 學業
   if (st.school && (st.status.stage === 'junior' || st.status.stage === 'college')) {
-    if (!plan.some(a => a.k === 'study')) st.school.grade = clamp((st.school.grade || 60) - (st.school.sports ? 0.4 : 0.8), 0, 100);
-    if (examWeek(st.week) && st.school.grade < 40) { p.mood -= 8; log.push('考試成績不理想：家人限制了下一週的練球'); st.story.flags.limit = st.year * 100 + st.week + 1; }
+    if (!plan.some(a => a.k === 'study' || a.k === 'tutor' || a.k === 'team')) st.school.grade = clamp((st.school.grade || 60) - (st.school.sports ? 0.4 : 0.8), 0, 100);
+    if (examWeek(st.week) && st.school.grade < 40) { p.mood -= 8; log.push('考試成績不理想（學業低於 40）：家人限制了下一週的練球（訓練經驗 −50%）'); st.story.flags.limit = st.year * 100 + st.week + 1; }
+    else if (examWeek(st.week) && st.school.grade >= 80 && st.status.stage === 'junior') { const bonus = Math.round(FAMILY[p.family].allow * 3); earn(st, bonus, '考試考得好，家人給的獎勵', 'other'); p.mood = clamp(p.mood + 6, 0, 100); log.push(`考試考得好（學業 80 以上）：家人獎勵 ${money(bonus)}、心情 +6`); }
   }
   // 每週的固定收入與支出
   weeklyMoney(st, log);

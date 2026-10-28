@@ -3,6 +3,7 @@
 import { register, go, story, storyResult, dialog, toast, header, ui, tpHtml, closeOv } from './shell.js';
 import { cur, localSave, sync } from '../state.js';
 import { esc, money, toPar, sum, clamp, rng, hash, delay, seeded } from '../util.js';
+import { playFanfare } from '../../../js/audio.js';
 import { cinfo, prepareRound, leaderboard, finishMyRound, applyCut, finalStandings, playoffNeeded, playoffHole, prizeOf, myTotal, totalOf, WIND_CFG, WIND_ZH, teeOf, setupOf, projectedCut, isHome, roundsOf, createEvent } from '../event.js';
 import { ME, nameOf, findP, ABS } from '../world.js';
 import { endWeek, settleEvent, addNews, addTimeline, addPhoto, spend, earn, travelCost, fill, START_YEAR, findEvent, queueMain, giveItem, turnProCore } from '../life.js';
@@ -212,6 +213,13 @@ function pressureFor(st, E, ri) {
     return lvl;
   };
 }
+// 比賽的場景：觀眾多寡（地方賽 1、巡迴賽 2、大賽 3）、時段光線（最後一輪是黃昏）、最後一洞的看台
+function sceneOf(E, ri) {
+  const big = E.major || E.id === 'players' || E.playoff || E.tour === 'team' || E.tour === 'olympic';
+  const tourLv = ['pga', 'dp', 'kft', 'asia', 'jp', 'champions'].includes(E.tour) ? 2 : 1;
+  const final = ri === E.rounds - 1;
+  return { gallery: big ? 3 : tourLv, stand: big || (tourLv === 2 && final), light: final && E.rounds > 1 ? 'golden' : hash(E.key + ':light:' + ri) % 2 ? 'afternoon' : 'morning', crowd: big ? 3 : tourLv };
+}
 const thruNow = (E, ri) => { const sc = E.me.sc[ri] || []; let n = 0; while (n < 18 && sc[n] != null) n++; return n; };
 
 async function playEventRound(st, E, ri, mode, nine) {
@@ -234,8 +242,8 @@ async function playEventRound(st, E, ri, mode, nine) {
     if (holeIdx.length) fillTo(holeIdx[0]);
     localSave(st);
     const res = await playRound({
-      label: `${E.name} 第 ${ri + 1} 輪`, key: E.key, home: isHome(st, E), practiceRound: E.practice, major: !!E.major, round: ri, evId: E.id,
-      cfg: { courseId: E.course, holeIdx, tee: teeOf(st, E), wind: WIND_CFG[E.wx[ri]], stimp: (ci.stimp || 10) + (E.major ? 1.5 : 0) + (E.id === 'usopen' || E.id === 'masters' ? 0.5 : 0), mulligans: st.opt.difficulty === 'casual' ? 1 : 0, seed: hash(E.key + ':seed:' + ri), career: { starts, ev: E.key, round: ri } },
+      label: `${E.name} 第 ${ri + 1} 輪`, key: E.key, home: isHome(st, E), practiceRound: E.practice, major: !!E.major, round: ri, evId: E.id, final: ri === E.rounds - 1, qual: E.tour === 'qs',
+      cfg: { courseId: E.course, holeIdx, tee: teeOf(st, E), wind: WIND_CFG[E.wx[ri]], stimp: (ci.stimp || 10) + (E.major ? 1.5 : 0) + (E.id === 'usopen' || E.id === 'masters' ? 0.5 : 0), mulligans: st.opt.difficulty === 'casual' ? 1 : 0, seed: hash(E.key + ':seed:' + ri), career: { starts, ev: E.key, round: ri, ...sceneOf(E, ri) } },
       onHole: (k, idx, s) => { E.me.sc[ri][idx] = s; E.me.played[ri][idx] = !(starts && starts[idx]); const nxt = holeIdx[k + 1]; fillTo(nxt == null ? 18 : nxt); localSave(st); },
       bcast: g => bcastLine(E, ri),
       holeCard: () => { const lb = leaderboard(E, ri, thruNow(E, ri)); return lbTable(lb, 5, { today: true }); },
@@ -315,6 +323,7 @@ async function results(body, st, E, head) {
     E.settled = true; E.rec = rec;
     afterSettle(st, E, rows, rec);
     localSave(st); sync();
+    if (rec.posN === 1) playFanfare();      // 頒獎配樂（只在第一次看到結果時）
   }
   const rows = finalStandings(E), rec = E.rec, me = rows.find(x => x.id === ME);
   const win = rec.posN === 1;

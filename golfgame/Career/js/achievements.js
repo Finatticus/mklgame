@@ -154,5 +154,19 @@ export function checkCards(st, eff) {
   if (c.homeWin) give('home_hero');
   if ((c.cutStreak || 0) >= 10) give('first_tee');
   if ((T.masters || 0) >= 1) give('green_jacket');
+  if ((c.holesOwn || 0) >= 54) give('mulligan');
+  if (c.fw13) give('fairway');
+  if (c.par3clean) give('par3');
+  if (c.eagle) give('par5');
+  if (c.windUnder) give('wind');
+  if ((c.holesOwn || 0) >= 300) give('long_putt');
+  if (c.bounce2) give('bounce');
+  if (c.birdie3) give('hot');
+  if (c.bogeyFree) give('par_save');
+  if (c.birdies5) give('wedge');
+  if ((T.amWins || 0) >= 1) give('opening');
+  if (T.wins - (T.jrWins || 0) - (T.amWins || 0) >= 3 && !st.status.amateur) give('sunday');
+  if (c.mqPass || c.qline) give('qs');
+  if (c.linksUnder) give('links');
 }
 const groupBy = (arr, k) => arr.reduce((o, x) => ((o[x[k]] = o[x[k]] || []).push(x), o), {});

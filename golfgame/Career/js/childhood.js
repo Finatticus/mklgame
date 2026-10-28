@@ -72,13 +72,13 @@ const mark = (st, n) => { st.story.moment = n; localSave(st); };
 // ---------- 關鍵時刻 1：第一次走進練習場（揮桿教學）----------
 async function moment1(st) {
   mark(st, 1);
-  await story({ small: 'CHAPTER 1 · 關鍵時刻 1 / 5 · 8 歲', title: '第一次走進練習場', img: 'range-holma.jpg', paras: [text(st, '{mentor}把一支小小的 7 號鐵放進你手裡。'), '「往下拉，決定力道；快速往上滑，把球打出去。左右滑可以調方向。」', '打一籃球（10 球）。不用急，先感覺球桿打到球的那一下。'], ok: '去練習場' });
-  const r = await drill(st, { mode: 'range', balls: 10, title: '第一籃球', goal: '打 10 球；飛超過 50 碼算一個好球', score: res => (res.result === 'rest' && res.carry / 0.9144 >= 50 ? 1 : 0) });
+  await story({ small: 'CHAPTER 1 · 關鍵時刻 1 / 5 · 8 歲', title: '第一次走進練習場', img: 'range-holma.jpg', paras: [text(st, '{mentor}把一支小小的 7 號鐵放進你手裡。'), '「往下拉，決定力道；快速往上滑，把球打出去。左右滑可以調方向。」', '打一籃球（10 球）。不用急，先感覺球桿打到球的那一下。打滿 3 球之後，上方可以按「結束練習」。'], ok: '去練習場' });
+  const r = await drill(st, { mode: 'range', balls: 10, title: '第一籃球', endAfter: 3, goal: '打 10 球；飛超過 50 碼算一個好球', score: res => (res.result === 'rest' && res.carry / 0.9144 >= 50 ? 1 : 0) });
   st.cnt.swing = 1;
   const good = r ? r.score : 0;
   addXp(st.player, 60 + good * 8);
   giveKnow(st, 'swing');
-  await storyResult('第一籃球', `你打了 10 球，其中 ${good} 球飛超過 50 碼。`, [text(st, '{mentor}笑著說：「明天再來。」')]);
+  await storyResult('第一籃球', `你打了 ${r ? r.n : 0} 球，其中 ${good} 球飛超過 50 碼。`, [text(st, '{mentor}笑著說：「明天再來。」')]);
   checkAch(st);
   advanceTo(st, 9);
   await moment2(st);
@@ -87,8 +87,8 @@ async function moment1(st) {
 // ---------- 關鍵時刻 2：夜市旁的小型高爾夫（推桿教學）----------
 async function moment2(st) {
   mark(st, 2);
-  await story({ small: 'CHAPTER 1 · 關鍵時刻 2 / 5 · 9 歲', title: '夜市旁的小型高爾夫', img: 'minigolf.jpg', paras: ['夜市旁邊的小型高爾夫場，燈泡一串一串地亮著。', '果嶺上有顏色的地方是坡度：箭頭往哪裡流，球就往哪裡彎。拉多長，球就在平地滾多遠。', '打 3 個洞，學會推桿與讀線。'], ok: '開始推桿' });
-  const r = await drill(st, { mode: 'putt', balls: 12, title: '推桿練習', goal: '推 12 球，看能推進幾顆', score: res => (res.result === 'holed' ? 1 : 0) });
+  await story({ small: 'CHAPTER 1 · 關鍵時刻 2 / 5 · 9 歲', title: '夜市旁的小型高爾夫', img: 'minigolf.jpg', paras: ['夜市旁邊的小型高爾夫場，燈泡一串一串地亮著。', '果嶺上有顏色的地方是坡度：箭頭往哪裡流，球就往哪裡彎。拉多長，球就在平地滾多遠。', '推幾顆，學會推桿與讀線。打滿 3 球之後，上方可以按「結束練習」。'], ok: '開始推桿' });
+  const r = await drill(st, { mode: 'putt', balls: 12, title: '推桿練習', endAfter: 3, goal: '推 12 球，看能推進幾顆', score: res => (res.result === 'holed' ? 1 : 0) });
   const made = r ? r.score : 0;
   st.cnt.putt = 1; giveKnow(st, 'putt');
   addXp(st.player, 60 + made * 6);
@@ -179,8 +179,8 @@ async function moment4(st) {
 // ---------- 關鍵時刻 5：暑假的十字路口（訓練關卡的教學 + 第二章的起點）----------
 async function moment5(st) {
   mark(st, 5);
-  await story({ small: 'CHAPTER 1 · 關鍵時刻 5 / 5 · 12 歲', title: '練習場的訓練關卡', img: 'young-putting.jpg', paras: ['從現在起，練球可以打「訓練關卡」：在練習場達成目標，訓練經驗會比一般練球多。', '先試一個：鐵桿打進目標區。'], ok: '開始訓練' });
-  const r = await ironDrill(st);
+  await story({ small: 'CHAPTER 1 · 關鍵時刻 5 / 5 · 12 歲', title: '練習場的訓練關卡', img: 'young-putting.jpg', paras: ['從現在起，練球可以打「訓練關卡」：在練習場達成目標，訓練經驗會比一般練球多。', '先試一個：鐵桿打進目標區。打滿 3 球之後，上方可以按「結束練習」。'], ok: '開始訓練' });
+  const r = await ironDrill(st, 10, 3);
   const i = await story({ small: '12 歲', title: '暑假的十字路口', img: 'kids-camp2.jpg', paras: [text(st, '{family_who}說：「今年暑假，你想怎麼過？」')], choices: [['參加兒童夏令營', '天賦：基本功扎實 · 第二章可以選技術派教練'], ['挑戰 U.S. Kids Golf 世界錦標賽', '天賦：大心臟 · 存款 −$800'], [text(st, '留在家鄉陪{mentor}打球'), '天賦：家鄉通 · 家人關係 +']], skip: false });
   const t = ['basics', 'heart', 'home'][Math.max(0, i)];
   if (!st.player.talents.includes(t)) st.player.talents.push(t);
@@ -225,21 +225,23 @@ function grow(st, age) {
 //   o = { mode: 'range' | 'putt' | 'bunker', balls, title, goal, score(res) → 分數, target（碼） }
 export function drill(st, o) {
   let n = 0, score = 0;
+  // endAfter：教學用，打滿幾球之後可以按「結束練習」
+  const hud = () => `${esc(o.title)}　第 <b>${Math.min(n + 1, o.balls)}</b> / ${o.balls} 球　得分 <b>${score}</b><br><small>${esc(o.goal)}</small>${o.endAfter && n >= o.endAfter && n < o.balls ? '<br><button class="cm-btn small" data-drillend style="margin-top:6px">結束練習</button>' : ''}`;
   const p = playRound({
     label: o.title, noHoleCard: true,
     cfg: { courseId: 'maple', practice: true, startHole: 7, tee: 'black', holes: 'all', wind: 'calm', career: { drill: o.mode } },
     drill: true,
-    drillHud: () => `${esc(o.title)}　第 <b>${Math.min(n + 1, o.balls)}</b> / ${o.balls} 球　得分 <b>${score}</b><br><small>${esc(o.goal)}</small>`,
+    drillHud: hud,
     drillShot: (game, res) => {
       n++; score += o.score(res, game) || 0;
-      const e = document.getElementById('cm-drill'); if (e) e.innerHTML = `${esc(o.title)}　第 <b>${Math.min(n + 1, o.balls)}</b> / ${o.balls} 球　得分 <b>${score}</b><br><small>${esc(o.goal)}</small>`;
+      const e = document.getElementById('cm-drill'); if (e) e.innerHTML = hud();
       if (n >= o.balls) setTimeout(() => endDrill(game), 1600);
     },
   });
   return p.then(() => ({ score, n }));
 }
 // 鐵桿打進目標區（目標 70~130 碼，依年紀）
-export function ironDrill(st, balls = 10) {
+export function ironDrill(st, balls = 10, endAfter = 0) {
   const target = Math.round(60 + Math.max(0, st.player.age - 8) * 10);
-  return drill(st, { mode: 'range', balls, title: `目標 ${target} 碼`, goal: `落在目標 ±10% 距離、左右 ${Math.round(target * 0.08)} 碼內算 1 分`, score: res => (res.result === 'rest' && Math.abs(res.total / 0.9144 - target) <= target * 0.1 && Math.abs(res.offline / 0.9144) <= target * 0.08 ? 1 : 0) });
+  return drill(st, { mode: 'range', balls, endAfter, title: `目標 ${target} 碼`, goal: `落在目標 ±10% 距離、左右 ${Math.round(target * 0.08)} 碼內算 1 分`, score: res => (res.result === 'rest' && Math.abs(res.total / 0.9144 - target) <= target * 0.1 && Math.abs(res.offline / 0.9144) <= target * 0.08 ? 1 : 0) });
 }

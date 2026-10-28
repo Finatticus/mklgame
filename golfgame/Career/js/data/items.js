@@ -4,6 +4,8 @@ export const RARITY = { common: { name: '一般', color: '#8a8a80', mul: 1 }, fi
 export const BRANDS = { north: 'Northfield', kes: 'Kestrel', aur: 'Aurum', pine: 'Pinecrest', van: 'Vanta', haru: 'Haru', link: 'Linkline' };
 export const SLOTS = { hat: '帽子', top: '上衣', bottom: '下身', shoes: '鞋子', glove: '手套', acc: '配件', driver: '一號木', wood: '球道木 / 混血', irons: '鐵桿', wedge: '挖起桿', putter: '推桿', ball: '球' };
 export const CLOTHES = ['hat', 'top', 'bottom', 'shoes', 'glove', 'acc'];
+// 部位的分類（裝備頁、商店）
+export const SLOT_GROUPS = { '球具': ['driver', 'wood', 'irons', 'wedge', 'putter', 'ball'], '服裝': ['hat', 'top', 'bottom', 'shoes', 'glove', 'acc'] };
 
 // 裝備：id、欄位、名稱、品牌、稀有度、能力（每 +1 等級加成 ×1.25）、價格、外觀（顏色等，角色換裝用）、條件（when：特定情況才有效，畫面上顯示說明）
 const I = (id, slot, name, brand, rarity, stats, price, o = {}) => ({ id, slot, name, brand, rarity, stats, price, ...o });
@@ -13,6 +15,8 @@ export const ITEMS = [
   I('cap_sun', 'hat', '遮陽帽', 'pine', 'fine', { reading: 1 }, 120, { look: { hat: 'visor', cap: '#ffffff' }, note: '晴天讀果嶺 +1' }),
   I('cap_bucket', 'hat', '漁夫帽', 'link', 'fine', { mental: 1 }, 140, { look: { hat: 'bucket', cap: '#d8c08a' }, note: '強風日抗壓 +1' }),
   I('cap_tour', 'hat', '巡迴賽球帽', 'kes', 'rare', { reading: 1, mental: 1 }, 650, { look: { hat: 'cap', cap: '#20324f' } }),
+  I('cap_cool', 'hat', '涼感運動帽', 'aur', 'fine', { consistency: 1 }, 95, { look: { hat: 'cap', cap: '#e8e1d0' }, note: '夏天不容易累' }),
+  I('cap_legend', 'hat', '冠軍訂製球帽', 'van', 'legend', { reading: 2, mental: 1 }, 1800, { look: { hat: 'cap', cap: '#111111' } }),
   // 上衣
   I('top_polo', 'top', '棉質 Polo', 'north', 'common', {}, 40, { look: { shirt: '#f2ead8', top: 'polo' } }),
   I('top_dry', 'top', '機能 Polo', 'kes', 'fine', { consistency: 1 }, 160, { look: { shirt: '#20324f', top: 'polo' }, note: '體能消耗 −5%' }),
@@ -20,54 +24,82 @@ export const ITEMS = [
   I('top_vest', 'top', '毛衣背心', 'link', 'rare', { mental: 1, touch: 1 }, 520, { look: { shirt: '#f2ead8', top: 'vest', vest: '#2a3442' } }),
   I('top_wind', 'top', '防風外套', 'link', 'rare', { consistency: 2 }, 780, { look: { shirt: '#1c1c1c', top: 'jacket' }, note: '強風日穩定度 +1' }),
   I('top_tour', 'top', '巡迴賽 Polo', 'van', 'legend', { consistency: 1, accuracy: 1, mental: 1 }, 2400, { look: { shirt: '#a3302a', top: 'polo' } }),
+  I('top_rain', 'top', '輕量雨衣', 'pine', 'fine', { recovery: 1 }, 150, { look: { shirt: '#2c4a6b', top: 'jacket' }, note: '雨天、強風日穿' }),
+  I('top_compress', 'top', '壓縮機能衣', 'kes', 'rare', { power: 1, consistency: 1 }, 700, { look: { shirt: '#1c1c1c', top: 'long' } }),
   // 下身
   I('bot_pants', 'bottom', '休閒長褲', 'north', 'common', {}, 45, { look: { pants: '#2a3442', bottom: 'pants' } }),
   I('bot_flex', 'bottom', '彈性長褲', 'kes', 'fine', { launch: 1 }, 170, { look: { pants: '#e8e1d0', bottom: 'pants' } }),
   I('bot_shorts', 'bottom', '短褲', 'pine', 'fine', { recovery: 1 }, 110, { look: { pants: '#6b6255', bottom: 'shorts' } }),
   I('bot_skirt', 'bottom', '球裙', 'aur', 'fine', { launch: 1 }, 170, { look: { pants: '#ffffff', bottom: 'skirt' } }),
   I('bot_tour', 'bottom', '巡迴賽長褲', 'van', 'rare', { launch: 1, consistency: 1 }, 640, { look: { pants: '#1c1c1c', bottom: 'pants' } }),
+  I('bot_rain', 'bottom', '防水長褲', 'pine', 'fine', { recovery: 1 }, 130, { look: { pants: '#2a3442', bottom: 'pants' } }),
+  I('bot_legend', 'bottom', '訂製西裝長褲', 'link', 'legend', { launch: 1, consistency: 1, mental: 1 }, 1900, { look: { pants: '#d8d2c2', bottom: 'pants' } }),
   // 鞋子
   I('shoe_basic', 'shoes', '入門球鞋', 'north', 'common', {}, 60, { look: { shoes: '#f4f1ea' } }),
   I('shoe_spike', 'shoes', '有釘球鞋', 'kes', 'fine', { recovery: 2 }, 220, { look: { shoes: '#ffffff' }, note: '斜坡站位的脫困 +2' }),
   I('shoe_less', 'shoes', '無釘球鞋', 'aur', 'fine', { consistency: 1 }, 200, { look: { shoes: '#e8e1d0' }, note: '體能消耗 −5%' }),
   I('shoe_retro', 'shoes', '復古皮鞋', 'link', 'rare', { touch: 1, mental: 1 }, 680, { look: { shoes: '#5a3a22' } }),
+  I('shoe_boa', 'shoes', '旋鈕快綁球鞋', 'aur', 'rare', { consistency: 1, recovery: 1 }, 520, { look: { shoes: '#20324f' } }),
+  I('shoe_tour', 'shoes', '巡迴賽球鞋', 'kes', 'legend', { recovery: 2, consistency: 1, power: 1 }, 1600, { look: { shoes: '#ffffff' } }),
   // 手套
   I('glove_syn', 'glove', '合成皮手套', 'north', 'common', {}, 15, { look: { glove: '#ffffff' } }),
   I('glove_cab', 'glove', '真皮手套', 'kes', 'fine', { contact: 1 }, 35, { look: { glove: '#f6f1e6' } }),
   I('glove_rain', 'glove', '雨天手套', 'pine', 'fine', { recovery: 1 }, 40, { look: { glove: '#1c1c1c' }, note: '濕地誤差 −10%' }),
+  I('glove_tour', 'glove', '巡迴賽手套', 'kes', 'rare', { contact: 1, consistency: 1 }, 90, { look: { glove: '#ffffff' } }),
+  I('glove_legend', 'glove', '手工小羊皮手套', 'haru', 'legend', { contact: 2, accuracy: 1 }, 260, { look: { glove: '#f3ead6' } }),
   // 配件
   I('acc_sun', 'acc', '太陽眼鏡', 'van', 'fine', { reading: 1 }, 180, { look: { glasses: true } }),
   I('acc_watch', 'acc', '運動手錶', 'aur', 'rare', { consistency: 1, mental: 1 }, 900),
   I('acc_marker', 'acc', '幸運球標', 'link', 'fine', { line: 1 }, 30),
+  I('acc_towel', 'acc', '吸水毛巾', 'north', 'common', { spin: 1 }, 20, { note: '每一桿前擦乾桿面' }),
+  I('acc_book', 'acc', '果嶺碼數本', 'pine', 'rare', { reading: 2 }, 320, { note: '果嶺坡度的手繪筆記' }),
+  I('acc_range', 'acc', '雷射測距儀', 'van', 'rare', { consistency: 1, accuracy: 1 }, 450),
+  I('acc_legend', 'acc', '冠軍腕錶', 'aur', 'legend', { mental: 2, consistency: 1 }, 2800),
   // 一號木
+  I('drv_kid', 'driver', '兒童一號木', 'north', 'common', { power: 1, accuracy: 1 }, 90, { kid: true, note: '兒童尺寸（14 歲以前）' }),
   I('drv_start', 'driver', '入門一號木', 'north', 'common', { power: 1 }, 150),
+  I('drv_draw', 'driver', '防右曲一號木', 'pine', 'fine', { accuracy: 2 }, 320, { note: '重心偏跟部，球比較不會往右飛' }),
+  I('drv_mini', 'driver', '迷你一號木', 'link', 'rare', { accuracy: 3, shaping: 1, power: -1 }, 550, { note: '窄球道的秘密武器：準度 +3、力量 −1' }),
   I('drv_lowspin', 'driver', '低旋轉一號木', 'kes', 'rare', { power: 4, accuracy: -2 }, 600, { note: '重砲型：力量 +4、準度 −2' }),
   I('drv_bighead', 'driver', '大頭一號木', 'aur', 'rare', { accuracy: 3, power: 1 }, 600, { note: '容錯型' }),
   I('drv_adjust', 'driver', '可調重心一號木', 'van', 'legend', { accuracy: 3, shaping: 3 }, 1100, { note: '準度 +3、曲球 +3' }),
   I('drv_tour', 'driver', '巡迴版一號木', 'kes', 'legend', { power: 5, contact: 2, accuracy: -1 }, 1300),
   // 球道木 / 混血
   I('fw_start', 'wood', '入門球道木', 'north', 'common', { launch: 1 }, 120),
+  I('fw_5w', 'wood', '5 號木', 'kes', 'fine', { launch: 2 }, 220),
   I('fw_hybrid', 'wood', '混血桿組', 'pine', 'rare', { launch: 3, recovery: 2 }, 480),
+  I('fw_util', 'wood', '鐵木桿', 'van', 'rare', { accuracy: 2, launch: 1 }, 420, { note: '低彈道、好控制' }),
   I('fw_tour', 'wood', '巡迴版球道木', 'aur', 'legend', { launch: 3, contact: 2, power: 1 }, 900),
   // 鐵桿
+  I('iron_kid', 'irons', '兒童鐵桿組', 'north', 'common', { contact: 1, launch: 1 }, 180, { kid: true, note: '兒童尺寸（14 歲以前）' }),
   I('iron_start', 'irons', '入門鐵桿組', 'north', 'common', { contact: 1 }, 300),
+  I('iron_combo', 'irons', '混搭鐵桿組', 'aur', 'fine', { contact: 2, accuracy: 1 }, 700, { note: '長鐵凹背、短鐵刀背' }),
   I('iron_blade', 'irons', '刀背鐵桿', 'link', 'rare', { accuracy: 3, shaping: 4, contact: -2 }, 1300, { note: '準度 +3、曲球 +4、擊球效率 −2' }),
   I('iron_cavity', 'irons', '凹背寬底鐵桿', 'aur', 'rare', { contact: 3, launch: 3, shaping: -2 }, 1100, { note: '擊球效率 +3、彈道 +3、曲球 −2' }),
   I('iron_tour', 'irons', '巡迴版鍛造鐵桿', 'kes', 'legend', { accuracy: 3, contact: 2, shaping: 2 }, 2200),
+  I('iron_legend', 'irons', '職業手工刀背鐵桿', 'haru', 'legend', { accuracy: 4, shaping: 4, contact: -1 }, 3200, { note: '準度 +4、曲球 +4、擊球效率 −1' }),
   // 挖起桿
   I('wedge_start', 'wedge', '入門挖起桿', 'north', 'common', { chipping: 1 }, 90),
   I('wedge_spin', 'wedge', '高磨紋挖起桿', 'van', 'rare', { spin: 5 }, 380, { note: '旋轉 +5（長草沒有加成）' }),
   I('wedge_bounce', 'wedge', '寬底彈跳角挖起桿', 'pine', 'rare', { bunker: 5, spin: -1 }, 360, { note: '沙坑 +5、旋轉 −1' }),
+  I('wedge_lob', 'wedge', '64 度高拋挖起桿', 'pine', 'fine', { chipping: 2, spin: 1 }, 160),
   I('wedge_tour', 'wedge', '巡迴版挖起桿組', 'link', 'legend', { spin: 3, chipping: 3, bunker: 2 }, 900),
+  I('wedge_raw', 'wedge', '未電鍍手工挖起桿', 'haru', 'legend', { spin: 4, chipping: 3 }, 1100, { note: '會生鏽，但旋轉最多' }),
   // 推桿
   I('putt_start', 'putter', '入門推桿', 'north', 'common', { touch: 1 }, 90),
   I('putt_mallet', 'putter', '槌型推桿', 'aur', 'rare', { line: 5, touch: -1 }, 420, { note: '推桿方向 +5、距離感 −1' }),
   I('putt_blade', 'putter', '刀型推桿', 'link', 'rare', { touch: 5, line: -1 }, 420, { note: '距離感 +5、推桿方向 −1' }),
+  I('putt_counter', 'putter', '配重推桿', 'kes', 'fine', { line: 2 }, 200),
+  I('putt_long', 'putter', '長推桿', 'van', 'rare', { line: 3, touch: 1, mental: 1 }, 520, { note: '抵住胸口、手腕不容易抖' }),
   I('putt_tour', 'putter', '巡迴版手工推桿', 'haru', 'legend', { touch: 3, line: 3, reading: 1 }, 1200),
+  I('putt_legend', 'putter', '冠軍手工推桿', 'haru', 'legend', { touch: 4, line: 3, reading: 1 }, 2600),
   // 球
   I('ball_two', 'ball', '雙層遠距離球', 'north', 'common', { power: 2, spin: -3 }, 30, { note: '力量 +2、旋轉 −3' }),
   I('ball_tour', 'ball', '三層巡迴球', 'kes', 'fine', { spin: 3, chipping: 2 }, 60, { note: '旋轉 +3、切球 +2' }),
+  I('ball_soft', 'ball', '軟質球', 'aur', 'fine', { touch: 1, chipping: 1 }, 40),
   I('ball_pro', 'ball', '巡迴賽專用球', 'van', 'rare', { spin: 3, chipping: 2, power: 1 }, 90),
+  I('ball_x', 'ball', '低旋轉巡迴球', 'kes', 'rare', { power: 2, spin: 1 }, 95),
+  I('ball_legend', 'ball', '職業測試球', 'kes', 'legend', { power: 2, spin: 3, chipping: 2 }, 160),
   // 冠軍專屬（純外觀與象徵，不加能力）
   I('jacket_green', 'top', '綠夾克', 'augusta', 'champ', {}, 0, { look: { shirt: '#1d6b3a', top: 'jacket', jacket: true }, note: '名人賽冠軍專屬：純外觀，象徵最高榮譽', champ: 'masters' }),
   I('claret_cap', 'hat', '銀壺紀念球帽', 'link', 'champ', {}, 0, { look: { cap: '#f2ead8', hat: 'cap' }, champ: 'open' }),

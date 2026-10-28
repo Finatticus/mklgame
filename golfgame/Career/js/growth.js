@@ -106,22 +106,47 @@ export function capOf(p, k) {
 }
 
 // ---------- 技能卡 ----------
-//   when：生效的情況；mul：誤差倍率（同一種誤差最多減到原本的 60%）
+//   when：生效的情況；mul：Lv.1 的誤差倍率（同一種誤差最多減到原本的 60%）；unlock：取得方式；up：升到 Lv.2 / Lv.3 要「生效」的次數
+//   升級：自己打的回合裡，這張卡生效的擊球次數（重來卡 = 用掉的次數）達到 up，再花技能點（Lv.2 花 2 點、Lv.3 花 4 點）
+//   Lv.2 的效果是 Lv.1 的 1.35 倍、Lv.3 是 1.7 倍（例：−20% → −27% → −34%）
 export const CARDS = {
+  mulligan: { name: '重來的機會', desc: '每一輪可以重打：18 洞 2 次、9 洞 1 次', kind: 'mull', unlock: '自己打的洞累計 54 洞（任何比賽的回合）', up: [6, 20], lvText: ['18 洞 2 次、9 洞 1 次', '18 洞 3 次、9 洞 1 次', '18 洞 3 次、9 洞 2 次'] },
   closer: { name: '收尾大師', desc: '最後三洞（16~18 洞）誤差 −15%', when: 'last3', mul: 0.85, unlock: '拿到第一座職業冠軍' },
-  short_putt: { name: '短推不手軟', desc: '2 碼內推桿誤差 −50%', when: 'putt2', mul: 0.5, unlock: '自己打完 18 洞、推桿 26 次以內' },
-  sand_save: { name: '沙坑救星', desc: '沙坑擊球誤差 −25%', when: 'sand', mul: 0.75, unlock: '青少年賽事冠軍' },
+  short_putt: { name: '短推不手軟', desc: '2 碼內推桿誤差 −50%', when: 'putt2', mul: 0.5, unlock: '自己打完 18 洞、推桿 26 次以內', up: [30, 100] },
+  sand_save: { name: '沙坑救星', desc: '沙坑擊球誤差 −25%', when: 'sand', mul: 0.75, unlock: '青少年賽事冠軍', up: [20, 70] },
   rough_rider: { name: '長草脫困', desc: '長草、深草擊球誤差 −20%', when: 'rough', mul: 0.8, unlock: 'Korn Ferry Tour 冠軍' },
-  ice: { name: '冰人', desc: '壓力等級 2 以上時誤差 −20%', when: 'press2', mul: 0.8, unlock: '延長賽勝利' },
+  ice: { name: '冰人', desc: '壓力等級 2 以上時誤差 −20%', when: 'press2', mul: 0.8, unlock: '延長賽勝利', up: [20, 70] },
   bomber: { name: '開球重砲', desc: '發球台上用一號木誤差 −12%', when: 'tee', mul: 0.88, unlock: '一號木平均 Carry 達到 300 碼' },
   dart: { name: '攻旗', desc: '150 碼內的進攻誤差 −15%', when: 'approach', mul: 0.85, unlock: '單場標準桿上果嶺 16 洞以上' },
   scrambler: { name: '救球王', desc: '果嶺邊 30 碼內的切球誤差 −20%', when: 'chip', mul: 0.8, unlock: '單場救 Par 6 次以上' },
   major_heart: { name: '大賽心臟', desc: '四大賽的週末誤差 −10%', when: 'majorWeekend', mul: 0.9, unlock: '四大賽前十名' },
   home_hero: { name: '主場英雄', desc: '家鄉國家的比賽誤差 −10%', when: 'home', mul: 0.9, unlock: '在家鄉拿到職業冠軍' },
-  first_tee: { name: '第一洞的穩定', desc: '每一輪第 1 洞誤差 −20%', when: 'first', mul: 0.8, unlock: '連續 10 場晉級' },
-  green_jacket: { name: '奧古斯塔的記憶', desc: '名人賽全部誤差 −8%', when: 'masters', mul: 0.92, unlock: '名人賽冠軍' },
+  first_tee: { name: '第一洞的穩定', desc: '每一輪第 1 洞誤差 −20%', when: 'first', mul: 0.8, unlock: '連續 10 場晉級', up: [15, 50] },
+  green_jacket: { name: '奧古斯塔的記憶', desc: '名人賽全部誤差 −8%', when: 'masters', mul: 0.92, unlock: '名人賽冠軍', up: [30, 100] },
+  fairway: { name: '球道獵手', desc: '從球道上擊球誤差 −10%', when: 'fairway', mul: 0.9, unlock: '自己打完 18 洞、命中 13 個球道以上' },
+  par3: { name: '三桿洞狙擊手', desc: '三桿洞的開球誤差 −15%', when: 'par3', mul: 0.85, unlock: '自己打完 18 洞、四個三桿洞都 Par 以下', up: [12, 40] },
+  par5: { name: '五桿洞獵人', desc: '五桿洞的所有擊球誤差 −8%', when: 'par5', mul: 0.92, unlock: '打出一隻老鷹（比標準桿少 2 桿）' },
+  wind: { name: '逆風而上', desc: '風速 12 mph 以上時誤差 −12%', when: 'wind', mul: 0.88, unlock: '強風日自己打完 18 洞、低於標準桿' },
+  long_putt: { name: '長推高手', desc: '8 碼以上的推桿誤差 −20%', when: 'longPutt', mul: 0.8, unlock: '自己打的洞累計 300 洞', up: [25, 90] },
+  bounce: { name: '柏忌反彈', desc: '上一洞柏忌以上，這一洞誤差 −15%', when: 'bounce', mul: 0.85, unlock: '同一輪 2 次「柏忌之後下一洞抓鳥」', up: [10, 35] },
+  hot: { name: '手感連發', desc: '上一洞抓鳥，這一洞誤差 −12%', when: 'hot', mul: 0.88, unlock: '連續 3 洞小鳥', up: [10, 35] },
+  par_save: { name: '保帕推', desc: '推 Par 的推桿誤差 −20%', when: 'parPutt', mul: 0.8, unlock: '自己打完 18 洞、零柏忌', up: [20, 70] },
+  wedge: { name: '挖起桿專家', desc: '30~110 碼用挖起桿的誤差 −15%', when: 'wedge', mul: 0.85, unlock: '自己打完 18 洞、5 隻小鳥以上' },
+  opening: { name: '開局衝刺', desc: '每一輪的前 3 洞誤差 −10%', when: 'opening', mul: 0.9, unlock: '業餘賽事冠軍（業餘排名賽、大學賽、業餘大賽）', up: [25, 90] },
+  sunday: { name: '星期天的紅衣', desc: '最後一輪誤差 −8%', when: 'final', mul: 0.92, unlock: '職業冠軍 3 場', up: [30, 100] },
+  qs: { name: '資格賽鬥士', desc: 'Q-School 的回合誤差 −12%', when: 'qual', mul: 0.88, unlock: '週一資格賽過關，或在 Q-School 決賽剛好過關', up: [25, 80] },
+  links: { name: '林克斯之心', desc: '林克斯球場誤差 −10%', when: 'links', mul: 0.9, unlock: '在林克斯球場自己打完 18 洞、低於標準桿', up: [30, 100] },
 };
-export const cardSlots = p => clamp(2 + Math.floor((p.level || 1) / 20) + (p.legacyBonus ? 1 : 0), 2, 6);
+export const CARD_UP = [40, 150];                 // 預設的升級門檻（生效次數）
+export const CARD_COST = [0, 2, 4];               // 升到 Lv.2 / Lv.3 要花的技能點
+export const cardLv = (p, id) => (p.cardLv && p.cardLv[id]) || 1;
+export const cardUp = id => CARDS[id].up || CARD_UP;
+// 這張卡在某個等級的誤差倍率
+export const cardMul = (c, lv) => 1 - (1 - c.mul) * [1, 1.35, 1.7][clamp(lv, 1, 3) - 1];
+export const cardDesc = (c, lv) => (c.kind === 'mull' ? c.lvText[clamp(lv, 1, 3) - 1] : c.desc.replace(/−\d+%/, `−${Math.round((1 - cardMul(c, lv)) * 100)}%`));
+// 重來卡：這一輪多幾次重打（自己打的洞數）
+export const cardMulligans = (lv, holes) => (holes >= 18 ? [2, 3, 3] : holes >= 9 ? [1, 1, 2] : [0, 0, 0])[clamp(lv, 1, 3) - 1];
+export const cardSlots = p => clamp(2 + Math.floor((p.level || 1) / 15) + (p.legacyBonus ? 1 : 0), 2, 7);
 
 // ---------- 實際上場的素質 ----------
 //   基礎素質 + 球具 + 服裝 + 手感 + 主場 + 桿弟（每項固定加成合計最多 +8，素質最高 99）
