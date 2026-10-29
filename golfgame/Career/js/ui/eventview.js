@@ -24,7 +24,7 @@ import { giveKnow } from '../childhood.js';
 import { teamSide } from '../data/players.js';
 import { matchEvent } from './match.js';
 
-const MODES = [['full', '完整 18 洞', '全部自己打（35~50 分鐘）· 經驗 100% + 完賽獎勵 15%'], ['nine', '精華 9 洞', '自己打其中 9 洞，其他依素質與手感模擬（18~25 分鐘）'], ['three', '快速 3 洞', '自己打這一輪最有代表性的 3 洞（從發球台開始），其他依素質與手感模擬（8~12 分鐘）'], ['key', '關鍵時刻', '系統挑出這一輪最關鍵的 4 顆球，直接把球放在那個位置（6~10 分鐘）'], ['sim', '模擬', '直接看結果（10 秒）· 經驗 30%，成績略保守']];
+const MODES = [['full', '完整 18 洞', '全部自己打（35~50 分鐘）· 經驗 100% + 完賽獎勵 15%'], ['nine', '精華 9 洞', '自己打其中 9 洞，其他依素質與手感模擬（18~25 分鐘）'], ['three', '快速 3 洞', '自己打這一輪最有代表性的 3 洞（從發球台開始），你和所有對手在其他洞一律算平標準桿：這一輪只比這 3 洞（8~12 分鐘）'], ['key', '關鍵時刻', '系統挑出這一輪最關鍵的 4 顆球，直接把球放在那個位置（6~10 分鐘）'], ['sim', '模擬', '直接看結果（10 秒）· 經驗 30%，成績略保守']];
 
 register('event', async body => {
   const st = cur(), E = st.ev;
@@ -264,6 +264,18 @@ async function playEventRound(st, E, ri, mode, nine) {
   const contend = (() => { const lb = leaderboard(E, ri, 0), me = lb.find(x => x.me); return me && me.posN <= 8; })();
   let holeIdx = mode === 'full' ? [...Array(18).keys()] : mode === 'nine' ? (nine === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : [9, 10, 11, 12, 13, 14, 15, 16, 17]) : mode === 'key' ? keyHoles(ci, ri, E.rounds, contend) : mode === 'three' ? threeHoles(ci, ri, E.rounds, contend) : [];
   E.me.played[ri] = Array(18).fill(false);
+  // 快速 3 洞：這一輪只比這 3 洞。你和所有對手在其他 15 洞一律算平標準桿（模擬不會讓任何人變好或變差）。
+  //   原本的成績留一份，這一輪改用其他打法（重新選、重新開始）時換回來
+  E.me.simBak = E.me.simBak || {}; E.fieldBak = E.fieldBak || {};
+  if (E.me.simBak[ri]) E.me.sim[ri] = E.me.simBak[ri].slice();
+  if (E.fieldBak[ri]) for (const e of E.field) if (E.fieldBak[ri][e.id]) e.sc[ri] = E.fieldBak[ri][e.id].slice();
+  delete E.me.simBak[ri]; delete E.fieldBak[ri];
+  if (mode === 'three') {
+    const parOnly = a => a.map((v, h) => holeIdx.includes(h) ? v : ci.holes[h][0]);
+    E.me.simBak[ri] = E.me.sim[ri].slice(); E.me.sim[ri] = parOnly(E.me.sim[ri]);
+    E.fieldBak[ri] = {};
+    for (const e of E.field) if (!e.cut && e.sc[ri]) { E.fieldBak[ri][e.id] = e.sc[ri].slice(); e.sc[ri] = parOnly(e.sc[ri]); }
+  }
   await weatherDelay(st, E, ri);
   if (mode === 'sim') {
     // 模擬：成績略保守（每洞 3% 機率多 1 桿 = 每輪平均 +0.54 桿）。以前程式寫成 6%（每輪 +1.08 桿、一場 +4.3 桿），
