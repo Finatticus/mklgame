@@ -24,7 +24,7 @@ import { giveKnow } from '../childhood.js';
 import { teamSide } from '../data/players.js';
 import { matchEvent } from './match.js';
 
-const MODES = [['full', '完整 18 洞', '全部自己打（35~50 分鐘）· 經驗 100% + 完賽獎勵 15%'], ['nine', '精華 9 洞', '自己打其中 9 洞，其他依素質與手感模擬（18~25 分鐘）'], ['key', '關鍵時刻', '系統挑出這一輪最關鍵的 4 顆球，直接把球放在那個位置（6~10 分鐘）'], ['sim', '模擬', '直接看結果（10 秒）· 經驗 30%，成績略保守']];
+const MODES = [['full', '完整 18 洞', '全部自己打（35~50 分鐘）· 經驗 100% + 完賽獎勵 15%'], ['nine', '精華 9 洞', '自己打其中 9 洞，其他依素質與手感模擬（18~25 分鐘）'], ['three', '快速 3 洞', '自己打這一輪最有代表性的 3 洞（從發球台開始），其他依素質與手感模擬（8~12 分鐘）'], ['key', '關鍵時刻', '系統挑出這一輪最關鍵的 4 顆球，直接把球放在那個位置（6~10 分鐘）'], ['sim', '模擬', '直接看結果（10 秒）· 經驗 30%，成績略保守']];
 
 register('event', async body => {
   const st = cur(), E = st.ev;
@@ -166,7 +166,9 @@ function roundScreen(body, st, E, head) {
   const lb = leaderboard(E, ri, resumable ? thruNow(E, ri) : 0);
   const wx = E.wx[ri], final = ri === E.rounds - 1;
   const meRow = lb.find(x => x.me), contending = meRow && meRow.posN <= 8;
-  const rec = final && (E.major || contending) ? 'full' : E.tour === 'junior' || E.tour === 'ncaa' ? 'nine' : 'key';
+  // 建議的打法：最後一輪爭冠（或大賽）自己打；重要的比賽打精華 9 洞；一般的比賽打 3 洞就好
+  const big = E.major || ['am_major', 'junior+', 'college+'].includes(E.tier) || E.id === 'players' || E.playoff || E.tour === 'team' || E.tour === 'olympic';
+  const rec = final && (E.major || contending) ? 'full' : big || (final && contending) ? 'nine' : 'three';
   body.innerHTML = head + (resumable ? `<div class="cm-card" style="border-color:var(--champ)"><h3>上次沒打完的第 ${ri + 1} 輪</h3>
       <p>已打完 ${thruNow(E, ri)} 洞，從第 ${resumable.r.holeNo || resumable.r.state.k + 1} 洞的第一桿接著打（離開時那一洞打到一半的桿數不算）。排行榜和你離開時一樣。</p>
       <button class="cm-btn green" id="r-resume">接著打</button></div>` : '') + `<div class="cm-card"><h3>第 ${ri + 1} 輪<small>${['週四', '週五', '週六', '週日', '第五天', '第六天'][ri] || ''}</small></h3>
@@ -202,6 +204,17 @@ export function keyHoles(ci, ri, nR, contend) {
   add(H.filter(h => h.par === 4).sort((a, b) => a.hcp - b.hcp)[0]);
   add(H[17]);
   for (const h of H.sort((a, b) => a.hcp - b.hcp)) { if (pick.length >= 4) break; add(h); }
+  return pick.sort((a, b) => a - b);
+}
+// 快速 3 洞：最難的三桿洞、最難的五桿洞（沒有就四桿洞）、第 18 洞；最後一輪爭冠時是最後 3 洞
+export function threeHoles(ci, ri, nR, contend) {
+  if (ri === nR - 1 && contend) return [15, 16, 17];
+  const H = ci.holes.map((h, i) => ({ i, par: h[0], hcp: h[4] || 9 })), pick = [];
+  const add = x => { if (x && !pick.includes(x.i) && pick.length < 3) pick.push(x.i); };
+  add(H.filter(h => h.par === 3 && h.i < 17).sort((a, b) => a.hcp - b.hcp)[0]);
+  add(H.filter(h => h.par === 5 && h.i < 17).sort((a, b) => a.hcp - b.hcp)[0] || H.filter(h => h.par === 4 && h.i < 17).sort((a, b) => a.hcp - b.hcp)[0]);
+  add(H[17]);
+  for (const h of H.slice().sort((a, b) => a.hcp - b.hcp)) add(h);
   return pick.sort((a, b) => a - b);
 }
 // 關鍵時刻的球位：三桿洞從發球台；四桿洞第二桿；五桿洞依距離決定要不要兩桿上果嶺
@@ -247,9 +260,9 @@ const thruNow = (E, ri) => { const sc = E.me.sc[ri] || []; let n = 0; while (n <
 
 async function playEventRound(st, E, ri, mode, nine) {
   const ci = cinfo(E.course);
-  E.me.mode[ri] = { full: '自己打', nine: '精華 9 洞', key: '關鍵時刻', sim: '模擬' }[mode];
+  E.me.mode[ri] = { full: '自己打', nine: '精華 9 洞', three: '快速 3 洞', key: '關鍵時刻', sim: '模擬' }[mode];
   const contend = (() => { const lb = leaderboard(E, ri, 0), me = lb.find(x => x.me); return me && me.posN <= 8; })();
-  let holeIdx = mode === 'full' ? [...Array(18).keys()] : mode === 'nine' ? (nine === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : [9, 10, 11, 12, 13, 14, 15, 16, 17]) : mode === 'key' ? keyHoles(ci, ri, E.rounds, contend) : [];
+  let holeIdx = mode === 'full' ? [...Array(18).keys()] : mode === 'nine' ? (nine === 'front' ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : [9, 10, 11, 12, 13, 14, 15, 16, 17]) : mode === 'key' ? keyHoles(ci, ri, E.rounds, contend) : mode === 'three' ? threeHoles(ci, ri, E.rounds, contend) : [];
   E.me.played[ri] = Array(18).fill(false);
   await weatherDelay(st, E, ri);
   if (mode === 'sim') {
@@ -597,7 +610,7 @@ export async function resumeRound(st, res) {
   // 接續後又選「重新開始這一輪」：用原本的打法從第一洞重打
   if (result.restart) {
     st.cnt.restarts = (st.cnt.restarts || 0) + 1; E.restarts = (E.restarts || 0) + 1;
-    const mode = { '自己打': 'full', '精華 9 洞': 'nine', '關鍵時刻': 'key' }[E.me.mode[ri]] || 'full';
+    const mode = { '自己打': 'full', '精華 9 洞': 'nine', '快速 3 洞': 'three', '關鍵時刻': 'key' }[E.me.mode[ri]] || 'full';
     return playEventRound(st, E, ri, mode, (cfg.holeIdx || [0])[0] >= 9 ? 'back' : 'front');
   }
   const total = finishMyRound(E, ri);

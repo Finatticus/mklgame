@@ -377,6 +377,14 @@ export function applyWorldResult(st, ev, rows, E) {
   for (const x of rows) {
     if (x.cut || !x.pos || x.me || x.id === ME) continue;
     const p = findP(W, x.id); if (!p) continue;
+    // 玩家參加的青少年、業餘、大學賽：同場的同儕也照名次拿排名積分（也算進他這一週、這一年的場數）
+    if (['junior', 'am', 'ncaa'].includes(ev.tour) && p.am !== false && p.by) {
+      const ap = amPoints(E || ev, x.pos, rows.length);
+      if (ap.wagr >= 0.3) addPts(p.wa = p.wa || [], now, ap.wagr);
+      if (ap.jr >= 0.3) addPts(p.jr = p.jr || [], now, ap.jr);
+      p._amw = now; if (p._amy !== y) { p._amy = y; p._amn = 0; } p._amn++;
+      continue;
+    }
     const o = owgrPoints(E || ev, x.pos);
     if (o >= 0.3 && p.ow) addPts(p.ow, now, o);
     const pr = prizeOf(E || { ...ev, field: rows }, rows, x.id);
@@ -416,16 +424,33 @@ function bgAmateur(st, ev) {
   const W = st.world, y = ev.year, r = rng(hash(st.seed + ':bgam:' + ev.key));
   const age = st.player.age;
   if (age < 12 || !st.status.amateur) return;      // 童年與轉職業之後不用算同儕的業餘排名
-  const pool = W.peers.filter(p => p.am !== false && Math.abs((y - p.by) - age) <= 3 && (ev.tour !== 'junior' || ev.inv || ev.national || p.c === st.player.country));
+  // 團體對抗賽（Junior Ryder Cup、Walker Cup、Palmer Cup）不是比桿賽，不給排名積分
+  if (['jryder', 'jpres', 'walker', 'palmer'].includes(ev.kind)) return;
+  const now = ABS(y, ev.w);
+  // 同儕依自己的年齡與身分報名：大學賽只有 18~22 歲，青少年賽只有 18 歲以下（國內賽限本國）；每人每週最多一場、一年最多 16 場
+  const okAge = p => { const a = y - p.by; return ev.tour === 'ncaa' ? a >= 18 && a <= 22 : ev.tour === 'junior' ? a <= 18 : a >= 14; };
+  const free = p => p._amw !== now && (p._amy !== y || (p._amn || 0) < 16);
+  const pool = W.peers.filter(p => p.am !== false && Math.abs((y - p.by) - age) <= 3 && okAge(p) && free(p) && (ev.tour !== 'junior' || ev.inv || ev.national || p.c === st.player.country));
   if (!pool.length) return;
-  const sc = pool.map(p => ({ p, t: peerRating(p, y) + r.normal() * 3.2 })).sort((a, b) => b.t - a.t);
+  // 想參加的人：國內排名賽、國家隊賽事幾乎都去；大學賽看有沒有被球隊排進名單；邀請賽、業餘大賽要報名
+  const want = ev.national ? 1 : ev.tour === 'junior' && !ev.inv ? 0.85 : ev.tour === 'ncaa' ? 0.45 : 0.6;
+  let sc = pool.filter(() => r() < want).map(p => ({ p, t: peerRating(p, y) + r.normal() * 3.2 }));
+  // 名額：國際賽事的參賽者裡，這個年齡層只佔一部分（其他是年紀更大或更小的選手），依實力（加一點運氣）選進名額內
+  const share = ev.tour === 'junior' && !ev.inv && !ev.national ? 1 : ev.tour === 'junior' ? 0.7 : 0.4;
+  const seats = Math.max(4, Math.round((ev.field || 72) * share));
+  sc = sc.map(x => ({ ...x, q: peerRating(x.p, y) + r.normal() * 4 })).sort((a, b) => b.q - a.q).slice(0, seats);
+  if (!sc.length) return;
+  for (const x of sc) { x.p._amw = now; if (x.p._amy !== y) { x.p._amy = y; x.p._amn = 0; } x.p._amn++; }
+  sc.sort((a, b) => b.t - a.t);
+  // 名次換算成整個參賽陣容裡的名次（這個年齡層只是其中一部分）
+  const nField = Math.max(sc.length, Math.round(sc.length / share));
   // 只有前段的人拿積分（排名只看最近 52 週，每 4 週合成一筆）
   sc.slice(0, Math.max(8, Math.ceil(sc.length * 0.3))).forEach((x, i) => {
-    const ap = amPoints(ev, i + 1, sc.length);
+    const ap = amPoints(ev, Math.round((i + 1) / share), nField);
     if (ap.wagr >= 0.3) addPts(x.p.wa = x.p.wa || [], ABS(y, ev.w), ap.wagr);
     if (ap.jr >= 0.3) addPts(x.p.jr = x.p.jr || [], ABS(y, ev.w), ap.jr);
   });
-  if (sc[0]) sc[0].p.titles.push([y, ev.id]);
+  if (sc[0] && (share === 1 || r() < share)) sc[0].p.titles.push([y, ev.id]);
 }
 
 // 青少年排名（國內）與世界青少年 / 業餘排名
