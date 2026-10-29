@@ -198,12 +198,16 @@ export function auctionLots(st) {
   const owned = new Set((st.collection || []).map(c => c.name));
   return r.shuffle(AUCTION.map((a, i) => i)).map(i => AUCTION[i]).filter(a => !owned.has(a[0])).slice(0, 2).map(a => ({ name: a[0], kind: a[1], price: Math.round(a[2] * (0.85 + r() * 0.4) / 1000) * 1000, desc: a[3] }));
 }
+// 收藏區（和獎盃放在同一個獎盃室：3D 房間的前半部、2D 卡片的下半部）
 export function collectionHtml(st) {
-  const C = st.collection || [], lots = st.status.amateur ? [] : auctionLots(st);
-  return `<div class="cm-card"><h3>收藏室<small>${C.length} 件</small></h3>
+  const C = st.collection || [];
+  return `<h4 style="margin:14px 0 4px;font-size:14px">收藏區<small style="font-weight:400;color:var(--ink3,#888);margin-left:6px">${C.length} 件 · 3D 房間的前半部</small></h4>
     <p class="cm-note">贏大賽拿到第 18 洞旗、團體賽和對手交換球衣、對宿敵每贏 5 次拿到簽名球、事件裡傳奇與新星送的簽名物，還有每一季的歷史紀念品拍賣會。</p>
-    ${C.length ? `<div class="cm-trophy" style="margin-top:8px">${C.slice().reverse().map(c => `<div title="${esc(c.desc || '')}">${collectSvg(c.kind)}<b>${esc(c.name)}</b>${c.y} · ${esc(COLLECT_KIND[c.kind] || '')}</div>`).join('')}</div>` : '<div class="cm-empty">還沒有收藏</div>'}
-    ${lots.length ? `<h4 style="margin:10px 0 4px;font-size:13px">這一季的拍賣會</h4><div class="cm-list">${lots.map((l, i) => `<div class="cm-li"><div class="main"><b>${esc(l.name)}</b><span>${esc(l.desc)}</span></div><div class="side"><button class="cm-btn small green" data-lot="${i}">${money(l.price, { short: true })}</button></div></div>`).join('')}</div>` : ''}</div>`;
+    ${C.length ? `<div class="cm-trophy" style="margin-top:8px">${C.slice().reverse().map(c => `<div title="${esc(c.desc || '')}">${collectSvg(c.kind)}<b>${esc(c.name)}</b>${c.y} · ${esc(COLLECT_KIND[c.kind] || '')}</div>`).join('')}</div>` : '<div class="cm-empty">還沒有收藏</div>'}`;
+}
+export function auctionHtml(st) {
+  const lots = st.status.amateur ? [] : auctionLots(st);
+  return lots.length ? `<div class="cm-card"><h3>這一季的拍賣會<small>買到的放進獎盃室的收藏區</small></h3><div class="cm-list">${lots.map((l, i) => `<div class="cm-li"><div class="main"><b>${esc(l.name)}</b><span>${esc(l.desc)}</span></div><div class="side"><button class="cm-btn small green" data-lot="${i}">${money(l.price, { short: true })}</button></div></div>`).join('')}</div></div>` : '';
 }
 export function bindCollection(st, el, after) {
   const lots = auctionLots(st);

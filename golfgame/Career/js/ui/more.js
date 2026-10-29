@@ -117,10 +117,40 @@ function review(el, st) {
 }
 const findPl = (st, id) => (id ? st.world.players.find(x => x.id === id) || (st.world.peers || []).find(x => x.id === id) : null);
 
+// 世界排名頁：職業世界排名，業餘時期多了國內青少年、世界青少年、世界業餘排行榜（積分算法同 life.js 的 amRanks：最近 52 週）
+const RK_TABS = [['jr', '國內青少年'], ['wjr', '世界青少年'], ['wagr', '世界業餘'], ['pro', '職業世界排名']];
 function rank(el, st) {
+  const amOk = st.status.amateur || st.player.age <= 24;
+  let t = st._rkT || (!st.status.amateur ? 'pro' : st.status.stage === 'junior' ? 'jr' : 'wagr');
+  if (!amOk) t = 'pro';
+  const seg = amOk ? `<div class="cm-seg" style="margin-bottom:10px">${RK_TABS.map(([k, n]) => `<button data-rk="${k}" class="${t === k ? 'on' : ''}">${n}</button>`).join('')}</div>` : '';
+  if (t === 'pro') proRank(el, st, seg); else amRank(el, st, seg, t);
+  el.querySelectorAll('[data-rk]').forEach(b => b.onclick = () => { st._rkT = b.dataset.rk; rank(el, st); });
+}
+function amRank(el, st, seg, t) {
+  const W = st.world, now = ABS(st.year, st.week), age = st.player.age;
+  const sum = arr => (arr || []).filter(([w]) => now - w < 52).reduce((s, [, v]) => s + v, 0);
+  const pts = o => (t === 'jr' ? sum(o.jr) : t === 'wagr' ? sum(o.wa) : sum(o.jr) + sum(o.wa));
+  const pool = (W.peers || []).filter(p => !p.gone && (t !== 'jr' || (p.c === st.player.country && Math.abs((st.year - p.by) - age) <= 2)));
+  const rows = pool.map(p => ({ p, v: pts(p), me: false })).concat([{ p: { name: st.player.name, c: st.player.country, by: st.year - age }, v: pts(st), me: true }]).sort((a, b) => b.v - a.v || (b.me ? 1 : 0) - (a.me ? 1 : 0));
+  // 名次：比你積分高的人數 + 1（同分同名次，和狀態列的數字一致）
+  rows.forEach(x => { x.pos = rows.filter(y => y.v > x.v).length + 1; });
+  const mine = rows.find(x => x.me), noRank = t === 'wagr' ? mine.v < 5 : mine.v <= 0;
+  const shown = rows.filter(x => x.v > 0 || x.me).slice(0, 50);
+  if (!shown.includes(mine)) shown.push(mine);
+  const title = { jr: '國內青少年排名', wjr: '世界青少年排名', wagr: '世界業餘排名' }[t];
+  const sub = { jr: `${COUNTRY_ZH[st.player.country] || st.player.country} · 同年紀前後 2 歲 · 最近 52 週積分`, wjr: '青少年加業餘積分 · 最近 52 週', wagr: '業餘大賽與大學比賽的積分 · 最近 52 週' }[t];
+  const note = { jr: '國內青少年排名賽、全國賽拿積分；第 1 名有成就。', wjr: '18 歲選大學時看這個：NCAA 一級大學要前 400 名，全額獎學金要前 250 名。', wagr: '積分滿 5 分才有名次；第 1 名有成就，也是大賽業餘邀請的依據。' }[t];
+  const row = x => `<tr class="${x.me ? 'me' : ''}"><td class="pos">${x.me && noRank ? '—' : x.pos}</td><td>${esc(x.me ? st.player.name : nameOf(x.p))}<span class="ctry">${x.p.c}</span>${!x.me && x.p.rival ? ' <span class="cm-pill">宿敵</span>' : ''}</td><td class="th">${st.year - x.p.by}</td><td class="th">${x.v.toFixed(1)}</td></tr>`;
+  el.innerHTML = seg + `<div class="cm-card"><h3>${title}<small>${sub}</small></h3>
+    <p class="cm-note">你：${noRank ? '還沒有排名' : `第 ${mine.pos} 名`}（${mine.v.toFixed(1)} 分）。${note}</p>
+    <div class="cm-scroll-x"><table class="lb"><tr><th>名次</th><th>球員</th><th style="text-align:center">年齡</th><th style="text-align:center">積分</th></tr>${shown.map(row).join('')}</table></div>
+    ${rows.filter(x => x.v > 0).length ? '' : '<div class="cm-empty">還沒有人拿到積分</div>'}</div>`;
+}
+function proRank(el, st, seg) {
   const now = ABS(st.year, st.week);
   const list = rankList(st.world, st.player.pro ? { ...st.player, id: ME, ow: st.ow, pro: true, name: st.player.name } : null, now).slice(0, 60);
-  el.innerHTML = `<div class="cm-card"><h3>世界排名<small>近兩年的平均積分</small></h3>${st.status.amateur ? `<p class="cm-note">業餘時期看的是世界業餘排名（${st.wagr && st.wagr < 600 ? '第 ' + st.wagr + ' 名' : '還沒有排名'}）與青少年排名（國內第 ${st.jrRank || '—'} 名）。下面是職業的世界排名。</p>` : ''}
+  el.innerHTML = seg + `<div class="cm-card"><h3>世界排名<small>近兩年的平均積分</small></h3>${st.status.amateur ? `<p class="cm-note">業餘時期看的是上面的青少年與業餘排名；這裡是職業球員的世界排名。</p>` : ''}
     <div class="cm-scroll-x"><table class="lb"><tr><th>名次</th><th>球員</th><th style="text-align:center">平均</th></tr>${list.map((x, i) => `<tr class="${x.p.id === ME ? 'me' : ''}"><td class="pos">${i + 1}</td><td>${esc(x.p.id === ME ? st.player.name : nameOf(x.p))}<span class="ctry">${x.p.id === ME ? st.player.country : x.p.c}</span></td><td class="th">${x.avg.toFixed(2)}</td></tr>`).join('')}</table></div>
     ${st.player.pro && (st.rankNow || 9999) > 60 ? `<p class="cm-note" style="margin-top:6px">你：第 ${st.rankNow < 9999 ? st.rankNow : '—'} 名（平均 ${owgrAvg({ ow: st.ow }, now).toFixed(2)}）</p>` : ''}</div>`;
 }

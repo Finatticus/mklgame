@@ -2,11 +2,13 @@
 //   依存檔擺設：四大賽在中央展示櫃、巡迴賽獎盃上牆面層架、兒童盃與業餘獎牌在層架下排；拿到綠夾克才會掛在更衣櫃裡
 //   操作：拖曳轉頭、點地板走過去、點獎盃拉近（旁邊顯示那一場的成績）
 //   模型都由程式產生（旋轉體、管線、擠出形狀），從 Career/prototype/trophy-room.html 的原型改成依存檔擺設
+//   房間前半部是收藏區（v101）：左牆裱框的旗、球衣、信與計分卡，右牆玻璃長櫃放簽名球、手套、球桿，旁邊立著球袋
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { esc, toPar } from '../util.js';
 import { ROOM_LEVELS } from '../data/items.js';
+import { COLLECT_KIND } from '../data/story3.js';
 
 let scene = null, renderer = null, camera = null, raf = null, shadowSpots = 0, PLAYER = { name: '', year: '' };
 const loader = new THREE.TextureLoader();
@@ -305,6 +307,99 @@ function certificate(x, y, z, ry, t) {
   add(new THREE.PlaneGeometry(0.64, 0.45), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }), 0, 0, 0.045, g);
 }
 
+// ---------- 收藏區（房間前半部）----------
+// 裱框收藏（旗、球衣、紀念品）：綠色絨布底的畫面＋下方名字
+const cut = (s, n) => (String(s).length > n ? String(s).slice(0, n - 1) + '…' : String(s));
+function shadowBox(c, x, y, z, ry) {
+  const tex = canvasTex(400, 440, (g, w, h) => {
+    g.fillStyle = '#123425'; g.fillRect(0, 0, w, h);
+    g.save(); g.translate(w / 2, 170);
+    if (c.kind === 'flag') {
+      g.fillStyle = '#d8d8d0'; g.fillRect(-70, -130, 8, 260);
+      g.fillStyle = '#b8322a'; g.beginPath(); g.moveTo(-62, -128); g.lineTo(90, -128); g.lineTo(60, -78); g.lineTo(90, -28); g.lineTo(-62, -28); g.closePath(); g.fill();
+      g.fillStyle = '#f4ead0'; g.font = '700 46px "Noto Serif TC", serif'; g.textAlign = 'center'; g.fillText('18', 6, -62);
+      g.strokeStyle = 'rgba(244,234,208,.85)'; g.lineWidth = 2; g.beginPath(); g.moveTo(-20, 40); g.bezierCurveTo(10, 10, 40, 70, 80, 30); g.stroke();      // 簽名
+    } else if (c.kind === 'jersey') {
+      g.fillStyle = '#20324f'; g.beginPath(); g.moveTo(-50, -120); g.lineTo(-20, -130); g.quadraticCurveTo(0, -112, 20, -130); g.lineTo(50, -120); g.lineTo(110, -70); g.lineTo(80, -40); g.lineTo(60, -58); g.lineTo(60, 120); g.lineTo(-60, 120); g.lineTo(-60, -58); g.lineTo(-80, -40); g.lineTo(-110, -70); g.closePath(); g.fill();
+      g.fillStyle = '#c9a85c'; g.fillRect(-60, -20, 120, 8);
+      g.fillStyle = '#f4ead0'; g.font = '700 70px "Noto Serif TC", serif'; g.textAlign = 'center'; g.fillText(String((c.name.length * 7) % 89 + 1), 0, 70);
+    } else {
+      g.rotate(-0.04); g.fillStyle = '#f4ecd8'; g.fillRect(-95, -125, 190, 250); g.strokeStyle = '#c9a85c'; g.lineWidth = 4; g.strokeRect(-85, -115, 170, 230);
+      g.strokeStyle = '#8a7a5a'; g.lineWidth = 3; for (let i = 0; i < 7; i++) { g.beginPath(); g.moveTo(-65, -80 + i * 26); g.lineTo(i === 6 ? 10 : 65, -80 + i * 26); g.stroke(); }
+      g.strokeStyle = '#2a3a6a'; g.beginPath(); g.moveTo(-10, 100); g.bezierCurveTo(15, 70, 40, 115, 70, 88); g.stroke();
+    }
+    g.restore();
+    g.fillStyle = '#c9a85c'; g.fillRect(40, 344, w - 80, 2);
+    g.fillStyle = '#f4ead0'; g.textAlign = 'center'; g.font = '700 26px "Noto Serif TC", serif'; g.fillText(cut(c.name, 13), w / 2, 384);
+    g.font = '400 22px "Noto Sans TC", sans-serif'; g.fillStyle = 'rgba(244,234,208,.75)'; g.fillText(`${c.y} · ${c.from || COLLECT_KIND[c.kind] || ''}`, w / 2, 418);
+  });
+  const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; scene.add(g);
+  add(new THREE.BoxGeometry(0.86, 0.94, 0.09), M.walnutDark, 0, 0, 0.045, g);
+  add(new THREE.BoxGeometry(0.8, 0.88, 0.095), M.brass, 0, 0, 0.046, g);
+  add(new THREE.PlaneGeometry(0.74, 0.82), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }), 0, 0, 0.096, g);
+  const gl = add(new THREE.PlaneGeometry(0.76, 0.84), M.glass, 0, 0, 0.1, g); gl.castShadow = false;
+  return g;
+}
+// 收藏區的名牌（黃銅）
+function zonePlate(x, y, z, ry, lines) {
+  const m = add(new THREE.PlaneGeometry(1.1, 0.34), new THREE.MeshStandardMaterial({ map: plateTex(lines), metalness: 0.6, roughness: 0.4 }), x, y, z);
+  m.rotation.y = ry; m.castShadow = false;
+}
+// 玻璃長櫃裡的小東西：簽名球（放在黃銅球座上）、手套、球桿（平放）
+function smallItem(c, parent, x) {
+  const g = new THREE.Group(); g.position.set(x, 0.95, 0); parent.add(g);
+  if (c.kind !== 'club') g.scale.setScalar(1.4);      // 小東西放大一點，站在櫃前看得清楚
+  if (c.kind === 'ball') {
+    add(new THREE.CylinderGeometry(0.03, 0.04, 0.05, 20), M.brass, 0, 0.025, 0, g);
+    add(new THREE.SphereGeometry(0.045, 32, 20), new THREE.MeshPhysicalMaterial({ color: 0xf6f4ee, roughness: 0.35, clearcoat: 0.6 }), 0, 0.095, 0, g);
+  } else if (c.kind === 'glove') {
+    const m = new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.75 });
+    add(new RoundedBoxGeometry(0.11, 0.02, 0.15, 2, 0.008), m, 0, 0.012, 0, g);
+    for (let i = 0; i < 4; i++) add(new THREE.CylinderGeometry(0.009, 0.009, 0.07, 10).rotateX(Math.PI / 2), m, -0.037 + i * 0.025, 0.014, -0.105, g);
+    add(new THREE.BoxGeometry(0.11, 0.022, 0.03), new THREE.MeshStandardMaterial({ color: 0x1c3a2a, roughness: 0.6 }), 0, 0.013, 0.06, g);
+  } else if (c.kind === 'club') {
+    add(new THREE.CylinderGeometry(0.006, 0.008, 0.8, 12).rotateZ(Math.PI / 2), M.silver, 0, 0.02, 0.05, g);
+    add(new THREE.CylinderGeometry(0.012, 0.012, 0.22, 12).rotateZ(Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 }), -0.36, 0.02, 0.05, g);
+    add(new RoundedBoxGeometry(0.1, 0.05, 0.06, 2, 0.015), /木/.test(c.name) ? new THREE.MeshStandardMaterial({ color: 0x3a2414, roughness: 0.35 }) : M.silver, 0.42, 0.03, 0.03, g);
+  } else {
+    add(new THREE.BoxGeometry(0.16, 0.012, 0.22), new THREE.MeshStandardMaterial({ color: 0xf2ead8, roughness: 0.9 }), 0, 0.006, 0, g);
+  }
+  return g;
+}
+// 球袋：立在地上
+function golfBag(x, z, c) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.z = 0.08; scene.add(g);
+  const leather = new THREE.MeshStandardMaterial({ color: 0x5a2f16, roughness: 0.5 });
+  add(new THREE.CylinderGeometry(0.15, 0.13, 0.9, 32), leather, 0, 0.45, 0, g);
+  for (const yy of [0.12, 0.84]) add(new THREE.CylinderGeometry(0.155, 0.155, 0.04, 32), M.brass, 0, yy, 0, g);
+  add(new THREE.BoxGeometry(0.06, 0.5, 0.05), leather, 0, 0.5, 0.15, g);
+  for (let i = 0; i < 5; i++) { const a = i * 1.26; add(new THREE.CylinderGeometry(0.006, 0.006, 0.3, 8), M.silver, Math.cos(a) * 0.07, 1.02, Math.sin(a) * 0.07, g); add(new THREE.SphereGeometry(0.03, 12, 10), i % 2 ? M.silver : new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.3 }), Math.cos(a) * 0.07, 1.18, Math.sin(a) * 0.07, g); }
+  PICK.push({ obj: g, t: colT(c) });
+}
+const colT = c => ({ name: c.name, y: c.y, course: `${COLLECT_KIND[c.kind] || '收藏'}${c.from ? ' · 來自' + c.from : ''}`, desc: c.desc || '' });
+function placeCollection(st) {
+  const C = (st.collection || []).slice().reverse();      // 新的在前
+  const wall = C.filter(c => ['flag', 'jersey', 'memo'].includes(c.kind) || !COLLECT_KIND[c.kind]).slice(0, 8);
+  const cased = C.filter(c => ['ball', 'glove', 'club'].includes(c.kind)).slice(0, 8);
+  const bags = C.filter(c => c.kind === 'bag').slice(0, 2);
+  // 左牆前段：收藏牆（2 排 × 4 個裱框）
+  const wx = -RW / 2 + 0.03, wz = 3.2;
+  add(new THREE.BoxGeometry(0.06, 2.3, 4.2), M.walnutDark, wx + 0.03, 2.35, wz);
+  zonePlate(wx + 0.07, 3.68, wz, Math.PI / 2, ['收藏', `${(st.collection || []).length} 件`]);
+  wall.forEach((c, i) => { const n = Math.min(4, wall.length - (i < 4 ? 0 : 4)); const o = shadowBox(c, wx + 0.06, i < 4 ? 2.95 : 1.95, wz + (i % 4) - (n - 1) / 2, Math.PI / 2); PICK.push({ obj: o, t: colT(c) }); });
+  if (!wall.length) zonePlate(wx + 0.07, 2.4, wz, Math.PI / 2, ['收藏牆', '— 還沒有收藏 —']);
+  spot(-3.7, RH, wz, wx, 2.4, wz, 26, 0.55);
+  // 右牆前段：玻璃長櫃（依數量平均排開）
+  const v = vitrine(RW / 2 - 0.5, 3.2, 3.6, 0.6, 0.45, -Math.PI / 2);
+  const gap = cased.length > 1 ? 3.0 / (cased.length - 1) : 0;
+  cased.forEach((c, i) => { const o = smallItem(c, v, cased.length > 1 ? -1.5 + i * gap : 0); PICK.push({ obj: o, t: colT(c) }); });
+  if (!cased.length) emptyPlate(v, '簽名球・手套・球桿');
+  zonePlate(RW / 2 - 0.03, 2.2, 3.2, -Math.PI / 2, ['收藏櫃', '簽名球 · 手套 · 球桿']);
+  spot(3.8, RH, 3.2, RW / 2 - 0.5, 1, 3.2, 26, 0.5);
+  // 球袋：立在長櫃兩端
+  bags.forEach((c, i) => golfBag(RW / 2 - 0.45, i ? 0.95 : 5.45, c));
+}
+
 // ---------- 依存檔擺設 ----------
 const PICK = [];      // 可以點的獎盃：{ obj, t }
 function place(st) {
@@ -343,6 +438,7 @@ function place(st) {
   frame('pebble-18.jpg', RW / 2 - 0.01, 2.6, 0.4, -Math.PI / 2, 1.5, 1.0);
   T.filter(t => t.tour !== 'kids').slice(-6).forEach((t, i) => certificate(RW / 2 - 0.01, 1.55, -4 + i * 0.85, -Math.PI / 2, t));
   spot(3.8, RH, -1.6, RW / 2, 2.2, -1.6, 26, 0.6);
+  placeCollection(st);
   for (let x = -RW / 2 + 1.1; x < RW / 2; x += 2.2) add(new THREE.BoxGeometry(0.14, 0.16, RD), M.walnutDark, x, RH - 0.08, 0);
   for (let z = -RD / 2 + 1.4; z < RD / 2; z += 2.8) add(new THREE.BoxGeometry(RW, 0.16, 0.14), M.walnutDark, 0, RH - 0.08, z);
 }
@@ -353,7 +449,7 @@ export function openRoom(st) {
   const box = document.createElement('div');
   box.id = 'cm-room';
   box.style.cssText = 'position:fixed;inset:0;z-index:75;background:#0b0806';
-  box.innerHTML = `<div style="position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:2;color:#e7d29a;font:700 16px 'Noto Serif TC'">${esc(ROOM_LEVELS[st.room || 0].name)}<div style="font:400 11px 'Noto Sans TC';color:rgba(246,240,225,.7)">拖曳轉頭 · 點地板走過去 · 點獎盃拉近</div></div>
+  box.innerHTML = `<div style="position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:2;color:#e7d29a;font:700 16px 'Noto Serif TC'">${esc(ROOM_LEVELS[st.room || 0].name)}<div style="font:400 11px 'Noto Sans TC';color:rgba(246,240,225,.7)">拖曳轉頭 · 點地板走過去 · 點獎盃或收藏品拉近 · 前半部是收藏區</div></div>
     <button id="rm-close" style="position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:2;color:#e7d29a;border:1px solid rgba(201,168,92,.6);border-radius:14px;padding:4px 12px;background:rgba(0,0,0,.4)">離開</button>
     <div id="rm-info" style="position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);z-index:2;display:none;background:rgba(16,38,26,.92);color:#f6f0e1;border:1px solid rgba(201,168,92,.6);border-radius:12px;padding:10px 16px;font-size:13px;text-align:center;max-width:86vw"></div>`;
   document.body.appendChild(box);
@@ -391,7 +487,7 @@ export function openRoom(st) {
         const dir = cam.pos.clone().sub(wp).setY(0).normalize();
         cam.to = wp.clone().add(dir.multiplyScalar(1.2)).setY(Math.max(1.3, wp.y + 0.4)); cam.look = wp.clone().add(new THREE.Vector3(0, 0.25, 0));
         const info = document.getElementById('rm-info'); info.style.display = '';
-        info.innerHTML = `<b style="color:#e7d29a;font:700 15px 'Noto Serif TC'">${esc(p.t.name)}</b><br>${p.t.y} 年${p.t.course ? ' · ' + esc(p.t.course) : ''}${p.t.score ? `<br>${p.t.score} 桿（${toPar(p.t.toPar)}）` : ''}`;
+        info.innerHTML = `<b style="color:#e7d29a;font:700 15px 'Noto Serif TC'">${esc(p.t.name)}</b><br>${p.t.y} 年${p.t.course ? ' · ' + esc(p.t.course) : ''}${p.t.score ? `<br>${p.t.score} 桿（${toPar(p.t.toPar)}）` : ''}${p.t.desc ? `<br><span style="opacity:.8">${esc(p.t.desc)}</span>` : ''}`;
         return;
       }
     }
@@ -415,6 +511,7 @@ export function openRoom(st) {
   const onResize = () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
   addEventListener('resize', onResize);
   box._resize = onResize;
+  box._cam = cam;      // 測試用：可以直接擺鏡頭
   document.getElementById('rm-close').onclick = closeRoom;
 }
 export function closeRoom() {

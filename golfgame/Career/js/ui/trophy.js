@@ -7,7 +7,7 @@ import { addTimeline, queueMain } from '../life.js';
 import { text } from '../story.js';
 import { findP, nameOf, histName } from '../world.js';
 import { slamStatus, slamText, SLAM_RECORD } from '../slam.js';
-import { collectionHtml, bindCollection } from '../extras.js';
+import { collectionHtml, auctionHtml, bindCollection } from '../extras.js';
 import { MAJORS, MAJOR_ZH } from '../data/calendar.js';
 
 // 獎盃的小圖（SVG，依種類）
@@ -36,11 +36,12 @@ register('trophy', body => {
   const room = ROOM_LEVELS[st.room || 0], list = st.trophies.slice().reverse();
   const shown = list.slice(0, room.slots);
   const jackets = st.trophies.filter(t => t.kind === 'jacket');
-  body.innerHTML = slamHtml(st) + collectionHtml(st) + `<div class="cm-card"><h3>${esc(room.name)}<small>${st.trophies.length} 座 · 可以展示 ${room.slots} 座</small></h3>
+  body.innerHTML = slamHtml(st) + `<div class="cm-card"><h3>${esc(room.name)}<small>${st.trophies.length} 座獎盃 · 可以展示 ${room.slots} 座 · 收藏 ${(st.collection || []).length} 件</small></h3>
       <div class="cm-row wrap"><button class="cm-btn green" id="tr-3d">走進獎盃室（3D）</button>${(st.room || 0) < ROOM_LEVELS.length - 1 ? `<span class="cm-note">升級（財務 → 資產）：${esc(ROOM_LEVELS[(st.room || 0) + 1].name)} ${money(ROOM_LEVELS[(st.room || 0) + 1].price, { short: true })}</span>` : ''}</div>
       ${jackets.length ? `<p style="margin-top:10px;color:var(--aug);font-weight:700">冠軍更衣櫃：綠夾克 ${jackets.map(j => j.y).join('、')}</p>` : ''}</div>
-    <div class="cm-card">${shown.length ? `<div class="cm-trophy">${shown.map((t, i) => `<div data-i="${i}">${trophySvg(t)}<b>${esc(t.name)}</b>${t.y}</div>`).join('')}</div>` : '<div class="cm-empty">還沒有獎盃。第一座兒童盃會放在童年書桌上。</div>'}
-      ${list.length > room.slots ? `<p class="cm-note" style="margin-top:8px">還有 ${list.length - room.slots} 座收在倉庫（升級獎盃室就能展示）</p>` : ''}</div>`;
+    <div class="cm-card"><h4 style="margin:0 0 4px;font-size:14px">獎盃櫃<small style="font-weight:400;color:var(--ink3,#888);margin-left:6px">3D 房間的後半部</small></h4>${shown.length ? `<div class="cm-trophy">${shown.map((t, i) => `<div data-i="${i}">${trophySvg(t)}<b>${esc(t.name)}</b>${t.y}</div>`).join('')}</div>` : '<div class="cm-empty">還沒有獎盃。第一座兒童盃會放在童年書桌上。</div>'}
+      ${list.length > room.slots ? `<p class="cm-note" style="margin-top:8px">還有 ${list.length - room.slots} 座收在倉庫（升級獎盃室就能展示）</p>` : ''}
+      ${collectionHtml(st)}</div>${auctionHtml(st)}`;
   bindCollection(st, body, () => go('trophy'));
   body.querySelectorAll('[data-i]').forEach(el => el.onclick = () => {
     const t = shown[Number(el.dataset.i)], r = st.results.find(x => x.y === t.y && x.id === t.id);
