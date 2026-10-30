@@ -1,9 +1,9 @@
 // 獎盃：2D 的獎盃櫃（快速看）＋可以走進去的 3D 獎盃室；名人賽的綠夾克頒獎（Butler Cabin）
-import { register, go, story, dialog } from './shell.js';
+import { register, go, story, dialog, toast } from './shell.js';
 import { cur, localSave } from '../state.js';
 import { esc, money, toPar } from '../util.js';
 import { ROOM_LEVELS } from '../data/items.js';
-import { addTimeline, queueMain } from '../life.js';
+import { addTimeline, queueMain, spend } from '../life.js';
 import { text } from '../story.js';
 import { findP, nameOf, histName } from '../world.js';
 import { slamStatus, slamText, SLAM_RECORD } from '../slam.js';
@@ -37,7 +37,7 @@ register('trophy', body => {
   const shown = list.slice(0, room.slots);
   const jackets = st.trophies.filter(t => t.kind === 'jacket');
   body.innerHTML = slamHtml(st) + `<div class="cm-card"><h3>${esc(room.name)}<small>${st.trophies.length} 座獎盃 · 可以展示 ${room.slots} 座 · 收藏 ${(st.collection || []).length} 件</small></h3>
-      <div class="cm-row wrap"><button class="cm-btn green" id="tr-3d">走進獎盃室（3D）</button>${(st.room || 0) < ROOM_LEVELS.length - 1 ? `<span class="cm-note">升級（財務 → 資產）：${esc(ROOM_LEVELS[(st.room || 0) + 1].name)} ${money(ROOM_LEVELS[(st.room || 0) + 1].price, { short: true })}</span>` : ''}</div>
+      <div class="cm-row wrap"><button class="cm-btn green" id="tr-3d">走進獎盃室（3D）</button>${(st.room || 0) < ROOM_LEVELS.length - 1 ? `<button class="cm-btn" id="tr-up">升級成${esc(ROOM_LEVELS[(st.room || 0) + 1].name)} · ${money(ROOM_LEVELS[(st.room || 0) + 1].price, { short: true })}（展示 ${ROOM_LEVELS[(st.room || 0) + 1].slots} 座）</button>` : ''}</div>
       ${jackets.length ? `<p style="margin-top:10px;color:var(--aug);font-weight:700">冠軍更衣櫃：綠夾克 ${jackets.map(j => j.y).join('、')}</p>` : ''}</div>
     <div class="cm-card"><h4 style="margin:0 0 4px;font-size:14px">獎盃櫃<small style="font-weight:400;color:var(--ink3,#888);margin-left:6px">3D 房間的後半部</small></h4>${shown.length ? `<div class="cm-trophy">${shown.map((t, i) => `<div data-i="${i}">${trophySvg(t)}<b>${esc(t.name)}</b>${t.y}</div>`).join('')}</div>` : '<div class="cm-empty">還沒有獎盃。第一座兒童盃會放在童年書桌上。</div>'}
       ${list.length > room.slots ? `<p class="cm-note" style="margin-top:8px">還有 ${list.length - room.slots} 座收在倉庫（升級獎盃室就能展示）</p>` : ''}
@@ -47,6 +47,14 @@ register('trophy', body => {
     const t = shown[Number(el.dataset.i)], r = st.results.find(x => x.y === t.y && x.id === t.id);
     dialog(`<div style="text-align:center">${trophySvg(t).replace('<svg', '<svg style="width:120px;height:120px"')}</div><p style="text-align:center"><b>${esc(t.name)}</b><br>${t.y} 年${t.course ? ' · ' + esc(t.course) : ''}${r && r.total ? `<br>${r.total} 桿（${toPar(r.toPar)}）` : ''}</p>`, { title: '獎盃' });
   });
+  // 獎盃室升級：任何時期都可以（業餘時期也能用打工、贊助的錢升級玻璃櫃）
+  const up = document.getElementById('tr-up');
+  if (up) up.onclick = () => {
+    const nx = ROOM_LEVELS[(st.room || 0) + 1];
+    if (st.money.cash < nx.price) return toast(`資金不夠（還差 ${money(nx.price - st.money.cash)}）`);
+    if (!confirm(`花 ${money(nx.price)} 把獎盃室升級成「${nx.name}」？可以展示 ${nx.slots} 座。`)) return;
+    spend(st, nx.price, '獎盃室升級', 'cost'); st.room = (st.room || 0) + 1; addTimeline(st, `獎盃室升級：${nx.name}`); localSave(st); toast(`獎盃室升級：${nx.name}`); go('trophy');
+  };
   document.getElementById('tr-3d').onclick = async () => {
     const { openRoom } = await import('../trophy/room.js');
     openRoom(st);
