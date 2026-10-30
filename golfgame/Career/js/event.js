@@ -197,6 +197,18 @@ export function leaderboard(E, ri, myThru) {
 // 玩家這一洞的分數寫回（遊戲回呼用）
 export function setMyHole(E, ri, h, strokes) { E.me.sc[ri][h] = strokes; }
 // 這一輪結束：沒打的洞用模擬補上
+// 重要比賽（自己打）：四大賽、THE PLAYERS、季後賽、團體賽、奧運、業餘大賽、頂級青少年賽、國內業餘錦標賽、
+//   NCAA 錦標賽、國家隊賽事、Q-School 決賽、比洞賽、表演賽、退休賽。其他比賽預設自動模擬（系統選項可以關掉，賽程頁可以逐場改）
+const MATCH_KINDS = ['usam', 'ryder', 'presidents', 'walker', 'palmer', 'jryder', 'jpres', 'skins'];
+export function isBigEvent(e) {
+  return !!(e.major || ['am_major', 'junior+', 'college+'].includes(e.tier) || e.id === 'players' || e.playoff || ['team', 'olympic', 'exh', 'kids'].includes(e.tour)
+    || e.open || e.national || e.id === 'nc_ncaa' || (e.tour === 'qs' && e.stage === 3) || MATCH_KINDS.includes(e.kind));
+}
+export function playsSelf(st, e) {
+  const o = (st.playSelf || {})[e.key];
+  if (o != null) return o;
+  return (st.opt && st.opt.autoMinor === false) || isBigEvent(e) || st.farewell === e.key;
+}
 export function finishMyRound(E, ri) {
   const sc = E.me.sc[ri];
   for (let h = 0; h < 18; h++) if (sc[h] == null) sc[h] = E.me.sim[ri][h];

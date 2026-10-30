@@ -5,7 +5,7 @@ import { esc, money, MONTH_ZH, MONTH_OF_WEEK, seeded } from '../util.js';
 import { eventsOfYear, weekEvents } from '../life.js';
 import { eligibility, KFT_UP, PTA_UP, QS_PGA } from '../tours.js';
 import { TOUR_ZH } from '../data/calendar.js';
-import { cinfo } from '../event.js';
+import { cinfo, playsSelf } from '../event.js';
 import { histName } from '../world.js';
 import { isEntered } from './home.js';
 
@@ -28,6 +28,7 @@ register('calendar', (body, arg) => {
     const k = b.dataset.k, act = b.dataset.a;
     if (act === 'in') st.entered[k] = true;
     if (act === 'out') st.entered[k] = false;
+    if (act === 'self' || act === 'auto') { st.playSelf = st.playSelf || {}; st.playSelf[k] = act === 'self'; }
     if (act === 'sp') {
       // 贊助外卡：人氣、世界排名、經紀人決定機率
       const r = seeded(st, 'sp', k)(), p = Math.min(0.9, 0.15 + st.player.fame / 60000 + (st.team.agent ? 0.15 : 0) + ((st.rankNow || 9999) < 300 ? 0.2 : 0));
@@ -45,10 +46,13 @@ function row(st, e) {
   const thisWeek = e.year === st.year && e.w === st.week;
   let act = '';
   if (e.el.ok) act = ent ? `<button class="cm-btn small ghost" data-k="${e.key}" data-a="out">取消</button>` : `<button class="cm-btn small green" data-k="${e.key}" data-a="in">${e.el.how === 'mq' ? '報名資格賽' : '報名'}</button>`;
+  // 已報名：自己打 / 自動模擬（重要比賽預設自己打，其他預設自動模擬）
+  const self = playsSelf(st, e);
+  if (e.el.ok && ent) act += ` <button class="cm-btn small ghost" data-k="${e.key}" data-a="${self ? 'auto' : 'self'}">${self ? '改成自動' : '改成自己打'}</button>`;
   if (e.el.how === 'mq' && e.tour === 'pga' && !e.sig && st.sponsorInv?.[e.key] === undefined && !st.status.amateur) act += ` <button class="cm-btn small ghost" data-k="${e.key}" data-a="sp">申請外卡</button>`;
   return `<div class="cm-li ${e.el.ok ? '' : 'dim'}"><div class="main" data-info="${e.key}" style="cursor:pointer"><b>${esc(e.name)}${e.major ? ' <span class="cm-pill gold">大賽</span>' : e.sig ? ' <span class="cm-pill">Signature</span>' : ''}${thisWeek ? ' <span class="cm-pill green">本週</span>' : ''}</b>
     <span>第 ${e.w} 週 · ${esc(TOUR_ZH[e.tour] || '')} · ${esc(ci ? ci.name : '')}${e.purse && !st.status.amateur ? ' · ' + money(e.purse, { short: true }) : ''}</span>
-    <span>${e.el.ok ? (ent ? '已報名' : '可報名') + (how ? '（' + how + '）' : '') : esc(e.el.why || '沒有資格')}${e.el.ok && e.el.why ? ' · ' + esc(e.el.why) : ''}</span></div><div class="side">${act}</div></div>`;
+    <span>${e.el.ok ? (ent ? '已報名' + (self ? ' · 自己打' : ' · 自動模擬') : '可報名') + (how ? '（' + how + '）' : '') : esc(e.el.why || '沒有資格')}${e.el.ok && e.el.why ? ' · ' + esc(e.el.why) : ''}</span></div><div class="side">${act}</div></div>`;
 }
 function info(st, e) {
   if (!e) return;

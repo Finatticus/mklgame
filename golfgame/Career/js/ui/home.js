@@ -10,7 +10,7 @@ import { JUNIOR_COACHES, AGENTS, CADDIES, caddieById, SOCIAL, fanLevel } from '.
 import { TOUR_ZH, domesticName } from '../data/calendar.js';
 import { checkAch } from '../achievements.js';
 import { eligibility } from '../tours.js';
-import { createEvent, cinfo } from '../event.js';
+import { createEvent, cinfo, playsSelf } from '../event.js';
 import { pendingResume } from './ingame.js';
 import { legacyWeek, hofCheck } from '../legacy.js';
 import { sponsorOffers } from './team.js';
@@ -168,7 +168,10 @@ register('home', async body => {
     ${res ? `<div class="cm-card" style="border-color:var(--champ)"><h3>上次沒打完的一輪</h3><p>${esc(res.m.label || '')}</p><p class="cm-note">從第 ${res.r.holeNo || (res.r.state.k + 1)} 洞的第一桿接著打（離開時那一洞打到一半的桿數不算）</p><button class="cm-btn green" id="hm-resume">接著打</button></div>` : ''}
     <div class="cm-hero"><small>${weekLabel(st.year, st.week)}${hol ? ' · 假期' : ''}${examWeek(st.week) && st.school ? ' · 考試週' : ''}</small><h2>${esc(CHAPTER_ZH[st.chapter] || '')}</h2>
       <div class="meta">${p.age} 歲 · ${esc(stageText(st))} · 個性：${personality(p)}</div>
-      ${ev ? `<div class="ev"><span>這一週的比賽 · ${esc(TOUR_ZH[ev.tour] || '')}</span><b>${esc(ev.name)}</b><span>${esc(cinfo(ev.course)?.name || '')}${ev.purse && !st.status.amateur ? ' · 總獎金 ' + money(ev.purse, { short: true }) : ''}${ev.el.how === 'mq' ? ' · 要先打週一資格賽' : ''}</span>
+      ${ev && !playsSelf(st, ev) ? `<div class="ev"><span>這一週的比賽 · ${esc(TOUR_ZH[ev.tour] || '')} · 自動模擬</span><b>${esc(ev.name)}</b><span>${esc(cinfo(ev.course)?.name || '')}${ev.el.how === 'mq' ? ' · 要先過週一資格賽' : ''}</span>
+        <div class="cm-row wrap" style="margin-top:8px"><button class="cm-btn" id="hm-auto">模擬這一週</button><button class="cm-btn ghost" id="hm-ff2">快轉 ›</button><button class="cm-btn ghost" id="hm-self">改成自己打</button></div>
+        <span style="margin-top:6px">一般比賽自動模擬：照常拿積分、獎金和獎盃，結果寫在週報裡。快轉會一路模擬到下一場重要比賽（系統選項可以關掉）。</span></div>` : ''}
+      ${ev && playsSelf(st, ev) ? `<div class="ev"><span>這一週的比賽 · ${esc(TOUR_ZH[ev.tour] || '')}</span><b>${esc(ev.name)}</b><span>${esc(cinfo(ev.course)?.name || '')}${ev.purse && !st.status.amateur ? ' · 總獎金 ' + money(ev.purse, { short: true }) : ''}${ev.el.how === 'mq' ? ' · 要先打週一資格賽' : ''}</span>
         <div style="margin-top:8px"><button class="cm-btn" id="hm-event">進入比賽週</button></div></div>` : ''}
       ${p.injury > 0 ? `<div class="ev"><b>受傷休養中</b><span>還要休息 ${p.injury} 週</span></div>` : ''}
     </div>
@@ -185,13 +188,18 @@ register('home', async body => {
       <div id="hm-plan"></div>
       <div class="cm-row" style="margin-top:12px"><button class="cm-btn green" id="hm-go" style="flex:1">開始這一週</button><button class="cm-btn ghost" id="hm-ff">快轉 ›</button></div>
       <p class="cm-note" style="margin-top:8px">快轉：之後每一週都照這一週的安排過（體能太低會自動排休息、存款不夠會自動排打工、考試前會排念書），直到下一場比賽、主線事件或隨機事件（最多 8 週）。結束後會列出這段時間做了什麼、加了哪些能力與錢。</p></div>` : ''}
-    <div class="cm-card"><h3>接下來的比賽<small><a href="#" id="hm-cal">完整賽程 ›</a></small></h3><div class="cm-list">${next.length ? next.map(e => `<div class="cm-li"><div class="main"><b>${esc(e.name)}</b><span>${MONTH_OF_WEEK(e.w)} 月 · 第 ${e.w} 週 · ${esc(cinfo(e.course)?.name || '')}</span></div><div class="side">${isEntered(st, e) ? '<span class="cm-pill green">已報名</span>' : e.el.ok ? '<span class="cm-pill">可報名</span>' : '<span class="cm-pill red">沒有資格</span>'}</div></div>`).join('') : '<div class="cm-empty">近期沒有比賽</div>'}</div></div>
+    <div class="cm-card"><h3>接下來的比賽<small><a href="#" id="hm-cal">完整賽程 ›</a></small></h3><div class="cm-list">${next.length ? next.map(e => `<div class="cm-li"><div class="main"><b>${esc(e.name)}${isEntered(st, e) && !playsSelf(st, e) ? ' <span class="cm-pill">自動模擬</span>' : ''}</b><span>${MONTH_OF_WEEK(e.w)} 月 · 第 ${e.w} 週 · ${esc(cinfo(e.course)?.name || '')}</span></div><div class="side">${isEntered(st, e) ? '<span class="cm-pill green">已報名</span>' : e.el.ok ? '<span class="cm-pill">可報名</span>' : '<span class="cm-pill red">沒有資格</span>'}</div></div>`).join('') : '<div class="cm-empty">近期沒有比賽</div>'}</div></div>
     <div class="cm-card"><h3>新聞</h3>${st.news.slice(0, 6).map(n => `<div class="cm-news ${n.kind === 'major' ? 'major' : ''}"><small>${n.y}·W${n.w}</small>${esc(n.text)}</div>`).join('') || '<div class="cm-empty">還沒有新聞</div>'}</div>`;
   { const b = document.getElementById('hm-offers'); if (b) b.onclick = () => go('finance'); }
   document.querySelectorAll('[data-qs]').forEach(q => q.onclick = () => { st.entered[q.dataset.qs] = true; localSave(st); toast('已報名'); go('home'); });
   document.querySelectorAll('[data-skill]').forEach(b => b.onclick = async () => { const [k, sim] = b.dataset.skill.split(':'); await skillsChallenge(st, k, sim === '1'); go('home'); });
   if (res) document.getElementById('hm-resume').onclick = async () => { const { resumeRound } = await import('./eventview.js'); resumeRound(st, res); };
-  if (ev) document.getElementById('hm-event').onclick = () => startEventWeek(st, ev);
+  if (ev && playsSelf(st, ev)) document.getElementById('hm-event').onclick = () => startEventWeek(st, ev);
+  if (ev && !playsSelf(st, ev)) {
+    document.getElementById('hm-auto').onclick = () => runWeeks(st, 1);
+    document.getElementById('hm-ff2').onclick = () => runWeeks(st, 8);
+    document.getElementById('hm-self').onclick = () => { st.playSelf = st.playSelf || {}; st.playSelf[ev.key] = true; localSave(st); startEventWeek(st, ev); };
+  }
   document.getElementById('hm-cal').onclick = e => { e.preventDefault(); go('calendar'); };
   const sb = document.getElementById('hm-school');
   if (sb) sb.onclick = e => { e.preventDefault(); schoolInfo(st); };
@@ -352,11 +360,17 @@ export async function runWeeks(st, maxW) {
   if (st.plan.week && st.plan.week.key === st.year * 100 + st.week && st.plan.week.list.length) st.plan.template = st.plan.week.list.map(a => (a.auto && a.was ? a.was : a)).map(a => ({ k: a.k, sub: a.sub }));
   try {
     for (let k = 0; k < maxW; k++) {
-      const notes = [];
-      const plan = (st.plan.week && st.plan.week.key === st.year * 100 + st.week) ? st.plan.week.list : defaultPlan(st, notes);
-      const wk = `${st.year} 年第 ${st.week} 週`;
-      const log = endWeek(st, plan);
-      logs.push({ t: wk, wk: true }, ...notes.map(t => ({ t })), ...log.map(t => ({ t })));
+      const wk = `${st.year} 年第 ${st.week} 週`, ev0 = thisWeekEvent(st);
+      if (ev0 && !playsSelf(st, ev0) && st.player.injury <= 0) {
+        // 一般比賽：自動模擬整場（照常拿積分、獎金），結果寫進週報
+        const { autoEventWeek } = await import('./eventview.js');
+        logs.push({ t: wk, wk: true }, ...autoEventWeek(st, ev0).map(t => ({ t })));
+      } else {
+        const notes = [];
+        const plan = (st.plan.week && st.plan.week.key === st.year * 100 + st.week) ? st.plan.week.list : defaultPlan(st, notes);
+        const log = endWeek(st, plan);
+        logs.push({ t: wk, wk: true }, ...notes.map(t => ({ t })), ...log.map(t => ({ t })));
+      }
       const extra = [];
       // 技術派教練：重建揮桿半年後，穩定度回來
       if (st.story.flags.rebuild && st.year * 52 + st.week >= st.story.flags.rebuild) { st.player.stats.consistency += 6; st.story.flags.rebuild = 0; extra.push('重建揮桿完成：穩定度回來了，而且更穩'); }
@@ -374,7 +388,9 @@ export async function runWeeks(st, maxW) {
         logs.push({ t: `事件：${e.choices[Math.max(0, i)][0]}` }, ...(r.log || []).map(t => ({ t })));
         break;
       }
-      if (st.story.queue.length || thisWeekEvent(st) || st.player.injury > 0 && k > 0) break;
+      // 停下來：主線事件、要自己打的比賽、受傷（一般比賽自動模擬，快轉不用停）
+      const nx = thisWeekEvent(st);
+      if (st.story.queue.length || (nx && playsSelf(st, nx)) || st.player.injury > 0 && k > 0) break;
     }
   } finally { ui.ctx.ui.loading(false); }
   st.plan.week = null;

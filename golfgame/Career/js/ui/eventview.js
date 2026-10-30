@@ -420,6 +420,61 @@ async function results(body, st, E, head) {
   };
 }
 const findR = (E, id) => (E.field.find(e => e.id === id) || {}).R || 70;
+
+// ---------- 一般比賽自動模擬（v105）：旅費、資格賽、每一輪、晉級線、延長賽、結算都照正式流程，只是不進比賽畫面 ----------
+//   回傳這一週的紀錄（寫進週報）
+export function autoEventWeek(st, ev) {
+  const E = createEvent(st, ev, st.world, ev.el.how), out = [], p = st.player;
+  const t = travelCost(st, E.region, E.id);
+  spend(st, t.cost, `${E.name} 旅費與住宿`, 'cost');
+  p.energy = clamp(p.energy - t.energy, 0, 100); p.mood = clamp(p.mood + t.mood, 0, 100);
+  const fee = E.tour === 'qs' ? ev.fee || 0 : E.tour === 'junior' ? (ev.inv ? 450 : 80) : E.tour === 'am' ? 250 : 0;
+  if (fee) spend(st, fee, `${E.name} 報名費`, 'cost');
+  const done = () => { st.ev = null; out.push(...endWeek(st, [], { eventWeek: true, eventKey: E.key })); return out; };
+  // 週一資格賽 / 36 洞資格賽（同 qualifier() 的算法，用模擬成績）
+  if (E.how === 'mq' || E.how === 'qual') {
+    const ci = cinfo(E.course), two = E.how === 'qual', adv = two ? 12 : 4, field = two ? 120 : 100, r = rng(hash(E.key + ':mq'));
+    const lvl = (E.tour === 'kft' ? 64 : E.tour === 'pga' ? 68 : E.tour === 'tpga' ? 56 : 66) + (({ casual: -0.3, real: 2.2 })[st.opt.difficulty] || 0);
+    const others = Array.from({ length: field - 1 }, () => { let s = 0; for (let k = 0; k < (two ? 2 : 1); k++) s += Math.round(ci.par + roundMean(lvl + r.normal() * 3.5) + courseAdj(ci, {}) + r.normal() * 3); return s; }).sort((a, b) => a - b);
+    let mine = 0;
+    for (let k = 0; k < (two ? 2 : 1); k++) mine += sum(simEventScores(hash(E.key + ':q:' + k + st.seed), ci.holes, playerRating(st), ci, [{ wind: 1 }])[0]) + 1;
+    const pos = others.filter(s => s < mine).length + 1, line = others[adv - 1], par = ci.par * (two ? 2 : 1);
+    if (!(mine <= line && pos <= adv + 1)) { out.push(`${E.name}：${two ? '資格賽' : '週一資格賽'} ${mine} 桿（${toPar(mine - par)}）第 ${pos} 名，沒有拿到正賽名額`); return done(); }
+    st.cnt.mqPass = (st.cnt.mqPass || 0) + (E.how === 'mq' ? 1 : 0);
+    E.how = 'card';
+    addNews(st, `${p.name} 從${two ? '資格賽' : '週一資格賽'}打進 ${E.name}`);
+    out.push(`${two ? '資格賽' : '週一資格賽'} ${mine} 桿第 ${pos} 名，打進 ${E.name}`);
+  }
+  E.practice = true;
+  const nut = st.team.staff.includes('nutrition') ? ((st.team.elite || []).includes('nutrition') ? 0.7 : 0.85) : 1;
+  for (let ri = 0; ri < E.rounds; ri++) {
+    prepareRound(st, E, ri);
+    E.me.mode[ri] = '模擬'; E.me.played[ri] = Array(18).fill(false);
+    // 同「模擬」打法：每洞 3% 多一桿
+    const sc = E.me.sim[ri].slice(), r = rng(hash(E.key + ':cons:' + ri));
+    for (let h = 0; h < 18; h++) if (r() < 0.03) sc[h]++;
+    E.me.sc[ri] = sc;
+    const total = finishMyRound(E, ri);
+    if (total < (st.cnt.best18 || 999)) st.cnt.best18 = total;
+    p.energy = clamp(p.energy - 2 * nut, 0, 100);
+    p.pain = clamp((p.pain || 0) + 0.9 + Math.max(0, p.age - 32) * 0.06, 0, 100);
+    if (ri === 1 && E.rounds > 2 && E.cutTop) { const c = applyCut(E); if (c && !c.made) { for (let k = 2; k < E.rounds; k++) prepareAIOnly(st, E, k); break; } }
+  }
+  // 延長賽：依實力加一點運氣決定
+  const tied = playoffNeeded(E);
+  if (tied && E.madeCut !== false) {
+    const r = rng(hash(E.key + ':po')), Rof = id => (id === ME ? playerRating(st) : findR(E, id)) + r.normal() * 3;
+    E.playoffWinner = tied.map(x => ({ id: x.id, v: Rof(x.id) })).sort((a, b) => b.v - a.v)[0].id;
+    if (E.playoffWinner === ME) st.tally.playoffs = (st.tally.playoffs || 0) + 1;
+  }
+  const rows = finalStandings(E), rec = settleEvent(st, E, rows);
+  E.settled = true; E.rec = rec;
+  afterSettle(st, E, rows, rec);
+  out.push(`比賽（自動模擬）：${E.name} ${rec.pos}${rec.pos === 'CUT' ? '（沒有晉級）' : `，${rec.total} 桿（${toPar(rec.toPar)}）`}${rec.prize ? `，獎金 ${money(rec.prize)}` : ''}${rec.pts ? `，積分 +${rec.pts}` : ''}${E.playoffWinner === ME ? '，延長賽勝出' : ''}`);
+  if (rec.posN === 1) out.push(`冠軍！${E.name} 的獎盃放進獎盃室`);
+  out.push(...(E.qsMsg || []), ...(E.recMsg || []));
+  return done();
+}
 async function playoff(st, E, ids) {
   const ci = cinfo(E.course), names = ids.filter(i => i !== ME).map(i => E.field.find(e => e.id === i)?.name).join('、');
   await story({ small: 'PLAYOFF', title: '延長賽', img: 'augusta-leaderboard.jpg', paras: [`你和 ${names} 同分。`, '驟死賽：第 18 洞重複打，先贏一洞的人就是冠軍。'], ok: '走向第 18 洞發球台', skip: false });

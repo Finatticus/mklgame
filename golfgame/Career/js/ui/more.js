@@ -223,6 +223,7 @@ function opt(el, st) {
     <div class="cm-field"><label>難度</label><div class="cm-seg">${Object.entries(DIFF).map(([k, v]) => `<button data-o="difficulty" data-v="${k}" class="${o.difficulty === k ? 'on' : ''}">${v.name}</button>`).join('')}</div></div>
     <div class="cm-field"><label>生涯長度</label><div class="cm-seg">${Object.entries(LENGTH).map(([k, v]) => `<button data-o="length" data-v="${k}" class="${o.length === k ? 'on' : ''}">${v.name}</button>`).join('')}</div></div>
     <div class="cm-field"><label>傷病</label><div class="cm-seg"><button data-o="injuries" data-v="1" class="${o.injuries ? 'on' : ''}">開啟</button><button data-o="injuries" data-v="0" class="${!o.injuries ? 'on' : ''}">關閉</button></div></div>
+    <div class="cm-field"><label>一般比賽自動模擬（只有四大賽、THE PLAYERS、季後賽、團體賽、奧運、業餘大賽、頂級青少年賽、國內業餘錦標賽、NCAA 錦標賽、Q-School 決賽要自己打；其他比賽照常拿積分和獎金，那一週自動模擬。賽程頁可以逐場改）</label><div class="cm-seg"><button data-o="autoMinor" data-v="1" class="${o.autoMinor !== false ? 'on' : ''}">開啟</button><button data-o="autoMinor" data-v="0" class="${o.autoMinor === false ? 'on' : ''}">關閉（每一場都自己打）</button></div></div>
     <div class="cm-field"><label>現實練球也算數（在「實際下場」記一場現實成績，生涯多一次免費訓練，每現實週一次）</label><div class="cm-seg"><button data-o="realBonus" data-v="1" class="${o.realBonus ? 'on' : ''}">開啟</button><button data-o="realBonus" data-v="0" class="${!o.realBonus ? 'on' : ''}">關閉</button></div></div>
     <p class="cm-note">存檔：${st.syncErr ? '伺服器同步失敗（' + esc(st.syncErr) + '），會再試' : st.syncedRev === st.rev ? '已同步到伺服器' : '同步中…'}　版本 ${st.rev}</p></div>
     <div class="cm-card"><h3>人生的決定</h3><div class="cm-row wrap">
@@ -230,7 +231,7 @@ function opt(el, st) {
       ${canRetire ? '<button class="cm-btn ghost" id="op-retire">安排退休</button>' : ''}
       <button class="cm-btn ghost" id="op-slots">換生涯欄位</button><a class="cm-btn ghost" href="Career/career-plan.html#ref" target="_blank" rel="noopener">生涯說明書（完整參考）</a></div>
       <p class="cm-note" style="margin-top:8px">${canPro ? '大二以後拿到大賽邀請或贊助外卡時可以提早轉職業；轉職業後業餘的邀請失效。' : ''}${canRetire ? '38 歲以後隨時可以退休，退休前可以安排告別賽。' : ''}</p></div>`;
-  el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { const k = b.dataset.o, v = b.dataset.v; o[k] = k === 'injuries' || k === 'realBonus' ? v === '1' : v; localSave(st); go('more', 'opt'); });
+  el.querySelectorAll('[data-o]').forEach(b => b.onclick = () => { const k = b.dataset.o, v = b.dataset.v; o[k] = k === 'injuries' || k === 'realBonus' || k === 'autoMinor' ? v === '1' : v; localSave(st); go('more', 'opt'); });
   const pr = document.getElementById('op-pro');
   if (pr) pr.onclick = async () => { if (await confirm2('確定要提早轉職業？之後不能再打業餘賽，業餘大賽冠軍的名人賽邀請也會失效。', '轉職業')) { turnProCore(st, '提早轉職業'); localSave(st); sync(); go('home'); } };
   const rt = document.getElementById('op-retire');
