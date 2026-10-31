@@ -49,7 +49,7 @@ export const refresh = () => go(ui.view, ui.arg);
 export function header(extra) {
   const el = document.getElementById('cm-top'), st = cur();
   if (!st || ['slots', 'create'].includes(ui.view)) {
-    el.innerHTML = `<small>MY CAREER · 測試中</small><h4>生涯模式</h4><div class="sub">從 8 歲的第一次揮桿，到奧古斯塔的綠夾克</div><div class="acts"><button id="cm-exit">回大廳</button></div>`;
+    el.innerHTML = `<small>MY CAREER</small><h4>生涯模式</h4><div class="sub">從 8 歲的第一次揮桿，到奧古斯塔的綠夾克</div><div class="acts"><button id="cm-exit">回大廳</button></div>`;
   } else {
     const p = st.player;
     const rank = st.status.amateur ? (st.status.stage === 'junior' ? `國內青少年 <b>${st.jrRank || '—'}</b>` : `世界業餘 <b>${st.wagr && st.wagr < 600 ? st.wagr : '—'}</b>`) : `世界排名 <b>${st.rankNow && st.rankNow < 9999 ? st.rankNow : '—'}</b>`;

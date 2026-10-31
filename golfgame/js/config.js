@@ -2,15 +2,15 @@
 export const CONFIG = {
   // GAS 網頁應用程式的網址（內建，玩家不用自己填；重新部署時用「管理部署作業 → 編輯 → 新版本」，網址不變）
   // 留空 = 本機模式：帳號存在這台裝置的瀏覽器，方便測試，但不能跨裝置連線。
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbw_GitZHlz8xnonhdWc3Y5AL_exIJRIcj7OgQK7br4n-PWWe5mBXXwBkfZTBhpyhTMD/exec',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxhdHYqYnT7GOt8Rinom4iq3wmdd7Z_7soqlpc0qgi9JBOCRuMtV4gyF1vsGIzdOFx9/exec',
 
   // WebRTC 連線用的公開 STUN 伺服器
   ICE: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }],
 };
 
 export const ADMIN_USER = 'Michael';
-// 生涯模式（開發測試中）只開放給這些帳號（分大小寫）；正式開放時改成 null = 所有人。伺服器 gas/Career.gs 的 CAREER_ACCESS 要一起改
-export const CAREER_USERS = ['test', 'Michael'];
+// 生涯模式開放名單（分大小寫）；null = 所有人（v107 正式開放）。要改回限定帳號時改成陣列，伺服器 Career/gas/Career.gs 的 CAREER_ACCESS 要一起改
+export const CAREER_USERS = null;
 export const careerAllowed = user => !!user && (CAREER_USERS === null || CAREER_USERS.includes(user));
 
 // ===== 角色 =====

@@ -230,7 +230,7 @@ footer a { color:var(--gold2); }
 
   <h3>開始</h3>
   <div class="grid3">
-    <div class="card"><h4>入口</h4><p>大廳最上面的「生涯模式（測試中）」卡片，只有 <code>test</code> 與 <code>Michael</code> 看得到（名單在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>）。紀錄頁多一個「生涯」分頁，大廳名字旁會顯示生涯稱號。</p></div>
+    <div class="card"><h4>入口</h4><p>大廳最上面的「生涯模式」卡片，所有登入的帳號都看得到（v107 正式開放；以前只開放給 <code>test</code> 與 <code>Michael</code>。名單在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>，<code>null</code> = 所有人）。紀錄頁多一個「生涯」分頁，大廳名字旁會顯示生涯稱號。</p></div>
     <div class="card"><h4>3 個生涯欄位</h4><p>每個欄位一段獨立的人生；存檔放在手機（每一桿、每一週）與試算表的「生涯_帳號」工作頁（每一輪、每一週同步，版本號比較新的才收）。第二個以後的欄位可以選「直接從 13 歲開始」。</p></div>
     <div class="card"><h4>建立球員</h4><p>外觀（性別、8 種膚色、10 種髮型、10 種髮色、6 種眼睛、4 種眉毛、體型、成年身高 160~195）→ 國籍、家鄉、家庭背景 → 名字 → 難度、生涯長度、傷病。之後進入序章。</p></div>
   </div>
@@ -269,7 +269,7 @@ footer a { color:var(--gold2); }
   <h3>成長</h3>
   <ul>
     <li>素質 14 項，兒童從 15~25 開始；年齡曲線（發育期力量長最快、13~14 歲協調期穩定度掉）、訓練經驗（越高越難）、經驗值 → 等級 → 技能點（越高越貴）。</li>
-    <li>成長速度依年紀：青少年 ×0.85、22~29 歲 ×1.8（職業的黃金成長期）、30~34 ×1.3、35 歲以後 ×0.7。訓練關卡（練習場）比一般練球多一倍經驗。</li>
+    <li>成長速度依年紀：青少年 ×0.85、22~29 歲 ×1.8（職業的黃金成長期）、30~34 ×1.3、35 歲以後越來越慢（35~37 ×0.2、38~41 ×0.1、42 以後 ×0.05，見下方的完整參考）。訓練關卡（練習場）比一般練球多一倍經驗。</li>
     <li>球風（17 歲決定）決定每項上限；天賦 9 種。固定加成（裝備 + 套裝 + 桿弟）每項最多 +8。</li>
     <li><b>技能卡 26 種</b>（球員 → 技能卡，可以篩選已取得 / 未取得）：每張寫著效果與取得方式。欄位 Lv.1 有 2 格、每 15 級多 1 格（最多 7 格）；同一種誤差最多減到 60%。<b>升級</b>：在自己打的回合裡這張卡生效的擊球次數達到門檻（例如 40 / 150 次；重來卡是用掉的次數 6 / 20 次），再花技能點（Lv.2 花 2 點、Lv.3 花 4 點）；Lv.2 效果是 1.35 倍、Lv.3 是 1.7 倍。<b>重來的機會</b>（自己打的洞累計 54 洞取得）：每一輪可以重打，18 洞 2 次、9 洞 1 次（Lv.2：18 洞 3 次；Lv.3：9 洞也 2 次）。其他新卡：球道獵手、三桿洞狙擊手、五桿洞獵人、逆風而上、長推高手、柏忌反彈、手感連發、保帕推、挖起桿專家、開局衝刺、星期天的紅衣、資格賽鬥士、林克斯之心。</li>
     <li><b>裝備</b>（球員 → 裝備 / 商店）：分成「球具」（一號木、球道木 / 混血、鐵桿、挖起桿、推桿、球）與「服裝」（帽子、上衣、下身、鞋子、手套、配件）兩類，商店可以再依部位篩選；約 80 件（含兒童尺寸的球桿、傳奇等級的手工球具）。最上面列出<b>裝備的總加成</b>（含強化，超過 +8 的部分標出實際算多少）。強化 1 級 = 這件的能力 ×1.25（Lv.5 = ×2），強化前會先顯示強化後的數值。業餘時期家人分擔的金額寫在價格旁邊（「$1,300（家人出 $910，你付 $390）」），強化費用也一樣。商店會寫出和目前裝備的差異。傳奇裝備要轉職業或 Lv.25 以上。</li>
@@ -356,7 +356,7 @@ footer a { color:var(--gold2); }
   <h4 id="ref-grow">素質與成長</h4>
   <ul>
     <li>14 項素質，基礎值 + 加成（裝備、套裝、工坊、桿弟、數據分析師、主場、手感、體能、疼痛）= 上場的素質。固定加成每項最多 +8。上限由 17 歲選的球風決定（重砲手、精準射手、短桿魔術師、推桿名手、全能型）。</li>
-    <li>訓練經驗的年齡倍率：17 歲以前 ×0.85、18~21 ×1、<b>22~25 ×2.2（剛轉職業成長最快）</b>、26~29 ×0.6、30~34 ×0.35、35 以後 ×0.25。35 歲以後力量、擊球效率慢慢下降（體能教練讓老化變慢）。</li>
+    <li>訓練經驗的年齡倍率：17 歲以前 ×0.85、18~21 ×1、<b>22~25 ×2.2（剛轉職業成長最快）</b>、26~29 ×0.6、30~34 ×0.35、35~37 ×0.2、38~41 ×0.1、42 以後 ×0.05。<b>老化</b>：35 歲以後每年力量 −1.8 起（越老掉越多）、擊球與擊球角度 −1.2、穩定度 −1.0；37 歲起準度、旋轉、救球 −0.7，38 歲起推桿距離感與推桿線 −0.6，40 歲起切桿與沙坑 −0.4；讀果嶺與抗壓還會小幅進步。體能教練讓老化變慢（頂級 ×0.4、一般 ×0.6）。實力大約在 33~35 歲到頂，之後慢慢下滑。</li>
     <li>技能點：升級時拿到，用來加素質。加 1 點要花：65 以下 1 點、65~77 2 點、78~83 3 點、84~87 4 點、88~91 5 點、92 以上 6 點。</li>
     <li><b>實力與成績</b>（v99 校正）：綜合實力每 1 點，一輪平均約差 0.2 桿（48~84 之間；84 以上稍微放緩）。參考：實力 60 在一般難度的黑梯約 +1.3、66 約平標準桿、70 約 −0.75（Korn Ferry 前段）、73 約 −1.35（PGA TOUR 平均）、80 約 −2.75、88 約 −4。這個斜率是用機器人在 3D 裡實際打球量出來的（實力 50 → 90 約差 8 桿）。</li>
     <li><b>難度</b>：休閒（AI 實力 −0.3、經驗 ×1.05、每輪 1 次重打）、標準、寫實（AI 實力 +2.2、傷病開啟）。<b>生涯長度</b>只影響 25 歲以前的成長速度（多快打上 PGA TOUR）：快速 ×1.15、標準 ×1、完整 ×0.95；之後的成長一樣。</li>
@@ -521,7 +521,7 @@ footer a { color:var(--gold2); }
   <p class="lede">生涯模式在開發期間只開放給測試員帳號 <code>test</code> 與管理員 <code>Michael</code>。其他玩家完全看不到入口，也不會下載任何生涯模式的程式與圖片。</p>
   <div class="grid2">
     <div class="card"><h4>畫面上</h4><ul><li>大廳的「生涯模式」卡片、紀錄頁的「生涯」分頁、大廳名字旁的生涯稱號，只有名單內的帳號才會出現。</li><li>帳號比對分大小寫（和現在的帳號規則一樣），名單是 <code>test</code> 與 <code>Michael</code>。</li></ul></div>
-    <div class="card"><h4>程式上</h4><ul><li>生涯的程式放在 <code>Career/</code>，只有名單內的帳號按下卡片時才動態載入；其他人的手機不會下載。</li><li>名單寫在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>，之後要加測試員只改這兩處。</li></ul></div>
+    <div class="card"><h4>程式上</h4><ul><li>生涯的程式放在 <code>Career/</code>，按下卡片時才動態載入；沒玩生涯的人手機不會下載。</li><li>開放名單寫在 <code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code>，目前兩邊都是 <code>null</code>（所有人）；要改回限定帳號時兩處一起改。</li></ul></div>
     <div class="card"><h4>伺服器上</h4><ul><li>GAS 的所有生涯動作（讀存檔、存檔、好友週賽）都會先檢查帳號是否在名單內，不在就拒絕，所以就算有人知道網址也無法使用。</li><li>每個帳號一張 <code>生涯_帳號</code> 工作頁（例如 <code>生涯_test</code>），主遊戲的個人工作頁不會多任何列（見 <a href="#s23">技術規劃</a>）。</li></ul></div>
     <div class="card"><h4>管理員</h4><ul><li>管理員可以玩自己的生涯，也可以在管理頁看到測試員的生涯摘要（等級、年齡、章節、排名），方便一起測試平衡。</li><li>正式開放給所有人時，只要把名單改成「全部」。</li></ul></div>
   </div>
@@ -1575,7 +1575,7 @@ footer a { color:var(--gold2); }
         <div class="top"><div><div class="eyeb">GOOD EVENING</div><div class="big" style="margin-top:2px">test <span style="font:600 10px 'Noto Sans TC';border:1px solid #e3c98a;color:#e3c98a;border-radius:10px;padding:1px 7px;vertical-align:middle">綠夾克得主</span></div></div></div>
         <div class="bot">
           <div class="glass"><b>單人回合</b><div style="color:rgba(255,255,255,.7)">選球場、梯台、9 / 18 洞</div></div>
-          <div class="glass" style="border-color:#e3c98a;background:rgba(0,85,58,.55)"><div class="eyeb">MY CAREER · 測試中</div><b>陳子安 · 31 歲 · 世界第 2</b><div style="color:rgba(255,255,255,.75)">下一場：PGA Championship</div><span class="btn">繼續生涯</span></div>
+          <div class="glass" style="border-color:#e3c98a;background:rgba(0,85,58,.55)"><div class="eyeb">MY CAREER</div><b>陳子安 · 31 歲 · 世界第 2</b><div style="color:rgba(255,255,255,.75)">下一場：PGA Championship</div><span class="btn">繼續生涯</span></div>
           <div class="glass"><b>經典重現</b><div style="color:rgba(255,255,255,.7)">用主帳號挑戰「綠夾克的最後一推」</div></div>
         </div>
       </div></div>
@@ -1697,8 +1697,8 @@ export const CAREER_USERS = ['test', 'Michael'];          // 分大小寫；正�
 export const careerAllowed = user => !!user &amp;&amp; (CAREER_USERS === null || CAREER_USERS.includes(user));
 
 // gas/Career.gs
-const CAREER_ACCESS = ['test', 'Michael'];
-function careerAuth_(req) { const acc = auth_(req); if (CAREER_ACCESS.indexOf(acc.user) &lt; 0) throw new Error('生涯模式尚未開放'); return acc; }</pre>
+const CAREER_ACCESS = null;      // null = 所有人（v107 正式開放）
+function careerAuth_(req) { const acc = auth_(req); if (CAREER_ACCESS !== null &amp;&amp; CAREER_ACCESS.indexOf(acc.user) &lt; 0) throw new Error('生涯模式尚未開放'); return acc; }</pre>
 </section>
 
 <!-- ===================================================== 24 -->

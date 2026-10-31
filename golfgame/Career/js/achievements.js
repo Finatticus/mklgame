@@ -67,6 +67,8 @@ export function cmUnlock(st, id) {
   const full = 'cm_' + id;
   if (st.ach[full]) return false;
   st.ach[full] = new Date().toISOString();
+  // 測試工具的模擬生涯（autosim、平衡測試）只記在模擬存檔裡，不解鎖登入帳號的主遊戲成就
+  if (st.user === 'sim' || st.user === '__test') return true;
   unlock(full);
   saveProgress();
   return true;

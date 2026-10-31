@@ -21,8 +21,8 @@
  * 主遊戲的個人工作頁（例如 test）完全不新增列：生涯成就的能力點、共用的計數、球場護照都走原本的 saveProgress。
  */
 
-// 生涯模式開放名單（分大小寫）；正式開放時改成 null。網頁端 js/config.js 的 CAREER_USERS 要一起改
-const CAREER_ACCESS = ['test', 'Michael'];
+// 生涯模式開放名單（分大小寫）；null = 所有人（v107 正式開放）。網頁端 js/config.js 的 CAREER_USERS 要一起改
+const CAREER_ACCESS = null;
 const CM_DATA_COL = 30;          // AD
 const CM_VERSIONS = 3;           // AD、AE、AF
 const CM_EVENT_ROW = 30;

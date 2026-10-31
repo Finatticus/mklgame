@@ -198,7 +198,7 @@ function enterLobby() {
   // 生涯模式：只有開放名單內的帳號看得到入口（其他人不會下載任何生涯的程式）
   $('mode-career').classList.toggle('hidden', !careerAllowed(session.user));
   $('rc-tab-career').classList.toggle('hidden', !careerAllowed(session.user));
-  if (careerAllowed(session.user)) { const sub = getSetting('careerSub.' + session.user, null); $('mode-career-sub').textContent = sub || '從 8 歲的第一次揮桿，到奧古斯塔的綠夾克 · 測試中'; }
+  if (careerAllowed(session.user)) { const sub = getSetting('careerSub.' + session.user, null); $('mode-career-sub').textContent = sub || '從 8 歲的第一次揮桿，到奧古斯塔的綠夾克'; }
   document.querySelectorAll('.admin-only').forEach(e => e.classList.toggle('hidden', !session.isAdmin));
   const p = session.profile;
   const lbStats = best => ($('lb-stats').innerHTML = `能力點 <b>${p.points}</b>　回合數 <b>${p.rounds}</b>　最佳 18 洞（黑梯）<b>${best ?? '—'}</b>　挑戰星數 <b>${chal().total}</b>`);

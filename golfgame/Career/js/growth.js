@@ -27,8 +27,14 @@ export function yearlyGrowth(age) {
   else if (age <= 18) { add(['power'], 3); add(['contact', 'consistency'], 2); add(['launch', 'spin', 'recovery', 'accuracy'], 1); add(['mental', 'reading'], 1); }
   else if (age <= 24) { add(['power'], 1); add(['contact'], 0.6); add(['mental', 'reading'], 0.6); }
   else if (age <= 34) { add(['reading', 'mental'], 0.3); }
-  else if (age <= 44) { add(['power'], -0.8 - (age - 35) * 0.08); add(['contact', 'launch'], -0.3); add(['consistency'], -0.2); add(['reading', 'mental'], 0.3); add(['touch'], age > 40 ? -0.2 : 0); }
-  else { add(['power'], -1.6); add(['contact', 'launch', 'consistency', 'accuracy'], -0.6); add(['touch', 'line'], -0.4); add(['mental'], 0.1); }
+  // 35 歲以後（v106 加重）：力量、擊球、穩定度一年比一年掉；37 歲起準度與旋轉、38 歲起推桿手感、40 歲起切桿與沙坑也開始掉；經驗讓讀果嶺與抗壓還會小幅進步
+  else if (age <= 44) {
+    add(['power'], -1.8 - (age - 35) * 0.25); add(['contact', 'launch'], -1.2); add(['consistency'], -1.0); add(['reading', 'mental'], 0.3);
+    if (age >= 37) add(['accuracy', 'spin', 'recovery'], -0.7);
+    if (age >= 38) add(['touch', 'line'], -0.6);
+    if (age >= 40) add(['chipping', 'bunker'], -0.4);
+  }
+  else { add(['power'], -2.4); add(['contact', 'launch', 'consistency', 'accuracy'], -1.0); add(['spin', 'recovery', 'chipping', 'bunker'], -0.5); add(['touch', 'line'], -0.6); add(['mental'], 0.1); }
   return g;
 }
 
@@ -36,7 +42,7 @@ export function yearlyGrowth(age) {
 export const xpForLevel = lv => 120 + lv * 22;              // 從 lv 升到 lv+1 需要的經驗
 export const XP = { holePlayed: 14, holeSim: 4, finishBonus: 0.15, win: 400, top10: 120, cut: 40, milestone: 250 };
 // 年紀的成長速度（訓練與經驗值的倍率）：青少年慢慢來、22~29 歲是職業的黃金成長期、35 歲以後變慢
-export const ageMul = a => (a <= 17 ? 0.85 : a <= 21 ? 1 : a <= 25 ? 2.2 : a <= 29 ? 0.6 : a <= 34 ? 0.35 : 0.25);      // 22~25 歲（剛轉職業）成長最快；之後放慢（v96：以前 43 歲平均約 75 勝）
+export const ageMul = a => (a <= 17 ? 0.85 : a <= 21 ? 1 : a <= 25 ? 2.2 : a <= 29 ? 0.6 : a <= 34 ? 0.35 : a <= 37 ? 0.2 : a <= 41 ? 0.1 : 0.05);      // 35 歲以後越練越慢（v106：以前 0.25 不分年紀，42 歲實力還在上升）      // 22~25 歲（剛轉職業）成長最快；之後放慢（v96：以前 43 歲平均約 75 勝）
 export const PTS_PER_LEVEL = 2;
 // 加 1 點素質要花的技能點：越高越貴
 export const skillCost = v => (v < 65 ? 1 : v < 78 ? 2 : v < 84 ? 3 : v < 88 ? 4 : v < 92 ? 5 : 6);
