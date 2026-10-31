@@ -24,7 +24,7 @@ function checkedBooks(cls) { return [...document.querySelectorAll(`.${cls}:check
 
 Actions.confirmStartGame = () => {
     const books = checkedBooks("game-book-check");
-    Game.words = Words.active().filter(w => books.includes(w.book));
+    Game.words = Words.active().filter(w => books.includes(w.book) && w.pos !== "sent.");
     if (!Game.words.length) { showToast("選擇的單字本沒有單字", "error"); return; }
     if (Game.type === "runner" && Game.words.length < 3) { showToast("至少需要 3 個字", "error"); return; }
     hide("game-book-modal");

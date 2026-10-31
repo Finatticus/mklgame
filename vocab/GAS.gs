@@ -6,9 +6,14 @@
  * 之後更新：部署 → 管理部署作業 → 編輯 → 新版本（網址不變）。
  *
  * 指令碼屬性（專案設定 → 指令碼屬性）：
- *   GEMINI_API_KEY   必填（AI 主題單字包）
- *   GUARDIAN_API_KEY 選填（英文新聞，未填時使用 Guardian 測試金鑰）
- *   GEMINI_MODELS    選填，逗號分隔，例如 "gemini-2.5-flash,gemini-2.5-flash-lite"
+ *   AI 功能（AI 校對、對話、寫作批改、單字包…）擇一或兩者都填：
+ *   ANTHROPIC_API_KEY 選填，Claude API 金鑰（console.anthropic.com，按用量計費，和 Claude Pro / Max 訂閱分開）
+ *   CLAUDE_MODEL      選填，預設 claude-opus-5-5
+ *   CLAUDE_EFFORT     選填，low / medium / high，預設 low（速度快、花費少）
+ *   GEMINI_API_KEY    選填，Gemini 金鑰（有免費額度）
+ *   GEMINI_MODELS     選填，逗號分隔，例如 "gemini-2.5-flash,gemini-2.5-flash-lite"
+ *   AI_PROVIDER       選填，claude 或 gemini；未填時有 ANTHROPIC_API_KEY 就用 Claude，否則用 Gemini
+ *   GUARDIAN_API_KEY  選填（英文新聞用 The Guardian；未填時改用 The Conversation）
  */
 
 var API_VERSION = 1;
@@ -30,7 +35,7 @@ var DEFAULT_BOOK = "我的單字";
 var UNSORTED = "未分類";
 
 // 每分鐘每位使用者的呼叫上限
-var RATE_LIMITS = { gemini: 10, translate: 120, news: 30 };
+var RATE_LIMITS = { ai: 20, gemini: 20, translate: 120, news: 30 };
 
 var WRITE_ACTIONS = {
   addWords: 1, updateWords: 1, deleteWords: 1, deleteBook: 1,
@@ -241,57 +246,160 @@ var HANDLERS = {
     return lang === "fr" ? frenchNews(section || "monde") : englishNews(section || "world");
   },
 
+  // 通用 AI：{system, messages: [{role: "user" | "assistant", content}], maxTokens}
+  ai: function (ctx) {
+    var msgs = (ctx.data.messages || []).slice(-30).map(function (m) {
+      return { role: m.role === "assistant" ? "assistant" : "user", content: String(m.content || "").slice(0, 8000) };
+    });
+    if (!msgs.length || msgs[msgs.length - 1].role !== "user") throw new Error("最後一則訊息必須是使用者的");
+    return callAI(String(ctx.data.system || ""), msgs, Math.min(Number(ctx.data.maxTokens) || 4000, 16000));
+  },
+
+  // 舊版相容：Gemini 格式的 history
   gemini: function (ctx) {
-    var props = PropertiesService.getScriptProperties();
-    var apiKey = props.getProperty("GEMINI_API_KEY");
-    if (!apiKey) throw new Error("尚未設定 GEMINI_API_KEY（GAS 專案設定 → 指令碼屬性）");
-    var models = (props.getProperty("GEMINI_MODELS") || "gemini-2.5-flash,gemini-2.5-flash-lite")
-      .split(",").map(function (m) { return m.trim(); }).filter(String);
+    var msgs = (ctx.data.history || []).map(function (h) {
+      return { role: h.role === "model" ? "assistant" : "user", content: (h.parts || []).map(function (p) { return p.text || ""; }).join("") };
+    });
+    return callAI("", msgs, 4000);
+  },
 
-    // 上次成功的模型排第一個
-    var cache = CacheService.getScriptCache();
-    var lastGood = cache.get("gemini_last_model");
-    if (lastGood && models.indexOf(lastGood) > 0) {
-      models.splice(models.indexOf(lastGood), 1);
-      models.unshift(lastGood);
-    }
-
-    var errors = [];
-    for (var i = 0; i < models.length; i++) {
-      try {
-        var res = UrlFetchApp.fetch("https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent", {
-          method: "post",
-          contentType: "application/json",
-          headers: { "x-goog-api-key": apiKey },
-          payload: JSON.stringify({ contents: ctx.data.history, generationConfig: { temperature: 0.7 } }),
-          muteHttpExceptions: true
-        });
-        var body = JSON.parse(res.getContentText());
-        if (res.getResponseCode() === 200 && body.candidates && body.candidates.length) {
-          cache.put("gemini_last_model", models[i], 21600);
-          return { text: body.candidates[0].content.parts[0].text, model: models[i] };
-        }
-        errors.push(models[i] + ": " + (body.error ? body.error.message : res.getResponseCode()));
-      } catch (e) {
-        errors.push(models[i] + ": " + e);
-      }
-    }
-    throw new Error("Gemini 呼叫失敗：" + errors.join(" | "));
+  aiInfo: function () {
+    var p = aiProvider();
+    return { provider: p.name, model: p.model, ready: !!p.key };
   }
 };
 
+// ===================== AI =====================
+
+function aiProvider() {
+  var props = PropertiesService.getScriptProperties();
+  var claudeKey = props.getProperty("ANTHROPIC_API_KEY");
+  var geminiKey = props.getProperty("GEMINI_API_KEY");
+  var choice = (props.getProperty("AI_PROVIDER") || (claudeKey ? "claude" : "gemini")).toLowerCase();
+  if (choice === "claude") return { name: "claude", key: claudeKey, model: props.getProperty("CLAUDE_MODEL") || "claude-opus-5-5", effort: props.getProperty("CLAUDE_EFFORT") || "low" };
+  return { name: "gemini", key: geminiKey, model: (props.getProperty("GEMINI_MODELS") || "gemini-2.5-flash,gemini-2.5-flash-lite").split(",")[0].trim() };
+}
+
+function callAI(system, messages, maxTokens) {
+  var p = aiProvider();
+  if (!p.key) throw new Error(p.name === "claude" ? "尚未設定 ANTHROPIC_API_KEY（GAS 專案設定 → 指令碼屬性）" : "尚未設定 GEMINI_API_KEY（GAS 專案設定 → 指令碼屬性）");
+  return p.name === "claude" ? callClaude(p, system, messages, maxTokens) : callGemini(system, messages);
+}
+
+// Claude Messages API（Google Apps Script 沒有官方 SDK，直接用 HTTP）
+function callClaude(p, system, messages, maxTokens) {
+  var body = {
+    model: p.model,
+    max_tokens: maxTokens,
+    messages: messages,
+    output_config: { effort: p.effort },
+    // 被安全分類器拒絕時由伺服器自動改用其他模型重試
+    fallbacks: "default"
+  };
+  if (system) body.system = system;
+  var res = UrlFetchApp.fetch("https://api.anthropic.com/v1/messages", {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      "x-api-key": p.key,
+      "anthropic-version": "2026-10-21",
+      "anthropic-beta": "server-side-fallback-2026-07-01"
+    },
+    payload: JSON.stringify(body),
+    muteHttpExceptions: true
+  });
+  var data = JSON.parse(res.getContentText());
+  if (res.getResponseCode() !== 200) throw new Error("Claude 回應錯誤 (" + res.getResponseCode() + ")：" + (data.error ? data.error.message : ""));
+  if (data.stop_reason === "refusal") throw new Error("Claude 拒絕回答這個請求");
+  // 回應可能包含 thinking 區塊，只取文字
+  var text = (data.content || []).filter(function (b) { return b.type === "text"; }).map(function (b) { return b.text; }).join("");
+  if (!text) throw new Error("Claude 沒有回傳文字（" + data.stop_reason + "）");
+  return { text: text, model: data.model, provider: "claude" };
+}
+
+function callGemini(system, messages) {
+  var props = PropertiesService.getScriptProperties();
+  var apiKey = props.getProperty("GEMINI_API_KEY");
+  var models = (props.getProperty("GEMINI_MODELS") || "gemini-2.5-flash,gemini-2.5-flash-lite")
+    .split(",").map(function (m) { return m.trim(); }).filter(String);
+  // 上次成功的模型排第一個
+  var cache = CacheService.getScriptCache();
+  var lastGood = cache.get("gemini_last_model");
+  if (lastGood && models.indexOf(lastGood) > 0) {
+    models.splice(models.indexOf(lastGood), 1);
+    models.unshift(lastGood);
+  }
+  var payload = {
+    contents: messages.map(function (m) { return { role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }; }),
+    generationConfig: { temperature: 0.7 }
+  };
+  if (system) payload.systemInstruction = { parts: [{ text: system }] };
+  var errors = [];
+  for (var i = 0; i < models.length; i++) {
+    try {
+      var res = UrlFetchApp.fetch("https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent", {
+        method: "post", contentType: "application/json", headers: { "x-goog-api-key": apiKey },
+        payload: JSON.stringify(payload), muteHttpExceptions: true
+      });
+      var body = JSON.parse(res.getContentText());
+      if (res.getResponseCode() === 200 && body.candidates && body.candidates.length) {
+        cache.put("gemini_last_model", models[i], 21600);
+        return { text: body.candidates[0].content.parts.map(function (x) { return x.text || ""; }).join(""), model: models[i], provider: "gemini" };
+      }
+      errors.push(models[i] + ": " + (body.error ? body.error.message : res.getResponseCode()));
+    } catch (e) {
+      errors.push(models[i] + ": " + e);
+    }
+  }
+  throw new Error("Gemini 呼叫失敗：" + errors.join(" | "));
+}
+
 // ===================== 新聞 =====================
 
+// 分類 → The Guardian 版面 / The Conversation 頻道
+var EN_NEWS = {
+  world: ["world", "global"], business: ["business", "us/business"], politics: ["politics", "us/politics"],
+  technology: ["technology", "us/technology"], environment: ["environment", "us/environment"],
+  health: ["society", "us/health"], education: ["education", "us/education"], culture: ["culture", "us/arts"]
+};
+
+// 英文：有 GUARDIAN_API_KEY 就用 The Guardian（Guardian 公開的測試金鑰已停用），否則或失敗時用 The Conversation（全文、可自由轉載）
 function englishNews(section) {
-  var key = PropertiesService.getScriptProperties().getProperty("GUARDIAN_API_KEY") || "test";
-  var url = "https://content.guardianapis.com/search?show-fields=body&page-size=15&section=" + section + "&api-key=" + encodeURIComponent(key);
-  var res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  var map = EN_NEWS[section] || EN_NEWS.world;
+  var key = PropertiesService.getScriptProperties().getProperty("GUARDIAN_API_KEY");
+  if (key) {
+    var res = UrlFetchApp.fetch("https://content.guardianapis.com/search?show-fields=body&page-size=15&section=" + map[0] + "&api-key=" + encodeURIComponent(key), { muteHttpExceptions: true });
+    if (res.getResponseCode() === 200) {
+      var results = (JSON.parse(res.getContentText()).response || {}).results || [];
+      if (results.length) {
+        return { kind: "article", source: "The Guardian", items: results.map(function (r) { return { title: r.webTitle, url: r.webUrl, body: r.fields ? r.fields.body : "" }; }) };
+      }
+    }
+  }
+  return conversationNews(map[1]);
+}
+
+function conversationNews(channel) {
+  var res = UrlFetchApp.fetch("https://theconversation.com/" + channel + "/articles.atom", { muteHttpExceptions: true, followRedirects: true });
   if (res.getResponseCode() !== 200) throw new Error("新聞服務回應錯誤 (" + res.getResponseCode() + ")");
-  var results = (JSON.parse(res.getContentText()).response || {}).results || [];
-  return {
-    kind: "article",
-    items: results.map(function (r) { return { title: r.webTitle, url: r.webUrl, body: r.fields ? r.fields.body : "" }; })
-  };
+  var xml = res.getContentText();
+  var items;
+  try {
+    var root = XmlService.parse(xml).getRootElement();
+    var ns = root.getNamespace();
+    items = root.getChildren("entry", ns).slice(0, 15).map(function (e) {
+      var link = e.getChildren("link", ns).filter(function (l) { return !l.getAttribute("rel") || l.getAttribute("rel").getValue() === "alternate"; })[0];
+      return { title: e.getChildText("title", ns) || "", url: link ? link.getAttribute("href").getValue() : "", body: e.getChildText("content", ns) || "" };
+    });
+  } catch (err) {
+    // XML 解析失敗時改用文字比對
+    items = (xml.match(/<entry>[\s\S]*?<\/entry>/g) || []).slice(0, 15).map(function (e) {
+      var pick = function (re) { var m = e.match(re); return m ? decodeEntities(m[1].replace(/^<!\[CDATA\[|\]\]>$/g, "")) : ""; };
+      return { title: pick(/<title[^>]*>([\s\S]*?)<\/title>/), url: pick(/<link[^>]*href="([^"]+)"/), body: pick(/<content[^>]*>([\s\S]*?)<\/content>/) };
+    });
+  }
+  items = items.filter(function (x) { return x.title && x.body; });
+  return { kind: "article", source: "The Conversation", items: items };
 }
 
 function frenchNews(section) {

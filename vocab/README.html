@@ -45,12 +45,12 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <body>
 <div class="wrap">
 
-<p class="sub">說明書 · v1.1.0 · 2026-10-31</p>
+<p class="sub">說明書 · v1.2.0 · 2026-10-31</p>
 <h1>Vocab，<i>英文與法文</i>單字學習</h1>
 <p class="sub">一個帳號、兩種語言。英文和法文各自有自己的單字本、複習進度、設定、文章與遊戲紀錄，用右上角的 EN / FR 切換。</p>
 
 <nav class="toc">
-  <a href="#setup">部署（全新開始）</a><a href="#lang">兩種語言的差異</a><a href="#class">法文教室</a><a href="#accuracy">單字判斷與 AI</a><a href="#pages">各頁面</a>
+  <a href="#setup">部署（全新開始）</a><a href="#lang">兩種語言的差異</a><a href="#class">教室</a><a href="#practice">練習與 AI</a><a href="#ai">AI 設定（Claude / Gemini）</a><a href="#accuracy">單字判斷</a><a href="#pages">各頁面</a>
   <a href="#srs">複習規則</a><a href="#design">設計原則</a><a href="#data">資料結構</a><a href="#api">後端 API</a>
   <a href="#files">檔案</a><a href="#update">日常更新</a><a href="#limits">已知限制</a>
 </nav>
@@ -58,7 +58,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <h2 id="setup">部署（全新開始）</h2>
 <ol>
   <li>建立一個新的 Google 試算表 → 擴充功能 → Apps Script，貼上 <code>GAS.gs</code> 全部內容並儲存。</li>
-  <li>專案設定 → 指令碼屬性，新增 <code>GEMINI_API_KEY</code>（必填）。<code>GUARDIAN_API_KEY</code>、<code>GEMINI_MODELS</code> 為選填。</li>
+  <li>專案設定 → 指令碼屬性，填入 AI 金鑰：<code>ANTHROPIC_API_KEY</code>（Claude）或 <code>GEMINI_API_KEY</code>（Gemini），至少一個，詳見「AI 設定」。<code>GUARDIAN_API_KEY</code> 為選填。</li>
   <li>在編輯器選擇函式 <code>forceAuth</code> → 執行，依指示授權。</li>
   <li>部署 → 新增部署作業 → 類型「網頁應用程式」，執行身分「我」，存取權「所有人」→ 複製 <code>/exec</code> 結尾的網址。</li>
   <li>把網址貼到 <code>js/config.js</code> 的 <code>GAS_URL</code>，再上傳前端到 GitHub Pages。</li>
@@ -72,28 +72,62 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td>字典</td><td>Free Dictionary：音標、原音、英英釋義、同義詞；另有字根與同字族</td><td>Wiktionary：釋義與<b>名詞陰陽性</b>（自動填入 n.m. / n.f.）</td></tr>
 <tr><td>詞性</td><td>n. v. adj. adv. prep. conj. phr.</td><td>n.m. n.f. n. v. adj. adv. prép. conj. pron. loc.</td></tr>
 <tr><td>音標</td><td>自動查詢並存回試算表</td><td>無（Wiktionary 沒有穩定的音標文字）</td></tr>
-<tr><td>新聞</td><td>The Guardian 全文，逐段對照</td><td>franceinfo 今日頭條與摘要，逐則對照</td></tr>
+<tr><td>新聞</td><td>The Conversation 全文（有 <code>GUARDIAN_API_KEY</code> 時改用 The Guardian），逐段對照</td><td>franceinfo 今日頭條與摘要，逐則對照</td></tr>
+<tr><td>教室</td><td>A2–B2 共 20 課、18 章文法、單字庫 458 字</td><td>A0–B1 共 50 課、28 章文法、動詞變化、單字庫 630 字</td></tr>
 <tr><td>輸入</td><td>—</td><td>重音字母小鍵盤（é è ê à ç œ…）；聽寫與拼字遊戲不強制重音，少打重音會提醒但算對</td></tr>
 <tr><td>文章斷字</td><td>一般斷字</td><td>自動拆開 l'、d'、qu' 等縮寫，點 <i>l'homme</i> 會查 <i>homme</i></td></tr>
 <tr><td>朗讀 / 拍照</td><td>en-US / 英文辨識</td><td>fr-FR / 法文辨識</td></tr>
 </table></div>
 
-<h2 id="class">法文教室</h2>
-<p>切到 FR 時底部會多一個「教室」分頁，從零開始一路學到能溝通的程度。所有內容都是預先寫好、檢查過的，不是即時用 AI 產生。</p>
+<h2 id="class">教室</h2>
+<p>底部的「教室」分頁，英文和法文各有一套課程。所有課程、文法講義與單字庫都是預先寫好、檢查過的，不是即時用 AI 產生。</p>
 <div class="tbl"><table>
-<tr><th>級別</th><th>課數</th><th>內容</th></tr>
+<tr><th>語言</th><th>級別</th><th>課數</th><th>內容</th></tr>
+<tr><td rowspan="4">法文</td><td>A0 零基礎</td><td>4</td><td>法文和中文哪裡不一樣、看字就會唸（拼字與發音規則）、生存句、主詞與動詞變化的概念。完全沒學過的人先上這四課</td></tr>
 <tr><td>A1 入門</td><td>16</td><td>問候、être / avoir、數字、冠詞與陰陽性、所有格、-er 動詞、問句、時間日期、形容詞、部分冠詞、地點介系詞、faire 與天氣、反身動詞、問路、購物、近未來與近過去</td></tr>
-<tr><td>A2 基礎</td><td>16</td><td>複合過去式（avoir / être）、未完成過去式、兩種過去式的區分、直接與間接受詞代名詞、y 與 en、比較級與最高級、簡單未來式、命令式、qui / que / où、健康、交通、各種否定、副詞、強調與所有格代名詞</td></tr>
-<tr><td>B1 進階</td><td>14</td><td>條件式、si 條件句、虛擬式（構成、意願、情感、懷疑）、愈過去式、條件式過去時、dont / ce que、lequel、雙代名詞順序、間接引語、被動語態、副動詞、論證與連接詞、職場法語</td></tr>
+<tr><td>A2 基礎</td><td>16</td><td>複合過去式、未完成過去式、受詞代名詞、y 與 en、比較級、簡單未來式、命令式、qui / que / où 等</td></tr>
+<tr><td>B1 進階</td><td>14</td><td>條件式、si 條件句、虛擬式、愈過去式、dont / lequel、間接引語、被動語態、副動詞、論證、職場法語</td></tr>
+<tr><td rowspan="3">英文</td><td>A2</td><td>6</td><td>現在簡單／進行式、過去式與 used to、談未來、可數與不可數、比較級、現在完成式說經驗</td></tr>
+<tr><td>B1</td><td>8</td><td>完成式 vs 過去式、情態助動詞、零／第一／第二條件句與 wish、被動語態、關係子句、動名詞與不定詞、間接引語</td></tr>
+<tr><td>B2</td><td>6</td><td>敘事時態、第三與混合條件句、推測（must have）、未來進行／完成式、正式寫作與分詞構句、倒裝與強調句</td></tr>
 </table></div>
 <ul>
-  <li><b>每一課</b>：本課目標、文法說明（中文）與表格、例句、單字、情境對話、文化小知識、練習（選擇、填空、重組句子、中翻法、聽寫）與單字快問。</li>
-  <li><b>隨時聽</b>：例句、表格、單字、對話每一行旁邊都有朗讀鈕，對話可以一次播放全部，也可以隱藏翻譯練聽力。</li>
-  <li><b>串聯單字本</b>：單字可以一個個加，或「全部加入單字本」存到「教室 A1 / A2 / B1」，會自動進入每日複習；文章裡任何字都能點來查與加入。</li>
-  <li><b>動詞變化</b>：約 90 個常用動詞，自動產生 8 種時態（現在式、複合過去式、未完成過去式、未來式、命令式、條件式、虛擬式、愈過去式），每一行點了都能聽，並有隨機的變化練習。</li>
-  <li><b>發音入門</b>：字母、母音、鼻母音、子音、連音、省音、語調，每個例子都能聽。</li>
-  <li>進度（完成的課、練習最高分、上次學到哪）存在雲端，換手機也接得上。</li>
+  <li><b>每一課</b>：本課目標、文法說明與表格、例句、單字、情境對話、小知識、練習（選擇、填空、重組、中翻外、聽寫）與單字快問。課程開頭會連到相關的文法章節。</li>
+  <li><b>文法講義</b>（文法分頁）：獨立的完整講解，從「句子怎麼組成」「陰陽性」「冠詞」「動詞變化是什麼」這些基礎觀念講起，每章都有表格、可以聽的例句、常見錯誤提醒，章末可以練習。法文 28 章、英文 18 章。</li>
+  <li><b>單元測驗與級別考試</b>：每 4 課一次單元測驗，每個級別結束有級別考試，題目從課程練習與單字隨機抽，答對 70% 通過，每次重做都會換題。</li>
+  <li><b>主題單字</b>：依主題與程度整理的常用字（法文 26 個主題 630 字、英文 20 個主題 458 字），可以聽、快問、一鍵加入「單字庫 A1」等單字本。</li>
+  <li><b>動詞變化</b>（法文）：約 90 個動詞、8 種時態。<b>混合練習</b>可選時態與範圍，會記錄每個「動詞＋時態」的錯誤次數，「最常錯」可以專門練那些。</li>
+  <li><b>發音</b>：法文（字母、母音、鼻母音、連音…）與英文（長短母音、th、r / l、重音、連音、語調）。</li>
+  <li><b>隨時聽、跟讀、存句子</b>：例句與對話旁有朗讀、跟讀（打分數）與存成句子卡的按鈕。</li>
+  <li>進度、測驗分數、讀過的文法章節都存在雲端，換手機也接得上。</li>
 </ul>
+
+<h2 id="practice">練習與 AI</h2>
+<p>今日頁的捷徑或「練習」頁：</p>
+<ul>
+  <li><b>AI 情境對話</b>：選情境（咖啡廳、問路、看醫生、面試…，或自己描述）與程度，和 AI 用外語對話。寫錯時在你的句子下方顯示「更好的說法」與中文說明；可以用說的（語音輸入）、看提示；結束後整理做得好的地方、需要修正的句子與實用句子。</li>
+  <li><b>AI 寫作批改</b>：自由寫或按「出題」，AI 逐一指出錯誤並解釋、給修正版與更自然的寫法、估計程度，可存到「我的文章」。</li>
+  <li><b>AI 小故事</b>：用最近加入、今天要複習或最常忘記的字寫一篇短文，生字會標出來，可朗讀、跟讀、存成文章。</li>
+  <li><b>跟讀</b>：先聽再唸，用手機的語音辨識比對，給分數並把沒被辨識出來的字標紅。iPhone 請用 Safari（iOS 14.5 以上）；不支援的瀏覽器會顯示說明。分數是辨識比對的結果，不等於專業的發音評分。</li>
+  <li><b>錯題本</b>：課程練習、測驗、動詞練習、單字快問答錯的題目自動收進來（每種語言最多 150 題），重練時答對就移出。</li>
+  <li><b>句子卡</b>：例句、對話、文章段落、翻譯結果、AI 回覆旁按 <i>存成句子卡</i>，存到「句子」單字本，詞性為「句子」，一樣進入每日複習。</li>
+  <li><b>每日目標</b>：今日頁顯示複習、新字、學習次數的進度與連續天數；目標在「更多 → 學習設定」調整。完成一課、一次測驗、一段 AI 練習或一輪練習各算一次學習。</li>
+  <li><b>閃卡例句</b>：有例句的字翻面後會顯示例句、朗讀鈕與中文翻譯。</li>
+  <li><b>深色模式</b>：「更多 → 外觀 → 底色」預設為「自動（跟隨手機）」，手機切換深色時自動改用夜讀配色。</li>
+</ul>
+
+<h2 id="ai">AI 設定（Claude / Gemini）</h2>
+<p>所有 AI 功能都經過後端呼叫，金鑰只存在 GAS 的指令碼屬性，不會出現在前端程式碼。</p>
+<div class="tbl"><table>
+<tr><th>指令碼屬性</th><th>說明</th></tr>
+<tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude API 金鑰，在 console.anthropic.com 申請。<b>API 按用量計費，和 Claude Pro / Max 訂閱是分開的</b>，訂閱不包含 API 額度。</td></tr>
+<tr><td><code>CLAUDE_MODEL</code></td><td>選填，預設 <code>claude-opus-5-5</code>（品質最好）。想省錢可改 <code>claude-sonnet-5-5</code> 或 <code>claude-haiku-5-5</code>。</td></tr>
+<tr><td><code>CLAUDE_EFFORT</code></td><td>選填，<code>low</code>（預設，回應快、花費少）、<code>medium</code>、<code>high</code>。</td></tr>
+<tr><td><code>GEMINI_API_KEY</code></td><td>Gemini 金鑰（有免費額度）。</td></tr>
+<tr><td><code>GEMINI_MODELS</code></td><td>選填，逗號分隔，依序嘗試。</td></tr>
+<tr><td><code>AI_PROVIDER</code></td><td>選填，<code>claude</code> 或 <code>gemini</code>。沒填時：有 <code>ANTHROPIC_API_KEY</code> 就用 Claude，否則用 Gemini。</td></tr>
+</table></div>
+<p class="note">Claude 請求有開啟伺服器端備援（fallbacks）：如果請求被安全分類器擋下，會自動改用其他模型重試，不需要另外處理。建議在 Anthropic Console 設定每月花費上限。</p>
 
 <h2 id="accuracy">單字判斷與 AI</h2>
 <ul>
@@ -102,7 +136,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li><b>其他常見意思</b>：意思欄下方會列出不同詞性的意思，點一下就能換。</li>
   <li><b>變化形提示</b>：輸入 chevaux、mange 這類變化形時，會提示原形並可一鍵改用。</li>
   <li><b>改單字會重新帶入</b>：把單字改掉後，自動帶入的意思、詞性、例句會跟著更新；自己手動改過的欄位不會被覆蓋。</li>
-  <li><b>AI 校對</b>（需要 GEMINI_API_KEY）：用 Gemini 取得最常用的意思、詞性與例句，也會修正拼字。</li>
+  <li><b>AI 校對</b>（需要 AI 金鑰）：用 AI 取得最常用的意思、詞性與例句，也會修正拼字。</li>
   <li><b>AI 檢查例句</b>：在編輯單字時，可以請 AI 檢查自己寫的例句（文法、拼字、重音、自然度），或請它給一句範例。</li>
 </ul>
 
@@ -163,7 +197,8 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td>addWords / updateWords / deleteWords / deleteBook</td><td>單字增修刪（deleteBook 需要 lang）</td></tr>
 <tr><td>getArticles / saveArticle / updateArticles / deleteArticles / reorderArticles</td><td>文章（getArticles 需要 lang）</td></tr>
 <tr><td>saveSettings / logReview / saveScore / getScores</td><td>設定、每日紀錄、遊戲分數</td></tr>
-<tr><td>translate / news / gemini</td><td>翻譯備援、新聞代理（en: Guardian；fr: franceinfo RSS）、AI</td></tr>
+<tr><td>translate / news</td><td>翻譯備援、新聞代理（en: The Conversation Atom，有金鑰時用 Guardian；fr: franceinfo RSS）</td></tr>
+<tr><td>ai / aiInfo / gemini</td><td>通用 AI（<code>{system, messages, maxTokens}</code>，依設定走 Claude 或 Gemini）、目前使用的 AI、舊版相容</td></tr>
 </table></div>
 
 <h2 id="files">檔案</h2>
@@ -174,9 +209,13 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td><code>js/services.js</code></td><td>翻譯、英法字典、音標、朗讀</td></tr>
 <tr><td><code>js/words.js</code> <code>srs.js</code> <code>dict.js</code> <code>reader.js</code> <code>games.js</code> <code>io.js</code> <code>app.js</code></td><td>各頁面功能與啟動流程</td></tr>
 <tr><td><code>js/classroom/verbs.js</code></td><td>法文動詞變化引擎與動詞清單</td></tr>
-<tr><td><code>js/classroom/sounds.js</code></td><td>發音入門資料</td></tr>
-<tr><td><code>js/classroom/lessons-a1.js</code> <code>lessons-a2.js</code> <code>lessons-b1.js</code></td><td>46 課的課程內容（要修改或新增課程就改這裡）</td></tr>
-<tr><td><code>js/classroom/classroom.js</code></td><td>教室畫面、練習批改、進度</td></tr>
+<tr><td><code>js/classroom/sounds.js</code></td><td>法文發音資料</td></tr>
+<tr><td><code>js/classroom/lessons-a0.js</code> <code>lessons-a1.js</code> <code>lessons-a2.js</code> <code>lessons-b1.js</code></td><td>法文 50 課</td></tr>
+<tr><td><code>js/classroom/lessons-en.js</code></td><td>英文 20 課與英文發音</td></tr>
+<tr><td><code>js/classroom/grammar-fr.js</code> <code>grammar-en.js</code></td><td>文法講義</td></tr>
+<tr><td><code>js/classroom/wordbank-fr.js</code> <code>wordbank-en.js</code></td><td>主題單字庫</td></tr>
+<tr><td><code>js/classroom/classroom.js</code></td><td>教室畫面、練習批改、測驗、動詞練習、進度</td></tr>
+<tr><td><code>js/practice.js</code></td><td>每日目標、錯題本、句子卡、跟讀、AI 對話／寫作／故事</td></tr>
 <tr><td><code>sw.js</code>、<code>manifest.json</code>、<code>icons/</code></td><td>PWA</td></tr>
 <tr><td><code>GAS.gs</code></td><td>後端</td></tr>
 </table></div>
@@ -194,10 +233,12 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li>法文新聞只有摘要（franceinfo 的全文頁面無法穩定擷取）。</li>
   <li>法文單字沒有音標；陰陽性來自 Wiktionary，少數字可能查不到。</li>
   <li>每日提醒只在 App 開著時觸發。</li>
+  <li>跟讀需要瀏覽器支援語音辨識（Safari、Chrome、Edge）；Firefox 不支援。</li>
+  <li>AI 回覆可能有錯，重要的內容請再確認。</li>
   <li>Google 翻譯免費端點若失效，會改用 GAS 翻譯（較慢、有每日配額）。</li>
 </ul>
 
-<footer>Vocab v1.1.0。之後調整功能時請一併更新本文件。</footer>
+<footer>Vocab v1.2.0。之後調整功能時請一併更新本文件。</footer>
 </div>
 </body>
 </html>

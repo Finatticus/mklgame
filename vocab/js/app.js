@@ -3,8 +3,11 @@ const NAV_OF = {
     "sec-today": "sec-today", "sec-books": "sec-books", "sec-words": "sec-books", "sec-srs-list": "sec-books",
     "sec-sentence-maker": "sec-books", "sec-radio-setup": "sec-books", "sec-radio-player": "sec-books",
     "sec-flashcard": "sec-today", "sec-dict": "sec-dict", "sec-read": "sec-read", "sec-more": "sec-more",
-    "sec-class": "sec-class", "sec-lesson": "sec-class", "sec-verb": "sec-class"
+    "sec-class": "sec-class", "sec-lesson": "sec-class", "sec-verb": "sec-class", "sec-grammar": "sec-class", "sec-drill": "sec-class",
+    "sec-practice": "sec-today"
 };
+// 這些頁面切換時不中斷朗讀
+const KEEP_TTS = ["sec-lesson", "sec-verb", "sec-grammar", "sec-drill", "sec-practice"];
 
 const App = {
     current: "sec-login",
@@ -16,11 +19,12 @@ const App = {
         document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.arg === NAV_OF[id]));
         App.current = id;
         if (id === "sec-today") { App.refreshCounts(); renderRecent(); }
+        if (id === "sec-practice") renderPracticePage();
         if (id === "sec-books") renderBooksList();
         if (id === "sec-read") fetchCustomArticles();
-        if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); Notify.updateButton(); loadHighScores(); }
+        if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); const g = Goals.conf(); $("goal-reviews").value = g.reviews; $("goal-words").value = g.words; $("goal-study").value = g.study; Notify.updateButton(); loadHighScores(); }
         if (id === "sec-class") renderClassHome();
-        if (id !== "sec-lesson" && id !== "sec-verb") TTS.stop();
+        if (!KEEP_TTS.includes(id)) { TTS.stop(); Speech.stop(); }
         window.scrollTo({ top: 0 });
     },
 
@@ -31,6 +35,7 @@ const App = {
             ? [due.reviews.length ? `${due.reviews.length} 個到期` : "", due.fresh.length ? `${due.fresh.length} 個新字` : ""].filter(Boolean).join("・")
             : "今天的複習都完成了";
         $("btn-start-review").disabled = !due.all.length;
+        Goals.render();
         if (App.current === "sec-more") updateStatistics();
     },
 
@@ -54,15 +59,13 @@ Actions.syncNow = () => Sync.run({ full: true });
 function applyLang() {
     const l = L();
     const root = document.documentElement;
-    root.style.setProperty("--accent", l.accent);
-    root.style.setProperty("--accent-soft", l.accentSoft);
+    applyAccent();
     root.lang = S.lang === "fr" ? "fr" : "zh-TW";
     document.querySelectorAll("#lang-switch button").forEach(b => b.classList.toggle("on", b.dataset.arg === S.lang));
     $("wordmark-lang").textContent = l.name;
-    show("nav-class", S.lang === "fr");
     $("today-title").innerHTML = S.lang === "fr" ? "Bonjour, <em>on révise ?</em>" : "Hello, <em>ready to review?</em>";
     $("today-date").textContent = new Date().toLocaleDateString("zh-TW", { month: "long", day: "numeric", weekday: "long" }) + " · " + l.label;
-    ["books-lang", "dict-lang", "read-lang", "more-lang"].forEach(id => { $(id).textContent = `${l.name} · ${l.label}`; });
+    ["books-lang", "dict-lang", "read-lang", "more-lang", "practice-lang"].forEach(id => { $(id).textContent = `${l.name} · ${l.label}`; });
     $("word-term").placeholder = l.placeholder;
     $("dict-search-input").placeholder = `輸入${l.label}單字`;
     document.querySelectorAll(".accent-keys").forEach(box => {
@@ -87,13 +90,26 @@ Actions.switchLang = (lang) => {
     lsSet("vocab_lang", lang);
     S.articles = [];
     applyLang();
-    const stay = ["sec-today", "sec-books", "sec-dict", "sec-read", "sec-more"].concat(lang === "fr" ? ["sec-class"] : []);
+    const stay = ["sec-today", "sec-books", "sec-dict", "sec-read", "sec-more", "sec-class", "sec-practice"];
     App.go(stay.includes(App.current) ? App.current : "sec-today");
 };
 
 // ---------- 外觀 ----------
+// 強調色：深色底改用較亮的版本
+function applyAccent() {
+    const l = L(), root = document.documentElement, dark = root.dataset.theme === "dark";
+    root.style.setProperty("--accent", dark ? l.accentDark : l.accent);
+    root.style.setProperty("--accent-soft", dark ? l.accentSoftDark : l.accentSoft);
+}
+
+// auto：跟著手機的深色模式切換「紙白」與「夜讀」
+const darkQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
 function applyTheme(name) {
-    const theme = THEMES[name] || THEMES.paper;
+    if (!THEMES[name]) name = "auto";
+    const theme = name === "auto" ? (darkQuery && darkQuery.matches ? THEMES.night : THEMES.paper) : THEMES[name];
+    document.documentElement.dataset.theme = theme === THEMES.night ? "dark" : "light";
+    applyAccent();
     Object.entries(theme.vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
     document.querySelector('meta[name="theme-color"]').content = theme.vars["--bg"];
     lsSet("vocab_theme", name);
@@ -195,13 +211,17 @@ function removeLegacyData() {
 (function init() {
     removeLegacyData();
     $("theme-select").innerHTML = Object.entries(THEMES).map(([k, t]) => `<option value="${k}">${esc(t.name)}</option>`).join("");
-    const theme = lsGet("vocab_theme", "paper");
-    $("theme-select").value = THEMES[theme] ? theme : "paper";
+    const theme = lsGet("vocab_theme", "auto");
+    $("theme-select").value = THEMES[theme] ? theme : "auto";
     applyTheme($("theme-select").value);
     const font = String(lsGet("vocab_font", "1"));
     $("font-size-select").value = font;
     applyFontSize(font);
     $("theme-select").addEventListener("change", e => applyTheme(e.target.value));
+    if (darkQuery) {
+        const follow = () => { if ($("theme-select").value === "auto") applyTheme("auto"); };
+        if (darkQuery.addEventListener) darkQuery.addEventListener("change", follow); else darkQuery.addListener(follow);
+    }
     $("font-size-select").addEventListener("change", e => applyFontSize(e.target.value));
     document.querySelectorAll("select.paras-select").forEach(sel => { sel.innerHTML = [1, 2, 3, 4, 5].map(n => `<option value="${n}">${n} 段</option>`).join(""); });
     $("app-version").textContent = APP_VERSION;
@@ -212,6 +232,16 @@ function removeLegacyData() {
         Store.set({ newPerDay: n });
         App.refreshCounts();
         showToast(`每天最多 ${n} 個新字`);
+    });
+
+    // 每日目標
+    [["goal-reviews", "reviews"], ["goal-words", "words"], ["goal-study", "study"]].forEach(([id, key]) => {
+        $(id).addEventListener("change", (e) => {
+            const n = Math.max(0, Math.min(500, parseInt(e.target.value, 10) || 0));
+            e.target.value = n;
+            Store.set({ goals: Object.assign(Goals.conf(), { [key]: n }) });
+            Goals.render();
+        });
     });
 
     registerServiceWorker();

@@ -3,7 +3,7 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwNuQgMxCF1_snTNYTmjuLRCo5AfIp6m9aX-yN90scHQt13gasoQZrF_x7qScXG7SE/exec";
 // 測試用：localStorage.setItem("vocab_api_override", "其他後端網址") 可改連其他後端
 const API_URL = (() => { try { return localStorage.getItem("vocab_api_override") || GAS_URL; } catch (e) { return GAS_URL; } })();
-const APP_VERSION = "1.1.1";
+const APP_VERSION = "1.2.0";
 const MIN_API_VERSION = 1;
 
 const DEFAULT_BOOK = "我的單字";
@@ -17,18 +17,18 @@ const LANGS = {
     en: {
         code: "en", name: "English", label: "英文", short: "EN",
         tts: "en-US", gtx: "en", ocr: "eng",
-        accent: "#2E4A6B", accentSoft: "rgba(46, 74, 107, 0.08)",
-        pos: [["n.", "名詞"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prep.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["interj.", "感嘆詞"], ["phr.", "片語"]],
+        accent: "#2E4A6B", accentSoft: "rgba(46, 74, 107, 0.08)", accentDark: "#9DB8D8", accentSoftDark: "rgba(157, 184, 216, 0.12)",
+        pos: [["n.", "名詞"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prep.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["interj.", "感嘆詞"], ["phr.", "片語"], ["sent.", "句子"]],
         accents: [],
-        news: [["world", "國際"], ["business", "商業"], ["politics", "政治"], ["technology", "科技"], ["science", "科學"], ["society", "社會"], ["education", "教育"], ["culture", "文化"]],
-        newsSource: "The Guardian",
+        news: [["world", "國際"], ["business", "商業"], ["politics", "政治"], ["technology", "科技"], ["environment", "環境"], ["health", "健康"], ["education", "教育"], ["culture", "文化"]],
+        newsSource: "The Conversation",
         placeholder: "例如 serendipity"
     },
     fr: {
         code: "fr", name: "Français", label: "法文", short: "FR",
         tts: "fr-FR", gtx: "fr", ocr: "fra",
-        accent: "#7E3438", accentSoft: "rgba(126, 52, 56, 0.08)",
-        pos: [["n.m.", "陽性名詞"], ["n.f.", "陰性名詞"], ["n.", "名詞（陰陽同形）"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prép.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["dét.", "限定詞／冠詞"], ["interj.", "感嘆詞"], ["loc.", "片語"]],
+        accent: "#7E3438", accentSoft: "rgba(126, 52, 56, 0.08)", accentDark: "#E0A0A3", accentSoftDark: "rgba(224, 160, 163, 0.12)",
+        pos: [["n.m.", "陽性名詞"], ["n.f.", "陰性名詞"], ["n.", "名詞（陰陽同形）"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prép.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["dét.", "限定詞／冠詞"], ["interj.", "感嘆詞"], ["loc.", "片語"], ["sent.", "句子"]],
         accents: ["é", "è", "ê", "ë", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "ü", "œ"],
         news: [["monde", "國際"], ["economie", "經濟"], ["politique", "政治"], ["internet", "科技"], ["sciences", "科學"], ["societe", "社會"], ["sante", "健康"], ["culture", "文化"]],
         newsSource: "franceinfo",
@@ -38,6 +38,7 @@ const LANGS = {
 
 // ===================== 主題（淺色為主） =====================
 const THEMES = {
+    auto: { name: "自動（跟隨手機）" },
     paper: { name: "紙白", vars: { "--bg": "#FAF8F4", "--surface": "#FFFFFF", "--ink": "#1C1B19", "--ink-2": "#4A4741", "--muted": "#8A857C", "--line": "#E8E3DA", "--line-strong": "#D5CFC4", "--nav-bg": "rgba(250, 248, 244, 0.92)" } },
     linen: { name: "亞麻", vars: { "--bg": "#F3EEE4", "--surface": "#FBF8F2", "--ink": "#22201C", "--ink-2": "#4E4A42", "--muted": "#8C8578", "--line": "#E2DACB", "--line-strong": "#CFC5B3", "--nav-bg": "rgba(243, 238, 228, 0.92)" } },
     mist: { name: "霧灰", vars: { "--bg": "#F5F6F4", "--surface": "#FFFFFF", "--ink": "#1B1D1C", "--ink-2": "#454947", "--muted": "#848A87", "--line": "#E3E6E3", "--line-strong": "#CFD4D0", "--nav-bg": "rgba(245, 246, 244, 0.92)" } },

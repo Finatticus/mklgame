@@ -1,12 +1,14 @@
 // 每次發佈新版前端時把版本號 +1，舊快取會在啟用時自動清除
-const VERSION = "vocab-v1.1.1";
+const VERSION = "vocab-v1.2.0";
 const APP_FILES = [
     "./", "./index.html", "./manifest.json", "./css/style.css",
     "./js/config.js", "./js/utils.js", "./js/api.js", "./js/store.js", "./js/services.js",
     "./js/words.js", "./js/srs.js", "./js/dict.js", "./js/reader.js", "./js/games.js",
-    "./js/io.js", "./js/app.js",
-    "./js/classroom/verbs.js", "./js/classroom/sounds.js", "./js/classroom/lessons-a1.js", "./js/classroom/lessons-a2.js",
-    "./js/classroom/lessons-b1.js", "./js/classroom/classroom.js",
+    "./js/io.js", "./js/app.js", "./js/practice.js",
+    "./js/classroom/verbs.js", "./js/classroom/sounds.js", "./js/classroom/lessons-a0.js", "./js/classroom/lessons-a1.js",
+    "./js/classroom/lessons-a2.js", "./js/classroom/lessons-b1.js", "./js/classroom/lessons-en.js",
+    "./js/classroom/grammar-fr.js", "./js/classroom/grammar-en.js", "./js/classroom/wordbank-fr.js", "./js/classroom/wordbank-en.js",
+    "./js/classroom/classroom.js",
     "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-180.png", "./icons/icon-32.png"
 ];
 const CDN_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com", "cdn.jsdelivr.net"];

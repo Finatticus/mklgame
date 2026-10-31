@@ -390,3 +390,63 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); box-sha
 .conj-row { padding: 2px 0; font-size: 0.92rem; cursor: pointer; }
 .conj-row:hover { color: var(--accent); }
 @media (max-width: 420px) { .tenses { grid-template-columns: 1fr; } }
+
+/* ===================== 1.2：目標、練習、跟讀、文法 ===================== */
+.tabs.scroll { overflow-x: auto; scrollbar-width: none; gap: 16px; }
+.tabs.scroll::-webkit-scrollbar { display: none; }
+.tabs.scroll button { white-space: nowrap; flex-shrink: 0; }
+.goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; padding: 10px 0 8px; }
+.goal-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; font-size: 0.75rem; color: var(--muted); }
+.goal-top b { font-family: var(--serif); font-weight: 500; font-size: 1rem; color: var(--ink); }
+.goal-top small { font-family: var(--sans); font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+.goal-bar { height: 2px; background: var(--line); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.goal-bar div { height: 100%; background: var(--accent); transition: width 0.3s; }
+.goal.met .goal-bar div { background: var(--good); }
+.goal.streak .goal-top b { color: var(--accent); }
+.practice-links { padding: 2px 0 12px; border-bottom: 1px solid var(--line); gap: 4px 16px; }
+.badge:not(:empty) { font-size: 0.68rem; background: var(--bad); color: #fff; border-radius: 999px; padding: 0 6px; line-height: 1.5; }
+.line-tools { display: inline-flex; flex-shrink: 0; opacity: 0.55; }
+.line-tools:hover { opacity: 1; }
+.gref { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; padding: 0 0 10px; }
+.gsec { padding: 12px 0; border-top: 1px solid var(--line); }
+.gsec:first-child { border-top: none; padding-top: 4px; }
+.gsec-title { font-family: var(--serif); font-weight: 500; font-size: 1.05rem; margin-bottom: 6px; }
+.gtip { font-size: 0.85rem; color: var(--ink-2); background: var(--accent-soft); border-radius: 6px; padding: 8px 10px; margin-top: 8px; line-height: 1.65; }
+.gtip > b:first-child { display: block; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 2px; }
+.test-row .lesson-no { color: var(--accent); font-size: 0.95rem; }
+.drill-card { text-align: center; padding: 18px 0 6px; }
+.drill-verb { font-size: 1.7rem; font-weight: 500; }
+.drill-prompt { font-size: 1.05rem; margin-top: 6px; }
+.drill-card .accent-keys { justify-content: center; }
+.drill-feedback { justify-content: center; min-height: 1.6em; font-size: 1rem; }
+.cw.target { color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--accent); border-radius: 0; }
+.chat-log { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 12px; }
+.msg { display: flex; flex-direction: column; max-width: 88%; }
+.msg.me { align-self: flex-end; align-items: flex-end; }
+.msg.ai { align-self: flex-start; }
+.bubble { padding: 8px 12px; border-radius: 12px; line-height: 1.55; font-size: 0.95rem; }
+.msg.ai .bubble { background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.msg.me .bubble { background: var(--ink); color: var(--bg); border-bottom-right-radius: 4px; }
+.msg-zh { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+.hide-zh .msg-zh { display: none; }
+.msg-tools { display: flex; align-items: center; }
+.fix { font-size: 0.88rem; margin-top: 4px; padding: 4px 0 4px 10px; border-left: 2px solid var(--warn); text-align: left; }
+.fix .verdict { font-size: 0.68rem; margin: 0; }
+.chat-input { display: flex; align-items: flex-end; gap: 6px; position: sticky; bottom: calc(64px + env(safe-area-inset-bottom)); background: var(--bg); padding: 6px 0; border-top: 1px solid var(--line); }
+.chat-input textarea { min-height: 40px; max-height: 120px; padding: 8px 10px; }
+#chat-mic.rec { color: var(--bad); background: var(--accent-soft); }
+.issue { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+ul.plain { padding-left: 18px; font-size: 0.9rem; }
+.shadow-target { font-size: 1.25rem; line-height: 1.45; }
+.shadow-score { display: flex; align-items: baseline; gap: 10px; }
+.shadow-score b { font-family: var(--serif); font-size: 2.2rem; font-weight: 400; line-height: 1; }
+.shadow-score span { color: var(--muted); font-size: 0.9rem; }
+.shadow-marked { font-size: 1.1rem; line-height: 1.6; margin-top: 8px; }
+.sh-ok { color: var(--good); }
+.sh-miss { color: var(--bad); text-decoration: underline dotted; }
+.fc-q.long { font-size: 1.3rem; line-height: 1.4; }
+.fc-a.serif.long { font-size: 1.15rem; line-height: 1.45; }
+.fc-example-zh { font-family: var(--sans); font-style: normal; font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+.mistake .serif { font-size: 1rem; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.gtable th { white-space: nowrap; }

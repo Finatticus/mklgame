@@ -193,6 +193,8 @@ Actions.doTranslation = async (arg, btn) => {
         $("trans-output").innerHTML = toZh
             ? `<div class="trans-out">${esc(out)}</div><div class="trans-src">${makeClickable(input)}</div><p class="tiny muted mt-8">點原文中的字即可加入單字本</p>`
             : `<div class="trans-src" style="border:none; margin:0; padding:0;">${makeClickable(out)}</div><p class="tiny muted mt-8">點譯文中的字即可加入單字本</p>`;
+        const zh = toZh ? out : input;
+        $("trans-output").innerHTML += `<div class="links mt-8"><button class="link small" data-save-sent="${esc(lastTransForeign)}" data-zh="${esc(zh)}"><i class="icon-bookmark-plus"></i> 存成句子卡</button><button class="link small" data-shadow="${esc(lastTransForeign)}" data-zh="${esc(zh)}"><i class="icon-mic"></i> 跟讀</button></div>`;
         show("trans-result-card");
     } catch (e) {
         showToast("翻譯失敗，請檢查網路", "error");

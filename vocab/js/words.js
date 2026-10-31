@@ -99,7 +99,7 @@ function makeAutoFill(ids) {
     return { run, prime, applyAi, reset: () => prime("", {}), get phonetic() { return st.phonetic; } };
 }
 
-// AI 校對：用 Gemini 取得最常用的意思、詞性與例句
+// AI 校對：用 AI（Claude 或 Gemini）取得最常用的意思、詞性與例句
 Actions.aiProofread = async (which, btn) => {
     const form = which === "qa" ? QuickAdd.fill : AddForm;
     const termId = which === "qa" ? "qa-term" : "word-term";
@@ -734,7 +734,7 @@ Actions.deleteSelectedWords = async () => {
 
 // ===================== 造句 / 複習時間表 =====================
 Actions.openSentenceMaker = () => {
-    const words = Words.inBook(currentViewBook).filter(w => !(w.example || "").trim());
+    const words = Words.inBook(currentViewBook).filter(w => !(w.example || "").trim() && w.pos !== "sent.");
     $("sentence-list").innerHTML = words.length
         ? words.map(w => `<div class="list-row" data-action="editWord" data-arg="${esc(w.id)}">
             <div class="grow"><span class="serif" style="font-size:1.1rem;">${esc(w.term)}</span> <span class="small muted">${esc(w.meaning)}</span></div>

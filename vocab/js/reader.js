@@ -14,6 +14,8 @@ function renderBilingual(container, blocks, { cached = [], bookmarkIndex = -1, o
             <div class="para-tools">
                 <button data-para-act="speak" data-i="${i}"><i class="icon-volume-2"></i> 朗讀</button>
                 <button data-para-act="stop"><i class="icon-square"></i> 停止</button>
+                <button data-para-act="shadow" data-i="${i}"><i class="icon-mic"></i> 跟讀</button>
+                <button data-para-act="save" data-i="${i}"><i class="icon-bookmark-plus"></i> 存句子</button>
                 ${onBookmark ? `<button class="bmk${i === bookmarkIndex ? " on" : ""}" data-para-act="bookmark" data-i="${i}"><i class="icon-bookmark"></i> 書籤</button>` : ""}
             </div>
         </div>`).join("");
@@ -24,6 +26,8 @@ function renderBilingual(container, blocks, { cached = [], bookmarkIndex = -1, o
         const i = Number(btn.dataset.i);
         if (btn.dataset.paraAct === "speak") TTS.say(blocks[i]);
         else if (btn.dataset.paraAct === "stop") TTS.stop();
+        else if (btn.dataset.paraAct === "shadow") openShadow(blocks[i], results[i] || "");
+        else if (btn.dataset.paraAct === "save") Sent.save(blocks[i], results[i] || "");
         else if (onBookmark) { container.querySelectorAll(".bmk").forEach(b => b.classList.toggle("on", b === btn)); onBookmark(i); }
     };
 
@@ -37,7 +41,7 @@ function renderBilingual(container, blocks, { cached = [], bookmarkIndex = -1, o
 }
 
 // ===================== 新聞 =====================
-const News = { list: [], index: 0, kind: "article", lang: "" };
+const News = { list: [], index: 0, kind: "article", lang: "", source: "" };
 
 function refreshNewsOptions() {
     $("news-category").innerHTML = L().news.map(([v, label]) => `<option value="${v}">${label}</option>`).join("");
@@ -53,13 +57,15 @@ Actions.loadNews = async (arg) => {
             const res = await Api.call("news", { lang: S.lang, section: $("news-category").value });
             News.kind = res.kind;
             News.lang = S.lang;
+            News.source = res.source || L().newsSource;
+            $("news-source").textContent = "來源：" + News.source;
             News.list = res.kind === "article" ? shuffle(res.items.filter(i => i.body && i.body.length > 200)) : res.items;
             News.index = 0;
         } else {
             News.index = (News.index + 1) % News.list.length;
         }
         if (!News.list.length) { showToast("這個類別目前沒有內容", "error"); return; }
-        $("news-modal-title").textContent = L().newsSource;
+        $("news-modal-title").textContent = News.source || L().newsSource;
         if (News.kind === "article") renderNewsArticle(News.list[News.index]);
         else renderNewsDigest(News.list);
         show("news-modal");
@@ -369,10 +375,9 @@ Actions.generateTopicWordPack = async () => {
         : `Generate exactly ${count} essential English vocabulary words or short phrases for the topic: "${kw}". ` +
           `Return ONLY a JSON array of objects with keys "term" (English), "meaning" (Traditional Chinese) and "pos" (one of: ${posCodes}). No markdown.`;
     try {
-        const res = await Api.call("gemini", { history: [{ role: "user", parts: [{ text: prompt }] }] });
-        const text = res.text.replace(/```json/gi, "").replace(/```/g, "").trim();
         let words = [];
-        try { words = JSON.parse(text.slice(text.indexOf("["), text.lastIndexOf("]") + 1)); } catch (e) { words = []; }
+        try { words = await Svc.aiJSON(prompt, { array: true }); } catch (e) { if (!(e instanceof SyntaxError) && !/解析/.test(e.message)) throw e; }
+        if (!Array.isArray(words)) words = [];
         words = words.filter(w => w && (w.term || w.en) && (w.meaning || w.zh)).map(w => ({
             term: Words.normalize(w.term || w.en), meaning: String(w.meaning || w.zh).trim(),
             pos: L().pos.some(p => p[0] === w.pos) ? w.pos : ""

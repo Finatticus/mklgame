@@ -108,7 +108,7 @@ function renderFlashcard() {
     const sub = `<div class="fc-sub small">${posLabel(w.pos)} ${w.phonetic ? `<span class="phon">${esc(w.phonetic)}</span>` : ""}</div>`;
     const q = $("fc-question");
     if (mode === "term") {
-        q.innerHTML = `<div class="fc-q">${esc(w.term)}</div>${sub}`;
+        q.innerHTML = `<div class="fc-q${w.term.length > 24 ? " long" : ""}">${esc(w.term)}</div>${sub}`;
         show("fc-play-btn");
         setTimeout(() => TTS.say(w.term), 200);
     } else if (mode === "meaning") {
@@ -137,13 +137,13 @@ Actions.flipCard = (arg, el, e) => {
     FC.answered = true;
     hide("fc-tap");
     const mode = $("fc-mode").value;
-    const example = w.example ? `<div class="fc-example">${esc(w.example)}</div>` : "";
+    const example = w.example ? `<div class="fc-example"><span>${esc(w.example)}</span> <button class="icon-btn sm" data-say="${esc(w.example)}" title="朗讀例句"><i class="icon-volume-2"></i></button><div class="fc-example-zh" id="fc-ex-zh"></div></div>` : "";
     const notes = w.notes ? `<div class="fc-notes">${esc(w.notes)}</div>` : "";
     let html;
     if (mode === "term") {
         html = `<div class="fc-a">${esc(w.meaning)}</div>${example}${notes}`;
     } else if (mode === "meaning") {
-        html = `<div class="fc-a serif">${esc(w.term)}</div><div class="fc-sub small">${posLabel(w.pos)}</div>${example}${notes}`;
+        html = `<div class="fc-a serif${w.term.length > 24 ? " long" : ""}">${esc(w.term)}</div><div class="fc-sub small">${posLabel(w.pos)}</div>${example}${notes}`;
         TTS.say(w.term);
     } else {
         const input = $("dictation-input");
@@ -159,8 +159,17 @@ Actions.flipCard = (arg, el, e) => {
     }
     $("fc-answer").innerHTML = html;
     show("fc-answer");
+    if (w.example) fillExampleZh(w);
     if (FC.source === "due") show("srs-controls");
 };
+
+// 例句翻譯：第一次翻面時才翻譯，存在記憶體裡
+const exampleZh = new Map();
+function fillExampleZh(w) {
+    const show = (t) => { const el = $("fc-ex-zh"); if (el && currentCard() === w) el.textContent = t; };
+    if (exampleZh.has(w.example)) { show(exampleZh.get(w.example)); return; }
+    Svc.translate(w.example).then(t => { exampleZh.set(w.example, t); show(t); }).catch(() => {});
+}
 
 Actions.nextCard = (step) => {
     if (!FC.cards.length) return;
@@ -201,11 +210,7 @@ function updateStatistics() {
     $("stat-due").textContent = SRS.dueList().all.length;
 
     const byDate = new Map(S.log.filter(r => r.lang === S.lang).map(r => [r.date, r]));
-    let streak = 0;
-    const d = new Date();
-    if (!(byDate.get(dateKey(d)) || {}).reviews) d.setDate(d.getDate() - 1);
-    while ((byDate.get(dateKey(d)) || {}).reviews > 0) { streak++; d.setDate(d.getDate() - 1); }
-    $("stat-streak").textContent = streak;
+    $("stat-streak").textContent = Goals.streak();
 
     const days = [];
     for (let i = 29; i >= 0; i--) {

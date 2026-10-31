@@ -322,7 +322,27 @@ const Svc = {
         return { meaning, pos: match.pos, phonetic: "", senses, entry, lemma: match.pos === mainPos ? lemma : "" };
     },
 
-    // AI 校對：回傳常用意思、詞性、例句（需要後端的 GEMINI_API_KEY）
+    // 通用 AI（後端依設定使用 Claude 或 Gemini）
+    async ai(messages, { system = "", maxTokens = 4000 } = {}) {
+        if (typeof messages === "string") messages = [{ role: "user", content: messages }];
+        const res = await Api.call("ai", { system, messages, maxTokens });
+        return res.text || "";
+    },
+
+    // 從 AI 回覆中取出 JSON（容忍前後多出的文字或 ``` 標記）
+    parseJSON(text, array = false) {
+        text = String(text || "").replace(/```json/gi, "").replace(/```/g, "");
+        const [a, b] = array ? ["[", "]"] : ["{", "}"];
+        const i = text.indexOf(a), j = text.lastIndexOf(b);
+        if (i < 0 || j < i) throw new Error("AI 回傳的內容無法解析，請再試一次");
+        return JSON.parse(text.slice(i, j + 1));
+    },
+
+    async aiJSON(prompt, { system = "", maxTokens = 4000, array = false } = {}) {
+        return Svc.parseJSON(await Svc.ai(prompt, { system, maxTokens }), array);
+    },
+
+    // AI 校對：回傳常用意思、詞性、例句
     async aiLookup(word, lang = S.lang) {
         const key = `${lang}|${word.toLowerCase()}`;
         const cache = lsGet("vocab_ai_cache", {});
@@ -337,9 +357,7 @@ For the ${l.name} entry "${word}", return ONLY a JSON object with:
 "example": one natural, grammatically correct ${l.name} sentence (CEFR A2-B1) using the word in that meaning,
 "exampleZh": its Traditional Chinese translation.
 No markdown.`;
-        const res = await Api.call("gemini", { history: [{ role: "user", parts: [{ text: prompt }] }] });
-        const text = res.text.replace(/```json/gi, "").replace(/```/g, "");
-        const obj = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+        const obj = await Svc.aiJSON(prompt);
         const out = {
             term: String(obj.term || word).trim(),
             meaning: String(obj.meaning || "").trim(),
@@ -366,9 +384,7 @@ Check grammar, spelling (including accents), word choice and naturalness. Return
 "explanation": a short explanation in Traditional Chinese of each problem (empty string if ok),
 "translation": Traditional Chinese translation of the corrected sentence.
 No markdown.`;
-        const res = await Api.call("gemini", { history: [{ role: "user", parts: [{ text: prompt }] }] });
-        const text = res.text.replace(/```json/gi, "").replace(/```/g, "");
-        return JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+        return Svc.aiJSON(prompt);
     }
 };
 
@@ -392,7 +408,7 @@ const Phon = {
     },
 
     ensure(word) {
-        if (!word || word.lang !== "en" || word.phonetic || Phon.missCache().has(word.term.toLowerCase())) return Promise.resolve(word && word.phonetic);
+        if (!word || word.lang !== "en" || word.phonetic || word.pos === "sent." || word.term.includes(" ") || Phon.missCache().has(word.term.toLowerCase())) return Promise.resolve(word && word.phonetic);
         return Phon.run(async () => {
             const entry = await Svc.dict(word.term, "en");
             const ph = entry ? entry.phonetic : "";
