@@ -554,6 +554,33 @@ function fmt(n) {
 }
 // 內容沒變就不動 DOM，避免圖片重建造成閃爍
 function setHtml(el, html) { if (el && el._h !== html) { el._h = html; el.innerHTML = html; } }
+function set_(el, text) { if (el && el.textContent !== text) el.textContent = text; }
+// 把 el 的內容更新成 html，但盡量沿用原本的節點：同樣的圖片不會被重建，就不會閃一下
+// 有 data-keep 的元素只更新屬性，內容由程式自己管理（例如地圖）
+function morph(el, html) {
+  if (!el) return;
+  if (el._h === html) return;
+  el._h = html;
+  const t = document.createElement('template');
+  t.innerHTML = html;
+  morphKids(el, t.content);
+}
+function morphKids(a, b) {
+  const an = Array.from(a.childNodes), bn = Array.from(b.childNodes);
+  for (let i = 0; i < bn.length; i++) {
+    const x = an[i], y = bn[i];
+    if (!x) { a.appendChild(y); continue; }
+    if (x.nodeType !== y.nodeType || x.nodeName !== y.nodeName || (x.nodeType === 1 && (x.id !== y.id || x.dataset.keep !== y.dataset.keep))) { a.replaceChild(y, x); continue; }
+    if (x.nodeType !== 1) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; continue; }
+    const keep = x.hasAttribute('data-keep');
+    for (const at of Array.from(x.attributes)) if (!y.hasAttribute(at.name) && !(keep && (at.name === 'class' || at.name === 'style'))) x.removeAttribute(at.name);
+    for (const at of Array.from(y.attributes)) if (x.getAttribute(at.name) !== at.value && !(keep && (at.name === 'class' || at.name === 'style'))) x.setAttribute(at.name, at.value);
+    if (x.tagName === 'IMG' || keep) continue;
+    x._h = undefined;
+    morphKids(x, y);
+  }
+  for (let i = an.length - 1; i >= bn.length; i--) a.removeChild(an[i]);
+}
 function fmtTime(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
   return h ? `${h}時${String(m).padStart(2, '0')}分` : m ? `${m}分${String(sec).padStart(2, '0')}秒` : `${sec}秒`;

@@ -855,26 +855,40 @@ const Play = {
   flyTo(f) { App.closeSheet(); if (+f === this.T.floor) return; this.T.poison = 0; this.goFloor(+f, 'start'); Store.saveLocal(); this.render(); App.render(); },
 
   // ---------- 畫面 ----------
+  // 塔內畫面：上方一列精簡狀態，中間地圖盡量放大，下方一列小按鈕
   render() {
     if (!this.T) return this.renderLobby();
-    const T = this.T, fl = this.fl(), z = ZONES[fl.zone];
-    const title = this.key === 'weekly' ? `謎題 ${T.floor}：${fl.name || ''}` : `第 ${T.floor} 層`;
-    const tag = this.key === 'daily' ? '・每日挑戰' : this.key === 'main' && T.curse ? `・詛咒 ${T.curse}` : '';
-    return `<div class="tower">
-      <div class="t-head"><div><b>${this.key === 'weekly' ? '每週謎題' : z.name}</b><span>${title}${tag}</span></div>
-        <div class="row"><button class="btn sm" data-act="towerManual">手冊</button>${T.maxFloor > 1 && this.key !== 'weekly' ? '<button class="btn sm" data-act="towerFly">傳送</button>' : ''}<button class="btn sm ghost" data-act="towerLeave">${this.key === 'main' ? '回營地' : '結束'}</button></div></div>
-      <div id="tHud" class="t-hud glass"></div>
-      <div class="board-wrap"><div id="board" class="board ${this.mode ? 'mode-' + this.mode : ''} ${fl.dark ? 'dark' : ''}" style="--fl:${z.pal[0]};--fl2:${z.pal[1]};--wa:${z.pal[2]};--wb:${z.pal[3]};--glow:${z.pal[4]}"></div></div>
-      <div class="t-foot">${T.fixed ? '' : '<button class="btn skillbtn" data-act="towerSkill" id="tSkill"></button>'}
-        <button class="btn" data-act="towerPotion" id="tPotion"></button></div>
-      <div id="tItems" class="t-items"></div>
+    const T = this.T, fl = this.fl(), z = ZONES[fl.zone], hero = this.hero();
+    const petTok = (p, cls) => p ? `<span class="hud-pet ${cls}" data-act="petInfo" data-arg="${cls}" data-tip="${p.name}：${Store.petDesc(p.id, p.lvl, p.star, cls === 'assist' ? 0.5 : 1)}">${Art.img(p.icon)}</span>` : '';
+    return `<div class="tower" data-k="${this.key}">
+      <div class="t-head"><div class="t-title"><b id="tZone"></b><span id="tFloor"></span></div>
+        <div class="t-btns"><button class="btn xs" data-act="towerManual">手冊</button><button class="btn xs" id="tFlyBtn" data-act="towerFly">傳送</button><button class="btn xs ghost" data-act="towerLeave">${this.key === 'main' ? '回營地' : '結束'}</button></div></div>
+      <div id="tHud" class="t-hud glass">
+        <div class="hs"><span class="hud-hero" data-tip="${hero.name}：${hero.passive}">${UI.token(hero.icon)}</span>${petTok(this.pet(), 'active')}${petTok(this.pet('assist'), 'assist')}
+          <div class="hv">
+            <span class="hp" data-tip="生命：歸零就會倒下。喝藥水、撿地上的藥水、升級都能回復。"><i>生命</i><b id="hHp"></b></span>
+            <span data-tip="攻擊：每一擊造成「攻擊 − 怪物防禦」的傷害。撿紅寶石可以提升。"><i>攻擊</i><b id="hAtk"></b></span>
+            <span data-tip="防禦：怪物每一擊對你的傷害是「怪物攻擊 − 防禦」。撿藍寶石可以提升。"><i>防禦</i><b id="hDef"></b></span>
+            <span class="kc" data-tip="黃鑰匙：打開黃門">${Art.img('item/key_y')}<b id="hY"></b></span>
+            <span class="kc" data-tip="藍鑰匙：打開藍門">${Art.img('item/key_b')}<b id="hB"></b></span>
+            <span class="kc" data-tip="塔內金幣：在祭壇修女、鑰匙商人那裡使用">${Art.img('icon/goldcoins')}<b id="hG"></b></span>
+          </div></div>
+        ${T.fixed ? '' : '<div class="hud-xp" id="hXp"><i></i><span></span></div>'}
+        <div class="hud-tags" id="hTags"></div>
+      </div>
+      <div class="board-wrap"><div id="board" data-keep class="board" style="--fl:${z.pal[0]};--fl2:${z.pal[1]};--wa:${z.pal[2]};--wb:${z.pal[3]};--glow:${z.pal[4]}"></div></div>
+      <div class="t-act">${T.fixed ? '' : `<button class="act skill" data-act="towerSkill" id="tSkill"><b>${hero.skill.name}</b><i id="tSkillN"></i></button>`}
+        <button class="act potion" data-act="towerPotion" id="tPotion">${Art.img('item/potion_red')}<i id="tPotN"></i></button>
+        <span id="tItems" class="t-items"></span></div>
       <div id="tLog" class="t-log"></div>
     </div>`;
   },
   afterRender() {
     if (!this.T || !document.getElementById('board')) return;
-    this.drawBoard(); this.drawHud();
+    this.drawBoard(); this.drawHud(); this.drawHead();
     const b = document.getElementById('board');
+    if (b._wired) return;
+    b._wired = true;
     let sx = 0, sy = 0;
     b.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
     b.addEventListener('touchend', e => {
@@ -924,7 +938,9 @@ const Play = {
   },
   drawBoard() {
     const b = document.getElementById('board'); if (!b || !this.T) return;
-    const fl = this.fl(), P = this.P(), mods = this.mods();
+    const fl = this.fl(), P = this.P(), mods = this.mods(), z = ZONES[fl.zone];
+    b.className = `board ${this.mode ? 'mode-' + this.mode : ''} ${fl.dark ? 'dark' : ''}`;
+    b.style.cssText = `--fl:${z.pal[0]};--fl2:${z.pal[1]};--wa:${z.pal[2]};--wb:${z.pal[3]};--glow:${z.pal[4]}`;
     const html = fl.cells.map((c, i) => this.cellHtml(c, i, fl, P, mods)), icon = this.hero().icon;
     // 只換掉有變的格子；整盤重建會讓所有圖片和動畫重來而閃爍
     if (b._fl !== fl || b._icon !== icon || !b._cells) {
@@ -942,35 +958,45 @@ const Play = {
     t.style.transform = `translate(${x * 100}%, ${y * 100}%)`;
     t.classList.toggle('poison', !!this.T.poison);
   },
+  drawHead() {
+    const T = this.T; if (!T) return;
+    const fl = this.fl(), z = ZONES[fl.zone], set = (id, v) => { const e = document.getElementById(id); if (e && e.textContent !== v) e.textContent = v; };
+    set('tZone', this.key === 'weekly' ? '每週謎題' : z.name);
+    set('tFloor', (this.key === 'weekly' ? `謎題 ${T.floor}：${fl.name || ''}` : `第 ${T.floor} 層`) + (this.key === 'daily' ? '・每日' : this.key === 'main' && T.curse ? `・詛咒 ${T.curse}` : ''));
+    const fb = document.getElementById('tFlyBtn'); if (fb) fb.hidden = !(T.maxFloor > 1 && this.key !== 'weekly');
+  },
+  // 只改文字與數字，不重建圖片（避免閃爍）
   drawHud() {
     const h = document.getElementById('tHud'); if (!h || !this.T) return;
     const T = this.T, P = this.P(), S = Store.S, sk = this.hero().skill;
-    const tr = T.treasures.map(id => `<span class="tr" data-act="treasureInfo" data-arg="${id}" data-tip="${TREASURES[id].name}：${TREASURES[id].desc}">${Art.img(TREASURES[id].icon)}</span>`).join('');
-    const tools = Object.keys(T.tools).map(k => `<span class="tr tool" data-act="toolInfo" data-arg="${k}" data-tip="${TOOLS[k].name}：${TOOLS[k].desc}">${Art.img(TOOLS[k].icon)}</span>`).join('');
+    const set = (id, v) => { const e = document.getElementById(id); if (e && e.textContent !== String(v)) e.textContent = v; };
+    set('hHp', fmt(T.hp)); set('hAtk', P.atk); set('hDef', P.def); set('hY', T.keys.Y); set('hB', T.keys.B); set('hG', fmt(T.gold));
+    const hpEl = document.getElementById('hHp'); if (hpEl) hpEl.classList.toggle('low', T.hp < this.U() * 6);
+    const xp = document.getElementById('hXp');
+    if (xp) {
+      const hs = this.hs(), need = Store.xpNeed(hs.lvl), w = Math.min(100, hs.xp / need * 100) + '%';
+      if (xp.firstChild.style.width !== w) xp.firstChild.style.width = w;
+      set_(xp.lastChild, `Lv ${hs.lvl}・經驗 ${fmt(hs.xp)} / ${fmt(need)}`);
+      xp.dataset.tip = `經驗 ${fmt(hs.xp)} / ${fmt(need)}，還差 ${fmt(need - hs.xp)} 升到 Lv${hs.lvl + 1}。升級時攻擊、防禦 +1，生命 +50。`;
+    }
     const b = this.key === 'main' ? S.stars[T.floor] || 0 : 0;
-    const stars = this.key === 'main' ? `<span class="stars">${[1, 2, 4].map(k => `<i class="${b & k ? 'on' : ''}">★</i>`).join('')}</span>` : '';
-    const pet = this.pet(), pet2 = this.pet('assist'), hsx = this.hs();
-    const xpBar = T.fixed ? '' : `<div class="hud-xp" data-tip="經驗：${fmt(hsx.xp)} / ${fmt(Store.xpNeed(hsx.lvl))}。升級時攻擊、防禦 +1，生命 +50。"><i style="width:${Math.min(100, hsx.xp / Store.xpNeed(hsx.lvl) * 100)}%"></i><span>Lv ${hsx.lvl}・經驗 ${fmt(hsx.xp)} / ${fmt(Store.xpNeed(hsx.lvl))}</span></div>`;
-    const petTok = (p, cls) => p ? `<span class="hud-pet ${cls}" data-act="petInfo" data-arg="${cls}" data-tip="${p.name}：${Store.petDesc(p.id, p.lvl, p.star, cls === 'assist' ? 0.5 : 1)}">${Art.img(p.icon)}</span>` : '';
-    setHtml(h, `<div class="hs">${UI.token(this.hero().icon)}${petTok(pet, 'active')}${petTok(pet2, 'assist')}<div class="hv">
-        <span class="hp" data-tip="生命：歸零就會倒下。喝藥水、撿紅藍藥水、升級都能回復。">生命 <b>${fmt(T.hp)}</b></span><span data-tip="攻擊：每一擊造成「攻擊 − 怪物防禦」的傷害。撿紅寶石可以提升。">攻擊 <b>${P.atk}</b></span><span data-tip="防禦：怪物每一擊對你的傷害是「怪物攻擊 − 防禦」。撿藍寶石可以提升。">防禦 <b>${P.def}</b></span>
-        <span>${T.fixed ? '謎題' : 'Lv'} <b>${T.fixed ? T.floor : this.hs().lvl}</b></span></div></div>
-      <div class="keys">${['Y', 'B'].map(k => `<span>${Art.img('item/key_' + k.toLowerCase())}<b>${T.keys[k]}</b></span>`).join('')}
-        <span>${Art.img('icon/goldcoins')}<b>${T.gold}</b></span>${stars}
-        ${T.poison ? '<span class="poison-tag">中毒</span>' : ''}${T.curseDebuff ? '<span class="poison-tag curse">詛咒</span>' : ''}
-        ${['shield', 'pierce', 'analyze', 'feast'].filter(k => T.flags[k]).map(k => `<span class="buff">${HERO_ORDER.map(x => HEROES[x].skill).find(s => s.id === k).name}</span>`).join('')}
-        ${T.flags.bastion === T.floor ? '<span class="buff">堡壘</span>' : ''}${T.meal ? `<span class="buff meal">${DISHES[T.meal].name}</span>` : ''}</div>
-      ${tr || tools ? `<div class="trs">${tools}${tr}</div>` : ''}${xpBar}`);
-    const s = document.getElementById('tSkill');
-    if (s) { setHtml(s, `${sk.name}<small>${sk.desc}・剩 ${this.skillLeft()} 次</small>`); s.dataset.tip = `${sk.name}：${sk.desc}。每到新的一層次數會重置。長按看說明，點一下使用。`; }
-    const p = document.getElementById('tPotion');
-    if (p) { setHtml(p, `${UI.ico('item/potion_red', 'ri')}藥水 ×${T.potions}<small>喝一瓶 +${fmt(this.potionHeal())} 生命</small>`); p.dataset.tip = `治療藥水：喝一瓶回復 ${fmt(this.potionHeal())} 生命（8U，藥水加成會增加），並解除中毒。營地的藥師小屋會慢慢製作，進主塔時自動帶上。`; }
-    const it = document.getElementById('tItems');
-    setHtml(it, Object.keys(ITEMS).filter(k => T.items[k]).map(k => `<button class="btn sm" data-act="towerItem" data-arg="${k}">${UI.ico(ITEMS[k].icon, 'ri')}${ITEMS[k].name} ×${T.items[k]}</button>`).join(''));
-    if (it) it.querySelectorAll('[data-arg]').forEach(b => { b.dataset.tip = `${ITEMS[b.dataset.arg].name}：${ITEMS[b.dataset.arg].desc}`; });
+    const stars = this.key === 'main' ? `<span class="stars" data-tip="本層星星：抵達上樓・收集全部寶石・擊敗全部怪物">${[1, 2, 4].map(k => `<i class="${b & k ? 'on' : ''}">★</i>`).join('')}</span>` : '';
+    const tags = [T.poison && '<span class="poison-tag" data-tip="中毒：每走一步扣血，喝藥水或換樓層解除">中毒</span>', T.curseDebuff && '<span class="poison-tag curse" data-tip="詛咒：攻擊降低，換樓層解除">詛咒</span>',
+      ...['shield', 'pierce', 'analyze', 'feast'].filter(k => T.flags[k]).map(k => { const x = HERO_ORDER.map(y => HEROES[y].skill).find(q => q.id === k); return `<span class="buff" data-tip="${x.name}：${x.desc}">${x.name}</span>`; }),
+      T.flags.bastion === T.floor && '<span class="buff">堡壘</span>', T.meal && `<span class="buff meal" data-tip="${DISHES[T.meal].name}：${DISHES[T.meal].desc}">${DISHES[T.meal].name}</span>`].filter(Boolean).join('');
+    const tools = Object.keys(T.tools).map(k => `<span class="tr tool" data-act="toolInfo" data-arg="${k}" data-tip="${TOOLS[k].name}：${TOOLS[k].desc}">${Art.img(TOOLS[k].icon)}</span>`).join('');
+    const tr = T.treasures.map(id => `<span class="tr" data-act="treasureInfo" data-arg="${id}" data-tip="${TREASURES[id].name}：${TREASURES[id].desc}">${Art.img(TREASURES[id].icon)}</span>`).join('');
+    morph(document.getElementById('hTags'), stars + tags + tools + tr);
+    const sn = document.getElementById('tSkillN');
+    if (sn) { set('tSkillN', `×${this.skillLeft()}`); document.getElementById('tSkill').dataset.tip = `${sk.name}：${sk.desc}（剩 ${this.skillLeft()} 次，每到新的一層重置）`; document.getElementById('tSkill').classList.toggle('off', this.skillLeft() <= 0); }
+    set('tPotN', `×${T.potions}`);
+    const pb = document.getElementById('tPotion');
+    if (pb) { pb.dataset.tip = `治療藥水：喝一瓶回復 ${fmt(this.potionHeal())} 生命並解除中毒。營地的藥師小屋會慢慢製作，進主塔時自動帶上。`; pb.classList.toggle('off', T.potions <= 0); }
+    morph(document.getElementById('tItems'), Object.keys(ITEMS).filter(k => T.items[k]).map(k => `<button class="act" data-act="towerItem" data-arg="${k}" data-tip="${ITEMS[k].name}：${ITEMS[k].desc}">${Art.img(ITEMS[k].icon)}<i>×${T.items[k]}</i></button>`).join(''));
     const l = document.getElementById('tLog');
-    if (l) l.textContent = this.mode ? { wall: '穿牆術：點旁邊的牆', tool: '破牆鎬：點旁邊的牆', pick: '開鎖：點旁邊的門', midas: '點金術：點旁邊的怪物' }[this.mode]
-      : (T.log || '點格子移動，也可以滑動。點怪物會走過去開打。');
+    if (l) set_(l, this.mode ? { wall: '穿牆術：點旁邊的牆', tool: '破牆鎬：點旁邊的牆', pick: '開鎖：點旁邊的門', midas: '點金術：點旁邊的怪物' }[this.mode]
+      : (T.log || '點格子移動，也可以滑動。長按任何東西看說明。'));
+    this.drawHead();
   },
   treasureInfo(id) {
     const t = TREASURES[id];

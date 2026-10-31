@@ -24,8 +24,13 @@ const UI = {
   },
 };
 
-// 營地版面：篝火在上方，其他設施依用途排成四欄（信仰與知識、英雄與夥伴、補給、生產）
-const CAMP_GRID = ['altar', 'study', 'observatory', 'rune', 'tavern', 'training', 'nest', 'forge', 'keysmith', 'apothecary', 'farm', 'vault', 'lumber', 'mine', 'market'];
+// 營地版面：依用途分組，點設施就打開它的功能
+const CAMP_GROUPS = [
+  { name: '資源生產', ids: ['lumber', 'mine', 'market'] },
+  { name: '爬塔補給', ids: ['keysmith', 'apothecary', 'farm', 'vault'] },
+  { name: '英雄與裝備', ids: ['tavern', 'training', 'forge', 'rune', 'nest'] },
+  { name: '知識與信仰', ids: ['study', 'observatory', 'altar'] },
+];
 
 const Camp = {
   tab: 'base',
@@ -53,32 +58,37 @@ const Camp = {
     };
   },
 
-  scene() {
-    const S = Store.S, r = Store.rates(), st = S.stash, hl = S.buildings.hearth;
-    const plot = id => {
-      const b = BUILDINGS[id], l = S.buildings[id], locked = Store.bLocked(id);
-      const cls = [locked ? 'locked' : '', !l ? 'empty' : '', this.canUp(id) ? 'can' : ''].join(' ');
-      const plate = locked ? `<span class="plate">篝火 ${b.req}</span>` : `<span class="plate">${b.name}${l ? ` <b>${l}</b>` : ''}</span>`;
-      const dot = this.plotDot(id) ? '<i class="bang">!</i>' : '';
-      return `<button class="cplot ${cls}" data-act="bld" data-arg="${id}" data-spot="${id}" data-tip="${b.name}：${b.desc}"><span class="pad"></span>${Art.img(b.npc, 'tok')}${Art.img(b.tool, 'badge')}${dot}${plate}</button>`;
-    };
-    const v = S.visitor && VISITORS.find(x => x.id === S.visitor.id);
-    const visitor = v ? `<button class="cplot visitor" data-act="visitor"><span class="pad"></span>${Art.img(v.icon, 'tok')}<i class="bang">!</i><span class="plate">${v.name}</span></button>` : '';
-    const lanterns = Array.from({ length: Math.min(10, hl * 2) }, (_, i) => `<i style="left:${5 + i * 10}%;animation-delay:${-i * 0.6}s"></i>`).join('');
-    return `<section class="camp v2" id="campScene">
-      <div class="stars"></div><span class="moon"></span>
-      <div class="camp-top">
-        <div class="camp-title"><h1>燼火營地</h1><p>離線收益上限 ${Store.offlineCapHours()} 小時</p>
-          <div class="rates">${['wood', 'ore', 'gold'].map(k => `<span>${UI.res(k)}${r[k] < 10 ? r[k].toFixed(1) : fmt(r[k])}/s</span>`).join('')}</div>
-          <div class="rates stash" data-tip="營地倉庫：鑰匙工坊與藥師小屋做好的東西，進主塔時會自動帶上。">${UI.ico('item/key_y', 'ri')}${Math.floor(st.Y)} ${UI.ico('item/key_b', 'ri')}${Math.floor(st.B)} ${UI.ico('item/potion_red', 'ri')}${Math.floor(st.potion)}</div></div>
-        <button class="hearth-big ${this.canUp('hearth') ? 'can' : ''}" data-act="bld" data-arg="hearth" data-spot="hearth" data-tip="篝火：${BUILDINGS.hearth.desc}">
-          <span class="glow"></span><span class="fire"><i></i><i></i><i></i></span><span class="logs"></span><span class="plate">篝火 <b>${hl}</b></span></button>
-      </div>
-      <div class="lantern-line">${lanterns}</div>
-      <div class="camp-grid">${CAMP_GRID.map(plot).join('')}${visitor}</div>
-    </section>`;
+  // 設施卡片上的一行狀態
+  status(id) {
+    const S = Store.S, l = S.buildings[id], b = BUILDINGS[id], now = Date.now();
+    if (Store.bLocked(id)) return `篝火 Lv${b.req} 解鎖`;
+    if (!l) return '尚未建造';
+    if (b.prod) return `${UI.res(Object.keys(b.prod)[0])}+${this.prodText(id, l)}/s`;
+    const st = S.stash, cap = Store.stashCap();
+    switch (id) {
+      case 'keysmith': return `黃 ${Math.floor(st.Y)}/${cap.Y}・藍 ${Math.floor(st.B)}/${cap.B}`;
+      case 'apothecary': return `藥水 ${Math.floor(st.potion)}/${cap.potion}`;
+      case 'farm': { const r = S.farm.plots.filter(p => p && p.end <= now).length; return r ? `<b class="ok">${r} 塊可收成</b>` : `${Store.plotCount()} 塊田`; }
+      case 'vault': return `離線 ${Store.offlineCapHours()} 小時`;
+      case 'tavern': { const r = S.expeditions.filter(e => e.end <= now).length; return r ? `<b class="ok">${r} 隊回來了</b>` : `派遣 ${S.expeditions.length}/${Store.expSlots()}`; }
+      case 'training': return `訓練 ${(S.training || []).length}/${Store.trainSlots()}`;
+      case 'forge': return `品階 ${Store.forgeTier()}・強化 +${Store.plusCap()}`;
+      case 'rune': return '洗練・合成';
+      case 'nest': return S.pets.eggs ? `<b class="ok">蛋 ×${S.pets.eggs}</b>` : `寵物 ${Object.keys(S.pets.own).length}`;
+      case 'study': return S.research.cur ? `研究中 ${fmtTime(S.research.cur.end - now)}` : this.dots().study ? '<b class="ok">可以研究</b>' : '閒置';
+      case 'observatory': { const q = Store.quests(), r = q.filter(x => !x.claimed && x.have >= x.need).length; return r ? `<b class="ok">${r} 個可領</b>` : `任務 ${q.filter(x => x.claimed).length}/${q.length}`; }
+      case 'altar': return S.prayer && S.prayer.date === Store.today() ? '天賦・覺醒' : '<b class="ok">今天還沒祈福</b>';
+    }
+    return '';
   },
-  // 設施上的驚嘆號：有東西可以收或可以做
+  tile(id) {
+    const S = Store.S, b = BUILDINGS[id], l = S.buildings[id], locked = Store.bLocked(id);
+    const cls = [locked ? 'locked' : '', !l ? 'empty' : '', this.canUp(id) ? 'can' : '', this.plotDot(id) ? 'dot' : ''].join(' ');
+    return `<button class="ctile ${cls}" data-act="bld" data-arg="${id}" data-spot="${id}" data-tip="${b.name}：${b.desc}">
+      <span class="ct-face">${Art.img(b.npc, 'tok')}${Art.img(b.tool, 'badge')}</span>
+      <span class="ct-txt"><b>${b.name}${l ? `<i>${l}</i>` : ''}</b><small>${this.status(id)}</small></span>${this.canUp(id) ? '<em class="up">▲</em>' : ''}</button>`;
+  },
+  // 設施上的提示點：有東西可以收或可以做
   plotDot(id) {
     const S = Store.S, d = this.dots();
     if (id === 'study') return d.study;
@@ -86,17 +96,33 @@ const Camp = {
     if (id === 'farm') return d.farm;
     if (id === 'observatory') return Store.quests().some(q => !q.claimed && q.have >= q.need);
     if (id === 'nest') return S.pets.eggs > 0;
-    if (id === 'training') return S.buildings.training > 0 && (S.training || []).length < Store.trainSlots() && HERO_ORDER.some(h => S.heroes[h].owned && h !== S.active && !(S.training || []).includes(h));
+    if (id === 'altar') return S.buildings.altar > 0 && !(S.prayer && S.prayer.date === Store.today());
     return false;
   },
-
   render() {
-    const d = this.dots();
-    const qd = Store.quests().some(q => !q.claimed && q.have >= q.need);
-    const tabs = UI.tabs('campTab', this.tab, [['base', '設施'], ['study', '研究', d.study], ['exp', '派遣', d.exp], ['farm', '農田', d.farm], ['quest', '任務', qd], ['train', '訓練']]);
-    const body = { base: () => this.renderBase(), study: () => this.renderStudy(), exp: () => this.renderExp(), farm: () => this.renderFarm(), quest: () => this.renderQuest(), train: () => this.renderTrain() }[this.tab]();
-    return this.scene() + tabs + body;
+    const S = Store.S, r = Store.rates(), st = S.stash, hl = S.buildings.hearth;
+    const v = S.visitor && VISITORS.find(x => x.id === S.visitor.id);
+    // 待辦：有東西可以收、可以做的時候才出現
+    const todo = [
+      v && `<button class="todo" data-act="visitor">${Art.img(v.icon, 'tok')}<span>${v.name}來了</span></button>`,
+      ...['tavern', 'farm', 'observatory', 'nest', 'study', 'altar'].filter(id => S.buildings[id] && this.plotDot(id)).map(id =>
+        `<button class="todo" data-act="bld" data-arg="${id}">${Art.img(BUILDINGS[id].npc, 'tok')}<span>${{ tavern: '派遣回來了', farm: '可以收成', observatory: '任務可領', nest: '孵化寵物蛋', study: '可以研究', altar: '每日祈福' }[id]}</span></button>`),
+    ].filter(Boolean).join('');
+    return `<section class="camp v3" id="campScene">
+      <div class="stars"></div>
+      <div class="c3-head">
+        <button class="c3-fire ${this.canUp('hearth') ? 'can' : ''}" data-act="bld" data-arg="hearth" data-spot="hearth" data-tip="篝火：${BUILDINGS.hearth.desc}">
+          <span class="glow"></span><span class="fire"><i></i><i></i><i></i></span><span class="logs"></span></button>
+        <div class="c3-title"><h1>燼火營地</h1><p>篝火 Lv${hl}・離線收益 ${Store.offlineCapHours()} 小時${this.canUp('hearth') ? '・<b class="ok">篝火可升級</b>' : ''}</p>
+          <div class="c3-chips">${['wood', 'ore', 'gold'].map(k => `<span>${UI.res(k)}${r[k] < 10 ? r[k].toFixed(1) : fmt(r[k])}/s</span>`).join('')}</div>
+          <div class="c3-chips" data-tip="營地倉庫：鑰匙工坊與藥師小屋做好的東西，進主塔時會自動帶上。">${UI.ico('item/key_y', 'ri')}${Math.floor(st.Y)}${UI.ico('item/key_b', 'ri')}${Math.floor(st.B)}${UI.ico('item/potion_red', 'ri')}${Math.floor(st.potion)}</div></div>
+      </div>
+    </section>
+    ${todo ? `<div class="todo-row">${todo}</div>` : ''}
+    ${CAMP_GROUPS.map(g => `<div class="c3-group"><h2>${g.name}</h2><div class="c3-grid">${g.ids.map(id => this.tile(id)).join('')}</div></div>`).join('')}
+    <p class="dim center c3-hint">點設施可以升級並使用它的功能，長按看說明。</p>`;
   },
+
   // ---------- 每日任務 ----------
   renderQuest() {
     const S = Store.S;
@@ -144,22 +170,6 @@ const Camp = {
     FX.sfx('click'); App.commit();
   },
 
-  renderBase() {
-    const S = Store.S;
-    const rows = BUILDING_ORDER.map(id => {
-      const b = BUILDINGS[id], l = S.buildings[id], max = Store.bMax(id);
-      const face = id === 'hearth' ? UI.ico('item/torch', 'portrait-ico') : UI.token(b.npc, l ? '' : 'off', b.tool);
-      if (Store.bLocked(id)) return `<div class="bld-row glass locked">${face}<div class="info"><b>${b.name}</b><div class="dim">篝火 Lv${b.req} 解鎖</div></div></div>`;
-      const btn = l >= max ? `<button class="btn sm" disabled>${l >= (b.max || 99) || id === 'hearth' ? '已滿級' : '需篝火'}</button>`
-        : UI.costBtn('upgrade', id, Store.bCost(id), '', 'sm' + (this.canUp(id) ? ' go' : ''));
-      return `<div class="bld-row glass" data-act="bld" data-arg="${id}">${face}
-        <div class="info"><b>${b.name}</b><span class="lv">${l ? 'Lv' + l : '未建造'}</span><div class="dim">${this.sub(id)}</div></div>${btn}</div>`;
-    }).join('');
-    const v = S.visitor && VISITORS.find(x => x.id === S.visitor.id);
-    return (v ? `<button class="visitor-bar glass" data-act="visitor">${UI.token(v.icon)}<span><b>${v.name}</b>來到了營地！</span><span class="gold">查看</span></button>` : '') +
-      `<div class="list">${rows}</div>`;
-  },
-
   sheet(id) {
     const S = Store.S, b = BUILDINGS[id], l = S.buildings[id], max = Store.bMax(id);
     let kv = `<span>等級</span><b>${l} / ${max}${l >= max && id !== 'hearth' && !(l >= (b.max || 99)) ? '（提升篝火可解鎖）' : ''}</b>`;
@@ -180,19 +190,17 @@ const Camp = {
     if (id === 'nest') kv += `<span>寵物等級上限</span><b>${5 + l * 3}${l < 5 ? '（Lv5 開放助戰寵物）' : '・助戰寵物已開放'}</b>`;
     if (id === 'forge') kv += `<span>打造品階</span><b>${Store.forgeTier()}（${GEAR_TIER_NAME[Store.forgeTier() - 1]}）</b><span>強化上限</span><b>+${Store.plusCap()}</b>`;
     if (id === 'rune') kv += `<span>洗練費用</span><b>−${l * 5}%</b><span>合成</span><b>${l >= 6 ? '可合成到神話' : '可合成到傳說（Lv6 起可合成神話）'}</b>`;
-    const go = { study: '研究', tavern: '英雄', farm: '農田料理', altar: '祭壇', training: '訓練場', observatory: '任務', nest: '寵物', forge: '鐵匠鋪', rune: '符文工坊' }[id];
-    return `<div class="sheet-head">${face}<div><h3>${b.name}</h3><div class="dim">${b.desc}</div></div></div>
-      <div class="kv">${kv}</div>${btn}${go && l ? `<button class="btn" style="margin-top:8px" data-act="campJump" data-arg="${id}">前往${go}</button>` : ''}`;
+    const go = { altar: '前往祭壇', nest: '打開寵物', forge: '打開鐵匠鋪', rune: '打開符文工坊' }[id];
+    const body = l ? { study: () => this.renderStudy(), tavern: () => this.renderExp(), farm: () => this.renderFarm(), observatory: () => this.renderQuest(), training: () => this.renderTrain() }[id] : null;
+    return `<div class="sheet-head">${face}<div><h3>${b.name} <small class="lv">${l ? 'Lv' + l : '未建造'}</small></h3><div class="dim">${b.desc}</div></div></div>
+      <details class="bld-up" ${l && body ? '' : 'open'}><summary>${l >= max ? '等級資訊' : l ? '升級' : '建造'}${this.canUp(id) ? ' <b class="ok">▲ 可升級</b>' : ''}</summary><div class="kv">${kv}</div>${btn}</details>
+      ${go && l ? `<button class="btn primary" style="margin-top:8px" data-act="campJump" data-arg="${id}">${go}</button>` : ''}
+      ${body ? `<div class="bld-body">${body()}</div>` : ''}`;
   },
   openSheet(id) { if (Store.bLocked(id)) return; FX.sfx('click'); App.openSheet(() => this.sheet(id)); },
   jump(id) {
     App.closeSheet();
-    if (id === 'study') { this.tab = 'study'; App.go('camp'); }
-    if (id === 'farm') { this.tab = 'farm'; App.go('camp'); }
-    if (id === 'tavern') App.go('heroes');
     if (id === 'altar') App.go('altar');
-    if (id === 'training') { this.tab = 'train'; App.go('camp'); }
-    if (id === 'observatory') { this.tab = 'quest'; App.go('camp'); }
     if (id === 'nest') { App.go('heroes'); Heroes.petSheet(); }
     if (id === 'forge') { App.go('heroes'); Heroes.forgeSheet(); }
     if (id === 'rune') { App.go('heroes'); Heroes.runeSheet(); }
@@ -280,7 +288,7 @@ const Camp = {
     if (!n) return `<div class="glass pad center"><p>建造<b>農田</b>後就能種植作物、做料理。</p><p class="dim">料理可以在進塔前吃，獲得當次爬塔的加成。</p></div>`;
     const plots = Array.from({ length: n }, (_, i) => {
       const pl = S.farm.plots[i];
-      if (!pl) return `<button class="plot empty" data-act="plotMenu" data-arg="${i}"><span class="dirt"></span><b>空地</b><small>點一下種植</small></button>`;
+      if (!pl) return `<button class="plot empty ${this.plotSel === i ? 'sel' : ''}" data-act="plotMenu" data-arg="${i}"><span class="dirt"></span><b>空地</b><small>點一下種植</small></button>`;
       const c = CROPS[pl.crop], ready = pl.end <= now;
       return `<button class="plot ${ready ? 'ready' : ''}" ${ready ? `data-act="harvest" data-arg="${i}"` : ''}><span class="dirt"></span>${UI.ico(c.icon)}<b>${c.name}</b>${ready ? '<small class="gold">可以收成！</small>' : UI.timer(pl.end - Store.cropMins(pl.crop) * 60000, pl.end)}</button>`;
     }).join('');
@@ -292,22 +300,24 @@ const Camp = {
       return `<div class="bld-row glass">${UI.ico(d.icon, 'portrait-ico')}<div class="info"><b>${d.name}</b><span class="lv">擁有 ${S.farm.dishes[id] || 0}</span><div class="dim wrap">${d.desc}・${need}</div></div>
         ${locked ? '<button class="btn sm" disabled>需要烹飪學</button>' : `<button class="btn sm ${ok ? 'primary' : ''}" ${ok ? '' : 'disabled'} data-act="cook" data-arg="${id}">烹飪</button>`}</div>`;
     }).join('');
-    return `<h2 class="sec">農田 <small>${n} 塊</small></h2><div class="plots">${plots}</div>
+    return `<h2 class="sec">農田 <small>${n} 塊・點空地種植</small></h2><div class="plots">${plots}</div>${this.plotSel !== null && !S.farm.plots[this.plotSel] ? this.cropPicker(this.plotSel) : ''}
       <div class="pantry glass">${pantry}</div>
       <h2 class="sec">廚房 <small>做好的料理在「爬塔」頁選擇要吃哪一道</small></h2><div class="list">${dishes}</div>`;
   },
-  plotMenu(i) {
+  plotSel: null,
+  plotMenu(i) { this.plotSel = this.plotSel === i ? null : i; App.render(); },
+  cropPicker(i) {
     const p = Store.S.farm.pantry;
-    App.openSheet(() => `<h3>種什麼？</h3><div class="col">${Object.keys(CROPS).map(k => {
+    return `<div class="glass pad crop-pick"><b>第 ${i + 1} 塊田要種什麼？</b><div class="col">${Object.keys(CROPS).map(k => {
       const c = CROPS[k], noSeed = c.seed && p.seed <= 0;
       return noSeed ? `<button class="btn" disabled>${UI.ico(c.icon, 'ri')}${c.name}（需要種子）</button>`
-        : UI.costBtn('plant', i + ':' + k, c.cost, `<span class="lbl">${UI.ico(c.icon, 'ri')}${c.name}・${Math.round(Store.cropMins(k))} 分鐘・收成 ${c.yield}${c.seed ? '・用 1 顆種子' : ''}</span>`);
-    }).join('')}</div>`);
+        : UI.costBtn('plant', i + ':' + k, c.cost, `<span class="lbl">${UI.ico(c.icon, 'ri')}${c.name}・${Math.round(Store.cropMins(k))} 分鐘・收成 ${c.yield}${c.seed ? '・用 1 顆種子' : ''}</span>`, 'sm');
+    }).join('')}</div></div>`;
   },
   plant(arg) {
     const [i, k] = arg.split(':');
     if (!Store.plant(+i, k)) return FX.toast('資源或種子不足', 'bad');
-    App.closeSheet(); FX.sfx('click'); App.commit();
+    this.plotSel = null; FX.sfx('click'); App.commit();
   },
   harvest(i) { const n = Store.harvest(+i); if (n) { FX.sfx('coin'); FX.toast(`收成 ${n} 份`); App.commit(); } },
   cook(id) { if (!Store.cook(id)) return FX.toast('材料不足', 'bad'); FX.sfx('upgrade'); FX.toast(`做好了 ${DISHES[id].name}`); App.commit(); App.checkAch(); },
@@ -345,7 +355,7 @@ const Camp = {
     if (!scene || document.hidden) return;
     const ids = ['lumber', 'mine', 'market'].filter(id => Store.S.buildings[id]);
     if (!ids.length || Math.random() < .4) return;
-    const id = pick(ids), k = Object.keys(BUILDINGS[id].prod)[0], el = scene.querySelector(`[data-spot="${id}"]`);
+    const id = pick(ids), k = Object.keys(BUILDINGS[id].prod)[0], el = document.querySelector(`.ctile[data-spot="${id}"] .ct-face`);
     if (!el) return;
     const d = document.createElement('div');
     d.className = 'pop';

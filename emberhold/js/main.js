@@ -53,13 +53,13 @@ const App = {
 
   render() {
     const main = document.getElementById('main');
-    main.innerHTML = this.views[this.view].render();
+    morph(main, this.views[this.view].render());
     main.dataset.view = this.view;
     main.classList.toggle('lock', !!main.querySelector('.tower'));
     if (this.view === 'run') Play.afterRender();
     document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.arg === this.view));
     document.querySelectorAll('#nav .ni').forEach(n => { if (!n.firstChild) n.innerHTML = Art.img(n.dataset.i); });
-    if (this.sheetFn) document.querySelector('#sheet .sheet-body').innerHTML = this.sheetFn();
+    if (this.sheetFn) morph(document.querySelector('#sheet .sheet-body'), this.sheetFn());
     const runBadge = document.querySelector('#nav [data-arg="run"]');
     runBadge.classList.toggle('live', !!Store.S.tower.inside);
     this.refresh();
@@ -68,7 +68,8 @@ const App = {
   openSheet(fn) {
     this.sheetFn = fn;
     const el = document.getElementById('sheet');
-    el.querySelector('.sheet-body').innerHTML = fn();
+    const body = el.querySelector('.sheet-body');
+    body._h = undefined; body.innerHTML = fn(); body.scrollTop = 0; el.querySelector('.sheet').scrollTop = 0;
     el.classList.add('open');
     this.refresh();
   },
