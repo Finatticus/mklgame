@@ -35,7 +35,17 @@ const Play = {
     if (T.flags.analyze) m.analyze = br === 'B' && h === 'apprentice' ? 0.75 : 0.5;
     if (T.flags.bastion === T.floor) { m.bastion = br === 'A' && h === 'guardian' ? 0.3 : 0.2; if (br === 'B' && h === 'guardian') m.bastionFirst = 1; }
     if (T.tools.cross) { m.cross = 1; m.fam_undead = (m.fam_undead || 0) + 0.2; }
-    m.bossAtk = (m.bossAtk || 0) + S.talents.hunter * 0.05;
+    if (T.tools.cloak) m.noChill = 1;
+    if (T.tools.mask) m.noPoison = 1;
+    if (T.tools.rod) { m.noShock = 1; m.noEvade = 1; }
+    if (T.tools.ward) m.seeAll = 1;
+    if (T.tools.relic) m.hazard = (m.hazard || 0) + 0.5;
+    const tl = S.talents;
+    m.bossAtk = (m.bossAtk || 0) + tl.hunter * 0.04;
+    if (tl.pierceT) m.brk = (m.brk || 0) + tl.pierceT * 0.02;
+    if (tl.slayer) for (const f of Object.keys(FAMILY)) m['fam_' + f] = (m['fam_' + f] || 0) + tl.slayer * 0.03;
+    if (tl.bulwark) m.reduce = (m.reduce || 0) + tl.bulwark * 0.02;
+    if (tl.firstAid) m.stairHeal = (m.stairHeal || 0) + tl.firstAid * 0.5;
     m.hazard = Math.min(0.9, (m.hazard || 0) + S.talents.antidote * 0.25);
     if (m.reduce) m.reduce = Math.min(0.5, m.reduce);
     const firstFight = !T.fought || T.fought !== T.floor;
@@ -48,7 +58,8 @@ const Play = {
     const T = this.T, m = this.mods();
     if (T.fixed) return { atk: T.fixed.atk + T.gAtk, def: T.fixed.def + T.gDef, hp: T.hp };
     const hs = Store.heroStats(Store.S.active);
-    const meal = T.meal ? { soup: [0.05, 0], stew: [0, 0.05], feast: [0.1, 0.1] }[T.meal] || [0, 0] : [0, 0];
+    const chef = 1 + Store.S.talents.chef * 0.5;
+    const meal = (T.meal ? { soup: [0.05, 0], stew: [0, 0.05], feast: [0.1, 0.1] }[T.meal] || [0, 0] : [0, 0]).map(v => v * chef);
     return {
       atk: Math.floor((hs.atk + T.gAtk) * (1 + (m.atkPct || 0) + meal[0])),
       def: Math.floor((hs.def + T.gDef) * (1 + (m.defPct || 0) + meal[1])),
@@ -57,9 +68,9 @@ const Play = {
   },
   U() { return this.fl().ref.U; },
   w() { return this.fl().w || Tower.world(); },
-  gold(n) { return Math.round(n * (1 + Store.S.talents.fortune * 0.1 + (this.mods().goldPct || 0)) * (Store.buff('gold') ? 1.3 : 1)); },
-  soulMult() { return (1 + Store.S.talents.reaper * 0.1) * (Store.buff('soul') ? 1.25 : 1) * (this.key !== 'main' && Store.has('stars') ? 1.25 : 1) * (1 + ((this.T && this.T.curse) || 0) * 0.15); },
-  potionMult() { const T = this.T; return this.w().potion * (1 + Store.S.talents.alchemy * 0.1 + (Store.has('potions') ? 0.2 : 0) + (this.mods().potionPct || 0)) * (Store.S.active === 'vampire' && !T.fixed ? 0.5 : 1); },
+  gold(n) { return Math.round(n * (1 + Store.S.talents.fortune * 0.08 + (this.mods().goldPct || 0)) * (Store.buff('gold') ? 1.3 : 1)); },
+  soulMult() { return (1 + Store.S.talents.reaper * 0.08 + ((this.T && this.mods().soulPct) || 0)) * (Store.buff('soul') ? 1.25 : 1) * (this.key !== 'main' && Store.has('stars') ? 1.25 : 1) * (1 + ((this.T && this.T.curse) || 0) * 0.15 * (Store.has('voidlore') ? 1.5 : 1)); },
+  potionMult() { const T = this.T; return this.w().potion * (1 + Store.S.talents.alchemy * 0.08 + (Store.has('potions') ? 0.2 : 0) + (this.mods().potionPct || 0)) * (Store.S.active === 'vampire' && !T.fixed ? 0.5 : 1); },
   gemMult(kind) {
     const T = this.T, h = Store.S.active, aw = this.hs().awaken, m = this.mods();
     let g = this.w().gem * (1 + (m.gemPct || 0));
@@ -76,18 +87,22 @@ const Play = {
   skillLeft() { const s = this.T.skill; return s.f === this.T.floor ? this.skillMax() - s.n : this.skillMax(); },
   sees(kind) {
     const T = this.T, h = Store.S.active;
-    const pet = !T.fixed && Store.petMods().seeAll;
+    const pet = !T.fixed && (Store.petMods().seeAll || T.tools.ward || this.mods().seeAll);
     if (kind === 'hidden') return h === 'apprentice' || Store.S.talents.scout > 0 || !!pet;
     if (kind === 'invisible') return h === 'apprentice' || Store.has('bestiary') || !!pet;
     return false;
   },
-  sight() { return 3 + (Store.has('maps') ? 2 : 0) + (Store.S.active === 'apprentice' ? 2 : 0) + (Store.petMods().sight || 0); },
-  pet() { const id = Store.S.pets.active; return id && !this.T.fixed ? { id, ...PETS[id], lvl: Store.S.pets.own[id].lvl } : null; },
+  sight() { return 3 + (Store.has('maps') ? 2 : 0) + (Store.S.active === 'apprentice' ? 2 : 0) + (this.T.fixed ? 0 : (Store.petMods().sight || 0)) + Store.S.talents.keen + (this.T.tools.ward ? 3 : 0); },
+  pet(which = 'active') {
+    const S = Store.S, id = S.pets[which];
+    if (!id || !S.pets.own[id] || (this.T && this.T.fixed) || (which === 'assist' && (!Store.assistSlot() || id === S.pets.active))) return null;
+    return { id, ...PETS[id], lvl: S.pets.own[id].lvl, star: S.pets.own[id].star || 1 };
+  },
 
   // ---------- 建立 / 進出 ----------
   blank(mode, hp) {
     return { mode, floor: 1, pos: 0, hp, gAtk: 0, gDef: 0, gold: 0, keys: { Y: 0, B: 0 }, potions: 0, items: { bomb: 0, pick: 0, feather: 0 }, tools: {},
-      floors: {}, maxFloor: 0, shopBuys: 0, skill: { f: 1, n: 0 }, poison: 0, treasures: [], flags: {}, log: '', curse: 0, curseDebuff: 0, fought: 0, meal: null };
+      floors: {}, maxFloor: 0, shopBuys: 0, gStart: 0, skill: { f: 1, n: 0 }, poison: 0, treasures: [], flags: {}, log: '', curse: 0, curseDebuff: 0, fought: 0, meal: null };
   },
   genOpts() {
     const S = Store.S;
@@ -96,7 +111,8 @@ const Play = {
   enter(key) {
     const S = Store.S;
     if (key === 'main' && !S.tower.main) {
-      S.tower.main = Object.assign(this.blank('main', Store.heroStats(S.active).hp), { curse: S.tower.cycle });
+      const g = S.talents.gemStart * 2;
+      S.tower.main = Object.assign(this.blank('main', Store.heroStats(S.active).hp), { curse: S.tower.cycle, gAtk: g, gDef: g });
     }
     if (key === 'daily' && (!S.tower.daily || S.tower.daily.date !== this.today())) {
       const hs = Store.heroStats(S.active), season = this.season();
@@ -108,6 +124,7 @@ const Play = {
       if (t) T.treasures.push(t);
       for (const id of S.memory.equipped) if (!T.treasures.includes(id)) T.treasures.push(id);
       T.keys.Y += S.talents.locksmith;
+      T.gAtk += S.talents.gemStart * 2; T.gDef += S.talents.gemStart * 2;
       S.tower.daily = T;
     }
     if (key === 'weekly') {
@@ -212,7 +229,7 @@ const Play = {
       fl = Tower.parseMap(p.map, f, { A: 10, D: 10, U: 20 }, Tower.world(), (T.custom ? f : T.puzzles[f - 1]) % ZONES.length);
       fl.name = p.name;
     } else if (key === 'main') {
-      const w = Tower.world({ curse: T.curse });
+      const w = Tower.world({ curse: T.curse, curseRes: Store.S.talents.curseRes * 0.06 });
       fl = Tower.genFloor(Tower.MAIN_SEED + ':' + T.curse, f, Tower.mainRef(f), w, this.genOpts());
       if (f === FINAL_FLOOR) fl.cells = fl.cells.map(c => c === 'U' ? '' : c);
     } else {
@@ -222,12 +239,24 @@ const Play = {
     }
     fl.seen = fl.dark ? Array(Tower.N).fill(0) : null;
     fl.pat = {};
+    if (key !== 'weekly') this.spawnGolden(fl);
     return fl;
+  },
+  // 黃金怪物：隨機出現在空地上（不擋住唯一通道：周圍至少兩格空地）
+  spawnGolden(fl) {
+    const S = Store.S, chance = 0.08 * (1 + S.talents.luck * 0.2 + (Store.petMods().goldenPct || 0) + (Store.has('goldrush') ? 0.3 : 0));
+    if (Math.random() >= chance) return;
+    const near = new Set([fl.start, ...Tower.nbrs(fl.start)]);
+    const spots = fl.cells.map((c, i) => c === '' && !near.has(i) && Tower.nbrs(i).filter(j => fl.cells[j] === '').length >= 2 ? i : -1).filter(i => i >= 0);
+    if (!spots.length) return;
+    fl.cells[spots[Math.floor(Math.random() * spots.length)]] = `m:${GOLDEN[fl.zone % GOLDEN.length]}:R`;
   },
   firstReach(f) {
     const T = this.T, S = Store.S;
     T.maxFloor = f;
     if (this.key === 'weekly') return;
+    if (f > 1) Store.qAdd('floor');
+    if (this.key === 'daily') Store.qAdd('daily', f);
     if (f % 10 === 1 && f > 1) T.keys.Y += S.talents.locksmith;
     if (this.key === 'main') {
       S.stats.bestFloor = Math.max(S.stats.bestFloor, f);
@@ -276,7 +305,7 @@ const Play = {
     let cur = Tower.at(nx, ny);
     if (!this.enterable(cells[cur], allow)) return null;
     const via = [cur];
-    if (!this.T.tools.skates) {
+    if (!this.T.tools.skates && !this.T.tools.cloak) {
       while (cells[cur] === '^') {
         const [cx, cy] = Tower.xy(cur), tx = cx + dx, ty = cy + dy;
         if (tx < 0 || ty < 0 || tx >= Tower.W || ty >= Tower.W) break;
@@ -294,7 +323,7 @@ const Play = {
   DIRS: [[0, -1], [0, 1], [-1, 0], [1, 0]],
   // 找路：先避開毒沼與岩漿，走不到再放寬；target 可以是上下樓
   path(from, to) {
-    const cells = this.fl().cells, frost = !!this.T.tools.frost;
+    const cells = this.fl().cells, frost = !!(this.T.tools.frost || this.T.tools.relic);
     const passes = [{}, { swamp: true }, { swamp: true, lava: frost }, { swamp: true, lava: true }];
     for (const allow of passes) {
       const prev = new Map([[from, null]]), q = [from];
@@ -324,7 +353,7 @@ const Play = {
     if (Tower.nbrs(target).includes(this.T.pos)) return [];
     let best = null;
     for (const j of Tower.nbrs(target)) {
-      if (!Tower.walkable(this.fl().cells[j]) || this.fl().cells[j].startsWith('T:')) continue;
+      if (!Tower.walkable(this.fl().cells[j])) continue;
       const p = this.path(this.T.pos, j);
       if (p && p.length && p[p.length - 1].slice(-1)[0] === j && (!best || p.length < best.length)) best = p;
     }
@@ -387,11 +416,11 @@ const Play = {
     if (c === 'D') { this.climb(-1); return true; }
     if (!c || c === 'O' || c === '^' || c.startsWith('T:')) return false;
     if (c === '~') {
-      if (!m.noPoison && !T.poison) { T.poison = 1; FX.float(tok(), '中毒', 'poison'); }
+      if (!m.noPoison && !T.tools.relic && !T.poison) { T.poison = 1; FX.float(tok(), '中毒', 'poison'); }
       return false;
     }
     if (c === 'x') {
-      if (!T.tools.frost) { const d = Math.round(2 * U * (1 - Store.S.talents.antidote * 0.25)); T.hp = Math.max(1, T.hp - d); FX.float(tok(), '岩漿 -' + d, 'hurt'); }
+      if (!T.tools.frost && !T.tools.relic) { const d = Math.round(2 * U * (1 - Store.S.talents.antidote * 0.25)); T.hp = Math.max(1, T.hp - d); FX.float(tok(), '岩漿 -' + d, 'hurt'); }
       return false;
     }
     if (c === 'o') {
@@ -405,6 +434,7 @@ const Play = {
     if (c === 'gA' || c === 'gD') {
       const v = Math.max(1, Math.round(Tower.gemVal(T.floor) * this.gemMult(c[1])));
       if (c === 'gA') { T.gAtk += v; msg = `攻擊 +${v}`; cls = 'crit'; } else { T.gDef += v; msg = `防禦 +${v}`; cls = 'status'; }
+      Store.qAdd('gem');
     }
     if (c === 'pS' || c === 'pL') { const h = Math.round((c === 'pS' ? Tower.K.potS : Tower.K.potL) * U * this.potionMult()); T.hp += h; T.poison = 0; msg = `生命 +${h}`; }
     if (c === '$') { const g = this.gold(U * 0.6 * this.w().gold); T.gold += g; msg = `金幣 +${g}`; cls = 'crit'; }
@@ -509,7 +539,7 @@ const Play = {
     if (c === 'dY' || c === 'dB') {
       const k = c[1];
       if (T.keys[k] <= 0) return FX.toast(`需要${k === 'Y' ? '黃' : '藍'}鑰匙`, 'bad');
-      T.keys[k]--; fl.cells[i] = ''; FX.sfx('block'); this.afterAction(); return;
+      T.keys[k]--; fl.cells[i] = ''; FX.sfx('block'); Store.qAdd('door'); this.afterAction(); return;
     }
     if (c === 'h') { fl.cells[i] = ''; FX.float(tok, '暗牆！', 'status'); FX.sfx('hit'); this.afterAction(); return; }
     if (c === 'X') {
@@ -568,12 +598,12 @@ const Play = {
     const ember = m.boss && fresh ? 1 + Tower.zoneOf(T.floor) + (T.curse || 0) : 0;
     const feast = T.flags.feast ? (br === 'B' && h === 'vampire' ? 1.5 : 1) : 0;
     // 精英 20%、首領必掉裝備；首領掉寵物蛋，精英 5%（每週謎題不掉）
-    const drop = !T.fixed && fresh && (m.boss || (m.elite && Math.random() < 0.2)) ? Store.dropGear(m.boss ? 'boss' : 'elite', T.floor, T.curse) : null;
-    const egg = !T.fixed && fresh && (m.boss || (m.elite && Math.random() < 0.05)) ? 1 : 0;
+    const drop = !T.fixed && (fresh || m.golden) && (m.boss || m.golden || (m.elite && Math.random() < 0.2)) ? Store.dropGear(m.boss ? 'boss' : m.golden ? 'golden' : 'elite', T.floor, T.curse) : null;
+    const egg = !T.fixed && (fresh || m.golden) && (m.boss || Math.random() < (m.golden ? 0.2 : m.elite ? 0.05 : 0) * Store.eggMult()) ? 1 : 0;
     if (egg) S.pets.eggs += egg;
     const gearTxt = drop && `<em style="color:${GEAR_RARITY[drop.it.r].color}">${UI.ico(Store.gearIcon(drop.it), 'ri')}${Store.gearName(drop.it)}${drop.salvaged ? '（背包滿，已分解）' : ''}</em>`;
     const loot = [`${UI.ico('icon/goldcoins', 'ri')}+${gold}`, exp && `經驗 +${exp}`, soul && `${UI.res('soul')}+${soul}`, ember && `${UI.res('ember')}+${ember}`, feast && '血宴吸回生命', gearTxt, egg && `${UI.ico('item/backpack', 'ri')}寵物蛋 +1`].filter(Boolean);
-    await Battle.play({ name: T.fixed ? '挑戰者' : this.hero().name, icon: this.hero().icon, hp: T.hp, atk: P.atk, def: P.def, pet: this.pet() }, m, pr, loot);
+    await Battle.play({ name: T.fixed ? '挑戰者' : this.hero().name, icon: this.hero().icon, hp: T.hp, atk: P.atk, def: P.def, pet: this.pet(), pet2: this.pet('assist') }, m, pr, loot);
 
     T.hp -= pr.dmg;
     if (feast) T.hp += Math.round(pr.dmg * feast);
@@ -588,6 +618,8 @@ const Play = {
     }
     if (mods.killHeal) T.hp += Math.round(this.U() * mods.killHeal);
     T.gold += gold; S.stats.kills++;
+    if (m.golden) S.stats.golden = (S.stats.golden || 0) + 1;
+    Store.qAdd('kill'); if (m.elite || m.boss) Store.qAdd('elite');
     S.codex[m.key] = (S.codex[m.key] || 0) + 1;
     S.res.soul += soul; S.res.ember += ember;
     if (m.guardian && !fl.cells.some(x => Tower.isMon(x) && (x.split(':')[3] || '').includes('G'))) {
@@ -623,7 +655,7 @@ const Play = {
     Store.gain(reward);
     App.commit();
     FX.sfx('win');
-    const go = await FX.modal(`<div class="center">${UI.token('mon/abyssal', 'huge')}<h3>${lv ? `詛咒等級 ${lv} 通關！` : '深淵之主被擊敗了'}</h3><p>${STORY.bosses[4]}</p><p>${STORY.ending}</p>
+    const go = await FX.modal(`<div class="center">${UI.token('mon/' + ZONES[ZONES.length - 1].boss, 'huge')}<h3>${lv ? `詛咒等級 ${lv} 通關！` : `${MON_NAMES[ZONES[ZONES.length - 1].boss]}被擊敗了`}</h3><p>${STORY.bosses[ZONES.length - 1]}</p><p>${STORY.ending}</p>
       <div class="loot"><span>${UI.res('ember')}+${reward.ember}</span><span>${UI.res('soul')}+${reward.soul}</span></div>
       <p class="dim">開啟新周目：塔會重新生成，並加上詛咒等級 ${lv + 1}（${CURSES[lv] || '最高等級'}）。英雄、營地都會保留，獎勵也會更好。</p></div>`,
       [{ label: '留在這裡', value: false }, { label: `開啟詛咒 ${Math.min(lv + 1, CURSES.length)}`, value: true, cls: 'primary' }]);
@@ -665,7 +697,7 @@ const Play = {
       [{ label: '收下', value: true, cls: 'primary' }]);
   },
   shopPrice() { return Math.round((30 + 25 * this.T.shopBuys) * Math.pow(1.4, Tower.zoneOf(this.T.floor)) * this.w().shop * (1 - (this.mods().shopOff || 0)) * (1 - Store.S.talents.midas * 0.2)); },
-  keyPrice(k) { return ({ Y: 15, B: 60, bomb: 40, pick: 50, feather: 120 }[k]) * (Tower.zoneOf(this.T.floor) + 1); },
+  keyPrice(k) { return Math.round(({ Y: 15, B: 60, bomb: 40, pick: 50, feather: 120 }[k]) * (Tower.zoneOf(this.T.floor) + 1) * (1 - Store.S.talents.merchant * 0.06)); },
   goldBtn(act, arg, price, label) {
     return `<button class="btn cost" data-act="${act}" data-arg="${arg}" ${this.T.gold < price ? 'disabled' : ''}><span class="lbl">${label}</span>
       <span class="chip ${this.T.gold < price ? 'short' : ''}">${UI.ico('icon/goldcoins', 'ri')}${price}</span></button>`;
@@ -774,11 +806,13 @@ const Play = {
     const T = this.T;
     if (T.potions <= 0) return FX.toast('沒有藥水了。營地的藥師小屋會慢慢製作。', 'bad');
     T.potions--;
-    const h = Math.round(8 * this.U() * this.potionMult());
+    Store.qAdd('potion');
+    const h = this.potionHeal();
     T.hp += h; T.poison = 0;
     FX.float(document.getElementById('heroTok'), '+' + h, 'heal'); FX.sfx('heal');
     Store.saveLocal(); this.drawHud();
   },
+  potionHeal() { return Math.round(8 * this.U() * this.potionMult()); },
   manual() {
     const fl = this.fl(), P = this.P(), mods = this.mods(), seen = new Set(), rows = [];
     fl.cells.forEach((c, i) => { if (Tower.isMon(c) && this.visible(i) && !seen.has(c)) { seen.add(c); rows.push([c, i]); } });
@@ -792,9 +826,31 @@ const Play = {
     const T = this.T, S = Store.S, btns = Array.from({ length: T.maxFloor }, (_, k) => k + 1).map(f => {
       const b = this.key === 'main' ? S.stars[f] || 0 : 0;
       const st = this.key === 'main' ? `<small>${'★'.repeat((b & 1) + (b >> 1 & 1) + (b >> 2 & 1)) || '·'}</small>` : '';
-      return `<button class="btn sm ${f === T.floor ? 'primary' : ''}" data-act="flyTo" data-arg="${f}">${f}${st}</button>`;
+      return `<button class="btn sm ${f === T.floor ? 'primary' : ''}" data-act="flyPeek" data-arg="${f}">${f}${st}</button>`;
     }).join('');
-    App.openSheet(() => `<h3>樓層傳送</h3><p class="dim">傳送到去過的樓層，會出現在該層入口。星星：抵達上樓・全部寶石・全部怪物。</p><div class="fly">${btns}</div>`);
+    App.openSheet(() => `<h3>樓層傳送</h3><p class="dim">點樓層可以先看看那一層現在的樣子，確定後再傳送。星星：抵達上樓・全部寶石・全部怪物。</p><div class="fly">${btns}</div>`);
+  },
+  // 預覽某一層：小地圖、剩下的怪物與寶石、星星
+  flyPeek(f) {
+    f = +f;
+    const T = this.T, fl = T.floors[f], S = Store.S;
+    if (!fl) return;
+    const mini = fl.cells.map((c, i) => {
+      const seen = !fl.seen || fl.seen[i];
+      let k = 'f';
+      if (!seen) k = 'fog'; else if (c === '#' || c === 'h') k = 'w'; else if (c === 'U') k = 'up'; else if (c === 'D') k = 'dn';
+      else if (Tower.isMon(c)) k = /:B(:|$)/.test(c) ? 'boss' : /:E(:|$)/.test(c) ? 'elite' : /:R(:|$)/.test(c) ? 'gold' : 'mon';
+      else if (c === 'gA' || c === 'gD') k = 'gem'; else if (c === 'dY' || c === 'dB' || c === 'I' || c === 'L') k = 'door';
+      else if (Tower.isItem(c)) k = 'item'; else if (c.startsWith('n:')) k = 'npc'; else if (['~', 'x', '^', 'v'].includes(c)) k = 'terr';
+      return `<i class="mm-${k}"></i>`;
+    }).join('');
+    const mons = fl.cells.filter(Tower.isMon).length, gems = fl.cells.filter(c => c === 'gA' || c === 'gD').length;
+    const b = this.key === 'main' ? S.stars[f] || 0 : 0;
+    const stars = this.key === 'main' ? `<span class="stars">${[1, 2, 4].map(k => `<i class="${b & k ? 'on' : ''}">★</i>`).join('')}</span>` : '';
+    App.openSheet(() => `<div class="peek-head"><button class="btn sm ghost" data-act="towerFly">← 樓層列表</button><h3>第 ${f} 層 <small class="dim">${ZONES[fl.zone].name}</small></h3>${stars}</div>
+      <div class="minimap" style="--fl:${ZONES[fl.zone].pal[0]};--wa:${ZONES[fl.zone].pal[2]}">${mini}</div>
+      <div class="peek-info"><span><i class="mm-mon"></i>怪物 ${mons}</span><span><i class="mm-gem"></i>寶石 ${gems}</span><span><i class="mm-door"></i>門</span><span><i class="mm-up"></i>上樓</span></div>
+      ${f === T.floor ? '<button class="btn" disabled>你就在這一層</button>' : `<button class="btn primary" data-act="flyTo" data-arg="${f}">傳送到第 ${f} 層</button>`}`);
   },
   flyTo(f) { App.closeSheet(); if (+f === this.T.floor) return; this.T.poison = 0; this.goFloor(+f, 'start'); Store.saveLocal(); this.render(); App.render(); },
 
@@ -889,26 +945,29 @@ const Play = {
   drawHud() {
     const h = document.getElementById('tHud'); if (!h || !this.T) return;
     const T = this.T, P = this.P(), S = Store.S, sk = this.hero().skill;
-    const tr = T.treasures.map(id => `<span class="tr" data-act="treasureInfo" data-arg="${id}">${Art.img(TREASURES[id].icon)}</span>`).join('');
-    const tools = Object.keys(T.tools).map(k => `<span class="tr tool" data-act="toolInfo" data-arg="${k}">${Art.img(TOOLS[k].icon)}</span>`).join('');
+    const tr = T.treasures.map(id => `<span class="tr" data-act="treasureInfo" data-arg="${id}" data-tip="${TREASURES[id].name}：${TREASURES[id].desc}">${Art.img(TREASURES[id].icon)}</span>`).join('');
+    const tools = Object.keys(T.tools).map(k => `<span class="tr tool" data-act="toolInfo" data-arg="${k}" data-tip="${TOOLS[k].name}：${TOOLS[k].desc}">${Art.img(TOOLS[k].icon)}</span>`).join('');
     const b = this.key === 'main' ? S.stars[T.floor] || 0 : 0;
     const stars = this.key === 'main' ? `<span class="stars">${[1, 2, 4].map(k => `<i class="${b & k ? 'on' : ''}">★</i>`).join('')}</span>` : '';
-    const pet = this.pet();
-    setHtml(h, `<div class="hs">${UI.token(this.hero().icon)}${pet ? `<span class="hud-pet" data-act="petInfo">${Art.img(pet.icon)}</span>` : ''}<div class="hv">
-        <span class="hp">生命 <b>${fmt(T.hp)}</b></span><span>攻擊 <b>${P.atk}</b></span><span>防禦 <b>${P.def}</b></span>
+    const pet = this.pet(), pet2 = this.pet('assist'), hsx = this.hs();
+    const xpBar = T.fixed ? '' : `<div class="hud-xp" data-tip="經驗：${fmt(hsx.xp)} / ${fmt(Store.xpNeed(hsx.lvl))}。升級時攻擊、防禦 +1，生命 +50。"><i style="width:${Math.min(100, hsx.xp / Store.xpNeed(hsx.lvl) * 100)}%"></i><span>Lv ${hsx.lvl}・經驗 ${fmt(hsx.xp)} / ${fmt(Store.xpNeed(hsx.lvl))}</span></div>`;
+    const petTok = (p, cls) => p ? `<span class="hud-pet ${cls}" data-act="petInfo" data-arg="${cls}" data-tip="${p.name}：${Store.petDesc(p.id, p.lvl, p.star, cls === 'assist' ? 0.5 : 1)}">${Art.img(p.icon)}</span>` : '';
+    setHtml(h, `<div class="hs">${UI.token(this.hero().icon)}${petTok(pet, 'active')}${petTok(pet2, 'assist')}<div class="hv">
+        <span class="hp" data-tip="生命：歸零就會倒下。喝藥水、撿紅藍藥水、升級都能回復。">生命 <b>${fmt(T.hp)}</b></span><span data-tip="攻擊：每一擊造成「攻擊 − 怪物防禦」的傷害。撿紅寶石可以提升。">攻擊 <b>${P.atk}</b></span><span data-tip="防禦：怪物每一擊對你的傷害是「怪物攻擊 − 防禦」。撿藍寶石可以提升。">防禦 <b>${P.def}</b></span>
         <span>${T.fixed ? '謎題' : 'Lv'} <b>${T.fixed ? T.floor : this.hs().lvl}</b></span></div></div>
       <div class="keys">${['Y', 'B'].map(k => `<span>${Art.img('item/key_' + k.toLowerCase())}<b>${T.keys[k]}</b></span>`).join('')}
         <span>${Art.img('icon/goldcoins')}<b>${T.gold}</b></span>${stars}
         ${T.poison ? '<span class="poison-tag">中毒</span>' : ''}${T.curseDebuff ? '<span class="poison-tag curse">詛咒</span>' : ''}
         ${['shield', 'pierce', 'analyze', 'feast'].filter(k => T.flags[k]).map(k => `<span class="buff">${HERO_ORDER.map(x => HEROES[x].skill).find(s => s.id === k).name}</span>`).join('')}
         ${T.flags.bastion === T.floor ? '<span class="buff">堡壘</span>' : ''}${T.meal ? `<span class="buff meal">${DISHES[T.meal].name}</span>` : ''}</div>
-      ${tr || tools ? `<div class="trs">${tools}${tr}</div>` : ''}`);
+      ${tr || tools ? `<div class="trs">${tools}${tr}</div>` : ''}${xpBar}`);
     const s = document.getElementById('tSkill');
-    setHtml(s, `${sk.name}<small>剩 ${this.skillLeft()} 次</small>`);
+    if (s) { setHtml(s, `${sk.name}<small>${sk.desc}・剩 ${this.skillLeft()} 次</small>`); s.dataset.tip = `${sk.name}：${sk.desc}。每到新的一層次數會重置。長按看說明，點一下使用。`; }
     const p = document.getElementById('tPotion');
-    setHtml(p, `${UI.ico('item/potion_red', 'ri')}藥水 ×${T.potions}`);
+    if (p) { setHtml(p, `${UI.ico('item/potion_red', 'ri')}藥水 ×${T.potions}<small>喝一瓶 +${fmt(this.potionHeal())} 生命</small>`); p.dataset.tip = `治療藥水：喝一瓶回復 ${fmt(this.potionHeal())} 生命（8U，藥水加成會增加），並解除中毒。營地的藥師小屋會慢慢製作，進主塔時自動帶上。`; }
     const it = document.getElementById('tItems');
     setHtml(it, Object.keys(ITEMS).filter(k => T.items[k]).map(k => `<button class="btn sm" data-act="towerItem" data-arg="${k}">${UI.ico(ITEMS[k].icon, 'ri')}${ITEMS[k].name} ×${T.items[k]}</button>`).join(''));
+    if (it) it.querySelectorAll('[data-arg]').forEach(b => { b.dataset.tip = `${ITEMS[b.dataset.arg].name}：${ITEMS[b.dataset.arg].desc}`; });
     const l = document.getElementById('tLog');
     if (l) l.textContent = this.mode ? { wall: '穿牆術：點旁邊的牆', tool: '破牆鎬：點旁邊的牆', pick: '開鎖：點旁邊的門', midas: '點金術：點旁邊的怪物' }[this.mode]
       : (T.log || '點格子移動，也可以滑動。點怪物會走過去開打。');
@@ -917,9 +976,9 @@ const Play = {
     const t = TREASURES[id];
     FX.modal(`<div class="center">${UI.ico(t.icon, 'hero-ico')}<h3>${t.name}</h3><p style="color:${RARITY[t.r].color}">${RARITY[t.r].name}</p><p>${t.desc}</p></div>`);
   },
-  petInfo() {
-    const p = this.pet(); if (!p) return;
-    FX.modal(`<div class="center">${UI.token(p.icon, 'huge')}<h3>${p.name} <small>Lv${p.lvl}</small></h3><p style="color:${PET_ROLES[p.role].color}">${PET_ROLES[p.role].name}寵物</p><p>${Store.petDesc(p.id, p.lvl)}</p></div>`);
+  petInfo(which = 'active') {
+    const p = this.pet(which); if (!p) return;
+    FX.modal(`<div class="center">${UI.token(p.icon, 'huge')}<h3>${p.name} <small>Lv${p.lvl} ${'★'.repeat(p.star)}</small></h3><p style="color:${PET_ROLES[p.role].color}">${PET_ROLES[p.role].name}寵物${which === 'assist' ? '・助戰（效果 50%）' : ''}</p><p>${Store.petDesc(p.id, p.lvl, p.star, which === 'assist' ? 0.5 : 1)}</p></div>`);
   },
   toolInfo(k) { FX.modal(`<div class="center">${UI.ico(TOOLS[k].icon, 'hero-ico')}<h3>${TOOLS[k].name}</h3><p>${TOOLS[k].desc}</p></div>`); },
 

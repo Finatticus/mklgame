@@ -11,7 +11,9 @@ const App = {
     equip: id => Heroes.equip(id), unequip: s => Heroes.unequip(s), enhance: id => Heroes.enhance(id), lockGear: id => Heroes.lock(id),
     salvage: id => Heroes.salvage(id), salvageJunk: () => Heroes.salvageJunk(), craft: s => Heroes.craft(s),
     petSheet: () => Heroes.petSheet(), petSet: id => Heroes.petSet(id), petUp: id => Heroes.petUp(id), buyEgg: () => Heroes.buyEgg(), hatch: () => Heroes.hatch(),
-    petInfo: () => Play.petInfo(),
+    petInfo: w => Play.petInfo(w || 'active'), flyPeek: f => Play.flyPeek(f),
+    petAssist: id => Heroes.petAssist(id), reforge: a => Heroes.reforge(a), runeSheet: () => Heroes.runeSheet(), fusePick: id => Heroes.fusePick(id), fuse: () => Heroes.fuse(),
+    claimQuest: i => Camp.claimQuest(+i), questBonus: () => Camp.questBonus(), trainSet: a => Camp.trainSet(a),
     setActive: id => Heroes.setActive(id),
     talent: id => Altar.talent(id),
     claim: id => More.claim(id),
@@ -23,7 +25,7 @@ const App = {
     toolInfo: k => Play.toolInfo(k), towerItem: k => Play.useItem(k), toggleMod: k => Play.toggleMod(k), pickMeal: k => Play.pickMeal(k),
     claimStars: () => Play.claimStars(), newCycle: () => Play.confirmNewCycle(),
     bld: id => Camp.openSheet(id), closeSheet: () => App.closeSheet(), campJump: id => Camp.jump(id),
-    campTab: t => { Camp.tab = t; App.render(); }, altarTab: t => { Altar.tab = t; App.render(); }, moreTab: t => { More.tab = t; App.render(); },
+    campTab: t => { Camp.tab = t; App.render(); }, runeTab: t => Heroes.runeSheet(t), altarTab: t => { Altar.tab = t; App.render(); }, moreTab: t => { More.tab = t; App.render(); },
     research: id => Camp.research(id), expPlace: id => { Camp.expPick.id = id; App.render(); }, expHero: h => { Camp.expPick.hero = h; App.render(); },
     expSend: h => Camp.expSend(h), expCollect: i => Camp.expCollect(i), plotMenu: i => Camp.plotMenu(+i), plant: a => Camp.plant(a),
     harvest: i => Camp.harvest(i), cook: id => Camp.cook(id), visitor: () => Camp.visitor(),
@@ -77,7 +79,7 @@ const App = {
     const S = Store.S, r = Store.rates();
     const top = document.getElementById('top');
     if (!top.querySelector('.sync-dot')) top.innerHTML = Object.keys(RES).map(k =>
-      `<div class="res" data-k="${k}">${UI.res(k)}<b></b><small></small></div>`).join('') + '<i class="sync-dot" title="同步狀態"></i>';
+      `<div class="res" data-k="${k}" data-tip="${RES[k].name}：${RES[k].tip || ''}">${UI.res(k)}<b></b><small></small></div>`).join('') + '<i class="sync-dot" title="同步狀態"></i>';
     top.querySelectorAll('.res').forEach(el => {
       const k = el.dataset.k, b = fmt(S.res[k]), sm = r[k] ? '+' + (r[k] < 10 ? r[k].toFixed(1) : fmt(r[k])) : '';
       if (el.children[1].textContent !== b) el.children[1].textContent = b;
@@ -123,6 +125,23 @@ const App = {
     Store.load();
     document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') this.closeSheet(); });
 
+    // 長按（或滑鼠停留）有 data-tip 的東西會顯示說明；長按後放開不會觸發點擊
+    let tipTimer = null, tipFrom = null, tipShown = false;
+    const tipClear = () => { clearTimeout(tipTimer); tipTimer = null; };
+    document.body.addEventListener('pointerdown', e => {
+      FX.tip(null);
+      tipShown = false;
+      const t = e.target.closest('[data-tip]');
+      if (!t) return;
+      tipFrom = [e.clientX, e.clientY];
+      tipTimer = setTimeout(() => { tipShown = true; FX.tip(t, t.dataset.tip); }, 420);
+    });
+    document.body.addEventListener('pointermove', e => { if (tipTimer && tipFrom && Math.hypot(e.clientX - tipFrom[0], e.clientY - tipFrom[1]) > 10) tipClear(); });
+    document.body.addEventListener('pointerup', tipClear);
+    document.body.addEventListener('pointercancel', tipClear);
+    document.body.addEventListener('contextmenu', e => { if (e.target.closest('[data-tip]')) e.preventDefault(); });
+    document.body.addEventListener('click', e => { if (tipShown) { tipShown = false; e.stopPropagation(); e.preventDefault(); } }, true);
+
     document.body.addEventListener('click', e => {
       const t = e.target.closest('[data-act]');
       if (!t || t.disabled) return;
@@ -162,6 +181,7 @@ const App = {
     let n = 0;
     setInterval(() => {
       const t = Store.tick(Date.now(), true);
+      for (const h in t.got.train || {}) FX.toast(`${HEROES[h].name} 在訓練場升到 Lv${Store.S.heroes[h].lvl}`);
       if (t.got.research) { FX.toast(`研究完成：${RESEARCH[t.got.research].name}`, 'gold'); FX.sfx('win'); if (this.view === 'camp') this.render(); }
       this.refresh();
       if (this.view === 'camp' && n % 2 === 0) Camp.popTick();

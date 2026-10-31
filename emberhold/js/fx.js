@@ -143,5 +143,21 @@ const FX = (() => {
     });
   }
 
-  return { setTheme, sfx, float, anim, toast, modal };
+  // 長按說明泡泡：貼在元素上方（放不下就放下方）
+  let tipEl = null;
+  function tip(el, text) {
+    if (tipEl) { tipEl.remove(); tipEl = null; }
+    if (!el || !text) return;
+    tipEl = document.createElement('div');
+    tipEl.className = 'tip-pop';
+    tipEl.textContent = text;
+    document.body.appendChild(tipEl);
+    const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    const y = r.top - h - 8 > 8 ? r.top - h - 8 : r.bottom + 8;
+    tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+    FX.sfx && sfx('click');
+    setTimeout(() => { if (tipEl) tipEl.classList.add('in'); }, 10);
+  }
+  return { tip, setTheme, sfx, float, anim, toast, modal };
 })();

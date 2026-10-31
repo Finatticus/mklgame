@@ -6,8 +6,9 @@
 const Tower = (() => {
   const W = 11, N = W * W;
   const MAIN_SEED = 'emberhold-main-v3';
-  // 平衡參數：ref 參考玩家每層成長倍率、藥水（以樓層傷害單位 U 計）
-  const K = { ref: 1.4, potS: 4, potL: 10 };
+  // 平衡參數：ref 參考玩家每層成長倍率、藥水（以樓層傷害單位 U 計）、怪物整體與每區的生命／傷害倍率
+  const K = { ref: 1.4, potS: 4, potL: 10, hp: 1, dmg: 1, zoneHp: 0.12, zoneDmg: 0.15 };
+  const GOLD_TIER = { rd: 0.3, hits: 4, dmg: 0.5, exp: 12, gold: 25 };
 
   // ---------- 亂數 ----------
   function hash(str) {
@@ -26,7 +27,8 @@ const Tower = (() => {
 
   // ---------- 基本 ----------
   const zoneOf = f => Math.min(ZONES.length - 1, Math.floor((f - 1) / 10));
-  const gemVal = f => 1 + Math.floor((f - 1) / 10);
+  // 寶石值：每升一區 +2，讓塔內成長跟得上越來越強的怪物
+  const gemVal = f => 1 + Math.floor((f - 1) / 10) * 2;
   const isBoss = f => f % 10 === 0;
   const xy = i => [i % W, Math.floor(i / W)];
   const at = (x, y) => y * W + x;
@@ -36,10 +38,12 @@ const Tower = (() => {
   // 可以站上去的格子（上下樓另外處理）
   const walkable = c => c === '' || c === 'O' || c === 'o' || c === '~' || c === '^' || c === 'x' || c.startsWith('T:') || isItem(c);
 
+  // 樓層傷害單位 U：越高層成長越快（藥水、地形、怪物傷害都以它計）
+  const unit = f => Math.round(20 + 8 * (f - 1) + 0.06 * (f - 1) * (f - 1));
   function mainRef(f) {
     let a = 10, d = 10;
     for (let i = 1; i < f; i++) { a += 2 * gemVal(i) * K.ref; d += 2 * gemVal(i) * K.ref; }
-    return { A: Math.round(a), D: Math.round(d), U: 20 + 8 * (f - 1) };
+    return { A: Math.round(a), D: Math.round(d), U: unit(f) };
   }
   function dailyRef(base, f) {
     let a = base.atk, d = base.def;
@@ -58,6 +62,8 @@ const Tower = (() => {
       () => w.hp *= 1.15, () => w.potion *= 0.8, () => w.bossAtk *= 1.25, () => w.lessB++, () => w.def *= 1.1,
       () => w.atk *= 1.15, () => w.eliteHp *= 1.25, () => w.gem *= 0.85, () => w.hp *= 1.15, () => w.atk *= 1.2];
     for (let i = 0; i < Math.min(c, cur.length); i++) cur[i]();
+    // 抗咒天賦：詛咒讓怪物增加的攻擊與生命打折
+    if (opts.curseRes) for (const k of ['atk', 'hp', 'eliteHp', 'bossAtk']) w[k] = 1 + (w[k] - 1) * (1 - opts.curseRes);
     for (const m of opts.mods || []) {
       if (m === 'mAtk') w.atk *= 1.2;
       if (m === 'noPot') w.noPot = true;
@@ -90,26 +96,36 @@ const Tower = (() => {
   function monster(code, fl, i) {
     const [, key, t, flags = ''] = code.split(':');
     const w = fl.w || world();
-    const tier = t === 'B' ? BOSS_TIER : t === 'E' ? ELITE_TIER : MON_TIERS[+t];
-    const fx = monFx(code, fl);
-    const { A, D, U } = fl.ref, f = fl.f;
+    const tier = t === 'B' ? BOSS_TIER : t === 'E' ? ELITE_TIER : t === 'R' ? GOLD_TIER : MON_TIERS[+t];
+    const fx = t === 'R' ? null : monFx(code, fl);
+    const { A, D, U } = fl.ref, f = fl.f, zone = fl.zone || 0;
+    // 手工謎題已經驗證過可解，不套用難度倍率
+    const kh = fl.layout === 'hand' ? 1 : K.hp * (1 + K.zoneHp * zone), kd = fl.layout === 'hand' ? 1 : K.dmg * (1 + K.zoneDmg * zone);
     let def = Math.floor(A * tier.rd * w.def);
     if (i !== undefined && i >= 0 && fx !== 'guard') {
       for (const j of nbrs(i)) { const c = fl.cells[j]; if (isMon(c) && monFx(c, fl) === 'guard') { def = Math.floor(def * 1.25); break; } }
     }
     const pd = Math.max(1, A - Math.floor(A * tier.rd));
-    let hp = (pd * tier.hits - Math.floor(pd * 0.3)) * w.hp;
+    // 越高的區域，怪物越耐打、越痛
+    let hp = (pd * tier.hits - Math.floor(pd * 0.3)) * w.hp * kh;
     if (t === 'E' || t === 'B') hp *= w.eliteHp;
-    let hit = tier.dmg * U * w.atk * (t === 'B' ? w.bossAtk : 1);
+    let hit = tier.dmg * U * w.atk * kd * (t === 'B' ? w.bossAtk : 1);
     if (fx === 'double') hit *= 0.55;
+    if (fx === 'triple') hit *= 0.4;
     if (fx === 'drain') hit *= 0.6;
     if (fx === 'thorns' || fx === 'explode') hit *= 0.85;
+    if (fx === 'rage' || fx === 'heavy') hit *= 0.78;
+    if (fx === 'shock' || fx === 'pierce') hit *= 0.85;
+    if (fx === 'chill') hit *= 0.9;
+    if (fx === 'evade' || fx === 'armor') hp *= 0.8;
+    if (fx === 'regen') hp *= 0.85;
     if (flags.includes('s')) { hp *= 0.3; hit *= 0.7; }
     if (flags.includes('r')) hp *= 0.5;
     hp = Math.max(1, Math.round(hp)); hit = Math.round(hit);
-    const atk = fx === 'magic' ? Math.round(hit * 0.8) : Math.round(D * w.atk) + hit;
+    // 怪物攻擊 = 參考防禦 + 每下傷害；穿刺只算你一半的防禦
+    const atk = fx === 'magic' ? Math.round(hit * 0.8) : Math.round(D * (fx === 'pierce' ? 0.5 : 1) * w.atk) + hit;
     const fam = MON_FAMILY[key] || null;
-    const odd = t !== 'B' && t !== 'E' && +t % 2 === 1;
+    const odd = t !== 'B' && t !== 'E' && t !== 'R' && +t % 2 === 1;
     const exp = flags.includes('s') ? 0 : Math.round(tier.exp * (1 + f / 6) * w.exp * (flags.includes('r') ? 0.5 : 1) * (fam === 'undead' ? w.undeadExp : 1));
     return {
       key, code, name: (MON_NAMES[key] || key) + (flags.includes('s') ? '（分裂體）' : flags.includes('r') ? '（復活）' : ''), icon: 'mon/' + key, tier: t,
@@ -117,20 +133,22 @@ const Tower = (() => {
       cap: fx === 'hard' ? Math.ceil(hp / tier.hits) : 0,
       first: fx === 'first' || w.allFirst || (w.oddFirst && odd),
       exp, gold: flags.includes('s') ? 0 : Math.round(tier.gold * (1 + f / 4) * w.gold),
-      elite: t === 'E', boss: t === 'B', guardian: flags.includes('G'), patrol: flags.includes('P'),
+      elite: t === 'E', boss: t === 'B', golden: t === 'R', guardian: flags.includes('G'), patrol: flags.includes('P'),
       revives: fx === 'undead' && !flags.includes('r'),
     };
   }
 
   // ---------- 戰鬥：一下一下推演雙方出手 ----------
-  // P：{ atk, def, hp }；mods：英雄被動、寶物、技能、天賦等
+  // P：{ atk, def, hp }；mods：英雄被動、寶物、技能、天賦、裝備、寵物等
+  // 事件 by：h 英雄、m 怪物、p 寵物、s 英雄自己回血、r 怪物再生、x 狀態提示
   function duel(P, m, mods = {}) {
     let mdef = m.def;
     if (mods.pierce) mdef = 0;
     else {
       if (mods.analyze) mdef = Math.floor(mdef * (1 - mods.analyze));
       if (mods.magic) mdef = Math.floor(mdef * (1 - mods.magic));
-      if (mods.petBreak) mdef = Math.floor(mdef * (1 - mods.petBreak));
+      const brk = Math.min(0.6, (mods.petBreak || 0) + (mods.brk || 0));
+      if (brk) mdef = Math.floor(mdef * (1 - brk));
     }
     let atk = P.atk * (1 + (mods.atkMult || 0));
     if (m.elite || m.boss) atk *= 1 + (mods.bossAtk || 0);
@@ -140,46 +158,72 @@ const Tower = (() => {
     if (pd <= 0) return { can: false, reason: `攻擊需高於 ${mdef}`, dmg: Infinity, events: [], hits: 0 };
     if (m.cap && !mods.noHard) pd = Math.min(pd, m.cap);
     const mAtk = m.atk * (1 - (mods.bastion || 0));
-    let base = m.fx === 'magic' ? mAtk : Math.max(0, mAtk - P.def);
-    if (m.fx === 'magic' && mods.magicRes) base *= 1 - mods.magicRes;
-    const keep = mods.shield ? 0 : (1 - (mods.reduce || 0)) * (1 - (mods.firstFight || 0));
+    const pierce = m.fx === 'pierce' && !mods.noPierce;
+    let base = m.fx === 'magic' ? mAtk : Math.max(0, mAtk - Math.floor(P.def * (pierce ? 0.5 : 1)));
+    // 穿刺被擋下時，怪物的攻擊回到一般計算（但牠的攻擊值是照穿刺設計的，所以會變弱）
+    if (m.fx === 'magic' && mods.magicRes) base *= 1 - Math.min(0.8, mods.magicRes);
+    let keep = mods.shield ? 0 : (1 - (mods.reduce || 0)) * (1 - (mods.firstFight || 0));
+    if ((m.elite || m.boss) && mods.bossRes) keep *= 1 - Math.min(0.5, mods.bossRes);
     const hitOf = mult => Math.floor(Math.floor(base * mult) * keep);
     const first = m.first && !mods.alwaysFirst && !mods.noFirst && !mods.bastionFirst;
+    const hazard = Math.min(0.9, mods.hazard || 0);
     const ev = [];
     let total = 0, hits = 0, peak = 0;
+    const hurt = d => { total += d; peak = Math.max(peak, total); };
+    const heal = (h, by, mhp, tag) => { h = Math.min(h, total); if (h > 0) { total -= h; ev.push({ by, heal: h, mhp, tag }); } };
     // 寵物：開場撞擊、追擊（受硬甲上限限制）、受傷後治療
     const capPet = d => Math.max(1, m.cap && !mods.noHard ? Math.min(d, m.cap) : d);
     const petOpen = mods.petOpen ? capPet(Math.floor(pd * mods.petOpen)) : 0;
     const petHit = mods.petHit ? capPet(Math.floor(pd * mods.petHit)) : 0, every = mods.petEvery || 1;
-    const hurt = d => { total += d; peak = Math.max(peak, total); };
-    const mAttack = (mult, mhp) => {
-      const n = m.fx === 'double' ? 2 : 1;
-      for (let k = 0; k < n; k++) {
-        const d = hitOf(mult); hurt(d); ev.push({ by: 'm', dmg: d, mhp });
-        const h = mods.petHeal && d ? Math.floor(d * mods.petHeal) : 0;
-        if (h) { total -= h; ev.push({ by: 'p', heal: h, mhp }); }
-      }
-    };
+    const evade = m.fx === 'evade' && !mods.noEvade, chill = m.fx === 'chill' && !mods.noChill;
+    const rage = m.fx === 'rage', heavy = m.fx === 'heavy' && !mods.noHeavy;
+    const shock = m.fx === 'shock' && !mods.noShock ? Math.floor(Math.max(1, Math.floor(m.U * 0.1 * (1 - hazard))) * (mods.shield ? 0 : 1)) : 0;
+    const swings = m.fx === 'double' ? 2 : m.fx === 'triple' ? 3 : 1;
+    const thorn = m.fx === 'thorns' && !mods.noThorns ? Math.max(1, Math.floor(m.U * 0.15 * (1 - hazard))) : 0;
     const fights = [m.hp];
     if (m.revives && !mods.cross) fights.push(Math.ceil(m.hp / 2));
     if (m.fx === 'drain') { const d = Math.floor(Math.floor(P.hp / 5) * keep); hurt(d); ev.push({ by: 'm', dmg: d, tag: '吸血', mhp: m.hp }); }
-    const thorn = m.fx === 'thorns' && !mods.noThorns ? Math.max(1, Math.floor(m.U * 0.15 * (1 - (mods.hazard || 0)))) : 0;
+    let alive = false;
     fights.forEach((fhp, fi) => {
-      let mhp = fhp, skip = mods.skipFirstHit ? 1 : 0, n = 0;
+      if (alive) return;
+      let mhp = fhp, skip = mods.skipFirstHit ? 1 : 0, n = 0, hn = 0, round = 0, swing = 0, armorLeft = m.fx === 'armor' ? 3 : 0;
+      const regen = m.fx === 'regen' && !mods.noRegen ? Math.max(1, Math.floor(fhp * 0.08)) : 0;
+      const mAttack = () => {
+        round++;
+        const mult = (m.boss && mhp <= fhp / 2 ? 1.3 : 1) * (rage ? 1 + 0.12 * (round - 1) : 1);
+        for (let k = 0; k < swings; k++) {
+          swing++;
+          const big = heavy && swing % 3 === 0;
+          const d = hitOf(big ? mult * 2.5 : mult); hurt(d); ev.push({ by: 'm', dmg: d, mhp, tag: big ? '重擊' : undefined });
+          if (shock) { hurt(shock); ev.push({ by: 'm', dmg: shock, mhp, tag: '感電' }); }
+          if (mods.petHeal && d) heal(Math.floor(d * mods.petHeal), 'p', mhp);
+        }
+        if (regen && mhp < fhp) { const r = Math.min(regen, fhp - mhp); mhp += r; ev.push({ by: 'r', heal: r, mhp }); }
+      };
       if (fi > 0) ev.push({ by: 'x', tag: '再次站起！', mhp });
       if (fi === 0 && petOpen) { const d = Math.min(petOpen, mhp); mhp -= d; ev.push({ by: 'p', dmg: d, mhp }); if (mhp <= 0) return; }
-      if (first) { if (skip) skip--; else mAttack(1, mhp); }
-      for (let guard = 0; guard < 500; guard++) {
-        const d = Math.min(pd, mhp); mhp -= d; hits++;
-        ev.push({ by: 'h', dmg: d, mhp });
-        if (thorn) { hurt(thorn); ev.push({ by: 'm', dmg: thorn, tag: '反傷', mhp }); }
-        if (mhp <= 0) break;
-        if (petHit && ++n % every === 0) { const p = Math.min(petHit, mhp); mhp -= p; ev.push({ by: 'p', dmg: p, mhp }); if (mhp <= 0) break; }
+      if (first) { if (skip) skip--; else mAttack(); }
+      for (let guard = 0; guard < 400; guard++) {
+        hn++;
+        if (evade && hn % 3 === 0) ev.push({ by: 'h', dmg: 0, mhp, tag: '落空' });
+        else {
+          let d = pd;
+          if (armorLeft > 0) { d = Math.max(1, Math.floor(d / 2)); armorLeft--; }
+          d = Math.min(d, mhp); mhp -= d; hits++;
+          ev.push({ by: 'h', dmg: d, mhp });
+          if (mods.leech) heal(Math.floor(d * mods.leech), 's', mhp, '吸血');
+          if (thorn) { hurt(thorn); ev.push({ by: 'm', dmg: thorn, tag: '反傷', mhp }); }
+          if (mhp <= 0) break;
+          if (petHit && ++n % every === 0) { const p = Math.min(petHit, mhp); mhp -= p; ev.push({ by: 'p', dmg: p, mhp }); if (mhp <= 0) break; }
+        }
         if (skip) { skip--; continue; }
-        mAttack(m.boss && mhp <= fhp / 2 ? 1.3 : 1, mhp);
+        if (chill && hn % 2 === 0) { ev.push({ by: 'x', tag: '被凍住了！', mhp }); mAttack(); }
+        mAttack();
       }
+      if (mhp > 0) alive = true;
     });
-    if (m.fx === 'explode' && !mods.noThorns) { const d = Math.floor(m.U * (1 - (mods.hazard || 0))); hurt(d); ev.push({ by: 'm', dmg: d, tag: '爆炸', mhp: 0 }); }
+    if (alive) return { can: false, reason: '傷害不夠，打不倒牠（再生太快）', dmg: Infinity, events: [], hits: 0 };
+    if (m.fx === 'explode' && !mods.noThorns) { const d = Math.floor(m.U * (1 - hazard)); hurt(d); ev.push({ by: 'm', dmg: d, tag: '爆炸', mhp: 0 }); }
     // 以戰鬥中最低點判斷撐不撐得住（治療是事後才補回來的）
     return { can: peak < P.hp, dmg: total, peak, events: ev, hits, reason: peak >= P.hp ? '生命不足' : '' };
   }
@@ -496,7 +540,9 @@ const Tower = (() => {
       if (attempt >= 30) fl.ref.A = Math.round(fl.ref.A * 0.85); // 多次失敗就降低怪物防禦
       const sim = simulate(fl, { hp: 1e9, atk: ref.A, def: ref.D });
       last = fl;
-      if (sim.ok && sim.taken - sim.healed <= 16 * ref.U && sim.taken <= 45 * ref.U) return fl;
+      // 高區的怪物傷害有額外倍率，驗證門檻跟著放寬
+      const zk = 1 + K.zoneDmg * zoneOf(f);
+      if (sim.ok && sim.taken - sim.healed <= 16 * ref.U * zk && sim.taken <= 45 * ref.U * zk) return fl;
     }
     return last;
   }

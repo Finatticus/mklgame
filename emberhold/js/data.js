@@ -1,10 +1,10 @@
 // 所有靜態遊戲資料（圖片 key 對應 assets/<key>.webp）
 const RES = {
-  wood:  { name: '木材', icon: 'item/axe' },
-  ore:   { name: '礦石', icon: 'item/crystal_green' },
-  gold:  { name: '金幣', icon: 'icon/goldcoins' },
-  soul:  { name: '魂晶', icon: 'item/gem_purple' },
-  ember: { name: '餘燼', icon: 'item/torch' },
+  wood:  { name: '木材', icon: 'item/axe',           tip: '伐木場產出。用來蓋設施、研究、種田。' },
+  ore:   { name: '礦石', icon: 'item/crystal_green', tip: '礦坑產出、分解裝備獲得。用來蓋設施、打造與強化裝備。' },
+  gold:  { name: '金幣', icon: 'icon/goldcoins',     tip: '市集產出（營地金幣，和塔裡的金幣分開）。用來招募英雄、打造裝備、升級寵物。' },
+  soul:  { name: '魂晶', icon: 'item/gem_purple',    tip: '在塔裡首次抵達新樓層、打倒精英與首領、完成任務獲得。用來學天賦、買寵物蛋、洗練裝備。' },
+  ember: { name: '餘燼', icon: 'item/torch',         tip: '打倒首領、通關、成就獲得的稀有資源。用來覺醒英雄、學高階天賦。' },
 };
 
 // ---------- 營地建築：每棟由一位營地成員負責 ----------
@@ -39,10 +39,18 @@ const BUILDINGS = {
     desc: '研究新技術。每級研究速度 +10%，並解鎖更多研究項目。', base: { wood: 90, ore: 60, gold: 40 }, growth: 1.8, req: 2 },
   nest: { name: '寵物小窩', npc: 'mon/blob1', tool: 'item/backpack', max: 10,
     desc: '孵化寵物蛋、照顧寵物。每級寵物等級上限 +3，第一次蓋好送一顆蛋。', base: { wood: 70, gold: 40 }, growth: 1.75, req: 2 },
+  training: { name: '訓練場', npc: 'mon/orcishberserker', tool: 'item/sword', max: 10,
+    desc: '沒出戰的英雄可以在這裡訓練，離線也會持續獲得經驗。Lv1、4、8 各開放一個訓練位。', base: { wood: 120, ore: 80, gold: 60 }, growth: 1.75, req: 3 },
+  vault: { name: '倉庫', npc: 'mon/goblinrunts', tool: 'icon/bag', max: 10,
+    desc: '每級鑰匙與藥水的存放上限 +2，離線收益時數 +1。', base: { wood: 150, ore: 60 }, growth: 1.7, req: 3 },
+  observatory: { name: '星象台', npc: 'mon/darkapprentice', tool: 'item/crystal', max: 10,
+    desc: '每天發布任務。每 3 級多一個任務，每級任務獎勵 +10%。', base: { wood: 100, gold: 80, soul: 5 }, growth: 1.8, req: 2 },
+  rune: { name: '符文工坊', npc: 'mon/dragonkinevoker', tool: 'item/scroll_red', max: 10,
+    desc: '洗練裝備詞綴、把三件同稀有度的裝備合成更高稀有度。等級越高洗練越便宜。', base: { wood: 200, ore: 150, soul: 15 }, growth: 1.85, req: 4 },
   altar: { name: '魂之祭壇', npc: 'mon/cabalistnun', tool: 'item/book', max: 10,
-    desc: '以魂晶習得天賦、每日祈福、英雄覺醒。天賦等級上限 = 祭壇等級。', base: { wood: 100, ore: 60, soul: 10 }, growth: 1.9, req: 2 },
+    desc: '以魂晶習得天賦、每日祈福、英雄覺醒。天賦等級上限 = 祭壇等級 × 3。', base: { wood: 100, ore: 60, soul: 10 }, growth: 1.9, req: 2 },
 };
-const BUILDING_ORDER = ['hearth', 'lumber', 'mine', 'market', 'forge', 'keysmith', 'apothecary', 'farm', 'tavern', 'nest', 'study', 'altar'];
+const BUILDING_ORDER = ['hearth', 'lumber', 'mine', 'market', 'forge', 'keysmith', 'apothecary', 'farm', 'tavern', 'nest', 'study', 'altar', 'training', 'vault', 'observatory', 'rune'];
 
 // ---------- 英雄 ----------
 // 覺醒 1 強化被動；覺醒 2 選分支 A／B；覺醒 3 全屬性 +10%
@@ -110,28 +118,51 @@ const AWAKEN_COST = [3, 6, 10]; // 餘燼
 // ---------- 天賦樹（祭壇） ----------
 // 每條分支依序解鎖：前一個天賦至少 1 級才能學下一個
 const TALENT_TREE = {
-  battle:  { name: '戰鬥', color: '#ff8a65', nodes: ['might', 'hunter', 'fury', 'focus'] },
-  guard:   { name: '守護', color: '#74c0fc', nodes: ['guard', 'vigor', 'antidote', 'aegis'] },
-  explore: { name: '探索', color: '#7ee08a', nodes: ['locksmith', 'alchemy', 'scout', 'blessing'] },
-  wealth:  { name: '財富', color: '#ffd27a', nodes: ['fortune', 'reaper', 'industry', 'midas'] },
+  battle:  { name: '戰鬥', color: '#ff8a65', nodes: ['might', 'pierceT', 'hunter', 'slayer', 'fury', 'focus'] },
+  guard:   { name: '守護', color: '#74c0fc', nodes: ['guard', 'vigor', 'bulwark', 'antidote', 'firstAid', 'aegis'] },
+  explore: { name: '探索', color: '#7ee08a', nodes: ['locksmith', 'alchemy', 'scout', 'keen', 'luck', 'blessing'] },
+  wealth:  { name: '財富', color: '#ffd27a', nodes: ['fortune', 'reaper', 'industry', 'merchant', 'salvager', 'midas'] },
+  growth:  { name: '養成', color: '#c58bff', nodes: ['scholar', 'smith', 'tamer', 'trainer', 'researcher', 'chef'] },
+  legacy:  { name: '傳承', color: '#9ad8ff', nodes: ['gemStart', 'offline', 'eggLuck', 'curseRes', 'bounty', 'legend'] },
 };
+// max：最高等級；g：費用成長倍率（預設 1.45）；altar：需要的祭壇等級
 const TALENTS = {
-  might:    { name: '力量',     icon: 'item/sword',          max: 10, desc: '攻擊 +1',                       base: 5,  cur: 'soul' },
-  hunter:   { name: '獵手',     icon: 'item/bow',            max: 5,  desc: '對精英與首領攻擊 +5%',          base: 8,  cur: 'soul' },
-  fury:     { name: '戰意',     icon: 'item/sword_fire',     max: 5,  desc: '每層第一場戰鬥攻擊 +10%',       base: 10, cur: 'soul' },
-  focus:    { name: '專注',     icon: 'item/scroll_red',     max: 1,  desc: '英雄技能每層 +1 次',            base: 4,  cur: 'ember', altar: 3 },
-  guard:    { name: '守護',     icon: 'item/shield',         max: 10, desc: '防禦 +1',                       base: 5,  cur: 'soul' },
-  vigor:    { name: '活力',     icon: 'item/potion_red',     max: 10, desc: '初始生命 +100',                 base: 4,  cur: 'soul' },
-  antidote: { name: '抗毒',     icon: 'item/ring_green',     max: 3,  desc: '中毒、岩漿、反傷、爆裂的損失 −25%', base: 10, cur: 'soul' },
-  aegis:    { name: '神盾',     icon: 'item/shield_gold',    max: 1,  desc: '每層第一場戰鬥損失 −50%',       base: 6,  cur: 'ember', altar: 5 },
-  locksmith:{ name: '鎖匠',     icon: 'item/key_y',          max: 3,  desc: '挑戰塔開局、主塔進入新區域時 +1 黃鑰匙', base: 10, cur: 'soul' },
-  alchemy:  { name: '煉金',     icon: 'item/potion_teal',    max: 5,  desc: '所有藥水回復 +10%',             base: 8,  cur: 'soul' },
-  scout:    { name: '斥候',     icon: 'icon/helmet',         max: 1,  desc: '看得見暗牆',                    base: 25, cur: 'soul' },
-  blessing: { name: '先祖祝福', icon: 'icon/bookholy',       max: 1,  desc: '挑戰塔開局獲得一件寶物',        base: 6,  cur: 'ember', altar: 5 },
-  fortune:  { name: '財運',     icon: 'icon/goldcoins',      max: 10, desc: '塔內金幣 +10%',                 base: 4,  cur: 'soul' },
-  reaper:   { name: '收割',     icon: 'item/gem_purple',     max: 10, desc: '魂晶 +10%',                     base: 6,  cur: 'soul' },
-  industry: { name: '勤勉',     icon: 'item/axe',            max: 10, desc: '建築產量 +10%',                 base: 4,  cur: 'soul' },
-  midas:    { name: '點石成金', icon: 'icon/bag',            max: 1,  desc: '祭壇修女的價格 −20%',           base: 5,  cur: 'ember', altar: 4 },
+  might:     { name: '力量',     icon: 'item/sword',          max: 30, g: 1.2,  desc: '攻擊 +1',                          base: 5,  cur: 'soul' },
+  pierceT:   { name: '破甲',     icon: 'item/dagger',         max: 10, g: 1.3,  desc: '怪物防禦 −2%',                     base: 8,  cur: 'soul' },
+  hunter:    { name: '獵手',     icon: 'item/bow',            max: 10, g: 1.3,  desc: '對精英與首領攻擊 +4%',             base: 8,  cur: 'soul' },
+  slayer:    { name: '屠戮',     icon: 'icon/swordblood',     max: 10, g: 1.3,  desc: '對不死、野獸、元素、惡魔攻擊 +3%', base: 10, cur: 'soul', altar: 2 },
+  fury:      { name: '戰意',     icon: 'item/sword_fire',     max: 5,           desc: '每層第一場戰鬥攻擊 +10%',          base: 10, cur: 'soul' },
+  focus:     { name: '專注',     icon: 'item/scroll_red',     max: 2,           desc: '英雄技能每層 +1 次',               base: 4,  cur: 'ember', altar: 3 },
+  guard:     { name: '守護',     icon: 'item/shield',         max: 30, g: 1.2,  desc: '防禦 +1',                          base: 5,  cur: 'soul' },
+  vigor:     { name: '活力',     icon: 'item/potion_red',     max: 30, g: 1.2,  desc: '初始生命 +100',                    base: 4,  cur: 'soul' },
+  bulwark:   { name: '壁壘',     icon: 'item/shield_wood_gold', max: 10, g: 1.3, desc: '受到的傷害 −2%',                  base: 10, cur: 'soul', altar: 2 },
+  antidote:  { name: '抗毒',     icon: 'item/ring_green',     max: 3,           desc: '中毒、岩漿、反傷、爆裂、感電的損失 −25%', base: 10, cur: 'soul' },
+  firstAid:  { name: '急救',     icon: 'item/potion_teal',    max: 5,           desc: '每次上樓回復 0.5U 生命',           base: 12, cur: 'soul', altar: 3 },
+  aegis:     { name: '神盾',     icon: 'item/shield_gold',    max: 1,           desc: '每層第一場戰鬥損失 −50%',          base: 6,  cur: 'ember', altar: 5 },
+  locksmith: { name: '鎖匠',     icon: 'item/key_y',          max: 5,           desc: '挑戰塔開局、主塔進入新區域時 +1 黃鑰匙', base: 10, cur: 'soul' },
+  alchemy:   { name: '煉金',     icon: 'item/potion_purple',  max: 10, g: 1.3,  desc: '所有藥水回復 +8%',                 base: 8,  cur: 'soul' },
+  scout:     { name: '斥候',     icon: 'icon/helmet',         max: 1,           desc: '看得見暗牆',                       base: 25, cur: 'soul' },
+  keen:      { name: '鷹眼',     icon: 'item/torch',          max: 2,           desc: '黑暗樓層視野 +1',                  base: 20, cur: 'soul', altar: 2 },
+  luck:      { name: '幸運',     icon: 'icon/goldcoins',      max: 5,           desc: '黃金怪物出現機率 +20%',            base: 15, cur: 'soul', altar: 3 },
+  blessing:  { name: '先祖祝福', icon: 'icon/bookholy',       max: 1,           desc: '挑戰塔開局獲得一件寶物',           base: 6,  cur: 'ember', altar: 5 },
+  fortune:   { name: '財運',     icon: 'icon/bag',            max: 15, g: 1.25, desc: '塔內金幣 +8%',                     base: 4,  cur: 'soul' },
+  reaper:    { name: '收割',     icon: 'item/gem_purple',     max: 15, g: 1.25, desc: '魂晶 +8%',                         base: 6,  cur: 'soul' },
+  industry:  { name: '勤勉',     icon: 'item/axe',            max: 20, g: 1.25, desc: '建築產量 +10%',                    base: 4,  cur: 'soul' },
+  merchant:  { name: '議價',     icon: 'item/key_b',          max: 5,           desc: '鑰匙商人價格 −6%',                 base: 10, cur: 'soul', altar: 2 },
+  salvager:  { name: '拆解',     icon: 'icon/hammerheavy',    max: 5,           desc: '分解裝備得到的材料 +15%',          base: 10, cur: 'soul', altar: 3 },
+  midas:     { name: '點石成金', icon: 'icon/goldcoins',      max: 1,           desc: '祭壇修女的價格 −20%',              base: 5,  cur: 'ember', altar: 4 },
+  scholar:   { name: '博學',     icon: 'item/book',           max: 15, g: 1.25, desc: '經驗 +5%',                         base: 6,  cur: 'soul' },
+  smith:     { name: '鍛造',     icon: 'item/gauntlet',       max: 10, g: 1.3,  desc: '打造時史詩以上的機率 +8%（相對）', base: 10, cur: 'soul', altar: 2 },
+  tamer:     { name: '馴獸',     icon: 'item/backpack',       max: 10, g: 1.3,  desc: '寵物效果 +3%',                     base: 10, cur: 'soul', altar: 2 },
+  trainer:   { name: '教練',     icon: 'item/sword_ice',      max: 10, g: 1.3,  desc: '訓練場經驗 +10%',                  base: 8,  cur: 'soul', altar: 3 },
+  researcher:{ name: '研究員',   icon: 'item/scroll_blue',    max: 10, g: 1.3,  desc: '研究速度 +5%',                     base: 8,  cur: 'soul', altar: 3 },
+  chef:      { name: '主廚',     icon: 'item/potion_yellow',  max: 2,           desc: '料理效果 +50%',                    base: 4,  cur: 'ember', altar: 4 },
+  gemStart:  { name: '天生神力', icon: 'item/gem_red',        max: 10,          desc: '開新的主塔或挑戰塔時，攻擊與防禦 +2', base: 2, cur: 'ember', altar: 5 },
+  offline:   { name: '守夜人',   icon: 'icon/potionempty',    max: 5,           desc: '離線收益時數 +2',                  base: 2,  cur: 'ember', altar: 5 },
+  eggLuck:   { name: '孵化師',   icon: 'icon/chest',          max: 5,           desc: '寵物蛋掉落機率 +20%，孵出稀有寵物機率提升', base: 2, cur: 'ember', altar: 6 },
+  curseRes:  { name: '抗咒',     icon: 'icon/aurared',        max: 5,           desc: '新周目詛咒讓怪物增加的攻擊與生命 −6%', base: 3, cur: 'ember', altar: 7 },
+  bounty:    { name: '賞金獵人', icon: 'item/crystal',        max: 5,           desc: '每日任務獎勵 +15%',                base: 2,  cur: 'ember', altar: 6 },
+  legend:    { name: '傳說之路', icon: 'item/sword_fire',     max: 3,           desc: '首領掉落的裝備稀有度更高',         base: 4,  cur: 'ember', altar: 8 },
 };
 
 // ---------- 每日祈福 ----------
@@ -163,9 +194,22 @@ const RESEARCH = {
   stars:     { name: '占星學', icon: 'item/crystal',       branch: '探索', need: 'expedition', study: 4, time: 90,  cost: { ore: 500, gold: 400, soul: 20 }, desc: '挑戰塔與每週塔魂晶 +25%' },
   farming:   { name: '農耕學', icon: 'item/potion_green',  branch: '生活', need: null,         study: 1, time: 30,  cost: { wood: 150, gold: 60 }, desc: '農田 +2 塊，作物生長快 25%' },
   memory:    { name: '銘刻術', icon: 'item/ring_red',      branch: '生活', need: 'farming',    study: 4, time: 90,  cost: { ore: 400, soul: 40 }, desc: '寶物記憶槽 +1' },
+  forging:   { name: '鍛造學', icon: 'item/sword',         branch: '戰鬥', need: 'tactics',    study: 3, time: 60,  cost: { ore: 400, gold: 300 }, desc: '打造裝備的費用 −20%' },
+  enchant:   { name: '附魔學', icon: 'item/sword_ice',     branch: '戰鬥', need: 'forging',    study: 5, time: 120, cost: { ore: 900, gold: 700, soul: 40 }, desc: '強化裝備的費用 −20%' },
+  setcraft:  { name: '套裝學', icon: 'icon/armorgold',     branch: '戰鬥', need: 'enchant',    study: 7, time: 240, cost: { ore: 3000, gold: 2500, soul: 150 }, desc: '首領與精英掉落套裝的機率 +40%' },
+  heroics:   { name: '英雄學', icon: 'icon/helmet',        branch: '戰鬥', need: 'bestiary',   study: 8, time: 300, cost: { ore: 5000, gold: 4000, soul: 300, ember: 5 }, desc: '所有英雄攻擊、防禦 +5' },
+  beast:     { name: '馴獸學', icon: 'item/backpack',      branch: '生活', need: 'farming',    study: 3, time: 60,  cost: { wood: 500, gold: 400 }, desc: '寵物升級費用 −20%' },
+  incubate:  { name: '孵化學', icon: 'icon/chest',         branch: '生活', need: 'beast',      study: 5, time: 150, cost: { wood: 1500, gold: 1200, soul: 60 }, desc: '寵物蛋掉落機率 +25%' },
+  drill:     { name: '操練學', icon: 'item/sword_fire',    branch: '生活', need: 'beast',      study: 4, time: 90,  cost: { wood: 800, ore: 600, gold: 500 }, desc: '訓練場經驗 +25%' },
+  logistics: { name: '後勤學', icon: 'icon/bag',           branch: '補給', need: 'kitchen',    study: 4, time: 90,  cost: { wood: 900, ore: 500 }, desc: '鑰匙與藥水存放上限 +50%' },
+  deepcore:  { name: '深層開採', icon: 'item/crystal_green', branch: '補給', need: 'logistics', study: 6, time: 200, cost: { wood: 3000, ore: 2500, gold: 1500 }, desc: '伐木場、礦坑、市集產量 +30%' },
+  astrology: { name: '星象學', icon: 'item/crystal',       branch: '探索', need: 'stars',      study: 5, time: 150, cost: { gold: 1500, soul: 80 }, desc: '每日任務 +1 個' },
+  goldrush:  { name: '淘金術', icon: 'icon/goldcoins',     branch: '探索', need: 'astrology',  study: 6, time: 200, cost: { gold: 3000, soul: 120 }, desc: '黃金怪物出現機率 +30%' },
+  voidlore:  { name: '虛空學', icon: 'item/gem_purple',    branch: '探索', need: 'goldrush',   study: 9, time: 480, cost: { gold: 10000, soul: 600, ember: 10 }, desc: '詛咒等級帶來的魂晶加成 +50%' },
   prosper:   { name: '繁榮學', icon: 'icon/bag',           branch: '生活', need: 'memory',     study: 6, time: 150, cost: { wood: 1000, ore: 800, gold: 600 }, desc: '建築產量 +25%，離線上限 +4 小時' },
 };
-const RESEARCH_ORDER = ['bomb', 'pick', 'feather', 'keys', 'potions', 'kitchen', 'tactics', 'armor', 'bestiary', 'maps', 'expedition', 'stars', 'farming', 'memory', 'prosper'];
+const RESEARCH_ORDER = ['bomb', 'pick', 'feather', 'keys', 'potions', 'kitchen', 'logistics', 'deepcore', 'tactics', 'armor', 'bestiary', 'heroics', 'forging', 'enchant', 'setcraft',
+  'maps', 'expedition', 'stars', 'astrology', 'goldrush', 'voidlore', 'farming', 'memory', 'prosper', 'beast', 'incubate', 'drill'];
 
 // ---------- 派遣探索（酒館） ----------
 // zone：主塔抵達該區域後才能派遣；reward 為 1 小時的量
@@ -253,6 +297,11 @@ const TOOLS = {
   skates: { name: '冰爪靴',   icon: 'icon/boots',     desc: '在冰面上不會滑動' },
   frost:  { name: '冰霜護符', icon: 'icon/frostball', desc: '走過岩漿不受傷' },
   lamp:   { name: '星光提燈', icon: 'item/crystal',   desc: '黑暗樓層完全看得見' },
+  cloak:  { name: '寒冰斗篷', icon: 'icon/armor',     desc: '「冰凍」對你無效，在冰面上不會滑動' },
+  mask:   { name: '防毒面具', icon: 'icon/helmet',    desc: '免疫中毒，走過毒沼不受傷' },
+  rod:    { name: '避雷針',   icon: 'item/arrows_ice', desc: '「感電」對你無效，「閃避」也躲不過你' },
+  ward:   { name: '暗影護符', icon: 'icon/ringmagic', desc: '看得見暗牆與隱形怪物，黑暗樓層視野 +3' },
+  relic:  { name: '星辰聖物', icon: 'item/gem_purple', desc: '走過岩漿、毒沼不受傷；反傷、爆裂、感電傷害 −50%' },
 };
 
 // ---------- 塔的區域（每 10 層一區，第 50 層是終點） ----------
@@ -285,7 +334,34 @@ const ZONES = [
     elite: 'gorgoth', eliteFx: 'guard', boss: 'abyssal', bossFx: 'double', seals: 4, mech: ['teleport', 'dark', 'ice', 'lava', 'patrol', 'plate'], tool: 'lamp',
     story: '星空之上的王座。深淵之主在這裡等你，一切的源頭。' },
 ];
-const FINAL_FLOOR = 50;
+ZONES.push(
+  { id: 'frost',  name: '霜白冰原', pal: ['#2a3a52', '#2f405a', '#8fb8e0', '#4f7096', '#e8f6ff'], sky: ['#14243f', '#4a6a90'], fog: [200, 230, 255], ember: [210, 240, 255],
+    mobs: ['v_frost_blob1', 'v_frost_ratling', 'v_frost_skeleton', 'draugr', 'v_frost_werewolfcub', 'v_frost_giantspider', 'v_frost_goblinveteran', 'v_frost_bonegolem', 'v_frost_wight'],
+    fx:   [null, 'first', 'undead', 'chill', 'double', 'chill', 'armor', 'hard', 'regen'],
+    elite: 'v_frost_chibi_orc', eliteFx: 'armor', boss: 'v_frost_giant', bossFx: 'chill', seals: 4, mech: ['ice', 'patrol', 'hidden', 'iron', 'plate'], tool: 'cloak',
+    story: '深淵之主的身後還有路。往上是一片永不融化的冰原，連時間都被凍住了。' },
+  { id: 'miasma', name: '毒瘴沼澤', pal: ['#2a3324', '#2f3a28', '#7a9a4a', '#4a6030', '#d8ff7a'], sky: ['#1a2614', '#4a5a2a'], fog: [190, 240, 140], ember: [200, 255, 120],
+    mobs: ['ooze', 'zombie', 'v_toxic_frogling', 'v_toxic_ratling', 'v_toxic_naga', 'v_toxic_treefolk', 'v_toxic_goblin', 'v_toxic_hag', 'v_toxic_ghoul'],
+    fx:   ['split', 'undead', 'poison', 'poison', 'pierce', 'regen', 'steal', 'curse', 'drain'],
+    elite: 'v_toxic_chibi_ogre', eliteFx: 'regen', boss: 'v_toxic_medusa', bossFx: 'triple', seals: 4, mech: ['swamp', 'vine', 'patrol', 'hidden', 'dark'], tool: 'mask',
+    story: '冰原底下是腐爛的沼澤。毒氣讓視線模糊，泥裡的東西會自己長回來。' },
+  { id: 'storm',  name: '雷霆天穹', pal: ['#262a4a', '#2b2f52', '#8a8ae0', '#4a4a90', '#f0e8ff'], sky: ['#141838', '#4a4aa0'], fog: [190, 190, 255], ember: [230, 220, 255],
+    mobs: ['v_storm_blob5', 'v_storm_imp', 'v_storm_airelemental', 'v_storm_merfolk', 'v_storm_centaur', 'v_storm_waterelemental', 'v_storm_crystalgolem', 'v_storm_orcishberserker', 'v_storm_dragonkinevoker'],
+    fx:   ['shock', 'evade', 'magic', 'thorns', 'first', 'shock', 'hard', 'rage', 'magic'],
+    elite: 'v_storm_skygiant', eliteFx: 'heavy', boss: 'v_storm_drake', bossFx: 'shock', seals: 5, mech: ['teleport', 'plate', 'patrol', 'iron', 'ice'], tool: 'rod',
+    story: '塔穿過了雲層。雷電在石柱之間跳躍，風把每一步都推向懸崖。' },
+  { id: 'shadow', name: '暗影迷宮', pal: ['#1c1828', '#211c2e', '#5a4a7a', '#352a4a', '#c8a0ff'], sky: ['#0c0a18', '#2a1a40'], fog: [170, 140, 220], ember: [200, 160, 255],
+    mobs: ['v_shadow_deepelf', 'v_shadow_deepranger', 'v_shadow_deepelfassassin', 'v_shadow_darkapprentice', 'v_shadow_catkinwarlock', 'v_shadow_deepelfwizard', 'v_shadow_vampirechilder', 'v_shadow_sanctumguardian', 'v_shadow_dragonkinknight'],
+    fx:   ['pierce', 'first', 'evade', 'invisible', 'curse', 'magic', 'drain', 'guard', 'armor'],
+    elite: 'v_shadow_doppelganger', eliteFx: 'evade', boss: 'v_shadow_wraith', bossFx: 'heavy', seals: 5, mech: ['dark', 'hidden', 'teleport', 'patrol', 'iron'], tool: 'ward',
+    story: '迷宮裡的敵人長著你熟悉的臉——那是走錯了路的英雄們的影子。' },
+  { id: 'void',   name: '虛空終焉', pal: ['#24142c', '#2a1834', '#9a4aa0', '#5a2a64', '#ffb0f0'], sky: ['#10061a', '#5a1a5a'], fog: [255, 150, 230], ember: [255, 170, 240],
+    mobs: ['v_void_chaosspawn', 'v_void_starelemental', 'v_void_banshee', 'v_void_hellion', 'v_void_deepspawn', 'v_void_demilich', 'v_void_earthelemental', 'v_void_minotaur', 'v_void_gorgoth'],
+    fx:   ['split', 'magic', 'pierce', 'rage', 'triple', 'undead', 'regen', 'heavy', 'armor'],
+    elite: 'v_void_heresiarch', eliteFx: 'shock', boss: 'v_void_abyssal', bossFx: 'rage', seals: 6, mech: ['teleport', 'dark', 'lava', 'ice', 'swamp', 'plate', 'patrol'], tool: 'relic',
+    story: '塔的盡頭沒有天空，只有吞噬一切的虛空。真正的敵人，一直在這裡等你。' },
+);
+const FINAL_FLOOR = 100;
 
 // 怪物名稱（依圖片）
 const MON_NAMES = {
@@ -299,6 +375,21 @@ const MON_NAMES = {
   heresiarch: '異端主教', dragonwhelp: '古龍幼王', airelemental: '風元素', crystalgolem: '水晶魔像', wraith: '怨靈',
   plaguezombie: '瘟疫殭屍', doppelganger: '變形怪', starelemental: '星辰元素', chaosspawn: '混沌之子', earthelemental: '大地元素',
   gorgoth: '戈格斯', abyssal: '深淵之主',
+  v_frost_blob1: '冰晶史萊姆', v_frost_ratling: '雪原鼠人', v_frost_skeleton: '冰霜骷髏', draugr: '冰原屍鬼', v_frost_werewolfcub: '雪狼', v_frost_giantspider: '霜蛛',
+  v_frost_goblinveteran: '雪原老兵', v_frost_bonegolem: '冰骨魔像', v_frost_wight: '冰霜屍妖', v_frost_chibi_orc: '冰原獸人王', v_frost_giant: '冰霜巨人',
+  ooze: '腐蝕軟泥', zombie: '沼澤殭屍', v_toxic_frogling: '毒蛙人', v_toxic_ratling: '瘟疫鼠', v_toxic_naga: '毒鱗娜迦', v_toxic_treefolk: '枯萎樹人',
+  v_toxic_goblin: '沼地哥布林', v_toxic_hag: '瘴氣巫婆', v_toxic_ghoul: '腐屍鬼', v_toxic_chibi_ogre: '瘴氣食人魔', v_toxic_medusa: '沼澤女王',
+  v_storm_blob5: '電光水母', v_storm_imp: '雷精', v_storm_airelemental: '雷雲元素', v_storm_merfolk: '風暴魚人', v_storm_centaur: '雷霆半人馬',
+  v_storm_waterelemental: '暴雨元素', v_storm_crystalgolem: '雷晶魔像', v_storm_orcishberserker: '雷鎚狂戰士', v_storm_dragonkinevoker: '雷龍術士',
+  v_storm_skygiant: '雷霆巨人', v_storm_drake: '雷霆古龍',
+  v_shadow_deepelf: '暗精靈', v_shadow_deepranger: '暗影遊俠', v_shadow_deepelfassassin: '暗影刺客', v_shadow_darkapprentice: '星象叛徒',
+  v_shadow_catkinwarlock: '冥貓術士', v_shadow_deepelfwizard: '暗影法師', v_shadow_vampirechilder: '血族貴族', v_shadow_sanctumguardian: '墮落守衛',
+  v_shadow_dragonkinknight: '暗影騎士', v_shadow_doppelganger: '千面魔', v_shadow_wraith: '影之王',
+  v_void_chaosspawn: '虛空之子', v_void_starelemental: '墮星', v_void_banshee: '虛空哭靈', v_void_hellion: '虛空獄卒', v_void_deepspawn: '虛空觸手',
+  v_void_demilich: '虛空巫妖', v_void_earthelemental: '崩壞巨岩', v_void_minotaur: '虛空牛魔', v_void_gorgoth: '虛空戈格斯', v_void_heresiarch: '虛空主教',
+  v_void_abyssal: '終焉之主',
+  v_gold_blob1: '黃金史萊姆', v_gold_frogling: '黃金蛙', v_gold_merfolk: '黃金魚人', v_gold_imp: '黃金小惡魔', v_gold_crystalgolem: '黃金魔像',
+  v_gold_ratling: '金鼠', v_gold_ooze: '黃金軟泥', v_gold_airelemental: '金雲', v_gold_doppelganger: '金面魔', v_gold_minotaur: '黃金牛魔',
 };
 // 怪物家族（剋制用）
 const FAMILY = { undead: '不死', beast: '野獸', element: '元素', demon: '惡魔' };
@@ -308,6 +399,16 @@ const MON_FAMILY = {
   goblin: 'beast', goblinscout: 'beast', goblinveteran: 'beast', chibi_goblin: 'beast', chibi_orc: 'beast', chibi_ogre: 'beast', orcishberserker: 'beast', giant: 'beast', skygiant: 'beast', hag: 'beast', merfolk: 'beast',
   blob1: 'element', blob6: 'element', blob3: 'element', blob26: 'element', blob16: 'element', blob38: 'element', blob20: 'element', blob40: 'element', blob5: 'element',
   waterelemental: 'element', fireelemental: 'element', airelemental: 'element', starelemental: 'element', earthelemental: 'element', crystalgolem: 'element', treefolk: 'element',
+  draugr: 'undead', zombie: 'undead', v_frost_skeleton: 'undead', v_frost_bonegolem: 'undead', v_frost_wight: 'undead', v_toxic_ghoul: 'undead', v_shadow_vampirechilder: 'undead', v_shadow_wraith: 'undead',
+  v_void_banshee: 'undead', v_void_demilich: 'undead',
+  v_frost_ratling: 'beast', v_frost_werewolfcub: 'beast', v_frost_giantspider: 'beast', v_frost_goblinveteran: 'beast', v_frost_chibi_orc: 'beast', v_frost_giant: 'beast',
+  v_toxic_frogling: 'beast', v_toxic_ratling: 'beast', v_toxic_naga: 'beast', v_toxic_goblin: 'beast', v_toxic_hag: 'beast', v_toxic_chibi_ogre: 'beast', v_toxic_medusa: 'beast',
+  v_storm_merfolk: 'beast', v_storm_centaur: 'beast', v_storm_orcishberserker: 'beast', v_storm_skygiant: 'beast', v_storm_drake: 'beast', v_void_minotaur: 'beast',
+  v_frost_blob1: 'element', ooze: 'element', v_toxic_treefolk: 'element', v_storm_blob5: 'element', v_storm_airelemental: 'element', v_storm_waterelemental: 'element',
+  v_storm_crystalgolem: 'element', v_void_starelemental: 'element', v_void_earthelemental: 'element',
+  v_storm_imp: 'demon', v_storm_dragonkinevoker: 'demon', v_shadow_deepelf: 'demon', v_shadow_deepranger: 'demon', v_shadow_deepelfassassin: 'demon', v_shadow_darkapprentice: 'demon',
+  v_shadow_catkinwarlock: 'demon', v_shadow_deepelfwizard: 'demon', v_shadow_sanctumguardian: 'demon', v_shadow_dragonkinknight: 'demon', v_shadow_doppelganger: 'demon',
+  v_void_chaosspawn: 'demon', v_void_hellion: 'demon', v_void_deepspawn: 'demon', v_void_gorgoth: 'demon', v_void_heresiarch: 'demon', v_void_abyssal: 'demon',
   imp: 'demon', devilkin: 'demon', hellion: 'demon', heresiarch: 'demon', chaosspawn: 'demon', abyssal: 'demon', deepspawn: 'demon', dragonkinevoker: 'demon', doppelganger: 'demon', gorgoth: 'demon',
 };
 
@@ -340,7 +441,18 @@ const MON_FX = {
   curse:     { name: '詛咒', desc: '戰後攻擊 −10%，直到換樓層' },
   invisible: { name: '隱形', desc: '看不到牠的數值，打了才知道' },
   explode:   { name: '爆裂', desc: '倒下時爆炸，造成 1U 傷害' },
+  armor:     { name: '鐵壁', desc: '牠受到的前 3 下攻擊傷害減半' },
+  regen:     { name: '再生', desc: '牠每次出手後回復 8% 生命；傷害太低會打不死' },
+  rage:      { name: '狂怒', desc: '每回合攻擊力 +12%，越拖越危險' },
+  chill:     { name: '冰凍', desc: '你每攻擊 2 下就會被凍住一回合，讓牠多打一次' },
+  shock:     { name: '感電', desc: '牠每次攻擊額外造成 0.1U 的雷擊傷害（無視防禦）' },
+  evade:     { name: '閃避', desc: '你每 3 次攻擊會有 1 次落空' },
+  pierce:    { name: '穿刺', desc: '牠的攻擊無視你一半的防禦' },
+  heavy:     { name: '重擊', desc: '每 3 回合一次重擊，造成 2.5 倍傷害' },
+  triple:    { name: '三連擊', desc: '每回合攻擊三次（每次較輕）' },
 };
+// 黃金怪物：隨機出現的稀有怪，金幣 ×5、經驗 ×3，必掉裝備
+const GOLDEN = ['v_gold_blob1', 'v_gold_frogling', 'v_gold_merfolk', 'v_gold_imp', 'v_gold_crystalgolem', 'v_gold_ratling', 'v_gold_ooze', 'v_gold_airelemental', 'v_gold_doppelganger', 'v_gold_minotaur'];
 
 // 塔內 NPC
 const NPCS = {
@@ -394,6 +506,11 @@ const STAR_REWARDS = [
   { stars: 100, reward: { soul: 150, ember: 4 } },
   { stars: 130, reward: { soul: 200, ember: 6 } },
   { stars: 150, reward: { soul: 300, ember: 10 } },
+  { stars: 180, reward: { soul: 400, ember: 8 } },
+  { stars: 210, reward: { soul: 500, ember: 10 } },
+  { stars: 240, reward: { soul: 650, ember: 12 } },
+  { stars: 270, reward: { soul: 800, ember: 15 } },
+  { stars: 300, reward: { soul: 1200, ember: 25 } },
 ];
 const ZONE_QUEST_STARS = 20; // 區域任務：在該區拿到的星數
 
@@ -405,7 +522,12 @@ const STORY = {
     '森林巨人倒下了，整座森林安靜下來。藤蔓之間，露出一條往上的石階。',
     '風暴巨人沉入水底。冰層碎裂，神殿深處傳來熔岩的熱氣。',
     '古龍幼王的火焰熄滅。天花板裂開，你看見了星星。',
-    '深淵之主崩解成無數星光，落回營地的篝火裡。火焰從此不再熄滅。',
+    '深淵之主崩解成星光。但在牠消散的地方，一道冰冷的階梯繼續往上延伸——牠只是某個更大存在的影子。',
+    '冰霜巨人碎成冰晶。融化的雪水往下流，滲進一片冒著毒氣的沼澤。',
+    '沼澤女王沉入泥中，毒霧散開，露出一根直通雲端的雷柱。',
+    '雷霆古龍墜落，雲層裂開。裂縫之後是一座沒有光的迷宮。',
+    '影之王消散時，你在牠的臉上看到了自己。迷宮的出口通向一片虛無。',
+    '終焉之主崩解成無數星光，落回營地的篝火裡。火焰從此不再熄滅。',
   ],
   ending: '篝火的光芒照亮了整片大地。但塔沒有消失——它在黑暗中重新長了出來，比以前更扭曲、更危險。也許這就是守護者的宿命。',
 };
@@ -439,6 +561,37 @@ const ACHIEVEMENTS = [
   { id: 'pet1',    name: '新夥伴',     desc: '孵化第一隻寵物',           test: s => Object.keys(s.pets.own).length >= 1, reward: { soul: 10 } },
   { id: 'pet8',    name: '寵物大家族', desc: '擁有 8 種寵物',            test: s => Object.keys(s.pets.own).length >= 8, reward: { ember: 4 }, title: '小精怪之友' },
   { id: 'petall',  name: '全員到齊',   desc: '收集全部寵物',             test: s => PET_ORDER.every(k => s.pets.own[k]), reward: { ember: 12 }, title: '萬獸之主' },
+  { id: 'f50',     name: '深淵征服者', desc: '主塔抵達第 50 層',         test: s => s.stats.bestFloor >= 50,  reward: { ember: 8 }, title: '深淵征服者' },
+  { id: 'f60',     name: '冰原行者',   desc: '主塔抵達第 60 層',         test: s => s.stats.bestFloor >= 60,  reward: { ember: 10 }, title: '冰原行者' },
+  { id: 'f70',     name: '毒沼倖存者', desc: '主塔抵達第 70 層',         test: s => s.stats.bestFloor >= 70,  reward: { ember: 12 }, title: '毒沼倖存者' },
+  { id: 'f80',     name: '御雷者',     desc: '主塔抵達第 80 層',         test: s => s.stats.bestFloor >= 80,  reward: { ember: 14 }, title: '御雷者' },
+  { id: 'f90',     name: '影之剋星',   desc: '主塔抵達第 90 層',         test: s => s.stats.bestFloor >= 90,  reward: { ember: 16 }, title: '影之剋星' },
+  { id: 'ng10',    name: '咒縛之王',   desc: '在詛咒等級 10 以上通關',   test: s => s.stats.bestCurse >= 10,  reward: { ember: 30 }, title: '咒縛之王' },
+  { id: 'ng20',    name: '永恆守護者', desc: '在詛咒等級 20 通關',       test: s => s.stats.bestCurse >= 20,  reward: { ember: 60 }, title: '永恆守護者' },
+  { id: 'star250', name: '群星之主',   desc: '主塔累積 250 顆星',        test: s => s.stats.stars >= 250,     reward: { ember: 20 }, title: '群星之主' },
+  { id: 'k2000',   name: '千軍辟易',   desc: '累計擊敗 2000 隻怪物',     test: s => s.stats.kills >= 2000,    reward: { ember: 10 } },
+  { id: 'k10000',  name: '萬夫莫敵',   desc: '累計擊敗 10000 隻怪物',    test: s => s.stats.kills >= 10000,   reward: { ember: 25 }, title: '萬夫莫敵' },
+  { id: 'boss20',  name: '首領剋星',   desc: '累計擊敗 20 位首領',       test: s => s.stats.bossKills >= 20,  reward: { ember: 8 } },
+  { id: 'boss100', name: '弒王者',     desc: '累計擊敗 100 位首領',      test: s => s.stats.bossKills >= 100, reward: { ember: 25 }, title: '弒王者' },
+  { id: 'gold1',   name: '閃閃發亮',   desc: '擊敗一隻黃金怪物',         test: s => (s.stats.golden || 0) >= 1,  reward: { soul: 30 } },
+  { id: 'gold30',  name: '淘金客',     desc: '擊敗 30 隻黃金怪物',       test: s => (s.stats.golden || 0) >= 30, reward: { ember: 10 }, title: '淘金客' },
+  { id: 'codex80', name: '怪物百科',   desc: '圖鑑登錄 80 種怪物',       test: s => Object.keys(s.codex).length >= 80, reward: { ember: 10 }, title: '怪物百科' },
+  { id: 'codex120',name: '萬物圖鑑',   desc: '圖鑑登錄全部怪物',         test: s => Object.keys(s.codex).length >= Object.keys(MON_NAMES).length, reward: { ember: 30 }, title: '萬物圖鑑' },
+  { id: 'myth',    name: '神話降臨',   desc: '獲得神話裝備',             test: s => (s.stats.bestGear || 0) >= 4, reward: { ember: 15 }, title: '神話之手' },
+  { id: 'plus20',  name: '登峰造極',   desc: '把一件裝備強化到 +20',     test: s => (s.stats.bestPlus || 0) >= 20, reward: { ember: 10 } },
+  { id: 'set4',    name: '成套收藏',   desc: '穿上 4 件同套裝',          test: s => (s.stats.bestSet || 0) >= 4, reward: { ember: 6 } },
+  { id: 'set6',    name: '完美套裝',   desc: '穿上 6 件同套裝',          test: s => (s.stats.bestSet || 0) >= 6, reward: { ember: 15 }, title: '套裝大師' },
+  { id: 'fuse',    name: '合成師',     desc: '在符文工坊合成 10 次',     test: s => (s.stats.fuses || 0) >= 10, reward: { soul: 80 } },
+  { id: 'pet20',   name: '小精怪樂園', desc: '擁有 20 種寵物',           test: s => Object.keys(s.pets.own).length >= 20, reward: { ember: 8 } },
+  { id: 'petstar', name: '寵物大師',   desc: '一隻寵物升到 ★5',          test: s => Object.values(s.pets.own).some(p => (p.star || 1) >= 5), reward: { ember: 12 }, title: '寵物大師' },
+  { id: 'talent50',name: '天賦異稟',   desc: '天賦總等級達到 50',        test: s => Object.values(s.talents).reduce((a, b) => a + b, 0) >= 50,  reward: { ember: 6 } },
+  { id: 'talent200',name: '天選之人',  desc: '天賦總等級達到 200',       test: s => Object.values(s.talents).reduce((a, b) => a + b, 0) >= 200, reward: { ember: 20 }, title: '天選之人' },
+  { id: 'quest30', name: '可靠的幫手', desc: '完成 30 個每日任務',       test: s => (s.stats.quests || 0) >= 30,  reward: { ember: 6 } },
+  { id: 'quest300',name: '營地支柱',   desc: '完成 300 個每日任務',      test: s => (s.stats.quests || 0) >= 300, reward: { ember: 25 }, title: '營地支柱' },
+  { id: 'lv50',    name: '傳奇英雄',   desc: '任一英雄達到 Lv50',        test: s => HERO_ORDER.some(h => s.heroes[h].lvl >= 50), reward: { ember: 10 }, title: '傳奇英雄' },
+  { id: 'lv99',    name: '登峰',       desc: '任一英雄達到 Lv99',        test: s => HERO_ORDER.some(h => s.heroes[h].lvl >= 99), reward: { ember: 40 }, title: '登峰之人' },
+  { id: 'awaken8', name: '眾神甦醒',   desc: '8 位英雄全部完全覺醒',     test: s => HERO_ORDER.every(h => s.heroes[h].awaken >= 3), reward: { ember: 40 }, title: '眾神甦醒' },
+  { id: 'camp10',  name: '繁華營地',   desc: '所有設施都達到 Lv10',      test: s => BUILDING_ORDER.every(b => s.buildings[b] >= 10), reward: { ember: 30 }, title: '營地之主' },
   { id: 'chef',    name: '大廚',       desc: '做出 20 道料理',           test: s => s.stats.dishes >= 20,     reward: { soul: 30 }, title: '營地大廚' },
 ];
 
@@ -507,74 +660,152 @@ const PUZZLES = [
 ];
 
 // ---------- 裝備 ----------
-// 裝備穿在隊伍身上：換出戰英雄時裝備跟著走。主屬性 = 部位基礎 × 品階倍率 × 稀有度倍率 × (1 + 0.1 × 強化)
+// 裝備穿在隊伍身上：換出戰英雄時裝備跟著走。主屬性 = 部位基礎 × 品階倍率 × 稀有度倍率，每強化一級 +10% 基礎值
 const GEAR_SLOTS = {
-  weapon: { name: '武器', icon: 'item/sword',    main: { atk: 3 } },
-  armor:  { name: '防具', icon: 'item/armor',    main: { def: 3 } },
-  charm:  { name: '飾品', icon: 'item/ring_red', main: { atk: 1.2, def: 1.2 } },
+  weapon:  { name: '武器', icon: 'item/sword',       main: { atk: 2.4 } },
+  offhand: { name: '副手', icon: 'item/shield',      main: { def: 1.4, atk: 0.3 } },
+  armor:   { name: '鎧甲', icon: 'item/armor',       main: { def: 2.4 } },
+  hands:   { name: '手套', icon: 'item/gauntlet',    main: { atk: 1.0, def: 0.4 } },
+  boots:   { name: '鞋子', icon: 'item/boots',       main: { def: 0.8, atk: 0.5 } },
+  trinket: { name: '飾品', icon: 'item/ring_red',    main: { atk: 0.9, def: 0.9 } },
 };
-const GEAR_SLOT_ORDER = ['weapon', 'armor', 'charm'];
+const GEAR_SLOT_ORDER = ['weapon', 'offhand', 'armor', 'hands', 'boots', 'trinket'];
 const GEAR_RARITY = [
   { name: '普通', color: '#cfc9ea', mult: 1,    affix: 0 },
   { name: '精良', color: '#74c0fc', mult: 1.25, affix: 1 },
-  { name: '史詩', color: '#c58bff', mult: 1.6,  affix: 1 },
+  { name: '史詩', color: '#c58bff', mult: 1.6,  affix: 2 },
   { name: '傳說', color: '#ffc35c', mult: 2,    affix: 2 },
+  { name: '神話', color: '#ff6b8a', mult: 2.6,  affix: 3 },
 ];
-const GEAR_TIER = [1, 2, 3, 4.5, 6, 8, 10, 13];
-const GEAR_TIER_NAME = ['粗製', '鐵製', '精鋼', '秘銀', '符文', '龍骨', '星辰', '深淵'];
-// 款式：[圖示, 名稱, 屬性權重（飾品才有，偏攻或偏防）]
+const GEAR_TIER = [1, 2, 3, 4.5, 6, 8, 10, 13, 16, 20, 25, 31];
+const GEAR_TIER_NAME = ['粗製', '鐵製', '精鋼', '秘銀', '符文', '龍骨', '霜晶', '瘴骨', '雷紋', '暗影', '星辰', '虛空'];
+// 款式：[圖示, 名稱, 屬性權重（不寫就用部位預設）]
 const GEAR_BASES = {
   weapon: [['item/sword', '長劍'], ['item/sword_fire', '炎之劍'], ['item/sword_ice', '霜之劍'], ['item/axe', '戰斧'], ['item/axe_fire', '熔岩斧'], ['item/axe_ice', '冰晶斧'],
-    ['item/dagger', '短刃'], ['item/dagger_fire', '火紋匕首'], ['item/dagger_ice', '寒光匕首'], ['item/bow', '長弓'], ['icon/crossbow', '十字弩'], ['icon/hammerheavy', '重錘'], ['icon/swordblood', '血紋大劍']],
-  armor: [['item/armor', '皮甲'], ['item/armor_gold', '金邊鎧甲'], ['item/shield', '鐵盾'], ['item/shield_gold', '聖盾'], ['item/shield_wood', '木盾'], ['item/shield_wood_gold', '鑲金木盾'],
-    ['icon/helmet', '頭盔'], ['icon/legarmor', '護腿'], ['icon/armorgold', '王者胸甲'], ['item/gauntlet', '護手']],
-  charm: [['item/ring_red', '紅玉戒指', { atk: 1.8, def: 0.6 }], ['item/ring_green', '翠玉戒指', { atk: 0.6, def: 1.8 }], ['icon/ringmagic', '秘法指環'], ['icon/aurared', '紅焰護符', { atk: 1.8, def: 0.6 }],
-    ['icon/bookholy', '聖典'], ['item/crystal_green', '森之結晶', { atk: 0.6, def: 1.8 }], ['item/gauntlet_gold', '金色拳套', { atk: 1.8, def: 0.6 }], ['item/boots_gold', '疾風靴']],
+    ['item/dagger', '短刃', { atk: 2.2, def: 0.2 }], ['item/dagger_fire', '火紋匕首', { atk: 2.2, def: 0.2 }], ['item/dagger_ice', '寒光匕首', { atk: 2.2, def: 0.2 }], ['item/bow', '長弓'],
+    ['icon/crossbow', '十字弩'], ['icon/hammerheavy', '重錘', { atk: 2.7 }], ['icon/swordblood', '血紋大劍', { atk: 2.7 }], ['icon/axe', '雙刃斧']],
+  offhand: [['item/shield', '鐵盾'], ['item/shield_gold', '聖盾'], ['item/shield_wood', '木盾'], ['item/shield_wood_gold', '鑲金木盾'], ['icon/shield', '騎士盾'], ['icon/shield2', '紋章盾'],
+    ['item/book', '魔導書', { atk: 1.0, def: 0.7 }], ['icon/bookholy', '聖典', { atk: 0.7, def: 1.0 }], ['item/scroll_blue', '秘術卷軸', { atk: 1.1, def: 0.6 }], ['item/torch', '引路火炬', { atk: 0.9, def: 0.8 }]],
+  armor: [['item/armor', '皮甲'], ['item/armor_gold', '金邊鎧甲'], ['icon/armorgold', '王者胸甲'], ['icon/armor', '鎖子甲'], ['icon/legarmor', '戰鎧', { def: 2.2, atk: 0.2 }]],
+  hands: [['item/gauntlet', '護手'], ['item/gauntlet_gold', '金色拳套'], ['icon/glove', '皮手套', { atk: 0.8, def: 0.6 }]],
+  boots: [['item/boots', '皮靴'], ['item/boots_gold', '疾風靴', { atk: 0.7, def: 0.6 }], ['icon/boots', '旅人之靴']],
+  trinket: [['item/ring_red', '紅玉戒指', { atk: 1.35, def: 0.45 }], ['item/ring_green', '翠玉戒指', { atk: 0.45, def: 1.35 }], ['icon/ringmagic', '秘法指環'], ['icon/aurared', '紅焰護符', { atk: 1.35, def: 0.45 }],
+    ['item/crystal', '星之結晶'], ['item/crystal_green', '森之結晶', { atk: 0.45, def: 1.35 }], ['item/gem_purple', '紫晶墜飾'], ['icon/potionblue', '藍色護身瓶', { atk: 0.45, def: 1.35 }]],
 };
-// 詞綴：數值依稀有度（精良 / 史詩 / 傳說），% 類存成小數
+// 詞綴：數值依稀有度（精良 / 史詩 / 傳說 / 神話），% 類存成小數
 const AFFIXES = {
-  atkPct:      { text: '攻擊 +{v}%',                 v: [3, 5, 7] },
-  defPct:      { text: '防禦 +{v}%',                 v: [3, 5, 7] },
-  reduce:      { text: '受到的傷害 −{v}%',           v: [3, 4, 6] },
-  bossAtk:     { text: '對精英與首領攻擊 +{v}%',     v: [6, 9, 12] },
-  killHeal:    { text: '每次擊殺回復 {v}U 生命',     v: [0.05, 0.08, 0.12], raw: true },
-  goldPct:     { text: '塔內金幣 +{v}%',             v: [10, 15, 22] },
-  expPct:      { text: '經驗 +{v}%',                 v: [5, 8, 12] },
-  potionPct:   { text: '藥水效果 +{v}%',             v: [4, 6, 9] },
-  magicRes:    { text: '魔法傷害 −{v}%',             v: [10, 16, 24] },
-  hazard:      { text: '中毒・反傷・爆炸・岩漿 −{v}%', v: [12, 18, 25] },
-  fam_undead:  { text: '對不死系攻擊 +{v}%',         v: [8, 12, 18] },
-  fam_beast:   { text: '對野獸系攻擊 +{v}%',         v: [8, 12, 18] },
-  fam_element: { text: '對元素系攻擊 +{v}%',         v: [8, 12, 18] },
-  fam_demon:   { text: '對惡魔系攻擊 +{v}%',         v: [8, 12, 18] },
+  atkPct:      { text: '攻擊 +{v}%',                 v: [3, 4, 6, 8] },
+  defPct:      { text: '防禦 +{v}%',                 v: [3, 4, 6, 8] },
+  reduce:      { text: '受到的傷害 −{v}%',           v: [2, 3, 4, 6] },
+  bossAtk:     { text: '對精英與首領攻擊 +{v}%',     v: [5, 7, 10, 14] },
+  bossRes:     { text: '精英與首領對你的傷害 −{v}%', v: [4, 6, 8, 11] },
+  brk:         { text: '怪物防禦 −{v}%',             v: [2, 3, 4, 6] },
+  gOpen:       { text: '開戰先打一下（你一擊的 {v}%）', v: [8, 12, 16, 22] },
+  leech:       { text: '攻擊時回復傷害的 {v}%',      v: [3, 4, 6, 8] },
+  killHeal:    { text: '每次擊殺回復 {v}U 生命',     v: [0.05, 0.07, 0.1, 0.14], raw: true },
+  stairHeal:   { text: '每次上樓回復 {v}U 生命',     v: [0.3, 0.5, 0.7, 1], raw: true },
+  potionPct:   { text: '藥水效果 +{v}%',             v: [3, 5, 7, 9] },
+  gemPct:      { text: '寶石效果 +{v}%',             v: [2, 3, 4, 6] },
+  goldPct:     { text: '塔內金幣 +{v}%',             v: [8, 12, 18, 25] },
+  expPct:      { text: '經驗 +{v}%',                 v: [4, 6, 9, 12] },
+  soulPct:     { text: '魂晶 +{v}%',                 v: [4, 6, 9, 12] },
+  petPct:      { text: '寵物效果 +{v}%',             v: [4, 6, 9, 12] },
+  shopOff:     { text: '祭壇修女價格 −{v}%',         v: [4, 6, 9, 12] },
+  magicRes:    { text: '魔法傷害 −{v}%',             v: [8, 12, 18, 24] },
+  hazard:      { text: '中毒・反傷・爆炸・岩漿・感電 −{v}%', v: [10, 15, 20, 28] },
+  fam_undead:  { text: '對不死系攻擊 +{v}%',         v: [6, 9, 13, 18] },
+  fam_beast:   { text: '對野獸系攻擊 +{v}%',         v: [6, 9, 13, 18] },
+  fam_element: { text: '對元素系攻擊 +{v}%',         v: [6, 9, 13, 18] },
+  fam_demon:   { text: '對惡魔系攻擊 +{v}%',         v: [6, 9, 13, 18] },
 };
-// 掉落稀有度權重：普通 / 精良 / 史詩 / 傳說
-const GEAR_DROP = { elite: [55, 33, 10, 2], boss: [15, 45, 30, 10] };
-const GEAR_BAG = 40;
+// 套裝：每區的首領與精英有機會掉落該區套裝（史詩以上），穿越多件效果越強
+const GEAR_SETS = {
+  bone:   { name: '骸骨守望', zone: 0, color: '#d6d0f0', b: { 2: { fam_undead: 0.12 }, 4: { killHeal: 0.15 }, 6: { cross: 1, fam_undead: 0.15 } },
+            d: { 2: '對不死系攻擊 +12%', 4: '每次擊殺回復 0.15U', 6: '不死系只要打一次，對不死系再 +15%' } },
+  grove:  { name: '林語',     zone: 1, color: '#7ee08a', b: { 2: { potionPct: 0.08 }, 4: { noPoison: 1 }, 6: { petHeal: 0.08, fam_beast: 0.15 } },
+            d: { 2: '藥水效果 +8%', 4: '免疫中毒', 6: '受傷後治療 8%，對野獸系 +15%' } },
+  tide:   { name: '潮汐',     zone: 2, color: '#74c0fc', b: { 2: { magicRes: 0.15 }, 4: { defPct: 0.06 }, 6: { noThorns: 1, reduce: 0.06 } },
+            d: { 2: '魔法傷害 −15%', 4: '防禦 +6%', 6: '反傷、爆裂無效，受到的傷害 −6%' } },
+  magma:  { name: '熔火',     zone: 3, color: '#ff8a65', b: { 2: { atkPct: 0.05 }, 4: { fam_demon: 0.15 }, 6: { petOpen: 0.4, bossAtk: 0.1 } },
+            d: { 2: '攻擊 +5%', 4: '對惡魔系 +15%', 6: '開戰先打一下（40%），對精英首領 +10%' } },
+  star:   { name: '星輝',     zone: 4, color: '#d6c8ff', b: { 2: { gemPct: 0.05 }, 4: { expPct: 0.12 }, 6: { skillPlus: 1, fam_element: 0.15 } },
+            d: { 2: '寶石效果 +5%', 4: '經驗 +12%', 6: '英雄技能每層 +1 次，對元素系 +15%' } },
+  frost:  { name: '霜語',     zone: 5, color: '#bfe6ff', b: { 2: { noChill: 1 }, 4: { reduce: 0.05 }, 6: { noFirst: 1, stairHeal: 1.2 } },
+            d: { 2: '冰凍無效', 4: '受到的傷害 −5%', 6: '怪物先攻無效，每次上樓回復 1.2U' } },
+  venom:  { name: '腐毒',     zone: 6, color: '#b6e36a', b: { 2: { hazard: 0.2 }, 4: { leech: 0.04 }, 6: { noRegen: 1, atkPct: 0.06 } },
+            d: { 2: '中毒等環境傷害 −20%', 4: '攻擊時回復傷害的 4%', 6: '怪物的再生無效，攻擊 +6%' } },
+  thunder:{ name: '雷鳴',     zone: 7, color: '#a99cff', b: { 2: { noShock: 1 }, 4: { brk: 0.06 }, 6: { noEvade: 1, petHit: 0.12 } },
+            d: { 2: '感電無效', 4: '怪物防禦 −6%', 6: '閃避無效，每次攻擊後追加一擊（12%）' } },
+  umbra:  { name: '幽影',     zone: 8, color: '#9a7ae0', b: { 2: { seeAll: 1 }, 4: { bossRes: 0.1 }, 6: { skipFirstHit: 1, defPct: 0.06 } },
+            d: { 2: '看得見暗牆與隱形怪物', 4: '精英與首領對你的傷害 −10%', 6: '擋下怪物的第一下攻擊，防禦 +6%' } },
+  abyss:  { name: '終焉',     zone: 9, color: '#ff8ae0', b: { 2: { atkPct: 0.06, defPct: 0.06 }, 4: { noPierce: 1, noHeavy: 1 }, 6: { brk: 0.1, reduce: 0.08, petHit: 0.1 } },
+            d: { 2: '攻擊、防禦 +6%', 4: '穿刺與重擊無效', 6: '怪物防禦 −10%，受到傷害 −8%，追加一擊（10%）' } },
+};
+const SET_ORDER = Object.keys(GEAR_SETS);
+// 掉落稀有度權重：普通 / 精良 / 史詩 / 傳說 / 神話
+const GEAR_DROP = { elite: [50, 34, 12, 3.5, 0.5], boss: [10, 40, 33, 14, 3], golden: [0, 45, 38, 14, 3] };
+const GEAR_BAG = 60;
 
 // ---------- 寵物 ----------
-// 稀有度沿用裝備的顏色；fx 數值 × (1 + 0.04 × (等級 − 1))，flag 是不隨等級變化的能力
+// 稀有度沿用裝備的顏色；fx 數值 × 等級倍率 × 星級倍率，flag 是不隨等級變化的能力
 // 效果代號：petOpen 開場撞擊、petHit 追擊（every 每幾下一次）、petHeal 受傷後治療、petBreak 破甲，其他與裝備詞綴相同
 const PETS = {
   horn:    { name: '角角',     icon: 'mon/blob34', r: 0, role: 'atk',   fx: { petOpen: 0.18 },                 desc: '開戰先撞一下，造成你一擊 {petOpen}% 的傷害' },
   ember:   { name: '火球球',   icon: 'mon/blob40', r: 1, role: 'atk',   fx: { petHit: 0.09 },                  desc: '你每次攻擊後追擊，造成你一擊 {petHit}% 的傷害' },
   crab:    { name: '鉗鉗蟹',   icon: 'mon/blob25', r: 1, role: 'atk',   fx: { petBreak: 0.16 },                desc: '夾碎護甲：怪物防禦 −{petBreak}%' },
-  squid:   { name: '小章魚',   icon: 'mon/blob17', r: 2, role: 'atk',   fx: { petHit: 0.35 }, every: 2,         desc: '你每攻擊 2 下，觸手連打造成你一擊 {petHit}% 的傷害' },
-  cube:    { name: '方塊牛',   icon: 'mon/blob24', r: 3, role: 'atk',   fx: { petHit: 0.15, bossAtk: 0.1 },   desc: '每次攻擊後追擊 {petHit}%；對精英與首領攻擊 +{bossAtk}%' },
+  squid:   { name: '小章魚',   icon: 'mon/blob17', r: 2, role: 'atk',   fx: { petHit: 0.35 }, every: 2,        desc: '你每攻擊 2 下，觸手連打造成你一擊 {petHit}% 的傷害' },
+  cube:    { name: '方塊牛',   icon: 'mon/blob24', r: 3, role: 'atk',   fx: { petHit: 0.15, bossAtk: 0.1 },    desc: '每次攻擊後追擊 {petHit}%；對精英與首領攻擊 +{bossAtk}%' },
+  zap:     { name: '電電',     icon: 'mon/blob7',  r: 1, role: 'atk',   fx: { petOpen: 0.12 }, flag: { noShock: 1 }, desc: '開戰電擊 {petOpen}%；感電對你無效' },
+  imp2:    { name: '綠角魔',   icon: 'mon/blob27', r: 1, role: 'atk',   fx: { petHit: 0.06, fam_undead: 0.1 }, desc: '追擊 {petHit}%；對不死系攻擊 +{fam_undead}%' },
+  blu:     { name: '藍眼球',   icon: 'mon/blob19', r: 2, role: 'atk',   fx: { petBreak: 0.1, fam_element: 0.12 }, desc: '怪物防禦 −{petBreak}%；對元素系攻擊 +{fam_element}%' },
+  worm:    { name: '紫蟲蟲',   icon: 'mon/blob31', r: 2, role: 'atk',   fx: { petHit: 0.5 }, every: 3,         desc: '你每攻擊 3 下，紫蟲猛咬一口：你一擊 {petHit}% 的傷害' },
+  chomp:   { name: '大嘴怪',   icon: 'mon/blob12', r: 3, role: 'atk',   fx: { petHit: 0.1, killHeal: 0.06, goldPct: 0.15 }, desc: '追擊 {petHit}%；擊殺後回復 {killHeal}U、金幣 +{goldPct}%' },
   drop:    { name: '翅翅水滴', icon: 'mon/blob9',  r: 0, role: 'heal',  fx: { petHeal: 0.08 },                 desc: '你每次受傷後，治療該次傷害的 {petHeal}%' },
   jelly:   { name: '綠果凍',   icon: 'mon/blob16', r: 1, role: 'heal',  fx: { killHeal: 0.12 },                desc: '每次擊殺怪物，回復 {killHeal}U 生命' },
   pinky:   { name: '粉粉',     icon: 'mon/blob3',  r: 0, role: 'heal',  fx: { potionPct: 0.06 },               desc: '藥水效果 +{potionPct}%' },
+  bun:     { name: '角兔',     icon: 'mon/blob8',  r: 0, role: 'heal',  fx: { stairHeal: 0.5 },                desc: '每次上樓回復 {stairHeal}U 生命' },
+  peach:   { name: '桃桃',     icon: 'mon/blob32', r: 1, role: 'heal',  fx: { petHeal: 0.04, potionPct: 0.04 }, desc: '受傷後治療 {petHeal}%；藥水效果 +{potionPct}%' },
+  berry:   { name: '莓莓',     icon: 'mon/blob22', r: 2, role: 'heal',  fx: { petHeal: 0.05, killHeal: 0.06 }, desc: '受傷後治療 {petHeal}%；擊殺回復 {killHeal}U' },
   cloudy:  { name: '藍雲朵',   icon: 'mon/blob39', r: 2, role: 'heal',  fx: { petHeal: 0.08, potionPct: 0.03 }, desc: '受傷後治療 {petHeal}%；藥水效果 +{potionPct}%' },
   lazy:    { name: '懶懶',     icon: 'mon/blob18', r: 0, role: 'guard', fx: { reduce: 0.05 },                  desc: '躺在你前面擋刀：受到的傷害 −{reduce}%' },
-  pigtail: { name: '雙馬尾',   icon: 'mon/blob29', r: 1, role: 'guard', fx: {}, flag: { noFirst: 1 }, desc: '擋在你前面：怪物的先攻失效' },
-  mage:    { name: '紫小妖',   icon: 'mon/blob10', r: 2, role: 'guard', fx: { magicRes: 0.3, hazard: 0.3 },    desc: '魔法傷害 −{magicRes}%；中毒・反傷・爆炸・岩漿 −{hazard}%' },
+  pigtail: { name: '雙馬尾',   icon: 'mon/blob29', r: 1, role: 'guard', fx: {}, flag: { noFirst: 1 },          desc: '擋在你前面：怪物的先攻失效' },
+  sunny:   { name: '陽陽',     icon: 'mon/blob13', r: 1, role: 'guard', fx: { reduce: 0.03 }, flag: { noChill: 1 }, desc: '冰凍對你無效；受到的傷害 −{reduce}%' },
+  rock:    { name: '石頭蟲',   icon: 'mon/blob28', r: 1, role: 'guard', fx: { bossRes: 0.06 },                 desc: '精英與首領對你的傷害 −{bossRes}%' },
+  mud:     { name: '泥巴人',   icon: 'mon/blob21', r: 2, role: 'guard', fx: { defPct: 0.04 }, flag: { noHeavy: 1 }, desc: '重擊無效；防禦 +{defPct}%' },
+  night:   { name: '夜夜',     icon: 'mon/blob23', r: 2, role: 'guard', fx: { magicRes: 0.15, fam_demon: 0.1 }, desc: '魔法傷害 −{magicRes}%；對惡魔系攻擊 +{fam_demon}%' },
+  mage:    { name: '紫小妖',   icon: 'mon/blob10', r: 2, role: 'guard', fx: { magicRes: 0.3, hazard: 0.3 },    desc: '魔法傷害 −{magicRes}%；中毒・反傷・爆炸・岩漿・感電 −{hazard}%' },
   ghost:   { name: '冰翼怪',   icon: 'mon/blob15', r: 3, role: 'guard', fx: { reduce: 0.06, petHeal: 0.06 },   desc: '冰翼護身：受到的傷害 −{reduce}%，受傷後治療 {petHeal}%' },
   coin:    { name: '金錢怪',   icon: 'mon/blob33', r: 0, role: 'aid',   fx: { goldPct: 0.3 },                  desc: '塔內金幣 +{goldPct}%' },
   nerd:    { name: '書蟲',     icon: 'mon/blob2',  r: 0, role: 'aid',   fx: { expPct: 0.1 },                   desc: '經驗 +{expPct}%' },
+  pinky2:  { name: '小紅',     icon: 'mon/blob35', r: 0, role: 'aid',   fx: { soulPct: 0.08 },                 desc: '魂晶 +{soulPct}%' },
   eye:     { name: '獨眼仔',   icon: 'mon/blob30', r: 1, role: 'aid',   fx: {}, flag: { seeAll: 1, sight: 1 }, desc: '看得見暗牆與隱形怪物；黑暗樓層視野 +1' },
+  pea:     { name: '豆豆眼',   icon: 'mon/blob11', r: 1, role: 'aid',   fx: { eggPct: 0.3 },                   desc: '寵物蛋掉落機率 +{eggPct}%' },
+  stalk:   { name: '長腳怪',   icon: 'mon/blob14', r: 1, role: 'aid',   fx: {}, flag: { sight: 2, noEvade: 1 }, desc: '黑暗樓層視野 +2；怪物的閃避無效' },
   medusa:  { name: '水母仙',   icon: 'mon/blob36', r: 2, role: 'aid',   fx: { gemPct: 0.06 },                  desc: '寶石效果 +{gemPct}%' },
+  eyes:    { name: '百眼怪',   icon: 'mon/blob4',  r: 2, role: 'aid',   fx: { goldenPct: 0.5 }, flag: { seeAll: 1 }, desc: '看穿一切；黃金怪物出現機率 +{goldenPct}%' },
   crown:   { name: '金毛王',   icon: 'mon/blob37', r: 3, role: 'aid',   fx: { goldPct: 0.3, expPct: 0.1, potionPct: 0.06, gemPct: 0.03 }, desc: '金幣 +{goldPct}%、經驗 +{expPct}%、藥水 +{potionPct}%、寶石 +{gemPct}%' },
 };
 const PET_ORDER = Object.keys(PETS);
 const PET_ROLES = { atk: { name: '攻擊', color: '#ff8a65' }, heal: { name: '治療', color: '#7ee08a' }, guard: { name: '守護', color: '#74c0fc' }, aid: { name: '輔助', color: '#ffd27a' } };
 const PET_HATCH = [50, 32, 14, 4];
+const PET_STAR_NEED = [0, 1, 2, 3, 4]; // 從 ★n 升到 ★n+1 需要的重複數量
+
+// ---------- 每日任務（星象台） ----------
+// need 會依進度（主塔最高層）放大；rw 是基礎獎勵
+const QUEST_TYPES = {
+  kill:    { text: '擊敗 {n} 隻怪物',          n: [20, 40, 60],  rw: { soul: 10, gold: 150 } },
+  elite:   { text: '擊敗 {n} 隻精英或首領',    n: [1, 2, 3],     rw: { soul: 15 } },
+  floor:   { text: '在任一座塔抵達 {n} 個新樓層', n: [2, 3, 5],   rw: { soul: 15, ore: 100 } },
+  potion:  { text: '喝 {n} 瓶藥水',            n: [2, 4, 6],     rw: { soul: 8, wood: 200 } },
+  door:    { text: '打開 {n} 扇門',            n: [3, 6, 10],    rw: { soul: 8, gold: 120 } },
+  gem:     { text: '撿起 {n} 顆寶石',          n: [4, 8, 12],    rw: { soul: 10, ore: 120 } },
+  craft:   { text: '打造或合成 {n} 件裝備',    n: [1, 2, 3],     rw: { soul: 12, ore: 200 } },
+  enhance: { text: '強化裝備 {n} 次',          n: [2, 4, 6],     rw: { soul: 10, gold: 200 } },
+  cook:    { text: '做 {n} 道料理',            n: [1, 2, 3],     rw: { soul: 10, wood: 200 } },
+  harvest: { text: '收成 {n} 次',              n: [2, 3, 5],     rw: { soul: 8, gold: 100 } },
+  exp:     { text: '收回 {n} 次派遣',          n: [1, 2, 3],     rw: { soul: 10, wood: 250 } },
+  build:   { text: '升級設施 {n} 次',          n: [2, 3, 5],     rw: { soul: 8, ore: 150 } },
+  petup:   { text: '升級寵物 {n} 次',          n: [1, 2, 4],     rw: { soul: 10 } },
+  daily:   { text: '在挑戰塔抵達第 {n} 層',    n: [3, 6, 10],    rw: { soul: 15, ember: 1 } },
+};
+

@@ -24,21 +24,8 @@ const UI = {
   },
 };
 
-// 營地成員站位：x%、地面 y%、尺寸 px
-const CAMP_LAYOUT = {
-  altar:      [50, 40, 58],
-  study:      [83, 44, 58],
-  tavern:     [17, 46, 62],
-  apothecary: [68, 55, 56],
-  keysmith:   [32, 56, 56],
-  farm:       [88, 64, 56],
-  lumber:     [12, 74, 64],
-  mine:       [84, 84, 62],
-  hearth:     [50, 80, 100],
-  market:     [27, 97, 66],
-  forge:      [66, 98, 66],
-  nest:       [50, 59, 50],
-};
+// 營地版面：篝火在上方，其他設施依用途排成四欄（信仰與知識、英雄與夥伴、補給、生產）
+const CAMP_GRID = ['altar', 'study', 'observatory', 'rune', 'tavern', 'training', 'nest', 'forge', 'keysmith', 'apothecary', 'farm', 'vault', 'lumber', 'mine', 'market'];
 
 const Camp = {
   tab: 'base',
@@ -67,50 +54,96 @@ const Camp = {
   },
 
   scene() {
-    const S = Store.S, r = Store.rates();
-    const spots = BUILDING_ORDER.map(id => {
-      const [x, y, w] = CAMP_LAYOUT[id], b = BUILDINGS[id], l = S.buildings[id];
-      const locked = Store.bLocked(id);
-      const cls = [id === 'hearth' ? 'hearth' : '', locked ? 'locked' : '', !l ? 'empty' : '', this.canUp(id) ? 'can' : ''].join(' ');
-      const plate = locked ? '' : `<span class="plate">${l ? `${b.name} ${l}` : '可建造'}</span>`;
-      const art = id === 'hearth'
-        ? '<span class="glow"></span><span class="fire"><i></i><i></i><i></i></span><span class="logs"></span>'
-        : Art.img(b.npc, 'tok') + Art.img(b.tool, 'badge');
-      return `<button class="spot ${cls}" data-act="bld" data-arg="${id}" data-spot="${id}" style="left:${x}%;top:${y}%;--w:${w}px">${art}${plate}</button>`;
-    }).join('');
-    // 篝火越高級，營地越熱鬧：燈籠、帳篷
-    const deco = Array.from({ length: Math.min(8, S.buildings.hearth) }, (_, i) => {
-      const x = [6, 94, 40, 60, 22, 78, 3, 97][i], y = [58, 60, 66, 66, 88, 90, 90, 94][i];
-      return `<span class="lantern" style="left:${x}%;top:${y}%;animation-delay:${-i * 0.7}s"></span>`;
-    }).join('');
+    const S = Store.S, r = Store.rates(), st = S.stash, hl = S.buildings.hearth;
+    const plot = id => {
+      const b = BUILDINGS[id], l = S.buildings[id], locked = Store.bLocked(id);
+      const cls = [locked ? 'locked' : '', !l ? 'empty' : '', this.canUp(id) ? 'can' : ''].join(' ');
+      const plate = locked ? `<span class="plate">篝火 ${b.req}</span>` : `<span class="plate">${b.name}${l ? ` <b>${l}</b>` : ''}</span>`;
+      const dot = this.plotDot(id) ? '<i class="bang">!</i>' : '';
+      return `<button class="cplot ${cls}" data-act="bld" data-arg="${id}" data-spot="${id}" data-tip="${b.name}：${b.desc}"><span class="pad"></span>${Art.img(b.npc, 'tok')}${Art.img(b.tool, 'badge')}${dot}${plate}</button>`;
+    };
     const v = S.visitor && VISITORS.find(x => x.id === S.visitor.id);
-    const visitor = v ? `<button class="spot visitor" data-act="visitor" style="left:40%;top:72%;--w:46px">${Art.img(v.icon, 'tok')}<i class="bang">!</i><span class="plate">${v.name}</span></button>` : '';
-    const st = S.stash;
-    return `<section class="camp" id="campScene">
+    const visitor = v ? `<button class="cplot visitor" data-act="visitor"><span class="pad"></span>${Art.img(v.icon, 'tok')}<i class="bang">!</i><span class="plate">${v.name}</span></button>` : '';
+    const lanterns = Array.from({ length: Math.min(10, hl * 2) }, (_, i) => `<i style="left:${5 + i * 10}%;animation-delay:${-i * 0.6}s"></i>`).join('');
+    return `<section class="camp v2" id="campScene">
       <div class="stars"></div><span class="moon"></span>
-      <svg class="hills" viewBox="0 0 400 300" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="h1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b3a7c"/><stop offset="1" stop-color="#2c2456"/></linearGradient>
-          <linearGradient id="h2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d6b5c"/><stop offset=".5" stop-color="#2b4a48"/><stop offset="1" stop-color="#1c2a3c"/></linearGradient>
-          <radialGradient id="h3" cx="50%" cy="55%" r="60%"><stop offset="0" stop-color="#e09a6a" stop-opacity=".6"/><stop offset=".45" stop-color="#7a4a5a" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
-        </defs>
-        <path d="M0 70 C 60 30, 110 40, 160 62 S 260 20, 320 48 S 380 50, 400 40 L400 300 L0 300Z" fill="url(#h1)"/>
-        <path d="M0 110 C 70 88, 140 96, 200 104 S 330 84, 400 100 L400 300 L0 300Z" fill="url(#h2)"/>
-        <ellipse cx="200" cy="210" rx="230" ry="110" fill="url(#h3)"/>
-      </svg>
-      ${deco}${spots}${visitor}
-      <div class="camp-title"><h1>燼火營地</h1><p>離線收益上限 ${Store.offlineCapHours()} 小時</p>
-        <div class="rates">${['wood', 'ore', 'gold'].map(k => `<span>${UI.res(k)}${r[k].toFixed(1)}/s</span>`).join('')}</div>
-        <div class="rates">${UI.ico('item/key_y', 'ri')}${Math.floor(st.Y)} ${UI.ico('item/key_b', 'ri')}${Math.floor(st.B)} ${UI.ico('item/potion_red', 'ri')}${Math.floor(st.potion)}</div></div>
+      <div class="camp-top">
+        <div class="camp-title"><h1>燼火營地</h1><p>離線收益上限 ${Store.offlineCapHours()} 小時</p>
+          <div class="rates">${['wood', 'ore', 'gold'].map(k => `<span>${UI.res(k)}${r[k] < 10 ? r[k].toFixed(1) : fmt(r[k])}/s</span>`).join('')}</div>
+          <div class="rates stash" data-tip="營地倉庫：鑰匙工坊與藥師小屋做好的東西，進主塔時會自動帶上。">${UI.ico('item/key_y', 'ri')}${Math.floor(st.Y)} ${UI.ico('item/key_b', 'ri')}${Math.floor(st.B)} ${UI.ico('item/potion_red', 'ri')}${Math.floor(st.potion)}</div></div>
+        <button class="hearth-big ${this.canUp('hearth') ? 'can' : ''}" data-act="bld" data-arg="hearth" data-spot="hearth" data-tip="篝火：${BUILDINGS.hearth.desc}">
+          <span class="glow"></span><span class="fire"><i></i><i></i><i></i></span><span class="logs"></span><span class="plate">篝火 <b>${hl}</b></span></button>
+      </div>
+      <div class="lantern-line">${lanterns}</div>
+      <div class="camp-grid">${CAMP_GRID.map(plot).join('')}${visitor}</div>
     </section>`;
+  },
+  // 設施上的驚嘆號：有東西可以收或可以做
+  plotDot(id) {
+    const S = Store.S, d = this.dots();
+    if (id === 'study') return d.study;
+    if (id === 'tavern') return d.exp;
+    if (id === 'farm') return d.farm;
+    if (id === 'observatory') return Store.quests().some(q => !q.claimed && q.have >= q.need);
+    if (id === 'nest') return S.pets.eggs > 0;
+    if (id === 'training') return S.buildings.training > 0 && (S.training || []).length < Store.trainSlots() && HERO_ORDER.some(h => S.heroes[h].owned && h !== S.active && !(S.training || []).includes(h));
+    return false;
   },
 
   render() {
     const d = this.dots();
-    const tabs = UI.tabs('campTab', this.tab, [['base', '設施'], ['study', '研究', d.study], ['exp', '派遣', d.exp], ['farm', '農田料理', d.farm]]);
-    const body = { base: () => this.renderBase(), study: () => this.renderStudy(), exp: () => this.renderExp(), farm: () => this.renderFarm() }[this.tab]();
+    const qd = Store.quests().some(q => !q.claimed && q.have >= q.need);
+    const tabs = UI.tabs('campTab', this.tab, [['base', '設施'], ['study', '研究', d.study], ['exp', '派遣', d.exp], ['farm', '農田', d.farm], ['quest', '任務', qd], ['train', '訓練']]);
+    const body = { base: () => this.renderBase(), study: () => this.renderStudy(), exp: () => this.renderExp(), farm: () => this.renderFarm(), quest: () => this.renderQuest(), train: () => this.renderTrain() }[this.tab]();
     return this.scene() + tabs + body;
   },
+  // ---------- 每日任務 ----------
+  renderQuest() {
+    const S = Store.S;
+    if (!S.buildings.observatory) return `<div class="glass pad center"><p>建造<b>星象台</b>後，每天都會發布任務。</p><p class="dim">完成任務可以拿魂晶與資源，全部完成還有寵物蛋與餘燼。</p></div>`;
+    const list = Store.quests(), done = list.filter(q => q.claimed).length;
+    const rows = list.map((q, i) => {
+      const t = QUEST_TYPES[q.type], ok = q.have >= q.need, rw = Store.questReward(q);
+      const btn = q.claimed ? '<span class="done-tag">✓ 已領取</span>' : ok ? `<button class="btn sm primary" data-act="claimQuest" data-arg="${i}">領取</button>` : `<span class="dim">${Math.min(q.have, q.need)} / ${q.need}</span>`;
+      return `<div class="bld-row glass quest ${q.claimed ? 'done' : ''}"><div class="info"><b>${t.text.replace('{n}', q.need)}</b>
+        ${UI.bar(Math.min(q.have, q.need), q.need, 'xp')}<div class="loot sm">${Object.keys(rw).map(k => `<span>${UI.res(k)}+${fmt(rw[k])}</span>`).join('')}</div></div>${btn}</div>`;
+    }).join('');
+    const all = done === list.length;
+    return `<p class="dim center">星象台 Lv${S.buildings.observatory}・每天 ${list.length} 個任務，午夜更新。獎勵會隨著你的主塔進度變多。</p><div class="list">${rows}</div>
+      <div class="glass pad center quest-bonus"><div class="loot sm"><b>全部完成獎勵</b><span>${UI.ico('item/backpack', 'ri')}寵物蛋 ×1</span><span>${UI.res('ember')}+1</span></div>${S.quests.bonus ? '<span class="done-tag">✓ 今天已領取</span>' : `<button class="btn ${all ? 'primary' : ''}" data-act="questBonus" ${all ? '' : 'disabled'}>${all ? '領取' : `完成 ${done} / ${list.length}`}</button>`}</div>`;
+  },
+  claimQuest(i) {
+    const r = Store.claimQuest(i); if (!r) return;
+    FX.sfx('coin'); FX.toast('任務獎勵：' + Object.keys(r).map(k => `${RES[k].name} +${fmt(r[k])}`).join('、'), 'gold');
+    App.commit(); App.checkAch();
+  },
+  questBonus() { if (!Store.claimQuestBonus()) return; FX.sfx('win'); FX.toast('今天的任務全部完成！寵物蛋 +1、餘燼 +1', 'gold'); App.commit(); },
+
+  // ---------- 訓練場 ----------
+  renderTrain() {
+    const S = Store.S, slots = Store.trainSlots();
+    if (!S.buildings.training) return `<div class="glass pad center"><p>建造<b>訓練場</b>後，沒出戰的英雄可以在這裡訓練。</p><p class="dim">訓練中的英雄會持續獲得經驗（離線也會），但等級不會超過「最高等級英雄 − 3」。</p></div>`;
+    S.training = (S.training || []).filter(h => S.heroes[h] && S.heroes[h].owned && h !== S.active);
+    const cap = Store.trainCap();
+    const rows = HERO_ORDER.filter(h => S.heroes[h].owned && h !== S.active).map(h => {
+      const d = HEROES[h], hh = S.heroes[h], on = S.training.includes(h), away = S.expeditions.some(e => e.hero === h);
+      const rate = Store.trainRate(h), full = hh.lvl >= cap;
+      const btn = on ? `<button class="btn sm" data-act="trainSet" data-arg="${h}:0">停止訓練</button>`
+        : away ? '<button class="btn sm" disabled>派遣中</button>'
+        : S.training.length >= slots ? '<button class="btn sm" disabled>訓練位已滿</button>' : `<button class="btn sm primary" data-act="trainSet" data-arg="${h}:1">開始訓練</button>`;
+      return `<div class="bld-row glass ${on ? 'on' : ''}">${UI.token(d.icon)}<div class="info"><b>${d.name}</b><span class="lv">Lv ${hh.lvl}</span>
+        ${UI.bar(hh.xp, Store.xpNeed(hh.lvl), 'xp')}<div class="dim">${on ? (full ? `已達上限 Lv${cap}，提升出戰英雄的等級才能繼續` : `每小時 +${fmt(rate)} 經驗`) : `訓練時每小時 +${fmt(rate)} 經驗`}</div></div>${btn}</div>`;
+    }).join('');
+    return `<p class="dim center">訓練場 Lv${S.buildings.training}・訓練位 ${S.training.length} / ${slots}（Lv1、4、8 各開一格）・等級上限 Lv${cap}</p>
+      <div class="list">${rows || '<p class="dim center">招募更多英雄後才能訓練（出戰中的英雄不能訓練）。</p>'}</div>`;
+  },
+  trainSet(arg) {
+    const [h, on] = arg.split(':'), S = Store.S;
+    S.training = (S.training || []).filter(x => x !== h);
+    if (on === '1' && S.training.length < Store.trainSlots() && !S.expeditions.some(e => e.hero === h)) S.training.push(h);
+    FX.sfx('click'); App.commit();
+  },
+
   renderBase() {
     const S = Store.S;
     const rows = BUILDING_ORDER.map(id => {
@@ -141,7 +174,13 @@ const Camp = {
     }
     const btn = l >= max ? '<button class="btn" disabled>已達目前上限</button>' : UI.costBtn('upgrade', id, Store.bCost(id), `<span class="lbl">${l ? '升級' : '建造'}</span>`, 'go');
     const face = id === 'hearth' ? UI.ico('item/torch', 'portrait-ico big') : UI.token(b.npc, 'big', b.tool);
-    const go = { study: '研究', tavern: '英雄', farm: '農田料理', altar: '祭壇' }[id];
+    if (id === 'vault') { const cap = Store.stashCap(); kv += `<span>存放上限</span><b>黃 ${cap.Y}・藍 ${cap.B}・藥水 ${cap.potion}</b><span>離線上限</span><b>${Store.offlineCapHours()} 小時</b>`; }
+    if (id === 'training') kv += `<span>訓練位</span><b>${Store.trainSlots()}</b>`;
+    if (id === 'observatory') kv += `<span>每日任務</span><b>${Store.questCount()} 個</b>`;
+    if (id === 'nest') kv += `<span>寵物等級上限</span><b>${5 + l * 3}${l < 5 ? '（Lv5 開放助戰寵物）' : '・助戰寵物已開放'}</b>`;
+    if (id === 'forge') kv += `<span>打造品階</span><b>${Store.forgeTier()}（${GEAR_TIER_NAME[Store.forgeTier() - 1]}）</b><span>強化上限</span><b>+${Store.plusCap()}</b>`;
+    if (id === 'rune') kv += `<span>洗練費用</span><b>−${l * 5}%</b><span>合成</span><b>${l >= 6 ? '可合成到神話' : '可合成到傳說（Lv6 起可合成神話）'}</b>`;
+    const go = { study: '研究', tavern: '英雄', farm: '農田料理', altar: '祭壇', training: '訓練場', observatory: '任務', nest: '寵物', forge: '鐵匠鋪', rune: '符文工坊' }[id];
     return `<div class="sheet-head">${face}<div><h3>${b.name}</h3><div class="dim">${b.desc}</div></div></div>
       <div class="kv">${kv}</div>${btn}${go && l ? `<button class="btn" style="margin-top:8px" data-act="campJump" data-arg="${id}">前往${go}</button>` : ''}`;
   },
@@ -152,11 +191,17 @@ const Camp = {
     if (id === 'farm') { this.tab = 'farm'; App.go('camp'); }
     if (id === 'tavern') App.go('heroes');
     if (id === 'altar') App.go('altar');
+    if (id === 'training') { this.tab = 'train'; App.go('camp'); }
+    if (id === 'observatory') { this.tab = 'quest'; App.go('camp'); }
+    if (id === 'nest') { App.go('heroes'); Heroes.petSheet(); }
+    if (id === 'forge') { App.go('heroes'); Heroes.forgeSheet(); }
+    if (id === 'rune') { App.go('heroes'); Heroes.runeSheet(); }
   },
   upgrade(id) {
     if (Store.S.buildings[id] >= Store.bMax(id)) return;
     if (!Store.pay(Store.bCost(id))) return FX.toast('資源不足', 'bad');
     Store.S.buildings[id]++;
+    Store.qAdd('build');
     if (id === 'nest' && !Store.S.pets.gift) { Store.S.pets.gift = true; Store.S.pets.eggs++; FX.toast('寵物小窩送你一顆寵物蛋！到「英雄」頁孵化', 'gold'); }
     FX.sfx('upgrade');
     FX.toast(`${BUILDINGS[id].name} 提升至 Lv${Store.S.buildings[id]}`);
@@ -300,20 +345,18 @@ const Camp = {
     if (!scene || document.hidden) return;
     const ids = ['lumber', 'mine', 'market'].filter(id => Store.S.buildings[id]);
     if (!ids.length || Math.random() < .4) return;
-    const id = pick(ids), k = Object.keys(BUILDINGS[id].prod)[0];
-    const [x, y, w] = CAMP_LAYOUT[id];
+    const id = pick(ids), k = Object.keys(BUILDINGS[id].prod)[0], el = scene.querySelector(`[data-spot="${id}"]`);
+    if (!el) return;
     const d = document.createElement('div');
     d.className = 'pop';
     d.innerHTML = `${UI.res(k)}+${(Store.rates()[k] * 3).toFixed(1)}`;
-    d.style.left = x + '%';
-    d.style.top = `calc(${y}% - ${w + 10}px)`;
-    scene.appendChild(d);
+    el.appendChild(d);
     setTimeout(() => d.remove(), 1700);
   },
 };
 
 const Heroes = {
-  // 主畫面：出戰英雄、三格裝備、出戰寵物；點了才打開更換清單
+  // 主畫面：出戰英雄、六格裝備與套裝、出戰／助戰寵物；點了才打開更換清單
   render() {
     const S = Store.S, hid = S.active, d = HEROES[hid], h = S.heroes[hid], st = Store.heroStats(hid), g = Store.gearTotals();
     const aw = h.awaken ? `<span class="awk">${'✦'.repeat(h.awaken)}</span>` : '';
@@ -328,24 +371,31 @@ const Heroes = {
     const slots = GEAR_SLOT_ORDER.map(slot => {
       const it = Store.equipped(slot);
       if (!it) return `<button class="eq-slot empty" data-act="gearSlot" data-arg="${slot}">${UI.ico(GEAR_SLOTS[slot].icon, 'eq-ico')}<b>${GEAR_SLOTS[slot].name}</b><small>未裝備</small></button>`;
-      return `<button class="eq-slot" data-act="gearSlot" data-arg="${slot}" style="--rc:${GEAR_RARITY[it.r].color}">${UI.ico(Store.gearIcon(it), 'eq-ico')}${it.p ? `<i class="plus">+${it.p}</i>` : ''}
-        <b>${Store.gearName(it)}</b><small>${this.mainText(it)}</small></button>`;
+      return `<button class="eq-slot" data-act="gearSlot" data-arg="${slot}" style="--rc:${it.set ? GEAR_SETS[it.set].color : GEAR_RARITY[it.r].color}">${UI.ico(Store.gearIcon(it), 'eq-ico')}${it.p ? `<i class="plus">+${it.p}</i>` : ''}${it.set ? '<i class="set-dot"></i>' : ''}
+        <b style="color:${GEAR_RARITY[it.r].color}">${Store.gearName(it)}</b><small>${this.mainText(it)}</small></button>`;
     }).join('');
-    const pid = S.pets.active, pet = pid && S.pets.own[pid];
     const nest = S.buildings.nest;
-    const petBox = pet
-      ? `<button class="pet-slot" data-act="petSheet" style="--rc:${PET_ROLES[PETS[pid].role].color}">${UI.token(PETS[pid].icon, 'big')}<div class="card-body">
-          <div class="card-head"><b>${PETS[pid].name}</b><span class="lv">Lv ${pet.lvl}</span></div>
-          <span class="role">${PET_ROLES[PETS[pid].role].name}・<em style="color:${GEAR_RARITY[PETS[pid].r].color}">${GEAR_RARITY[PETS[pid].r].name}</em></span>
-          <span class="dim">${Store.petDesc(pid, pet.lvl)}</span></div>${S.pets.eggs ? `<i class="egg-badge">蛋 ×${S.pets.eggs}</i>` : ''}</button>`
-      : `<button class="pet-slot empty" data-act="petSheet">${UI.token('mon/blob1', 'big off')}<div class="card-body"><b>還沒有寵物</b>
+    const petBox = (id, which) => {
+      const pet = id && S.pets.own[id];
+      if (!pet) return which === 'assist' ? `<button class="pet-slot empty assist" data-act="petSheet">${UI.token('mon/blob1', 'off')}<div class="card-body"><b>助戰寵物（空）</b><span class="dim">選一隻寵物助戰，效果 50%</span></div></button>`
+        : `<button class="pet-slot empty" data-act="petSheet">${UI.token('mon/blob1', 'big off')}<div class="card-body"><b>還沒有寵物</b>
           <span class="dim">${nest ? (S.pets.eggs ? `你有 ${S.pets.eggs} 顆蛋，點這裡孵化` : '到寵物小窩買蛋，或打倒首領取得') : '在營地蓋好「寵物小窩」就能孵蛋'}</span></div></button>`;
+      const d = PETS[id], k = which === 'assist' ? 0.5 : 1;
+      return `<button class="pet-slot ${which}" data-act="petSheet" style="--rc:${PET_ROLES[d.role].color}">${UI.token(d.icon, which === 'assist' ? '' : 'big')}<div class="card-body">
+          <div class="card-head"><b>${which === 'assist' ? '助戰・' : ''}${d.name}</b><span class="lv">Lv ${pet.lvl} <span class="star">${'★'.repeat(pet.star || 1)}</span></span></div>
+          <span class="role">${PET_ROLES[d.role].name}・<em style="color:${GEAR_RARITY[d.r].color}">${GEAR_RARITY[d.r].name}</em>${which === 'assist' ? '・效果 50%' : ''}</span>
+          <span class="dim">${Store.petDesc(id, pet.lvl, pet.star || 1, k)}</span></div>${which === 'active' && S.pets.eggs ? `<i class="egg-badge">蛋 ×${S.pets.eggs}</i>` : ''}</button>`;
+    };
+    const sets = Object.entries(Store.setCounts()).map(([id, n]) => {
+      const st = GEAR_SETS[id];
+      return `<div class="set-box" style="--rc:${st.color}"><b>${st.name}套裝 ${n}/6</b>${[2, 4, 6].map(k => `<span class="${n >= k ? 'on' : ''}">${k} 件：${st.d[k]}</span>`).join('')}</div>`;
+    }).join('');
     return `<div class="party">${hero}
       <div class="sec">裝備<small>穿在隊伍身上，換英雄也會跟著走</small></div>
-      <div class="eq-grid">${slots}</div>
-      <div class="row eq-tools"><button class="btn sm" data-act="bagSheet">背包 ${S.bag.length}/${GEAR_BAG}</button><button class="btn sm" data-act="forgeSheet">${S.buildings.forge ? `鐵匠鋪打造（品階 ${Store.forgeTier()}）` : '鐵匠鋪打造'}</button></div>
+      <div class="eq-grid">${slots}</div>${sets}
+      <div class="row eq-tools"><button class="btn sm" data-act="bagSheet">背包 ${S.bag.length}/${GEAR_BAG}</button><button class="btn sm" data-act="forgeSheet">打造裝備</button><button class="btn sm" data-act="runeSheet">符文工坊</button></div>
       <div class="sec">寵物<small>跟著英雄進塔，幫忙打怪、治療或輔助</small></div>
-      ${petBox}</div>`;
+      ${petBox(S.pets.active, 'active')}${Store.assistSlot() ? petBox(S.pets.assist !== S.pets.active ? S.pets.assist : null, 'assist') : ''}</div>`;
   },
   kit(hid) {
     const d = HEROES[hid], h = Store.S.heroes[hid];
@@ -355,17 +405,20 @@ const Heroes = {
     const m = Store.gearMain(it, p);
     return [m.atk && `攻擊 +${m.atk}`, m.def && `防禦 +${m.def}`].filter(Boolean).join('　');
   },
-  affixText(it) { return it.a.map(([k, v]) => `<span class="afx">${AFFIXES[k].text.replace('{v}', v)}</span>`).join(''); },
+  affixText(it) {
+    return it.a.map(([k, v]) => `<span class="afx">${AFFIXES[k].text.replace('{v}', v)}</span>`).join('') +
+      (it.set ? `<span class="afx set" style="--rc:${GEAR_SETS[it.set].color}">${GEAR_SETS[it.set].name}套裝</span>` : '');
+  },
 
   // ---------- 英雄清單 ----------
   pick() {
     App.openSheet(() => {
       const S = Store.S;
-      return '<h3>選擇出戰英雄</h3><p class="dim">裝備與寵物會跟著出戰英雄。正在派遣的英雄不能出戰。</p><div class="list hero-list">' + HERO_ORDER.map(hid => {
+      return '<h3>選擇出戰英雄</h3><p class="dim">裝備與寵物會跟著出戰英雄。正在派遣的英雄不能出戰；沒出戰的英雄可以送去營地的訓練場練等級。</p><div class="list hero-list">' + HERO_ORDER.map(hid => {
         const d = HEROES[hid], h = S.heroes[hid], away = S.expeditions.some(e => e.hero === hid), act = S.active === hid;
         if (!h.owned) {
           const need = S.buildings.tavern < d.tavern;
-          return `<div class="hrow off">${UI.token(d.icon, 'off')}<div class="card-body"><b>${d.name}</b><span class="dim">${d.passive}</span>
+          return `<div class="hrow off" data-tip="${d.name}：${d.lore}">${UI.token(d.icon, 'off')}<div class="card-body"><b>${d.name}</b><span class="dim">${d.passive}</span>
             ${need ? `<button class="btn sm" disabled>需要酒館 Lv${d.tavern}</button>` : UI.costBtn('recruit', hid, d.cost, '<span class="lbl">招募</span>', 'sm go')}</div></div>`;
         }
         const st = Store.heroStats(hid);
@@ -385,7 +438,9 @@ const Heroes = {
   },
   setActive(hid) {
     if (Store.S.expeditions.some(e => e.hero === hid)) return FX.toast('這位英雄正在派遣中', 'bad');
-    Store.S.active = hid; FX.sfx('click'); App.closeSheet(); App.commit();
+    const S = Store.S;
+    S.active = hid; S.training = (S.training || []).filter(h => h !== hid);
+    FX.sfx('click'); App.closeSheet(); App.commit();
   },
 
   // ---------- 裝備 ----------
@@ -395,7 +450,7 @@ const Heroes = {
     const diff = cur && cur.id !== it.id ? ['atk', 'def'].map(k => m[k] - c[k] ? `<i class="${m[k] > c[k] ? 'up' : 'down'}">${k === 'atk' ? '攻' : '防'}${m[k] > c[k] ? '▲' : '▼'}${Math.abs(m[k] - c[k])}</i>` : '').join('') : '';
     return `<div class="grow" style="--rc:${GEAR_RARITY[it.r].color}">${UI.ico(Store.gearIcon(it), 'eq-ico')}<div class="card-body">
       <div class="card-head"><b>${Store.gearName(it)}${it.p ? ` <span class="plus">+${it.p}</span>` : ''}</b><span class="rar">${it.lock ? '🔒' : ''}${GEAR_RARITY[it.r].name}・品階 ${it.t}</span></div>
-      <div class="gmain">${this.mainText(it)}${diff ? `<span class="diff">${diff}</span>` : ''}</div>${it.a.length ? `<div class="afxs">${this.affixText(it)}</div>` : ''}
+      <div class="gmain">${this.mainText(it)}${diff ? `<span class="diff">${diff}</span>` : ''}</div>${it.a.length || it.set ? `<div class="afxs">${this.affixText(it)}</div>` : ''}
       <div class="row">${btns}</div></div></div>`;
   },
   rowBtns(it) {
@@ -423,7 +478,7 @@ const Heroes = {
     App.openSheet(() => {
       const S = Store.S, junk = S.bag.filter(x => x.r === 0 && !Store.isEquipped(x) && !x.lock).length;
       const list = S.bag.slice().sort((a, b) => GEAR_SLOT_ORDER.indexOf(a.s) - GEAR_SLOT_ORDER.indexOf(b.s) || Store.gearScore(b) - Store.gearScore(a));
-      return `<h3>背包 <small class="dim">${S.bag.length} / ${GEAR_BAG}</small></h3><p class="dim">背包滿了以後，新拿到的裝備會自動分解成材料。鎖定的裝備不會被分解。</p>
+      return `<h3>背包 <small class="dim">${S.bag.length} / ${GEAR_BAG}</small></h3><p class="dim">背包滿了以後，新拿到的裝備會自動分解成材料。鎖定的裝備不會被分解。長按詞綴可以看說明。</p>
         <div class="row"><button class="btn sm" data-act="salvageJunk" ${junk ? '' : 'disabled'}>分解全部普通裝備（${junk}）</button></div>
         <div class="list">${list.map(it => this.row(it, Store.equipped(it.s), this.rowBtns(it))).join('') || '<p class="dim center">背包是空的</p>'}</div>`;
     });
@@ -457,12 +512,13 @@ const Heroes = {
       const S = Store.S, f = S.buildings.forge;
       if (!f) return `<div class="sheet-head">${UI.token(BUILDINGS.forge.npc, 'big')}<div><h3>鐵匠鋪</h3><p class="dim">在營地蓋好鐵匠鋪，就能打造與強化裝備。</p></div></div>`;
       const odds = Store.craftOdds(), sum = odds.reduce((a, b) => a + b, 0), full = S.bag.length >= GEAR_BAG;
+      const pct = i => { const v = odds[i] / sum * 100; return v ? (v < 10 ? v.toFixed(1) : v.toFixed(0)) + '%' : '—'; };
       return `<div class="sheet-head">${UI.token(BUILDINGS.forge.npc, 'big')}<div><h3>鐵匠鋪 Lv${f}</h3>
           <p class="dim">打造品階 ${Store.forgeTier()}（${GEAR_TIER_NAME[Store.forgeTier() - 1]}）・強化上限 +${Store.plusCap()}。每 3 級品階 +1。</p></div></div>
-        <div class="odds">${GEAR_RARITY.map((r, i) => `<span style="color:${r.color}">${r.name} ${(odds[i] / sum * 100).toFixed(odds[i] / sum < 0.1 ? 1 : 0)}%</span>`).join('')}</div>
+        <div class="odds">${GEAR_RARITY.map((r, i) => `<span style="color:${r.color}">${r.name} ${pct(i)}</span>`).join('')}</div>
         ${full ? '<p class="dim center">背包已滿，先整理背包吧</p>' : ''}
         <div class="col">${GEAR_SLOT_ORDER.map(slot => UI.costBtn('craft', slot, Store.craftCost(), `<span class="lbl">${UI.ico(GEAR_SLOTS[slot].icon, 'ri')} 打造${GEAR_SLOTS[slot].name}</span>`, 'go')).join('')}</div>
-        <p class="dim">精良以上的裝備會帶有特殊詞綴，傳說有兩條。塔裡的精英有機會、首領一定會掉裝備，越高層品階越高。</p>`;
+        <p class="dim">精良 1 條詞綴、史詩與傳說 2 條、神話 3 條（鐵匠鋪 Lv15 起才打得出神話）。塔裡的精英有機會、首領與黃金怪物一定會掉裝備，越高層品階越高，史詩以上還可能是該區的套裝。</p>`;
     });
   },
   craft(slot) {
@@ -473,36 +529,89 @@ const Heroes = {
     const it = r.it, cur = Store.equipped(slot);
     FX.sfx(it.r >= 2 ? 'win' : 'upgrade');
     App.commit(); App.checkAch();
-    FX.modal(`<div class="center"><h3 style="color:${GEAR_RARITY[it.r].color}">${GEAR_RARITY[it.r].name}！</h3></div>${this.row(it, cur, '')}`,
+    FX.modal(`<div class="center"><h3 style="color:${GEAR_RARITY[it.r].color}">${GEAR_RARITY[it.r].name}${it.set ? '・' + GEAR_SETS[it.set].name + '套裝' : ''}！</h3></div>${this.row(it, cur, '')}`,
       [{ label: '收進背包', value: false }, { label: '直接裝備', value: true, cls: 'primary' }]).then(v => { if (v) this.equip(it.id); });
+  },
+
+  // ---------- 符文工坊 ----------
+  runeTab: 'reforge', fuseSel: [], reforgeId: null,
+  runeSheet(tab) {
+    if (tab) this.runeTab = tab;
+    App.openSheet(() => {
+      const S = Store.S, l = S.buildings.rune;
+      const head = `<div class="sheet-head">${UI.token(BUILDINGS.rune.npc, 'big')}<div><h3>符文工坊${l ? ' Lv' + l : ''}</h3><p class="dim">${l ? '洗練：重新抽一條詞綴。合成：三件同稀有度的裝備（未裝備、未鎖定）合成一件更高稀有度的裝備，品階取最高的那件。' : '在營地蓋好符文工坊（篝火 Lv4）就能洗練與合成裝備。'}</p></div></div>`;
+      if (!l) return head;
+      const tabs = UI.tabs('runeTab', this.runeTab, [['reforge', '洗練'], ['fuse', '合成']]);
+      if (this.runeTab === 'reforge') {
+        const list = S.bag.filter(x => x.a.length).sort((a, b) => b.r - a.r || Store.gearScore(b) - Store.gearScore(a));
+        const sel = this.reforgeId && Store.gearById(this.reforgeId);
+        if (sel) {
+          const c = Store.reforgeCost(sel);
+          return head + tabs + this.row(sel, null, '<button class="btn sm ghost" data-act="reforge" data-arg="back">換一件</button>') +
+            `<div class="col">${sel.a.map(([k, v], i) => UI.costBtn('reforge', sel.id + ':' + i, c, `<span class="lbl">重抽「${AFFIXES[k].text.replace('{v}', v)}」</span>`, 'sm')).join('')}</div>`;
+        }
+        return head + tabs + `<p class="dim">選一件有詞綴的裝備：</p><div class="list">${list.map(it => this.row(it, null, `<button class="btn sm primary" data-act="reforge" data-arg="${it.id}">洗練這件</button>`)).join('') || '<p class="dim center">背包裡沒有帶詞綴的裝備</p>'}</div>`;
+      }
+      this.fuseSel = this.fuseSel.filter(id => { const x = Store.gearById(id); return x && !Store.isEquipped(x) && !x.lock; });
+      const first = this.fuseSel[0] && Store.gearById(this.fuseSel[0]);
+      const pool = S.bag.filter(x => !Store.isEquipped(x) && !x.lock && x.r < GEAR_RARITY.length - 1 && (!first || x.r === first.r)).sort((a, b) => a.r - b.r || a.t - b.t);
+      const ok = Store.canFuse(this.fuseSel);
+      const go = this.fuseSel.length === 3 ? (ok ? UI.costBtn('fuse', '', Store.fuseCost(first.r), `<span class="lbl">合成一件${GEAR_RARITY[first.r + 1].name}裝備</span>`, 'go')
+        : `<button class="btn" disabled>${first && first.r >= 3 && S.buildings.rune < 6 ? '符文工坊 Lv6 才能合成神話' : '無法合成'}</button>`) : `<button class="btn" disabled>已選 ${this.fuseSel.length} / 3 件</button>`;
+      return head + tabs + go + `<div class="list fuse-list">${pool.map(it => this.row(it, null, `<button class="btn sm ${this.fuseSel.includes(it.id) ? 'primary' : ''}" data-act="fusePick" data-arg="${it.id}">${this.fuseSel.includes(it.id) ? '✓ 已選' : '選擇'}</button>`)).join('') || '<p class="dim center">沒有可以合成的裝備</p>'}</div>`;
+    });
+  },
+  reforge(arg) {
+    if (arg === 'back') { this.reforgeId = null; return App.render(); }
+    if (!String(arg).includes(':')) { this.reforgeId = +arg; return App.render(); }
+    const [id, i] = arg.split(':').map(Number), it = Store.gearById(id), old = it.a[i][0];
+    if (!Store.reforge(id, i)) return FX.toast('材料不足', 'bad');
+    FX.sfx('upgrade'); FX.toast(`「${AFFIXES[old].text.replace('{v}', '')}」→「${AFFIXES[it.a[i][0]].text.replace('{v}', it.a[i][1])}」`);
+    App.commit();
+  },
+  fusePick(id) {
+    id = +id;
+    this.fuseSel = this.fuseSel.includes(id) ? this.fuseSel.filter(x => x !== id) : this.fuseSel.length < 3 ? [...this.fuseSel, id] : this.fuseSel;
+    App.render();
+  },
+  async fuse() {
+    const r = Store.fuse(this.fuseSel);
+    if (!r) return FX.toast('無法合成或材料不足', 'bad');
+    this.fuseSel = [];
+    FX.sfx('win'); App.commit(); App.checkAch();
+    await FX.modal(`<div class="center"><h3 style="color:${GEAR_RARITY[r.it.r].color}">合成出${GEAR_RARITY[r.it.r].name}！</h3></div>${this.row(r.it, Store.equipped(r.it.s), '')}`,
+      [{ label: '收進背包', value: false }, { label: '直接裝備', value: true, cls: 'primary' }]).then(v => { if (v) this.equip(r.it.id); });
   },
 
   // ---------- 寵物 ----------
   petSheet() {
     App.openSheet(() => {
-      const S = Store.S, P = S.pets, nest = S.buildings.nest, cap = Store.petCap();
+      const S = Store.S, P = S.pets, nest = S.buildings.nest;
       if (!nest) return `<div class="sheet-head">${UI.token(BUILDINGS.nest.npc, 'big')}<div><h3>寵物小窩</h3><p class="dim">在營地蓋好寵物小窩，就能孵化寵物蛋。第一次蓋好會送你一顆蛋。</p></div></div>`;
       const bought = P.eggDay === Store.today();
       const eggs = `<div class="egg-bar glass"><span class="egg">${UI.ico('item/backpack')}<b>寵物蛋 ×${P.eggs}</b></span>
         <button class="btn sm ${P.eggs ? 'primary' : ''}" data-act="hatch" ${P.eggs ? '' : 'disabled'}>孵化</button>
         ${bought ? '<button class="btn sm" disabled>今天已買過蛋</button>' : UI.costBtn('buyEgg', '', Store.eggPrice(), '<span class="lbl">買一顆</span>', 'sm')}</div>
-        <p class="dim">寵物等級上限 ${cap}（小窩每級 +3）。重複孵到的寵物會變成魂晶。首領會掉蛋，精英、派遣、每週謎題也有機會。</p>`;
+        <p class="dim">寵物等級上限＝5 + 小窩等級×3 + (星級−1)×5。重複孵到的寵物會累積成星級（★5 封頂後換成魂晶），每顆星效果 +15%。小窩 Lv5 開放助戰寵物（效果 50%）。首領必掉蛋，精英、黃金怪、派遣、任務也有機會。</p>`;
       const rows = PET_ORDER.map(id => {
         const d = PETS[id], own = P.own[id], role = PET_ROLES[d.role], rar = GEAR_RARITY[d.r];
         if (!own) return `<div class="prow off">${UI.token(d.icon, 'off')}<div class="card-body"><b>？？？</b><span class="role" style="color:${role.color}">${role.name}・<em style="color:${rar.color}">${rar.name}</em></span><span class="dim">還沒孵出來</span></div></div>`;
-        const act = P.active === id;
-        const up = own.lvl >= cap ? `<button class="btn sm" disabled>${own.lvl >= 5 + 30 ? '已滿級' : '提升小窩等級'}</button>` : UI.costBtn('petUp', id, Store.petUpCost(own.lvl), `<span class="lbl">升到 Lv${own.lvl + 1}</span>`, 'sm');
-        return `<div class="prow ${act ? 'on' : ''}">${UI.token(d.icon)}<div class="card-body">
-          <div class="card-head"><b>${d.name}</b><span class="lv">Lv ${own.lvl}</span></div>
-          <span class="role" style="color:${role.color}">${role.name}・<em style="color:${rar.color}">${rar.name}</em></span>
-          <span class="dim">${Store.petDesc(id, own.lvl)}</span>
-          <div class="row">${act ? '<button class="btn sm" disabled>✓ 出戰中</button>' : `<button class="btn sm primary" data-act="petSet" data-arg="${id}">出戰</button>`}${up}</div></div></div>`;
+        const act = P.active === id, asst = Store.assistSlot() && P.assist === id && !act, cap = Store.petCap(id), star = own.star || 1;
+        const up = own.lvl >= cap ? `<button class="btn sm" disabled>${star < 5 || nest < 10 ? '已達上限' : '已滿級'}</button>` : UI.costBtn('petUp', id, Store.petUpCost(own.lvl), `<span class="lbl">升到 Lv${own.lvl + 1}</span>`, 'sm');
+        const starTxt = `<span class="star">${'★'.repeat(star)}<i>${'★'.repeat(5 - star)}</i></span>${star < 5 ? `<small class="dim">（重複 ${own.dup || 0}/${PET_STAR_NEED[star]}）</small>` : ''}`;
+        return `<div class="prow ${act ? 'on' : asst ? 'on2' : ''}">${UI.token(d.icon)}<div class="card-body">
+          <div class="card-head"><b>${d.name}</b><span class="lv">Lv ${own.lvl}/${cap}</span></div>
+          <span class="role" style="color:${role.color}">${role.name}・<em style="color:${rar.color}">${rar.name}</em> ${starTxt}</span>
+          <span class="dim">${Store.petDesc(id, own.lvl, star)}</span>
+          <div class="row">${act ? '<button class="btn sm" disabled>✓ 出戰中</button>' : `<button class="btn sm primary" data-act="petSet" data-arg="${id}">出戰</button>`}
+          ${Store.assistSlot() && !act ? (asst ? '<button class="btn sm" disabled>✓ 助戰中</button>' : `<button class="btn sm" data-act="petAssist" data-arg="${id}">助戰</button>`) : ''}${up}</div></div></div>`;
       }).join('');
       const n = Object.keys(P.own).length;
       return `<h3>寵物 <small class="dim">${n} / ${PET_ORDER.length}</small></h3>${eggs}<div class="list">${rows}</div>`;
     });
   },
-  petSet(id) { if (!Store.S.pets.own[id]) return; Store.S.pets.active = id; FX.sfx('click'); App.commit(); },
+  petSet(id) { const P = Store.S.pets; if (!P.own[id]) return; if (P.assist === id) P.assist = P.active; P.active = id; FX.sfx('click'); App.commit(); },
+  petAssist(id) { const P = Store.S.pets; if (!P.own[id] || P.active === id) return; P.assist = id; FX.sfx('click'); App.commit(); },
   petUp(id) { if (!Store.petUp(id)) return FX.toast('材料不足', 'bad'); FX.sfx('upgrade'); App.commit(); },
   buyEgg() { if (!Store.buyEgg()) return FX.toast('魂晶不足', 'bad'); FX.sfx('upgrade'); App.commit(); },
   async hatch() {
@@ -510,9 +619,11 @@ const Heroes = {
     const d = PETS[r.id];
     App.commit(); App.checkAch();
     FX.sfx('win');
+    const own = Store.S.pets.own[r.id];
+    const dupTxt = !r.dup ? '' : r.star ? `<p class="gold">升到 ${'★'.repeat(r.star)}！效果 +15%、等級上限 +5</p>` : r.soul ? `<p class="dim">已經是 ★5，化為魂晶 +${r.soul}</p>` : `<p class="dim">重複累積 ${own.dup}/${PET_STAR_NEED[own.star]}，集滿就升星</p>`;
     await FX.modal(`<div class="center hatch">${UI.token(d.icon, 'huge')}<h3>${r.dup ? `又是${d.name}！` : `${d.name} 誕生了！`}</h3>
       <p style="color:${PET_ROLES[d.role].color}">${PET_ROLES[d.role].name}・<b style="color:${GEAR_RARITY[d.r].color}">${GEAR_RARITY[d.r].name}</b></p>
-      <p>${Store.petDesc(r.id, Store.S.pets.own[r.id].lvl)}</p>${r.dup ? `<p class="dim">重複的寵物化為魂晶 +${r.dup.soul}</p>` : ''}</div>`, [{ label: '太好了', value: true, cls: 'primary' }]);
+      <p>${Store.petDesc(r.id, own.lvl, own.star)}</p>${dupTxt}</div>`, [{ label: '太好了', value: true, cls: 'primary' }]);
   },
 };
 
@@ -538,7 +649,7 @@ const Altar = {
         else if (r >= t.max) btn = '<button class="btn sm" disabled>已精通</button>';
         else if (r >= cap) btn = '<button class="btn sm" disabled>需提升祭壇</button>';
         else btn = UI.costBtn('talent', id, Store.talentCost(id), '', 'sm');
-        const pips = Array.from({ length: t.max }, (_, k) => `<i class="${k < r ? 'on' : ''}"></i>`).join('');
+        const pips = t.max <= 10 ? Array.from({ length: t.max }, (_, k) => `<i class="${k < r ? 'on' : ''}"></i>`).join('') : `<b class="rk">${r} / ${t.max}</b>`;
         return `${i ? '<div class="link"></div>' : ''}<div class="tnode glass ${r ? 'on' : ''} ${open ? '' : 'lock'}">${UI.ico(t.icon)}<b>${t.name}</b><span class="dim">${t.desc}</span><span class="rank">${pips}</span>${btn}</div>`;
       }).join('') + '</div>';
     }).join('') + '</div>';

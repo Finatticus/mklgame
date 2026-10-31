@@ -3,5 +3,5 @@ window.CONFIG = {
   GAS_URL: 'https://script.google.com/macros/s/AKfycbwlznpgPNtr79CTfR5PZBeMU1gt8eCtlDOXozHYq8-EpulhWWdpiHP7iRsJkxSfqXfd/exec',
   SYNC_INTERVAL_MS: 30000,
   OFFLINE_BASE_HOURS: 2,
-  VERSION: '3.1.0',
+  VERSION: '4.0.0',
 };
