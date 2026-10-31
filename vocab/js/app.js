@@ -168,6 +168,15 @@ function registerServiceWorker() {
     navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloaded) { reloaded = true; location.reload(); } });
 }
 
+// ---------- 禁止縮放 ----------
+// iPhone 會忽略 viewport 的 user-scalable=no，所以另外擋住雙指縮放（雙擊放大由 CSS touch-action 處理）
+// 需要大字時改在「更多 → 外觀 → 字體大小」調整
+function preventZoom() {
+    document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+    document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+    document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+}
+
 // ---------- 初始化 ----------
 // 清掉這台裝置上舊版單字 App 留下的資料。
 // 同一個 GitHub Pages 網域上還有其他 App，所以只刪舊版用過的 key，不能全部清空。
@@ -206,6 +215,7 @@ function removeLegacyData() {
     });
 
     registerServiceWorker();
+    preventZoom();
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S.user) Sync.run({ quiet: true }); });
 
     const user = lsGet("vocab_user", null);
