@@ -340,6 +340,11 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:50px 0 6
   <li><b>測試</b>：用模擬的試算表跑實際的 <code>Code.gs</code>：搬家（自己的 3 場搬過來、別人的留在原頁）、更新、新增、刪除實際下場、存 8 場遊戲回合、存 10 萬字的生涯統計再讀回來，位置和內容都正確，左邊的遊戲回合沒有被動到。</li>
   <li><b>GAS 要重新部署</b>；畫面端沒有改。</li>
 </ul>
+<h3>大廳卡片變精緻（修訂 106，版本 v108）</h3>
+<ul>
+  <li><b>建立遊戲間、加入遊戲間並排成一排</b>（<code>index.html</code> 的 <code>.mode-row</code>）：兩張卡片各佔一半寬度，縮圖小一點、不顯示箭頭、副標字小一點。</li>
+  <li><b>每一排變矮</b>（<code>css/style.css</code>）：卡片上下內距 10 → 7、間距 12 → 9、縮圖 74×60 → 64×46、標題 16 → 15；副標行距收緊（換行時不會撐高）。左右寬度不變。手機上每一排從約 80 像素變成 62~69 像素。</li>
+</ul>
 <h3>生涯模式正式開放（修訂 105，版本 v107）</h3>
 <ul>
   <li><b>所有帳號都能玩生涯模式</b>：<code>js/config.js</code> 的 <code>CAREER_USERS</code> 與 <code>Career/gas/Career.gs</code> 的 <code>CAREER_ACCESS</code> 都改成 <code>null</code>（所有人）。以前只開放給 <code>test</code> 與 <code>Michael</code>。大廳卡片、紀錄頁的「生涯」分頁、生涯稱號所有人都看得到。</li>
