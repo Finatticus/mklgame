@@ -1,5 +1,5 @@
 // 每次發佈新版前端時把版本號 +1，舊快取會在啟用時自動清除
-const VERSION = "vocab-v1.2.0";
+const VERSION = "vocab-v1.2.1";
 const APP_FILES = [
     "./", "./index.html", "./manifest.json", "./css/style.css",
     "./js/config.js", "./js/utils.js", "./js/api.js", "./js/store.js", "./js/services.js",
