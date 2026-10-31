@@ -56,6 +56,15 @@ const LESSON_RECAPS = {
     "b1-13": ["表達意見：**À mon avis**、**Selon moi**、**Je trouve que**（接直陳式）。", "同意／不同意：**Je suis d'accord**、**Je ne suis pas d'accord**。", "論證連接詞：d'abord、de plus、cependant、par conséquent、enfin。", "讓步：**bien que + 虛擬式**、**même si + 直陳式**。"],
     "b1-14": ["**avant de + 原形**（在…之前），**après avoir / être + 過去分詞**（在…之後）。", "**dès que**（一…就），談未來時接未來式。", "**jusqu'à ce que + 虛擬式**（直到…）。", "正式信件開頭 **Madame, Monsieur,**，郵件結尾 **Cordialement,**。"],
 
+    // ---------- 英文 A1 ----------
+    "e-a1-01": ["be 動詞：**I am**、**you / we / they are**、**he / she / it is**，口語用縮寫 I'm、she's。", "問句把 be 放前面：**Are you** a student? 簡答 **Yes, I am.**（不縮寫）", "所有格：my、your、his、her、its、our、their。", "說職業要加 **a / an**：I'm **a** nurse、He's **an** engineer。"],
+    "e-a1-02": ["a / an 看**發音**：**an** hour、**a** university。", "近的 **this / these**，遠的 **that / those**；these、those 後面用 are。", "複數多加 -s；s、sh、ch、x 結尾加 **-es**；子音 + y 改 **-ies**。", "不規則複數要背：men、women、children、people、feet、teeth。"],
+    "e-a1-03": ["習慣和事實用現在簡單式；**he / she / it** 動詞加 **-s**：she works、he goes、she studies。", "否定 **don't / doesn't + 原形**，問句 **Do / Does + 主詞 + 原形**。", "用了 does 動詞不加 s：Does she **like**…?", "頻率副詞放一般動詞前、be 動詞後：I **usually** get up…、He is **never** late。"],
+    "e-a1-04": ["13 重音在後（thir**TEEN**），30 重音在前（**THIR**ty）；40 是 forty。", "時間：seven fifteen、**quarter past** seven、**half past** seven、**quarter to** eight。", "**at** 幾點、**on** 星期和日期、**in** 月、年、季節、早上。", "有 next、last、every 時不加介系詞：**next Monday**。"],
+    "e-a1-05": ["「有」用 **have**，he / she / it 用 **has**。", "否定和問句用 do / does：She **doesn't have**…、**Does** he **have**…?（回到 have）", "**'s** 表示「誰的」：Tom's car；複數只加撇號：my parents' house。", "問「誰的」用 **Whose**…?，不要和 who's 搞混。"],
+    "e-a1-06": ["某處「有」用 **there is**（單數）／**there are**（複數）。", "問句 **Is there… / Are there any…?**，否定 **There isn't / aren't any…**", "肯定用 **some**，否定和問句用 **any**。", "位置：in、on、under、next to、between、behind、in front of、opposite。"],
+    "e-a1-07": ["**can + 原形**，不分人稱、不加 s、不加 to：She **can swim**。", "否定 **can't**，問句 **Can you…?**，簡答 Yes, I can. / No, I can't.", "請求：**Can I…?**（許可）、**Could you…?**（比 can 客氣）。", "聽力：can 弱讀很輕，can't 重讀清楚。"],
+    "e-a1-08": ["疑問詞放最前面：what、where、when、who、why、which、whose、how。", "語序：**疑問詞 + do / does + 主詞 + 動詞**：Where **do you** live?", "how many（可數）、how much（不可數、價錢）、how often、how old。", "who 當主詞不用 do：**Who lives** here?"],
     // ---------- 英文 A2 ----------
     "e-a2-01": ["長期事實、習慣用**現在簡單式**：I work in marketing.", "最近、暫時的事用**現在進行式**：I'm working on a project this month.", "第三人稱單數動詞加 **-s**：She lives in Taipei.", "介紹自己：I'm originally from…、In my free time, I…"],
     "e-a2-02": ["過去簡單式：肯定用過去式，否定和問句用 **did + 原形**：Did you go? / I didn't go.", "did 後面一定是原形：Did you **see**…（不是 saw）。", "說故事的順序詞：first、then、after that、in the end。", "**used to + 原形**：以前的習慣，現在不再。"],
@@ -78,5 +87,9 @@ const LESSON_RECAPS = {
     "e-b2-03": ["推測現在：**must**（一定）、**might / may / could**（可能）、**can't**（不可能）+ 原形。", "推測過去：**must have / might have / can't have + p.p.**", "can't have 是「不可能做過」，不是 mustn't have。", "依證據多寡選擇語氣強弱。"],
     "e-b2-04": ["未來進行式 **will be + V-ing**：未來某時刻正在做的事。", "也用來禮貌詢問計畫：Will you be using the car tonight?", "未來完成式 **will have + p.p.**：到未來某時已完成。", "常搭配 **by**：By next year, I'll have finished."],
     "e-b2-05": ["分詞構句：主詞相同時精簡子句；主動用 **V-ing**、被動用 **p.p.**。", "先發生的動作用 **Having + p.p.**：Having finished, she left.", "分詞構句的主詞必須和主要子句相同。", "正式寫作用 however、therefore、moreover，少用 but、so、also 開頭。"],
-    "e-b2-06": ["否定副詞放句首要倒裝（助動詞 + 主詞）：**Never have I** seen…", "常見：Rarely、Seldom、Not only、Hardly … when、No sooner … than、Only then。", "強調句：**It is / was … that / who …**", "**What … is …**：What I need is a break."]
+    "e-b2-06": ["否定副詞放句首要倒裝（助動詞 + 主詞）：**Never have I** seen…", "常見：Rarely、Seldom、Not only、Hardly … when、No sooner … than、Only then。", "強調句：**It is / was … that / who …**", "**What … is …**：What I need is a break."],
+    "e-b2-07": ["片語動詞 = 動詞 + 介系詞／副詞，口語比正式單字自然：look into、come up with、put up with。", "可分開的片語動詞，受詞是**代名詞時一定放中間**：turn **it** down。", "三個字的不能拆：run out of、look forward to、get along with。", "look forward **to + V-ing**：look forward to **meeting** you。"],
+    "e-b2-08": ["suggest、recommend、insist that + **原形**（不加 s）：I suggest that he **take** a break。", "essential、important that + 原形，be 用 **be**：that everyone **be** on time。", "**It's time + 過去式**、**would rather + 人 + 過去式**、**as if + were**。", "suggest 後不接「人 + to V」：說 I suggest **taking**…"],
+    "e-b2-09": ["**although / even though + 子句**，**despite / in spite of + 名詞或 V-ing**。", "although 和 but 不能一起用。", "對比用 **whereas / while**，或新句子開頭 **On the other hand,**", "讓步與保留：Admittedly、That said、arguably、tend to、to some extent。"],
+    "e-b2-10": ["越間接越客氣：Could you… → Would you mind **V-ing** → **I was wondering if**…", "Would you mind…? 答應要說 **No, not at all.**", "email：**I'm writing regarding…**、**Please find attached…**、**I look forward to hearing from you.**", "改期 **Could we reschedule…?**，催促 **I'm just following up on…**"]
 };

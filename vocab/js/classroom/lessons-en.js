@@ -1,6 +1,232 @@
 // ===================== 英文教室 =====================
-// 從 A2 開始（假設已經學過基礎英文），一路到 B2。欄位同法文課程；fr 欄位在英文課程中是英文副標題
+// 從 A1 開始，一路到 B2。欄位同法文課程；fr 欄位在英文課程中是英文副標題
 const EN_COURSE = [
+// ---------------- A1 ----------------
+{
+    id: "e-a1-01", level: "A1", title: "我是…：be 動詞與自我介紹", fr: "Hello, I'm…",
+    goal: "用 am / is / are 介紹自己和別人，會問名字、國籍和工作。",
+    grammar: [
+        { t: "be 動詞：am、is、are", d: "be 動詞是「是、在」。它會跟著主詞變：**I am**、**you / we / they are**、**he / she / it is**。口語幾乎都用縮寫：I'm、you're、he's、she's、it's、we're、they're。",
+          tb: [["主詞", "be 動詞", "縮寫", "否定"], ["I", "am", "I'm", "I'm not"], ["you", "are", "you're", "you aren't"], ["he / she / it", "is", "he's / she's / it's", "he isn't"], ["we", "are", "we're", "we aren't"], ["they", "are", "they're", "they aren't"]],
+          ex: [["I'm from Taiwan.", "我來自台灣。"], ["She isn't a student. She's a teacher.", "她不是學生，她是老師。"]] },
+        { t: "問句：把 be 動詞放到前面", d: "把 am / is / are 移到主詞前面就是問句：You are tired. → **Are you** tired? 簡答時不用縮寫：**Yes, I am.**（不說 Yes, I'm.）**No, I'm not.**",
+          ex: [["Are you from Japan? — No, I'm not. I'm from Taiwan.", "你是日本人嗎？——不是，我是台灣人。"], ["Is he your brother? — Yes, he is.", "他是你哥哥嗎？——是的。"]] },
+        { t: "my、your、his、her：誰的", d: "所有格放在名詞前面：**my** name（我的名字）、**your** job、**his** phone、**her** bag、**our** house、**their** car。**it** 的所有格是 **its**（沒有撇號；it's 是 it is）。",
+          tb: [["主詞", "所有格"], ["I", "my"], ["you", "your"], ["he", "his"], ["she", "her"], ["it", "its"], ["we", "our"], ["they", "their"]],
+          ex: [["My name is Ken. What's your name?", "我叫肯。你叫什麼名字？"]] },
+        { t: "a / an + 職業", d: "說職業時前面要加 **a** 或 **an**，中文不用：I'm **a** nurse（我是護理師）、She's **an** engineer。母音**發音**開頭用 an。",
+          ex: [["I'm a designer.", "我是設計師。"], ["He's an engineer.", "他是工程師。"]] }
+    ],
+    vocab: [["name", "名字", "n."], ["country", "國家", "n."], ["job", "工作", "n."], ["student", "學生", "n."], ["teacher", "老師", "n."], ["engineer", "工程師", "n."], ["nurse", "護理師", "n."], ["married", "已婚的", "adj."], ["single", "單身的", "adj."], ["Nice to meet you.", "很高興認識你。", "sent."]],
+    dialog: [["Ann", "Hi, I'm Ann. What's your name?", "嗨，我是安。你叫什麼名字？"], ["Tom", "I'm Tom. Nice to meet you.", "我是湯姆，很高興認識妳。"], ["Ann", "Nice to meet you too. Where are you from?", "我也很高興認識你。你是哪裡人？"], ["Tom", "I'm from Canada. Are you from Taiwan?", "我是加拿大人。妳是台灣人嗎？"], ["Ann", "Yes, I am. I'm from Kaohsiung. Are you a student?", "對，我是高雄人。你是學生嗎？"], ["Tom", "No, I'm not. I'm an English teacher.", "不是，我是英文老師。"]],
+    culture: "英文自我介紹通常先說名字，再說 **Nice to meet you.** 對方會回 **Nice to meet you too.** 初次見面握手很常見，不需要鞠躬。",
+    ex: [
+        ["c", "I ___ from Taiwan.", ["am", "is", "are"], 0, "我來自台灣。"],
+        ["c", "She ___ a nurse.", ["is", "am", "are"], 0, "她是護理師。"],
+        ["c", "They ___ my friends.", ["are", "is", "am"], 0, "他們是我的朋友。"],
+        ["c", "___ name is Ken.（我的）", ["My", "I", "Me"], 0, "我的名字是肯。"],
+        ["c", "He's ___ engineer.", ["an", "a", "the"], 0, "他是工程師。"],
+        ["c", "Are you tired? — Yes, I ___.", ["am", "'m", "are"], 0, "你累了嗎？——是的。"],
+        ["f", "___ you from Japan? — No, I'm not.", "Are", "你是日本人嗎？——不是。"],
+        ["o", "Where / are / you / from", "你是哪裡人？"],
+        ["t", "我不是老師。", ["I'm not a teacher.", "I am not a teacher."]],
+        ["l", "Nice to meet you. I'm Ann.", "很高興認識你，我是安。"]
+    ]
+},
+{
+    id: "e-a1-02", level: "A1", title: "這是什麼：a / an、this / that、複數", fr: "What's this?",
+    goal: "用 a / an 和 this / that / these / those 指東西，正確變出名詞複數。",
+    grammar: [
+        { t: "a 還是 an：看發音", d: "一個（可數名詞）用 **a** 或 **an**。看的是**發音**不是字母：母音發音開頭用 **an**。\n**an** apple、**an** hour（h 不發音）；**a** university（唸 /juː/，子音開頭）、**a** European city。",
+          tb: [["a", "an"], ["a book", "an apple"], ["a key", "an umbrella"], ["a university", "an hour"], ["a uniform", "an honest man"]] },
+        { t: "this、that、these、those", d: "近的用 **this**（單數）/ **these**（複數），遠的用 **that** / **those**。後面的 be 動詞也要配合：This **is**…、These **are**…",
+          tb: [["", "單數", "複數"], ["近（這）", "this", "these"], ["遠（那）", "that", "those"]],
+          ex: [["What's this? — It's a key.", "這是什麼？——是一把鑰匙。"], ["Are those your glasses?", "那是你的眼鏡嗎？"]] },
+        { t: "名詞複數", d: "大多加 **-s**；s、sh、ch、x、o 結尾加 **-es**；子音 + y 結尾改 **-ies**。有些常用字不規則，要直接背。",
+          tb: [["規則", "單數", "複數"], ["加 -s", "book、key", "books、keys"], ["加 -es", "box、watch、bus", "boxes、watches、buses"], ["子音 + y → -ies", "city、baby", "cities、babies"], ["不規則", "man、woman、child", "men、women、children"], ["不規則", "person、foot、tooth", "people、feet、teeth"]],
+          tip: "glasses（眼鏡）、jeans、scissors 本身就是複數：These glasses **are** new。", warn: false }
+    ],
+    vocab: [["bag", "包包", "n."], ["umbrella", "雨傘", "n."], ["key", "鑰匙", "n."], ["wallet", "錢包", "n."], ["glasses", "眼鏡", "n."], ["box", "盒子", "n."], ["watch", "手錶", "n."], ["child", "小孩", "n."], ["people", "人們", "n."], ["over there", "在那裡", "phr."]],
+    dialog: [["Clerk", "Hello. Can I help you?", "您好，需要幫忙嗎？"], ["Sam", "Yes. I think I left my umbrella here yesterday.", "是的，我好像昨天把雨傘忘在這裡了。"], ["Clerk", "Is this your umbrella?", "這是你的雨傘嗎？"], ["Sam", "No, it isn't. Mine is black. Is that one over there black?", "不是，我的是黑色的。那邊那把是黑色的嗎？"], ["Clerk", "Yes. Here you are. And are these your keys too?", "是的，給你。這些也是你的鑰匙嗎？"], ["Sam", "Yes, they are! Thank you so much.", "對，是我的！真是太感謝了。"]],
+    culture: "英文常用 **Here you are.** 或 **Here you go.** 表示「給你」。收到東西說 **Thanks** 或 **Thank you so much**。",
+    ex: [
+        ["c", "It's ___ umbrella.", ["an", "a", "the"], 0, "這是一把雨傘。"],
+        ["c", "I'll be back in ___ hour.", ["an", "a", "one an"], 0, "我一小時後回來。"],
+        ["c", "She studies at ___ university in Taipei.", ["a", "an", "one"], 0, "她在台北一所大學念書。"],
+        ["c", "These ___ my keys.", ["are", "is", "am"], 0, "這些是我的鑰匙。"],
+        ["c", "one child, two ___", ["children", "childs", "childrens"], 0, "一個小孩，兩個小孩"],
+        ["c", "___ is my phone.（這）", ["This", "These", "Those"], 0, "這是我的手機。"],
+        ["f", "I have three ___.（box）", "boxes", "我有三個盒子。"],
+        ["o", "Those / are / my / glasses", "那是我的眼鏡。"],
+        ["t", "這是我的包包。", ["This is my bag."]],
+        ["l", "Is that your umbrella?", "那是你的雨傘嗎？"]
+    ]
+},
+{
+    id: "e-a1-03", level: "A1", title: "我的一天：現在簡單式", fr: "I get up at seven",
+    goal: "用現在簡單式說每天的習慣，記住 he / she 加 -s，會用 do / does 問和否定。",
+    grammar: [
+        { t: "現在簡單式：習慣和事實", d: "每天做的事、一般事實用現在簡單式。主詞是 **he / she / it**（第三人稱單數）時，動詞要加 **-s**。這是台灣學生最常漏掉的地方。",
+          tb: [["規則", "原形", "he / she / it"], ["一般加 -s", "work、get", "works、gets"], ["s、sh、ch、x、o 結尾加 -es", "go、watch、finish", "goes、watches、finishes"], ["子音 + y → -ies", "study、try", "studies、tries"], ["不規則", "have", "has"]],
+          ex: [["I get up at seven.", "我七點起床。"], ["She goes to work by bus.", "她搭公車上班。"]] },
+        { t: "否定與問句：do / does", d: "否定：**don't / doesn't + 原形**。問句：**Do / Does + 主詞 + 原形**。用了 does，後面的動詞就**不再加 -s**：She **doesn't like** coffee（不說 doesn't likes）。",
+          tb: [["", "I / you / we / they", "he / she / it"], ["肯定", "I work.", "She works."], ["否定", "I don't work.", "She doesn't work."], ["問句", "Do you work?", "Does she work?"], ["簡答", "Yes, I do. / No, I don't.", "Yes, she does. / No, she doesn't."]] },
+        { t: "頻率副詞：多常？", d: "**always**（總是）> **usually**（通常）> **often**（常常）> **sometimes**（有時）> **never**（從不）。位置：放在**一般動詞前面**、**be 動詞後面**。",
+          ex: [["I usually have breakfast at home.", "我通常在家吃早餐。"], ["He is never late.", "他從不遲到。"], ["We sometimes eat out on Fridays.", "我們星期五有時會出去吃。"]] }
+    ],
+    vocab: [["get up", "起床", "phr."], ["have breakfast", "吃早餐", "phr."], ["go to work", "去上班", "phr."], ["take a shower", "洗澡", "phr."], ["start", "開始", "v."], ["finish", "結束；完成", "v."], ["always", "總是", "adv."], ["usually", "通常", "adv."], ["sometimes", "有時候", "adv."], ["never", "從不", "adv."]],
+    dialog: [["Mia", "What time do you usually get up?", "你通常幾點起床？"], ["Leo", "I get up at six thirty. I go to the gym before work.", "我六點半起床，上班前去健身房。"], ["Mia", "Wow! I never get up before eight.", "哇！我從來不會八點前起床。"], ["Leo", "When does your work start?", "妳幾點開始上班？"], ["Mia", "At ten. My office isn't far, so I walk there.", "十點。我的辦公室不遠，所以走路去。"], ["Leo", "Lucky you! I take the MRT for forty minutes.", "真好！我要搭四十分鐘捷運。"]],
+    ex: [
+        ["c", "She ___ to work by bus.", ["goes", "go", "going"], 0, "她搭公車上班。"],
+        ["c", "He ___ coffee.", ["doesn't drink", "don't drink", "doesn't drinks"], 0, "他不喝咖啡。"],
+        ["c", "___ you work on Saturdays?", ["Do", "Does", "Are"], 0, "你星期六上班嗎？"],
+        ["c", "___ she like tea?", ["Does", "Do", "Is"], 0, "她喜歡茶嗎？"],
+        ["c", "哪一句正確？", ["I usually get up at seven.", "I get usually up at seven.", "I get up usually at seven."], 0, "我通常七點起床。"],
+        ["f", "He ___ English every day.（study）", "studies", "他每天讀英文。"],
+        ["f", "My sister ___ TV at night.（watch）", "watches", "我姊姊晚上看電視。"],
+        ["o", "She / is / never / late", "她從不遲到。"],
+        ["t", "我每天七點起床。", ["I get up at seven every day.", "I get up at 7 every day.", "Every day I get up at seven."]],
+        ["l", "He usually has breakfast at home.", "他通常在家吃早餐。"]
+    ]
+},
+{
+    id: "e-a1-04", level: "A1", title: "數字、時間與日期：at、on、in", fr: "What time is it?",
+    goal: "說時間、日期和星期，分清楚 at、on、in。",
+    grammar: [
+        { t: "數字：13 和 30 不要搞混", d: "-teen（13–19）重音在**後面**：thir**TEEN**；-ty（20、30…）重音在**前面**：**THIR**ty。聽到重音就分得出來。\n大數字：1,000 = one thousand、1,000,000 = one million。數字後面不加 s：two **hundred** people（不說 two hundreds）。",
+          tb: [["數字", "英文", "數字", "英文"], ["13", "thirteen", "30", "thirty"], ["14", "fourteen", "40", "forty（沒有 u）"], ["15", "fifteen", "50", "fifty"], ["21", "twenty-one", "100", "one hundred"], ["250", "two hundred and fifty", "2026", "twenty twenty-six"]] },
+        { t: "幾點", d: "問：**What time is it?** 答：**It's…**\n最簡單的說法是直接唸數字：7:15 = seven fifteen。也常用 **past**（過）和 **to**（差）：quarter past seven（7:15）、half past seven（7:30）、quarter to eight（7:45）。整點說 **o'clock**：It's seven o'clock。",
+          tb: [["時間", "說法一", "說法二"], ["7:00", "seven o'clock", "seven"], ["7:15", "seven fifteen", "quarter past seven"], ["7:30", "seven thirty", "half past seven"], ["7:45", "seven forty-five", "quarter to eight"], ["7:50", "seven fifty", "ten to eight"]],
+          tip: "a.m. 是上午、p.m. 是下午和晚上：3 p.m. = 下午三點。12 p.m. 是中午、12 a.m. 是午夜，容易搞錯，可以直接說 noon、midnight。", warn: false },
+        { t: "at、on、in：時間介系詞", d: "記法：範圍越小越精確用 **at**，一天用 **on**，更長的時間用 **in**。",
+          tb: [["介系詞", "用在", "例子"], ["at", "幾點、特定時刻", "at 7 o'clock、at noon、at night、at the weekend（英式）"], ["on", "星期幾、日期", "on Monday、on May 1st、on my birthday、on the weekend（美式）"], ["in", "月、年、季節、早上下午晚上", "in May、in 2026、in summer、in the morning"]],
+          ex: [["The class starts at nine.", "課九點開始。"], ["I was born in 1998.", "我 1998 年出生。"], ["See you on Friday!", "星期五見！"]] },
+        { t: "日期與序數", d: "日期用序數：1st **first**、2nd **second**、3rd **third**、4th **fourth**、21st twenty-first。美式寫 May 1，唸 **May first**；英式寫 1 May，唸 **the first of May**。",
+          ex: [["My birthday is on June third.", "我的生日是六月三日。"], ["Today is the twenty-first of March.", "今天是三月二十一日。"]] }
+    ],
+    vocab: [["o'clock", "…點整", "adv."], ["quarter", "十五分鐘；四分之一", "n."], ["half past", "…點半", "phr."], ["noon", "中午", "n."], ["midnight", "午夜", "n."], ["weekend", "週末", "n."], ["birthday", "生日", "n."], ["month", "月", "n."], ["date", "日期", "n."], ["early", "早的", "adj."], ["late", "晚的；遲到的", "adj."]],
+    dialog: [["Jay", "Excuse me, what time is it?", "不好意思，現在幾點？"], ["Kim", "It's quarter to ten.", "九點四十五分。"], ["Jay", "Oh no, my train leaves at ten!", "糟了，我的火車十點開！"], ["Kim", "Don't worry. The station is only five minutes from here.", "別擔心，車站離這裡只要五分鐘。"], ["Jay", "Thanks! By the way, is the museum open on Mondays?", "謝謝！順便問一下，博物館星期一有開嗎？"], ["Kim", "No, it's closed on Mondays. It opens at nine in the morning from Tuesday to Sunday.", "沒有，星期一休館。星期二到星期日早上九點開門。"]],
+    ex: [
+        ["c", "The class starts ___ 9 a.m.", ["at", "on", "in"], 0, "課早上九點開始。"],
+        ["c", "I was born ___ 1998.", ["in", "on", "at"], 0, "我 1998 年出生。"],
+        ["c", "See you ___ Friday!", ["on", "in", "at"], 0, "星期五見！"],
+        ["c", "I study better ___ the morning.", ["in", "on", "at"], 0, "我早上讀書效率比較好。"],
+        ["c", "7:30 是？", ["half past seven", "half past eight", "half to seven"], 0, ""],
+        ["c", "8:45 是？", ["quarter to nine", "quarter past eight", "quarter to eight"], 0, ""],
+        ["f", "My birthday is ___ June 3rd.", "on", "我的生日是六月三日。"],
+        ["f", "40 的英文是 ___.", "forty", "注意沒有 u"],
+        ["t", "現在幾點？", ["What time is it?", "What's the time?"]],
+        ["l", "The meeting is at half past two on Monday.", "會議在星期一兩點半。"]
+    ]
+},
+{
+    id: "e-a1-05", level: "A1", title: "家人與擁有：have / has 與 's", fr: "I have two brothers",
+    goal: "介紹家人，用 have / has 說擁有，用 's 說「誰的」。",
+    grammar: [
+        { t: "have 和 has", d: "「有」用 **have**，主詞是 he / she / it 時用 **has**。否定和問句跟一般動詞一樣用 do / does：I **don't have** a car、**Does** she **have** a dog?（does 後面回到 have）。英式口語也常說 **have got**：I've got two brothers。",
+          tb: [["", "I / you / we / they", "he / she / it"], ["肯定", "I have a sister.", "She has a sister."], ["否定", "I don't have a car.", "He doesn't have a car."], ["問句", "Do you have a pet?", "Does she have a pet?"]],
+          tip: "Does she **has**…? 是錯的。用了 does，動詞就回到原形 **have**。", warn: true },
+        { t: "'s：誰的", d: "人的名字或名詞加 **'s** 表示「…的」：**Tom's** car、my **mother's** job。複數名詞已經有 s，只加撇號：my **parents'** house。不規則複數照樣加 's：the **children's** room。",
+          ex: [["This is my sister's room.", "這是我姊姊的房間。"], ["My parents' house is in Tainan.", "我父母的房子在台南。"]] },
+        { t: "whose：誰的？", d: "問「這是誰的？」用 **Whose**：**Whose** bag is this? — It's **Amy's**.\n注意 **whose**（誰的）和 **who's**（who is）發音一樣、意思不同。",
+          ex: [["Whose phone is this? — It's Ken's.", "這是誰的手機？——是肯的。"]] }
+    ],
+    vocab: [["parents", "父母", "n."], ["brother", "兄弟", "n."], ["sister", "姊妹", "n."], ["son", "兒子", "n."], ["daughter", "女兒", "n."], ["husband", "丈夫", "n."], ["wife", "妻子", "n."], ["grandparents", "祖父母", "n."], ["cousin", "堂（表）兄弟姊妹", "n."], ["only child", "獨生子女", "n."], ["pet", "寵物", "n."]],
+    dialog: [["Nina", "Do you have any brothers or sisters?", "你有兄弟姊妹嗎？"], ["Alex", "Yes, I have an older brother. He has two kids. What about you?", "有，我有一個哥哥，他有兩個小孩。妳呢？"], ["Nina", "I'm an only child, but I have lots of cousins.", "我是獨生女，不過我有很多表兄弟姊妹。"], ["Alex", "Do you live with your parents?", "妳和父母一起住嗎？"], ["Nina", "No, I don't. My parents' house is in Hualien. I live in Taipei.", "沒有。我父母的房子在花蓮，我住台北。"], ["Alex", "Hualien is beautiful! Does your family have a dog?", "花蓮很漂亮！妳家有養狗嗎？"], ["Nina", "Yes, we do. His name is Mochi.", "有，牠叫麻糬。"]],
+    culture: "英文的 brother、sister 不分哥哥弟弟、姊姊妹妹，需要時才說 **older / younger brother**。cousin 也不分堂表、男女。",
+    ex: [
+        ["c", "She ___ two sons.", ["has", "have", "haves"], 0, "她有兩個兒子。"],
+        ["c", "I ___ a car.", ["don't have", "doesn't have", "not have"], 0, "我沒有車。"],
+        ["c", "___ you have any brothers?", ["Do", "Does", "Are"], 0, "你有兄弟嗎？"],
+        ["c", "Does he ___ a pet?", ["have", "has", "having"], 0, "他有養寵物嗎？"],
+        ["c", "This is ___ room.（我姊姊的）", ["my sister's", "my sisters", "my sister"], 0, "這是我姊姊的房間。"],
+        ["c", "我父母的房子", ["my parents' house", "my parent's house", "my parents house"], 0, ""],
+        ["f", "He ___ have a dog.（否定）", "doesn't", "他沒有養狗。"],
+        ["o", "My / brother / has / two / children", "我哥哥有兩個小孩。"],
+        ["t", "我是獨生子女。", ["I'm an only child.", "I am an only child."]],
+        ["l", "Do you have any brothers or sisters?", "你有兄弟姊妹嗎？"]
+    ]
+},
+{
+    id: "e-a1-06", level: "A1", title: "在哪裡：there is / are 與地點介系詞", fr: "Is there a bank near here?",
+    goal: "用 there is / there are 說「有」，用介系詞說東西在哪裡。",
+    grammar: [
+        { t: "there is / there are：某處「有」", d: "說某個地方**存在**什麼，用 **there is**（單數、不可數）、**there are**（複數）。中文說「桌上有一本書」，英文是 **There is** a book on the table，不說 The table has a book。",
+          tb: [["", "單數", "複數"], ["肯定", "There's a bank near here.", "There are two bedrooms."], ["否定", "There isn't a park.", "There aren't any chairs."], ["問句", "Is there a café?", "Are there any shops?"]],
+          ex: [["Is there a supermarket near here? — Yes, there is.", "這附近有超市嗎？——有。"]] },
+        { t: "some 和 any", d: "複數或不可數名詞：肯定句用 **some**，否定句和問句用 **any**。There are **some** shops. / There aren't **any** shops. / Are there **any** shops?\n例外：提供或請求東西時，問句也用 some：Would you like **some** tea?" },
+        { t: "地點介系詞", d: "說東西的位置：",
+          tb: [["介系詞", "意思", "例子"], ["in", "在…裡面", "in the box、in the kitchen"], ["on", "在…上面（有接觸）", "on the table、on the wall"], ["under", "在…下面", "under the bed"], ["next to", "在…旁邊", "next to the bank"], ["between", "在兩者之間", "between the café and the hotel"], ["behind", "在…後面", "behind the door"], ["in front of", "在…前面", "in front of the station"], ["opposite", "在…對面", "opposite the park"], ["near", "在…附近", "near my house"]],
+          tip: "in front of 是「在…前面（外面）」，不是「在…裡面的前方」。在教室前面（裡面）說 **at the front of** the classroom。", warn: false }
+    ],
+    vocab: [["near", "在…附近", "prep."], ["next to", "在…旁邊", "prep."], ["between", "在…之間", "prep."], ["behind", "在…後面", "prep."], ["opposite", "在…對面", "prep."], ["kitchen", "廚房", "n."], ["bedroom", "臥室", "n."], ["station", "車站", "n."], ["supermarket", "超市", "n."], ["neighborhood", "社區；附近", "n."]],
+    dialog: [["Agent", "This is the living room, and the kitchen is next to it.", "這是客廳，廚房在旁邊。"], ["Lisa", "It's nice and bright. How many bedrooms are there?", "很明亮。有幾間臥室？"], ["Agent", "There are two bedrooms and one bathroom.", "有兩間臥室和一間浴室。"], ["Lisa", "Is there a supermarket in the neighborhood?", "這附近有超市嗎？"], ["Agent", "Yes, there's one opposite the park, about five minutes away.", "有，公園對面有一家，大約五分鐘。"], ["Lisa", "Great. And are there any bus stops near here?", "太好了。這附近有公車站嗎？"], ["Agent", "There's one right in front of the building.", "大樓正前方就有一站。"]],
+    ex: [
+        ["c", "There ___ a bank near here.", ["is", "are", "be"], 0, "這附近有一家銀行。"],
+        ["c", "There ___ two bedrooms.", ["are", "is", "have"], 0, "有兩間臥室。"],
+        ["c", "___ there a supermarket near here?", ["Is", "Are", "Does"], 0, "這附近有超市嗎？"],
+        ["c", "The cat is ___ the table.（在桌子底下）", ["under", "on", "in"], 0, "貓在桌子底下。"],
+        ["c", "The bank is ___ the café and the hotel.", ["between", "next", "opposite of"], 0, "銀行在咖啡店和飯店中間。"],
+        ["c", "Are there ___ shops on this street?", ["any", "some of", "a"], 0, "這條街上有店嗎？"],
+        ["f", "There aren't ___ chairs in the room.", "any", "房間裡沒有椅子。"],
+        ["o", "Is / there / a / bank / near / here", "這附近有銀行嗎？"],
+        ["t", "我家旁邊有一家超市。", ["There's a supermarket next to my house.", "There is a supermarket next to my house.", "There's a supermarket next to my home.", "There is a supermarket next to my home."]],
+        ["l", "The station is opposite the park.", "車站在公園對面。"]
+    ]
+},
+{
+    id: "e-a1-07", level: "A1", title: "能力與請求：can / can't", fr: "Can you swim?",
+    goal: "用 can 說會不會、能不能，用 Can I / Could you 有禮貌地請求。",
+    grammar: [
+        { t: "can + 原形", d: "**can** 表示「會、能夠」。後面接**原形動詞**，而且**不分人稱**：I can、she **can**（不加 s）。否定 **can't**（= cannot）。問句把 can 放前面：**Can** you swim?",
+          tb: [["肯定", "否定", "問句", "簡答"], ["She can drive.", "She can't drive.", "Can she drive?", "Yes, she can. / No, she can't."]],
+          tip: "常見錯誤：She **cans** swim、I can **to** swim、He can **swims**。can 後面一律是原形，也不加 to。", warn: true },
+        { t: "請求與許可", d: "**Can I…?**（我可以…嗎？）請求許可；**Can you…?** 請別人幫忙。**Could you…?** 比 Can you 更客氣，對陌生人或在店裡建議用 could。回答：**Sure. / Of course. / Sorry, I can't.**",
+          ex: [["Can I use your pen?", "我可以用你的筆嗎？"], ["Could you speak more slowly, please?", "可以請你說慢一點嗎？"], ["Can you help me with this box? — Sure!", "可以幫我搬這個箱子嗎？——當然！"]] },
+        { t: "can 和 can't 怎麼聽", d: "句子裡的 **can** 通常弱讀成 /kən/，很輕很短；**can't** 不會弱讀，母音清楚，最後的 t 常常很輕。所以聽到一個清楚、重讀的 can，多半是 can't。",
+          ex: [["I can swim.", "我會游泳。（can 很輕）"], ["I can't swim.", "我不會游泳。（can't 重讀）"]] }
+    ],
+    vocab: [["swim", "游泳", "v."], ["drive", "開車", "v."], ["cook", "煮飯", "v."], ["ride a bike", "騎腳踏車", "phr."], ["play the guitar", "彈吉他", "phr."], ["borrow", "借（入）", "v."], ["lend", "借（出）", "v."], ["help", "幫忙", "v."], ["of course", "當然", "phr."], ["slowly", "慢慢地", "adv."]],
+    dialog: [["Ivy", "Can you cook?", "你會煮飯嗎？"], ["Dan", "A little. I can make pasta and fried rice. What about you?", "會一點，我會做義大利麵和炒飯。妳呢？"], ["Ivy", "I can't cook at all, but I can bake cakes.", "我完全不會煮飯，但我會烤蛋糕。"], ["Dan", "That's even better! Could you teach me sometime?", "那更厲害！可以找時間教我嗎？"], ["Ivy", "Sure. Can you come on Saturday afternoon?", "當然。你星期六下午可以來嗎？"], ["Dan", "Yes, I can. Can I bring anything?", "可以。我可以帶什麼東西嗎？"], ["Ivy", "Just bring some eggs!", "帶些雞蛋就好！"]],
+    ex: [
+        ["c", "She ___ speak three languages.", ["can", "cans", "can to"], 0, "她會說三種語言。"],
+        ["c", "I can't ___.", ["drive", "to drive", "driving"], 0, "我不會開車。"],
+        ["c", "___ you help me, please?", ["Can", "Do", "Are"], 0, "可以請你幫我嗎？"],
+        ["c", "Could you ___ the window, please?", ["open", "opening", "opens"], 0, "可以請你開窗嗎？"],
+        ["c", "Can you swim? — Yes, I ___.", ["can", "do", "am"], 0, "你會游泳嗎？——會。"],
+        ["c", "比較客氣的請求是？", ["Could you help me?", "Help me.", "You help me?"], 0, ""],
+        ["f", "He ___ cook, but he can make tea.（不會）", ["can't", "cannot"], "他不會煮飯，但會泡茶。"],
+        ["o", "Can / I / borrow / your / pen", "我可以借你的筆嗎？"],
+        ["t", "你會開車嗎？", ["Can you drive?"]],
+        ["l", "Could you speak more slowly, please?", "可以請你說慢一點嗎？"]
+    ]
+},
+{
+    id: "e-a1-08", level: "A1", title: "問問題：疑問詞", fr: "Where do you live?",
+    goal: "用 what、where、when、who、why、how 等疑問詞問問題，排對字的順序。",
+    grammar: [
+        { t: "常用疑問詞", d: "疑問詞放在句子最前面：",
+          tb: [["疑問詞", "問什麼", "例子"], ["what", "什麼", "What do you do?"], ["where", "哪裡", "Where do you live?"], ["when", "什麼時候", "When is your birthday?"], ["who", "誰", "Who is that man?"], ["why", "為什麼", "Why are you tired?"], ["which", "哪一個（有選項）", "Which bus goes to the airport?"], ["whose", "誰的", "Whose bag is this?"], ["how", "怎麼樣；如何", "How do you get to work?"], ["how much", "多少（錢、不可數）", "How much is this?"], ["how many", "多少個（可數）", "How many people are there?"], ["how often", "多常", "How often do you exercise?"], ["how old", "幾歲", "How old is your son?"]] },
+        { t: "順序：疑問詞 + 助動詞 + 主詞 + 動詞", d: "一般動詞的問句要有 **do / does / did**：**Where do you** live?（不說 Where you live?）\nbe 動詞直接倒過來：**Where is** the station?\n**who / what 當主詞**時不用 do：**Who lives** here?（誰住這裡？）、**What happened**?",
+          tb: [["疑問詞", "助動詞 / be", "主詞", "其他"], ["Where", "do", "you", "live?"], ["What time", "does", "the shop", "open?"], ["Why", "are", "you", "late?"], ["How often", "do", "you", "go to the gym?"]],
+          tip: "中文「你住哪裡？」字的順序和英文不同，最常見的錯誤是漏掉 do / does：✗ Where you live? → **Where do you live?**", warn: true }
+    ],
+    vocab: [["live", "住", "v."], ["often", "常常", "adv."], ["far", "遠的", "adj."], ["cost", "花費（多少錢）", "v."], ["because", "因為", "conj."], ["exercise", "運動", "v."], ["get to", "到達", "phr."], ["take", "花（時間）", "v."], ["favorite", "最喜歡的", "adj."], ["airport", "機場", "n."]],
+    dialog: [["Host", "So, where do you live?", "那麼，你住在哪裡？"], ["Guest", "I live in Taichung, near the train station.", "我住台中，在火車站附近。"], ["Host", "How do you get to work?", "你怎麼去上班？"], ["Guest", "I usually ride my scooter. It takes about fifteen minutes.", "我通常騎機車，大約十五分鐘。"], ["Host", "Why are you learning English?", "你為什麼在學英文？"], ["Guest", "Because I want to travel more, and I use it at work.", "因為我想多去旅行，而且工作上也會用到。"], ["Host", "How often do you practice?", "你多常練習？"], ["Guest", "Every day, for about twenty minutes.", "每天大約二十分鐘。"]],
+    ex: [
+        ["c", "___ do you live? — In Taichung.", ["Where", "When", "What"], 0, "你住哪裡？——台中。"],
+        ["c", "___ is your birthday? — In May.", ["When", "Where", "Who"], 0, "你的生日是什麼時候？——五月。"],
+        ["c", "How ___ brothers do you have?", ["many", "much", "often"], 0, "你有幾個兄弟？"],
+        ["c", "How ___ is this bag?", ["much", "many", "often"], 0, "這個包包多少錢？"],
+        ["c", "Where ___ she work?", ["does", "do", "is"], 0, "她在哪裡工作？"],
+        ["c", "___ is this phone? — It's Tom's.", ["Whose", "Who", "Who's"], 0, "這是誰的手機？——湯姆的。"],
+        ["c", "誰住在這裡？", ["Who lives here?", "Who does live here?", "Who do live here?"], 0, "who 當主詞不用 do"],
+        ["f", "___ old are you?", "How", "你幾歲？"],
+        ["o", "What / time / do / you / get / up", "你幾點起床？"],
+        ["t", "你為什麼學英文？", ["Why do you learn English?", "Why are you learning English?", "Why do you study English?", "Why are you studying English?"]],
+        ["l", "How often do you go to the gym?", "你多常去健身房？"]
+    ]
+},
 // ---------------- A2 ----------------
 {
     id: "e-a2-01", level: "A2", title: "自我介紹：現在簡單式與進行式", fr: "Nice to meet you",
@@ -451,7 +677,117 @@ const EN_COURSE = [
         ["t", "我們需要的是更多時間。", ["What we need is more time."]],
         ["l", "It is this combination that makes it unique.", "正是這樣的組合讓它與眾不同。"]
     ]
+},
+{
+    id: "e-b2-07", level: "B2", title: "片語動詞：口語最常用的說法", fr: "I'll look into it",
+    goal: "掌握工作和生活中最常用的片語動詞，知道代名詞放在哪裡。",
+    grammar: [
+        { t: "什麼是片語動詞", d: "**動詞 + 介系詞／副詞**合起來變成新的意思，常常猜不出來：look **into**（調查）、come **up with**（想出）、put **up with**（忍受）。口語非常常用，比正式的單字自然：investigate → look into、tolerate → put up with。",
+          tb: [["片語動詞", "意思", "較正式的說法"], ["look into", "調查、研究", "investigate"], ["come up with", "想出（點子）", "think of / devise"], ["run out of", "用完", "exhaust"], ["put up with", "忍受", "tolerate"], ["figure out", "弄清楚、想通", "understand / solve"], ["turn down", "拒絕；調小聲", "reject"], ["bring up", "提出（話題）；養育", "raise / mention"], ["carry on", "繼續", "continue"], ["set up", "設立、安排", "establish / arrange"], ["get over", "從…恢復", "recover from"]] },
+        { t: "可分開的：代名詞一定放中間", d: "有些片語動詞的受詞可以放在中間或後面：turn off the light / turn the light off。\n但受詞是**代名詞**（it、them、him…）時，**一定要放中間**：turn **it** off（不說 turn off it）。",
+          ex: [["Can you turn it down a bit?", "可以把它調小聲一點嗎？"], ["I wrote the number down. / I wrote it down.", "我把號碼寫下來了。"], ["She turned the offer down.", "她拒絕了那個提議。"]] },
+        { t: "不可分開的與三個字的", d: "有些片語動詞不能拆開：look **after** the kids → look after **them**；get **over** it。三個字的片語動詞也都不能拆：**look forward to**、**come up with**、**run out of**、**put up with**、**get along with**。",
+          ex: [["We've run out of coffee.", "我們的咖啡用完了。"], ["I'm looking forward to seeing you.", "我很期待見到你。"], ["She gets along with everyone.", "她和每個人都處得很好。"]],
+          tip: "look forward **to** 的 to 是介系詞，後面接 **V-ing**：look forward to **meeting** you（不說 to meet）。", warn: true }
+    ],
+    vocab: [["look into", "調查", "phr."], ["come up with", "想出", "phr."], ["run out of", "用完", "phr."], ["put up with", "忍受", "phr."], ["figure out", "弄清楚", "phr."], ["turn down", "拒絕；調小", "phr."], ["bring up", "提出（話題）", "phr."], ["carry on", "繼續", "phr."], ["set up", "設立；安排", "phr."], ["get over", "從…恢復", "phr."]],
+    dialog: [["Manager", "The client brought up a problem with the delivery dates.", "客戶提出了交貨日期的問題。"], ["Ray", "I'll look into it this afternoon and figure out what went wrong.", "我今天下午會查一下，弄清楚哪裡出錯了。"], ["Manager", "Thanks. We can't put up with these delays much longer.", "謝謝。這些延誤我們不能再忍受太久了。"], ["Ray", "Agreed. Maybe we should set up a weekly call with the supplier.", "同意。也許我們應該和供應商安排每週通話。"], ["Manager", "Good idea. Can you come up with a schedule by Friday?", "好主意。你可以在星期五前擬出時間表嗎？"], ["Ray", "Sure. I'll send it over tomorrow.", "沒問題，我明天寄給你。"]],
+    ex: [
+        ["c", "The music is too loud. Can you turn ___?", ["it down", "down it", "it"], 0, "音樂太大聲了，可以調小聲嗎？"],
+        ["c", "We've run ___ milk.", ["out of", "out", "off"], 0, "我們的牛奶用完了。"],
+        ["c", "She came ___ a great idea.", ["up with", "up", "across with"], 0, "她想出了一個好點子。"],
+        ["c", "I can't put ___ this noise any longer.", ["up with", "up", "on with"], 0, "我再也受不了這個噪音了。"],
+        ["c", "He turned ___ the job offer.", ["down", "off", "up"], 0, "他拒絕了那份工作。"],
+        ["c", "I'm looking forward to ___ you.", ["meeting", "meet", "met"], 0, "我很期待見到你。"],
+        ["f", "It took her weeks to get ___ the flu.", "over", "她花了好幾週才從流感中恢復。"],
+        ["f", "Let's carry ___ with the meeting.", "on", "我們繼續開會吧。"],
+        ["t", "我會調查一下。", ["I'll look into it.", "I will look into it."]],
+        ["l", "Can you figure out what went wrong?", "你能弄清楚哪裡出錯了嗎？"]
+    ]
+},
+{
+    id: "e-b2-08", level: "B2", title: "建議、要求與虛擬語氣", fr: "It's essential that…",
+    goal: "在正式場合用 suggest that、it's essential that、it's time、would rather 表達要求與希望。",
+    grammar: [
+        { t: "suggest / recommend / insist that + 原形", d: "表示建議、要求、堅持的動詞（suggest、recommend、insist、demand、request、propose）後面的 that 子句，正式英文用**原形動詞**，不管主詞是誰都**不加 s、不變時態**：I suggest that he **take** a break。\n英式英文也常說 **should + 原形**：I suggest that he **should take** a break。",
+          ex: [["The doctor recommended that she rest for a week.", "醫生建議她休息一週。"], ["They insisted that he pay the full amount.", "他們堅持要他付全額。"]],
+          tip: "也可以用 V-ing 避開這個結構：I suggest **taking** a break。但不能說 I suggest him to take。", warn: true },
+        { t: "It's essential / important that + 原形", d: "essential、important、vital、crucial、necessary 這類「很重要、必要」的形容詞，後面的 that 子句也用原形：It's essential that everyone **be** on time。be 動詞用 **be**（不是 is）。",
+          ex: [["It's crucial that the report be finished by Friday.", "報告一定要在星期五前完成。"], ["It's important that he understand the risks.", "他必須了解風險，這很重要。"]] },
+        { t: "it's time、would rather、as if：用過去式表示「不是現在的事實」", d: "**It's (high) time + 主詞 + 過去式**：早該…了。It's time we **left**.\n**would rather + 主詞 + 過去式**：寧願別人…。I'd rather you **didn't** tell anyone.\n**as if / as though + 過去式（be 用 were）**：好像…（其實不是）。He acts as if he **were** the boss.",
+          tb: [["句型", "例句", "意思"], ["It's time + 過去式", "It's time we went home.", "我們該回家了。"], ["would rather + 人 + 過去式", "I'd rather you called first.", "我寧願你先打電話。"], ["as if + 過去式", "She talks as if she knew everything.", "她講得好像什麼都知道。"]] }
+    ],
+    vocab: [["insist", "堅持", "v."], ["recommend", "建議", "v."], ["essential", "必要的", "adj."], ["crucial", "關鍵的", "adj."], ["requirement", "要求；必要條件", "n."], ["comply with", "遵守", "phr."], ["deadline", "截止期限", "n."], ["high time", "早該…的時候", "phr."], ["would rather", "寧願", "phr."], ["as if", "好像", "conj."]],
+    dialog: [["Director", "Before we sign, I suggest that legal review the contract again.", "簽約前，我建議法務再看一次合約。"], ["Grace", "Agreed. It's essential that every clause be clear.", "同意，每一條條款都必須清楚。"], ["Director", "The client insists that we deliver by the end of March.", "客戶堅持我們要在三月底前交貨。"], ["Grace", "Then it's high time we told the team about the new deadline.", "那我們早該把新的截止日告訴團隊了。"], ["Director", "I'd rather you waited until the contract is signed.", "我寧願妳等合約簽了再說。"], ["Grace", "Understood. I'll prepare the announcement in the meantime.", "了解，我先準備公告。"]],
+    ex: [
+        ["c", "The doctor recommended that he ___ more.", ["exercise", "exercises", "exercised"], 0, "醫生建議他多運動。"],
+        ["c", "It's essential that everyone ___ on time.", ["be", "been", "being"], 0, "每個人都必須準時。"],
+        ["c", "She insisted that he ___ the bill.", ["pay", "pays", "paying"], 0, "她堅持要他付帳。"],
+        ["c", "It's high time we ___.", ["left", "leave", "leaving"], 0, "我們早該走了。"],
+        ["c", "I'd rather you ___ tell anyone.", ["didn't", "don't", "won't"], 0, "我寧願你別告訴任何人。"],
+        ["c", "He talks as if he ___ the boss.", ["were", "be", "been"], 0, "他講話好像他是老闆一樣。"],
+        ["c", "哪一句正確？", ["I suggest taking a break.", "I suggest you to take a break.", "I suggest to take a break."], 0, "我建議休息一下。"],
+        ["f", "I suggest that she ___ a break.（take）", ["take", "should take"], "我建議她休息一下。"],
+        ["t", "我們該走了。（用 It's time…）", ["It's time we left.", "It's time we went.", "It's high time we left.", "It's time to go.", "It's time to leave."]],
+        ["l", "It's crucial that the report be finished by Friday.", "報告一定要在星期五前完成。"]
+    ]
+},
+{
+    id: "e-b2-09", level: "B2", title: "表達立場與讓步：討論與論說", fr: "While I see your point…",
+    goal: "在討論和寫作中表達讓步、對比與保留的看法：although、despite、whereas、admittedly。",
+    grammar: [
+        { t: "although 還是 despite", d: "兩個都是「雖然、儘管」，差在後面接什麼：\n**although / even though / though** + **子句**（主詞 + 動詞）\n**despite / in spite of** + **名詞或 V-ing**\n想在 despite 後面接子句，要加 **the fact that**：despite the fact that it was raining。",
+          tb: [["連接詞", "後面接", "例句"], ["although", "子句", "Although it was raining, we went out."], ["even though", "子句（語氣更強）", "Even though I was tired, I finished it."], ["despite", "名詞 / V-ing", "Despite the rain, we went out."], ["in spite of", "名詞 / V-ing", "In spite of being tired, she kept working."]],
+          tip: "although 和 but 不能同時用：✗ Although it was cheap, but… → Although it was cheap, … 中文「雖然…但是…」要拆掉一個。", warn: true },
+        { t: "對比：whereas、while、on the other hand", d: "比較兩件事的差異：**whereas / while** 連接兩個子句；**On the other hand,** 放在新句子開頭。",
+          ex: [["Some people love big cities, whereas others prefer the countryside.", "有些人喜歡大城市，有些人則偏好鄉下。"], ["Renting is flexible. On the other hand, you never own anything.", "租房很有彈性；但另一方面，你永遠沒有自己的房子。"]] },
+        { t: "讓步與保留：讓論點更成熟", d: "先承認對方有道理，再提出自己的看法，論說會更有說服力：\n**Admittedly,…**（不可否認…）、**That said,…**（話雖如此）、**While I see your point,…**（雖然我懂你的意思）\n不想說得太絕對時用保留語：**It seems that…**、**tend to**、**arguably**（可以說）、**to some extent**（在某種程度上）。",
+          ex: [["Admittedly, the plan is expensive. That said, it will save money in the long run.", "不可否認這個計畫很貴。話雖如此，長期來看會省錢。"], ["Young people tend to spend more time online.", "年輕人往往花更多時間上網。"], ["It's arguably the best solution we have.", "這可以說是我們最好的解決辦法。"]] }
+    ],
+    vocab: [["argue", "主張；爭論", "v."], ["admittedly", "不可否認地", "adv."], ["arguably", "可以說", "adv."], ["to some extent", "在某種程度上", "phr."], ["whereas", "然而；反之", "conj."], ["despite", "儘管", "prep."], ["drawback", "缺點", "n."], ["benefit", "好處", "n."], ["outweigh", "勝過；超過", "v."], ["perspective", "觀點", "n."]],
+    dialog: [["Host", "Should companies allow staff to work from home permanently?", "公司應該讓員工永久在家工作嗎？"], ["Paul", "I think so. People tend to be more productive at home, whereas offices are full of distractions.", "我覺得應該。人在家往往效率更高，而辦公室充滿干擾。"], ["Rita", "While I see your point, I'm not sure it works for everyone.", "雖然我懂你的意思，但我不確定這適合每個人。"], ["Rita", "Despite the benefits, many people feel isolated.", "儘管有好處，很多人會覺得孤立。"], ["Paul", "Admittedly, that's a real drawback. That said, a hybrid model could solve it.", "不可否認那是真正的缺點。話雖如此，混合模式可以解決這個問題。"], ["Rita", "To some extent, yes. Arguably, the benefits outweigh the costs.", "某種程度上是的。可以說好處大於代價。"]],
+    ex: [
+        ["c", "___ the rain, we went out.", ["Despite", "Although", "Even though"], 0, "儘管下雨，我們還是出門了。"],
+        ["c", "___ it was raining, we went out.", ["Although", "Despite", "In spite of"], 0, "雖然在下雨，我們還是出門了。"],
+        ["c", "In spite of ___ tired, she kept working.", ["being", "she was", "be"], 0, "儘管很累，她還是繼續工作。"],
+        ["c", "Some people love cities, ___ others prefer the countryside.", ["whereas", "despite", "in spite"], 0, "有些人喜歡城市，有些人則喜歡鄉下。"],
+        ["c", "The benefits ___ the drawbacks.", ["outweigh", "overweigh", "outrun"], 0, "好處大於缺點。"],
+        ["c", "哪一句正確？", ["Although it was cheap, I didn't buy it.", "Although it was cheap, but I didn't buy it.", "Despite it was cheap, I didn't buy it."], 0, "雖然很便宜，我還是沒買。"],
+        ["f", "___ said, there are some risks.（話雖如此）", "That", "話雖如此，還是有一些風險。"],
+        ["o", "Admittedly / the / plan / is / expensive", "不可否認，這個計畫很貴。"],
+        ["t", "在某種程度上，我同意你。", ["To some extent, I agree with you.", "I agree with you to some extent."]],
+        ["l", "While I see your point, I'm not sure it would work in practice.", "雖然我懂你的意思，但我不確定實際上可行。"]
+    ]
+},
+{
+    id: "e-b2-10", level: "B2", title: "職場英文：委婉的請求與 email", fr: "I was wondering if…",
+    goal: "寫出得體的工作 email，用委婉的說法提出請求、改期和致歉。",
+    grammar: [
+        { t: "越間接越客氣", d: "英文的禮貌常靠**間接**：用問句、過去式、would / could，而不是直接說 I want。由直接到委婉：",
+          tb: [["語氣", "說法"], ["很直接（少用）", "Send me the file."], ["一般", "Can you send me the file?"], ["客氣", "Could you send me the file?"], ["更客氣", "Would you mind sending me the file?"], ["很委婉", "I was wondering if you could send me the file."], ["很委婉", "Would it be possible to send me the file?"]],
+          tip: "**Would you mind + V-ing**：回答「可以」要說 **No, not at all.**（不介意），說 Yes 反而是「我介意」。", warn: true },
+        { t: "email 的開頭與結尾", d: "開頭：**Dear Ms Lin,**（正式）、**Hi Kevin,**（同事）。說明目的：**I'm writing to…**、**I'm writing regarding…**\n附件：**Please find attached…** / **I've attached…**\n結尾：**Please let me know if you have any questions.**、**I look forward to hearing from you.**（look forward to + V-ing）\n署名前：**Best regards,** / **Kind regards,** / **Best,**",
+          ex: [["I'm writing regarding your order from last week.", "我寫信是關於您上週的訂單。"], ["Please find attached the updated schedule.", "附件是更新後的時間表。"], ["I look forward to hearing from you.", "期待您的回覆。"]] },
+        { t: "改期、催促與道歉", d: "改期：**Would it be possible to reschedule…?**、**Could we move the meeting to…?**\n禮貌催促：**I'm just following up on…**、**Just a quick reminder that…**\n道歉：**Sorry for the delay.**、**We apologize for any inconvenience.**",
+          ex: [["I'm just following up on my email from Monday.", "我想追蹤一下星期一寄的信。"], ["Could we reschedule the call to Thursday afternoon?", "我們可以把電話會議改到星期四下午嗎？"], ["Sorry for the late reply.", "抱歉這麼晚回覆。"]] }
+    ],
+    vocab: [["attached", "附加的", "adj."], ["regarding", "關於", "prep."], ["follow up", "追蹤；後續處理", "phr."], ["reschedule", "改期", "v."], ["clarify", "澄清；說明", "v."], ["appreciate", "感謝", "v."], ["inconvenience", "不便", "n."], ["reminder", "提醒", "n."], ["at your earliest convenience", "在您方便時盡快", "phr."], ["confirm", "確認", "v."]],
+    dialog: [["Kevin", "Hi Jenny, did you get my email about the proposal?", "嗨珍妮，妳收到我關於提案的信了嗎？"], ["Jenny", "Yes, sorry for the late reply. I was wondering if you could clarify the budget section.", "收到了，抱歉晚回。我想請你說明一下預算的部分。"], ["Kevin", "Of course. Would it be possible to talk tomorrow morning?", "當然。明天早上方便談一下嗎？"], ["Jenny", "Could we make it Thursday instead? I'm fully booked tomorrow.", "可以改成星期四嗎？我明天行程全滿了。"], ["Kevin", "No problem. I'll send you a calendar invite and attach the latest numbers.", "沒問題，我寄行事曆邀請給妳，並附上最新的數字。"], ["Jenny", "Great, I really appreciate it.", "太好了，非常感謝。"]],
+    culture: "英文工作 email 通常比中文短、直接進入重點，但語氣會用 could、would 軟化。主旨（Subject）寫清楚目的，例如 **Request: budget clarification**。",
+    ex: [
+        ["c", "Would you mind ___ the door?", ["closing", "to close", "close"], 0, "你介意關一下門嗎？"],
+        ["c", "I was wondering if you ___ help me.", ["could", "can to", "will to"], 0, "不知道你能不能幫我。"],
+        ["c", "Please find ___ the report.", ["attached", "attaching", "attach"], 0, "附件是報告。"],
+        ["c", "I look forward to ___ from you.", ["hearing", "hear", "heard"], 0, "期待您的回覆。"],
+        ["c", "I'm writing ___ your order.", ["regarding", "regard", "regards"], 0, "我寫信是關於您的訂單。"],
+        ["c", "Would you mind waiting? — ___（可以，不介意）", ["No, not at all.", "Yes, I mind.", "Yes, please mind."], 0, ""],
+        ["f", "Would it be ___ to move the meeting?", "possible", "可以把會議改時間嗎？"],
+        ["o", "I / would / appreciate / your / help", "我會很感謝你的幫忙。"],
+        ["t", "抱歉造成不便。", ["Sorry for the inconvenience.", "We apologize for the inconvenience.", "I apologize for the inconvenience.", "Apologies for the inconvenience.", "We apologize for any inconvenience."]],
+        ["l", "Could we reschedule the call to Thursday afternoon?", "我們可以把電話會議改到星期四下午嗎？"]
+    ]
 }
+
 ];
 
 // ===================== 英文發音重點 =====================

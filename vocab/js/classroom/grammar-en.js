@@ -4,7 +4,7 @@ const EN_GRAMMAR = [
 // ---------------- 基礎觀念 ----------------
 {
     id: "eg-sentence", level: "intro", title: "英文句子的骨架", sub: "詞性與五大句型",
-    lessons: ["e-a2-01"],
+    lessons: ["e-a2-01", "e-a1-01"],
     body: [
         { h: "八大詞性", p: "看文法說明時會一直遇到這些名稱。同一個字可能有好幾種詞性，要看它在句子裡的位置：",
           tb: [["詞性", "功能", "例子"], ["名詞 n.", "人、事、物", "teacher、idea、water"], ["代名詞 pron.", "代替名詞", "he、it、them、this"], ["動詞 v.", "動作或狀態", "run、be、seem"], ["形容詞 adj.", "修飾名詞", "a **quiet** room"], ["副詞 adv.", "修飾動詞、形容詞、整句", "speak **quietly**、**very** quiet"], ["介系詞 prep.", "表示時間、地點、關係", "**on** Monday、**at** home"], ["連接詞 conj.", "連接字詞或句子", "and、but、because"], ["感嘆詞 interj.", "表達情緒", "oh、wow"]] },
@@ -39,8 +39,87 @@ const EN_GRAMMAR = [
 },
 // ---------------- A2 ----------------
 {
+    id: "eg-be", level: "A1", title: "be 動詞、代名詞與所有格", sub: "am / is / are、I / me / my / mine",
+    lessons: ["e-a1-01", "e-a1-05"],
+    body: [
+        { h: "be 動詞的三種意思", p: "be（am、is、are）是英文最常用的動詞，中文可能翻成不同的字，也可能不翻：\n1. **是**：She **is** a doctor.\n2. **在**：The keys **are** on the table.\n3. 接形容詞（中文不用「是」）：I **am** tired.（我很累）、It **is** cold.（很冷）",
+          tip: "中文說「我很累」不需要「是」，英文一定要有 be：✗ I tired. → **I'm tired.**", warn: true },
+        { h: "現在式與過去式", p: "be 是不規則動詞，現在式有三種、過去式有兩種：",
+          tb: [["主詞", "現在式", "過去式", "否定（縮寫）"], ["I", "am", "was", "I'm not / I wasn't"], ["you / we / they", "are", "were", "aren't / weren't"], ["he / she / it", "is", "was", "isn't / wasn't"]],
+          ex: [["I was at home yesterday.", "我昨天在家。"], ["They weren't happy.", "他們不高興。"], ["Were you busy last week?", "你上週忙嗎？"]] },
+        { h: "四種代名詞", p: "同一個「我」在不同位置有不同形式：**主格**（當主詞）、**受格**（動詞或介系詞後面）、**所有格**（＋名詞）、**所有代名詞**（單獨用，＝所有格＋名詞）。",
+          tb: [["主格", "受格", "所有格", "所有代名詞"], ["I", "me", "my", "mine"], ["you", "you", "your", "yours"], ["he", "him", "his", "his"], ["she", "her", "her", "hers"], ["it", "it", "its", "—"], ["we", "us", "our", "ours"], ["they", "them", "their", "theirs"]],
+          ex: [["She called me.", "她打電話給我。"], ["This is my bag. That one is yours.", "這是我的包包，那個是你的。"], ["Come with us!", "跟我們一起來！"]] },
+        { h: "最容易混淆的拼字", p: "這幾組發音相同或相近，意思完全不同：\n**its**（它的）／**it's**（it is）\n**your**（你的）／**you're**（you are）\n**their**（他們的）／**they're**（they are）／**there**（那裡）\n**whose**（誰的）／**who's**（who is）",
+          ex: [["The dog wagged its tail.", "狗搖了搖牠的尾巴。"], ["It's a nice day.", "今天天氣很好。"], ["They're in their room.", "他們在他們的房間裡。"]] }
+    ],
+    ex: [
+        ["c", "I ___ tired.", ["am", "is", "–（不用）"], 0, "我很累。"],
+        ["c", "They ___ at home yesterday.", ["were", "was", "are"], 0, "他們昨天在家。"],
+        ["c", "Can you help ___?", ["me", "I", "my"], 0, "你可以幫我嗎？"],
+        ["c", "This book is ___.", ["mine", "my", "me"], 0, "這本書是我的。"],
+        ["c", "___ coming tomorrow.", ["They're", "Their", "There"], 0, "他們明天會來。"],
+        ["c", "The cat is licking ___ paw.", ["its", "it's", "it"], 0, "貓在舔牠的爪子。"],
+        ["f", "We ___ late yesterday.（否定）", ["weren't", "were not"], "我們昨天沒遲到。"],
+        ["t", "那不是我的，是她的。", ["That isn't mine. It's hers.", "That's not mine. It's hers.", "It isn't mine. It's hers.", "It's not mine. It's hers."]]
+    ]
+},
+{
+    id: "eg-questions", level: "A1", title: "問句與疑問詞", sub: "Yes / No 問句、Wh- 問句、主詞問句",
+    lessons: ["e-a1-08", "e-a1-03", "e-a1-01"],
+    body: [
+        { h: "Yes / No 問句：助動詞放前面", p: "英文問句要把**助動詞**（be、do、does、did、can、have、will…）移到主詞前面。句子裡沒有助動詞時，加 **do / does / did**。",
+          tb: [["直述句", "問句"], ["You are tired.", "Are you tired?"], ["She can swim.", "Can she swim?"], ["They have finished.", "Have they finished?"], ["You like coffee.", "Do you like coffee?"], ["He works here.", "Does he work here?"], ["You went out.", "Did you go out?"]],
+          tip: "加了 does / did，動詞就回到原形：Does he **work**…?、Did you **go**…?（不說 Does he works、Did you went）。", warn: true },
+        { h: "Wh- 問句：疑問詞 + 問句語序", p: "把疑問詞放在最前面，後面接 Yes / No 問句的語序：\n**Where** + do you live? → Where do you live?\n**What time** + does the shop open? → What time does the shop open?",
+          tb: [["疑問詞", "意思"], ["what / which", "什麼／哪一個"], ["where", "哪裡"], ["when / what time", "什麼時候／幾點"], ["who / whose", "誰／誰的"], ["why", "為什麼"], ["how", "怎樣、如何"], ["how much / how many", "多少（不可數／可數）"], ["how long / how often / how far", "多久／多常／多遠"]] },
+        { h: "主詞問句：不用 do", p: "疑問詞本身就是**主詞**時，直接接動詞，不用 do：\n**Who called** you?（誰打給你？）← 問打電話的人\n**Who did** you call?（你打給誰？）← 問被打的人\n**What happened**?（發生了什麼事？）",
+          ex: [["Who lives in that house?", "誰住在那棟房子裡？"], ["Who do you live with?", "你和誰住？"], ["What made you angry?", "什麼讓你生氣？"]] },
+        { h: "間接問句：語序變回直述句", p: "問句放在 **Do you know…? / Can you tell me…? / I wonder…** 後面時，語序要變回**主詞 + 動詞**，也不用 do：\nWhere **is the station**? → Can you tell me where **the station is**?\nWhat time **does it open**? → Do you know what time **it opens**?",
+          ex: [["Do you know where the bathroom is?", "你知道洗手間在哪裡嗎？"], ["I wonder why she left.", "我想知道她為什麼離開。"]] }
+    ],
+    ex: [
+        ["c", "___ he work on Sundays?", ["Does", "Do", "Is"], 0, "他星期天上班嗎？"],
+        ["c", "Did you ___ the email?", ["get", "got", "gets"], 0, "你收到信了嗎？"],
+        ["c", "Where ___ you go last night?", ["did", "do", "were"], 0, "你昨晚去哪裡？"],
+        ["c", "誰打電話給你？", ["Who called you?", "Who did call you?", "Who you called?"], 0, ""],
+        ["c", "你打電話給誰？", ["Who did you call?", "Who called you?", "Who you called?"], 0, ""],
+        ["c", "Can you tell me where ___?", ["the station is", "is the station", "does the station"], 0, "你可以告訴我車站在哪裡嗎？"],
+        ["f", "How ___ do you go to the gym?", "often", "你多常去健身房？"],
+        ["o", "What / does / your / sister / do", "你姊姊做什麼工作？"],
+        ["t", "你知道現在幾點嗎？", ["Do you know what time it is?"]]
+    ]
+},
+{
+    id: "eg-prepositions", level: "A1", title: "時間與地點介系詞", sub: "at、on、in 和其他位置介系詞",
+    lessons: ["e-a1-04", "e-a1-06"],
+    body: [
+        { h: "時間：at、on、in", p: "**at** 用在一個時間點，**on** 用在某一天，**in** 用在較長的期間。",
+          tb: [["介系詞", "用在", "例子"], ["at", "時刻、固定說法", "at 6:30、at noon、at night、at midnight、at Christmas"], ["on", "星期、日期、特定的一天", "on Friday、on July 4th、on my birthday、on Monday morning"], ["in", "月、年、季節、世紀、一天中的時段", "in June、in 2026、in winter、in the 21st century、in the evening"]],
+          tip: "有 **this、next、last、every** 時不加介系詞：✗ on next Monday → **next Monday**、**every day**、**last year**。", warn: true },
+        { h: "時間的其他介系詞", p: "**for** + 一段時間（for two hours）；**since** + 起點（since 2020）；**during** + 事件（during the meeting）；**by** 在…之前（by Friday）；**until** 直到（until 5 p.m.）；**from … to …**（from 9 to 5）。",
+          ex: [["I've lived here for ten years.", "我住這裡十年了。"], ["Please reply by Friday.", "請在星期五前回覆。"], ["The shop is open until ten.", "店開到十點。"]] },
+        { h: "地點：at、on、in", p: "**at** 一個點或地址（at the bus stop、at home、at work）；**on** 表面或線（on the wall、on the second floor、on Main Street）；**in** 空間或區域（in the box、in Taipei、in the car）。",
+          tb: [["at", "on", "in"], ["at the door", "on the table", "in the kitchen"], ["at home / at work / at school", "on the floor", "in a taxi / in a car"], ["at 25 Park Road", "on the bus / on a train", "in Taiwan"]],
+          tip: "交通工具：小車用 **in**（in a car、in a taxi），大型、可以在裡面走動的用 **on**（on the bus、on a plane、on the MRT）。", warn: false },
+        { h: "位置與方向", p: "位置：next to、between、behind、in front of、opposite、above、below、under、near。\n方向（移動）：**to**（去）、**into**（進入）、**out of**（出來）、**through**（穿過）、**across**（橫越）、**along**（沿著）、**past**（經過）。",
+          ex: [["Walk along the river and go past the bridge.", "沿著河走，經過那座橋。"], ["She ran into the room.", "她跑進房間。"]] }
+    ],
+    ex: [
+        ["c", "The shop opens ___ 10 a.m.", ["at", "on", "in"], 0, "店上午十點開。"],
+        ["c", "We met ___ 2019.", ["in", "on", "at"], 0, "我們 2019 年認識。"],
+        ["c", "I'll see you ___ Monday morning.", ["on", "in", "at"], 0, "星期一早上見。"],
+        ["c", "I'm going to Japan ___.", ["next week", "on next week", "in next week"], 0, "我下週要去日本。"],
+        ["c", "She is ___ the bus now.", ["on", "in", "at"], 0, "她現在在公車上。"],
+        ["c", "Please send it ___ Friday.", ["by", "until", "since"], 0, "請在星期五前寄出。"],
+        ["f", "I've worked here ___ 2021.", "since", "我從 2021 年起在這裡工作。"],
+        ["f", "He's not ___ home right now.", "at", "他現在不在家。"],
+        ["t", "我們晚上見。", ["See you in the evening.", "See you tonight.", "I'll see you in the evening.", "I'll see you tonight."]]
+    ]
+},
+{
     id: "eg-present", level: "A2", title: "現在簡單式 vs 現在進行式", sub: "習慣與事實 vs 正在發生",
-    lessons: ["e-a2-01"],
+    lessons: ["e-a2-01", "e-a1-03"],
     body: [
         { h: "現在簡單式：習慣、事實、時刻表", p: "主詞是 he / she / it 時動詞加 **-s / -es**。否定和問句用 **do / does**，此時動詞回到原形。",
           tb: [["", "肯定", "否定", "問句"], ["I / you / we / they", "work", "don't work", "Do you work?"], ["he / she / it", "works", "doesn't work", "Does she work?"]],
@@ -134,7 +213,7 @@ const EN_GRAMMAR = [
 },
 {
     id: "eg-articles", level: "A2", title: "冠詞 a / an / the", sub: "什麼時候要、什麼時候不要",
-    lessons: ["e-a2-04"],
+    lessons: ["e-a2-04", "e-a1-02"],
     body: [
         { h: "a / an：不特定的一個", p: "用在**單數可數名詞**、第一次提到或不特定的時候。看**發音**決定：母音開頭用 an。",
           ex: [["a book, a university", "一本書、一所大學（u 唸 /ju/）"], ["an apple, an hour", "一顆蘋果、一小時（h 不發音）"], ["She's a doctor.", "她是醫生。（職業要加 a）"]] },
@@ -192,7 +271,7 @@ const EN_GRAMMAR = [
 // ---------------- B1 ----------------
 {
     id: "eg-modals", level: "B1", title: "情態助動詞", sub: "can、should、must、have to、might…",
-    lessons: ["e-b1-02", "e-b2-03"],
+    lessons: ["e-b1-02", "e-b2-03", "e-a1-07"],
     body: [
         { h: "基本規則", p: "情態助動詞後面接**原形動詞**，不加 to、不加 -s：She **can** swim（不是 cans、can to swim）。" },
         { h: "依功能整理", tb: [["功能", "助動詞", "例子"], ["能力", "can / could / be able to", "I can swim. / I could swim when I was five."], ["許可", "can / may / could", "Can I sit here? / May I come in?"], ["請求（禮貌）", "could / would", "Could you help me? / Would you mind…?"], ["建議", "should / ought to / had better", "You should see a doctor."], ["義務（自己覺得）", "must", "I must call my mom."], ["義務（外在規定）", "have to", "I have to wear a uniform."], ["不必", "don't have to", "You don't have to come."], ["禁止", "mustn't / can't", "You mustn't smoke here."], ["可能性", "might / may / could", "It might rain later."]] },
@@ -374,6 +453,78 @@ const EN_GRAMMAR = [
         ["c", "Never ___ such a mess!", ["have I seen", "I have seen", "I saw"], 0, "我從沒看過這麼亂的！"],
         ["c", "___ I need is some sleep.", ["What", "That", "Which"], 0, "我需要的是睡一覺。"],
         ["f", "Not only ___ he late, but he also forgot the documents.", "was", "他不但遲到，還忘了帶文件。"]
+    ]
+},
+{
+    id: "eg-phrasal", level: "B2", title: "片語動詞", sub: "可分與不可分、常用一覽",
+    lessons: ["e-b2-07"],
+    body: [
+        { h: "為什麼片語動詞很重要", p: "母語人士說話時，片語動詞比單一的正式動詞常用很多：說 **find out** 多於 discover、**put off** 多於 postpone、**go on** 多於 continue。看得懂、用得出來，口語聽起來就自然很多。\n同一個片語動詞常有好幾個意思，要看上下文：**take off**（飛機起飛／脫下衣服／突然成功）。" },
+        { h: "四種類型", p: "",
+          tb: [["類型", "例子", "受詞位置"], ["不及物（沒有受詞）", "The plane took off. / Prices went up.", "—"], ["可分開", "turn off the TV / turn the TV off", "名詞可前可後；代名詞**一定在中間**：turn it off"], ["不可分開", "look after the baby / look after her", "一律在後面"], ["三個字", "look forward to、run out of、get along with", "一律在最後"]],
+          tip: "代名詞的位置是最常見的錯誤：✗ pick up it → **pick it up**、✗ turn down it → **turn it down**。", warn: true },
+        { h: "工作與日常常用", p: "",
+          tb: [["片語動詞", "意思", "例句"], ["find out", "查出、得知", "I found out the truth."], ["put off", "延後", "Let's put off the meeting."], ["call off", "取消", "They called off the event."], ["come across", "偶然遇到", "I came across an old photo."], ["deal with", "處理", "I'll deal with it."], ["fill in / fill out", "填寫", "Please fill in this form."], ["give up", "放棄；戒掉", "He gave up smoking."], ["hand in", "繳交", "Hand in your report by Friday."], ["look up", "查（資料）", "Look it up in the dictionary."], ["point out", "指出", "She pointed out a mistake."], ["sort out", "解決、整理", "We need to sort this out."], ["take over", "接管", "She took over the project."], ["work out", "解決；運動", "It worked out fine. / I work out daily."]] }
+    ],
+    ex: [
+        ["c", "Can you pick ___ at six?", ["me up", "up me", "me"], 0, "你可以六點來接我嗎？"],
+        ["c", "They called ___ the concert because of the storm.", ["off", "up", "out"], 0, "因為暴風雨他們取消了演唱會。"],
+        ["c", "I came ___ an old friend at the station.", ["across", "over", "along"], 0, "我在車站巧遇一位老朋友。"],
+        ["c", "Please fill ___ this form.", ["in", "on", "up"], 0, "請填寫這張表格。"],
+        ["c", "We need to sort this ___ before Monday.", ["out", "off", "down"], 0, "我們必須在星期一前解決這件事。"],
+        ["c", "The plane took ___ on time.", ["off", "up", "out"], 0, "飛機準時起飛。"],
+        ["f", "He gave ___ smoking last year.", "up", "他去年戒菸了。"],
+        ["f", "I don't know this word. I'll look it ___.", "up", "我不認識這個字，我查一下。"],
+        ["t", "我們把會議延後吧。", ["Let's put off the meeting.", "Let's put the meeting off."]]
+    ]
+},
+{
+    id: "eg-subjunctive", level: "B2", title: "虛擬語氣與委婉說法", sub: "suggest that、it's time、wish、would you mind",
+    lessons: ["e-b2-08", "e-b2-10", "e-b1-04"],
+    body: [
+        { h: "什麼是虛擬語氣", p: "英文用**動詞形式**表示「這不是事實、只是要求或假設」。主要有兩種：\n1. **原形**：用在要求、建議、必要（suggest that he **go**、it's essential that she **be**）。\n2. **過去式**：用在不是現在事實的假設（if I **were**、I wish I **had**、it's time we **left**）。" },
+        { h: "要求與建議：that + 原形", p: "",
+          tb: [["引導的字", "例句"], ["suggest、recommend、propose", "I recommend that he see a doctor."], ["insist、demand、request", "She insisted that we stay for dinner."], ["essential、important、vital、necessary", "It's vital that the data be accurate."]],
+          tip: "主詞是第三人稱也**不加 s**（he **see**，不是 sees）；be 動詞用 **be**。否定是 **not + 原形**：I suggest that he **not** go。", warn: true },
+        { h: "假設：過去式表示「不是真的」", p: "",
+          tb: [["句型", "例句", "意思"], ["If + were / 過去式", "If I were you, I'd apologize.", "如果我是你，我會道歉。"], ["wish + 過去式", "I wish I knew the answer.", "真希望我知道答案。（其實不知道）"], ["wish + had + p.p.", "I wish I had studied harder.", "真希望我當初更用功。"], ["It's time + 過去式", "It's time you went to bed.", "你該睡覺了。"], ["would rather + 人 + 過去式", "I'd rather you didn't smoke here.", "我希望你別在這裡抽菸。"], ["as if + 過去式", "He looks as if he hadn't slept.", "他看起來像沒睡覺。"]] },
+        { h: "委婉語：用過去式和 would 讓語氣變軟", p: "英文的禮貌常靠「拉開距離」：過去式、would、could、問句。\n**I want to ask…** → **I wanted to ask…** → **I was wondering if…**\n**Can you…?** → **Could you…?** → **Would you mind + V-ing?** → **Would it be possible to…?**",
+          ex: [["I was wondering if you could help me.", "不知道你能不能幫我。"], ["Would you mind sharing your screen?", "你介意分享一下螢幕嗎？"], ["Would it be possible to extend the deadline?", "截止日可以延後嗎？"]] }
+    ],
+    ex: [
+        ["c", "I recommend that she ___ a lawyer.", ["see", "sees", "saw"], 0, "我建議她去找律師。"],
+        ["c", "It's vital that the data ___ accurate.", ["be", "is being", "been"], 0, "資料必須準確。"],
+        ["c", "I suggest that he ___ go alone.", ["not", "doesn't", "don't"], 0, "我建議他不要一個人去。"],
+        ["c", "If I ___ you, I'd take the job.", ["were", "am", "be"], 0, "如果我是你，我會接受那份工作。"],
+        ["c", "I wish I ___ more time.", ["had", "have", "will have"], 0, "真希望我有更多時間。"],
+        ["c", "It's time you ___ to bed.", ["went", "go", "going"], 0, "你該去睡了。"],
+        ["c", "Would you mind ___ me a hand?", ["giving", "to give", "give"], 0, "你介意幫我一下嗎？"],
+        ["f", "I was ___ if you could send me the file.", "wondering", "不知道你能不能把檔案寄給我。"],
+        ["t", "真希望我當初更用功。", ["I wish I had studied harder.", "I wish I'd studied harder.", "If only I had studied harder."]]
+    ]
+},
+{
+    id: "eg-linking", level: "B2", title: "連接詞與論說", sub: "讓步、對比、因果、補充",
+    lessons: ["e-b2-09", "e-b2-05"],
+    body: [
+        { h: "連接詞看後面接什麼", p: "同樣意思的連接語，後面接的東西可能不同。寫錯通常就是這裡：",
+          tb: [["意思", "+ 子句", "+ 名詞 / V-ing", "放句首、接逗號"], ["雖然、儘管", "although、even though、though", "despite、in spite of", "Nevertheless, / However,"], ["因為", "because、since、as", "because of、due to、owing to", "—"], ["所以、因此", "so", "—", "Therefore, / As a result, / Consequently,"], ["然而、對比", "whereas、while", "unlike", "However, / On the other hand,"], ["而且、此外", "and", "in addition to、as well as", "Moreover, / Furthermore, / In addition,"]],
+          ex: [["Because of the strike, the trains were late.", "因為罷工，火車誤點了。"], ["The trains were late because there was a strike.", "火車誤點是因為有罷工。"]] },
+        { h: "however 和 but 的差別", p: "**but** 連接同一句的兩個子句：It's cheap, **but** it's slow.\n**however** 是副詞，通常放在**新句子開頭**並加逗號：It's cheap. **However,** it's slow. 也可以用分號：It's cheap; **however,** it's slow.",
+          tip: "不能用逗號直接接 however：✗ It's cheap, however it's slow. 這在正式寫作中算錯誤。", warn: true },
+        { h: "論說文的骨架", p: "一段有說服力的論點通常是：**主張 → 理由 → 例子 → 讓步 → 回到主張**。\n主張：**I would argue that…** / **In my view,…**\n理由：**The main reason is that…** / **This is because…**\n例子：**For instance,…** / **A good example is…**\n讓步：**Admittedly,…** / **It is true that…, but…**\n結論：**Overall,…** / **On balance,…** / **All things considered,…**",
+          ex: [["On balance, the advantages outweigh the disadvantages.", "整體而言，優點多於缺點。"], ["It is true that cars are convenient, but they also cause pollution.", "汽車確實方便，但也造成污染。"]] }
+    ],
+    ex: [
+        ["c", "___ the delay, we arrived on time.", ["Despite", "Although", "However"], 0, "儘管有延誤，我們還是準時到了。"],
+        ["c", "The match was cancelled ___ the rain.", ["because of", "because", "although"], 0, "比賽因為下雨取消了。"],
+        ["c", "It's expensive. ___, it's very good quality.", ["However", "Although", "Despite"], 0, "它很貴。不過品質很好。"],
+        ["c", "She studied hard. ___, she passed the exam.", ["As a result", "Despite", "Whereas"], 0, "她很用功，因此通過了考試。"],
+        ["c", "___ his brother, Tom is very quiet.", ["Unlike", "Whereas", "Although"], 0, "和他哥哥不同，湯姆很安靜。"],
+        ["c", "哪一句在正式寫作中正確？", ["It's cheap. However, it's slow.", "It's cheap, however it's slow.", "It's cheap, however, it's slow."], 0, ""],
+        ["f", "___ balance, the plan is a good one.", "On", "整體而言，這個計畫不錯。"],
+        ["o", "In / my / view / the / benefits / are / greater", "依我看，好處比較大。"],
+        ["t", "因為下雨，我們待在家。", ["Because of the rain, we stayed at home.", "Because of the rain, we stayed home.", "We stayed at home because of the rain.", "We stayed home because of the rain.", "Because it was raining, we stayed at home.", "Because it was raining, we stayed home.", "We stayed home because it was raining.", "We stayed at home because it was raining."]]
     ]
 }
 ];

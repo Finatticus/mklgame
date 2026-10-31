@@ -3,7 +3,7 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyKlqB0wUOJkBv6mNiv9qEuPENlNa434XTIZuwvXgl-ZEzN6K4MtV8UwFrgosnR7WA/exec";
 // 測試用：localStorage.setItem("vocab_api_override", "其他後端網址") 可改連其他後端
 const API_URL = (() => { try { return localStorage.getItem("vocab_api_override") || GAS_URL; } catch (e) { return GAS_URL; } })();
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 const MIN_API_VERSION = 1;
 
 const DEFAULT_BOOK = "我的單字";

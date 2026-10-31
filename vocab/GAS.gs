@@ -7,7 +7,7 @@
  *
  * 指令碼屬性（專案設定 → 指令碼屬性）：
  *   AI 功能（AI 校對、對話、寫作批改、單字包…）擇一或兩者都填：
- *   ANTHROPIC_API_KEY 選填，Claude API 金鑰（console.anthropic.com，按用量計費，和 Claude Pro / Max 訂閱分開）
+ *   ANTHROPIC_API_KEY 選填，Claude API 金鑰（console.anthropic.com，按用量計費；Max / Ultra / Team 方案每月附 API 額度，Pro 沒有）
  *   CLAUDE_MODEL      選填，預設 claude-opus-5-5
  *   CLAUDE_EFFORT     選填，low / medium / high，預設 low（速度快、花費少）
  *   GEMINI_API_KEY    選填，Gemini 金鑰（有免費額度）
