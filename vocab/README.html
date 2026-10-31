@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vocab Pro 說明書</title>
+<style>
+:root{
+  --bg:#F8FAFC; --card:#FFFFFF; --text:#0F172A; --muted:#64748B; --border:#E2E8F0;
+  --primary:#4F46E5; --primary-light:#E0E7FF; --code-bg:#F1F5F9;
+  --warn-bg:#FEF3C7; --warn:#92400E; --ok-bg:#DCFCE7; --ok:#166534;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1020; --card:#131A2E; --text:#E2E8F0; --muted:#94A3B8; --border:#24304D;
+    --primary:#818CF8; --primary-light:#1E2547; --code-bg:#1A2238;
+    --warn-bg:#3A2A0A; --warn:#FCD34D; --ok-bg:#0F2E1B; --ok:#86EFAC;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1020; --card:#131A2E; --text:#E2E8F0; --muted:#94A3B8; --border:#24304D;
+  --primary:#818CF8; --primary-light:#1E2547; --code-bg:#1A2238;
+  --warn-bg:#3A2A0A; --warn:#FCD34D; --ok-bg:#0F2E1B; --ok:#86EFAC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.7;font-size:15px}
+.wrap{max-width:980px;margin:0 auto;padding:32px 16px 80px}
+header.hero{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:24px}
+h1{font-size:30px;margin:0 0 6px}
+h2{font-size:22px;margin:44px 0 12px;padding-top:8px;border-top:1px solid var(--border)}
+h3{font-size:17px;margin:24px 0 8px;color:var(--primary)}
+p{margin:8px 0}
+.sub{color:var(--muted)}
+nav.toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin:18px 0}
+nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:28px}
+nav.toc a{color:var(--primary);text-decoration:none}
+@media (max-width:640px){nav.toc ol{columns:1}}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px;font-family:Consolas,"SFMono-Regular",monospace;font-size:.9em;word-break:break-all}
+pre{background:var(--code-bg);padding:12px 14px;border-radius:10px;overflow-x:auto;font-size:13px;line-height:1.55}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--card)}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--primary-light);font-weight:700;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.card h4{margin:0 0 6px;font-size:16px}
+.card ul{margin:4px 0;padding-left:18px}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--primary-light);color:var(--primary);margin-right:4px}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0}
+.note.warn{background:var(--warn-bg);color:var(--warn)}
+.note.ok{background:var(--ok-bg);color:var(--ok)}
+.arch{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:12px 0}
+.arch .box{flex:1 1 200px;background:var(--card);border:2px solid var(--primary);border-radius:12px;padding:12px}
+.arch .box b{color:var(--primary)}
+.arch .arrow{align-self:center;font-size:22px;color:var(--muted)}
+@media (max-width:640px){.arch .arrow{transform:rotate(90deg);width:100%;text-align:center}}
+ol.steps li{margin-bottom:8px}
+footer{margin-top:50px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>📘 Vocab Pro 說明書</h1>
+  <p class="sub">個人英文單字學習 PWA ・ 前端（GitHub Pages）+ Google Apps Script 後端 + Google 試算表資料庫</p>
+  <p class="sub">版本 2.0.0 ・ 更新日期 2026-10-31</p>
+</header>
+
+<nav class="toc">
+<ol>
+  <li><a href="#upgrade">從舊版升級（必讀）</a></li>
+  <li><a href="#overview">App 概觀</a></li>
+  <li><a href="#files">檔案結構</a></li>
+  <li><a href="#arch">系統架構與同步機制</a></li>
+  <li><a href="#features">功能說明</a></li>
+  <li><a href="#srs">SRS 間隔複習</a></li>
+  <li><a href="#data">資料結構</a></li>
+  <li><a href="#api">後端 API</a></li>
+  <li><a href="#external">外部服務</a></li>
+  <li><a href="#deploy">部署與日常更新</a></li>
+  <li><a href="#limits">已知限制</a></li>
+  <li><a href="#changelog">2.0 改版內容</a></li>
+</ol>
+</nav>
+
+<!-- ================================================================ -->
+<h2 id="upgrade">1. 從舊版升級（必讀）</h2>
+<div class="note warn">⚠️ 新前端只能搭配新後端使用。請<b>先更新 GAS，再上傳前端</b>。順序反過來的話，App 會顯示「後端版本太舊」。</div>
+<ol class="steps">
+  <li>打開原本的 Google 試算表 → 擴充功能 → Apps Script，把程式碼<b>整個換成</b> <code>GAS.gs</code> 的內容並儲存。</li>
+  <li>左側「專案設定」→「指令碼屬性」→ 新增：
+    <ul>
+      <li><code>GEMINI_API_KEY</code>：Gemini 金鑰（<b>必填</b>）。舊金鑰曾寫在程式碼裡，建議到 Google AI Studio 刪掉舊的、重新產生一把。</li>
+      <li><code>GUARDIAN_API_KEY</code>：Guardian 正式金鑰（選填，不填會用測試金鑰）。</li>
+      <li><code>GEMINI_MODELS</code>：選填，逗號分隔的模型名稱，預設 <code>gemini-2.5-flash,gemini-2.5-flash-lite</code>。</li>
+    </ul>
+  </li>
+  <li>在編輯器上方選擇函式 <code>forceAuth</code> → 執行一次，依指示授權（新版多用了翻譯服務 LanguageApp）。</li>
+  <li>部署 → <b>管理部署作業</b> → 鉛筆圖示 → 版本選「新版本」→ 部署。<b>不要</b>按「新增部署作業」，否則網址會變。</li>
+  <li>把整個資料夾（<code>index.html</code>、<code>vcl.html</code>、<code>css/</code>、<code>js/</code>、<code>icons/</code>、<code>manifest.json</code>、<code>sw.js</code>）上傳到 GitHub Pages。</li>
+  <li>手機打開 App：舊網址 <code>vcl.html</code> 會自動轉到 <code>index.html</code>；畫面跳出「有新版本」時點「立即更新」。建議之後把主畫面上的捷徑刪掉、從 <code>index.html</code> 重新「加到主畫面」。</li>
+</ol>
+<div class="note ok">✅ 第一次登入時後端會自動升級資料表：先把舊工作表複製成 <code>{帳號}_backup_日期時間</code>，再加上 ID 等新欄位。舊資料不會遺失，確認沒問題後可自行刪除備份工作表。</div>
+
+<!-- ================================================================ -->
+<h2 id="overview">2. App 概觀</h2>
+<p>以「收集單字 → 間隔複習 → 遊戲／閱讀中反覆接觸」為核心的英文單字工具，介面為繁體中文、行動裝置優先，可安裝成手機 App（PWA）並可離線使用。</p>
+<div class="grid">
+  <div class="card"><h4>📥 收集單字</h4>手動輸入（自動翻譯、詞性、音標、重複提醒）、智慧翻譯擷取、拍照 OCR、字典、新聞／文章點字加入、AI 主題單字包、CSV 匯入。</div>
+  <div class="card"><h4>🧠 記憶複習</h4>翻卡三種模式、SRS 間隔複習（每日新字上限）、循環播放、造句練習。</div>
+  <div class="card"><h4>🎮 遊戲化</h4>單字跑酷、星際雷射防禦戰；答錯的字自動排進複習。</div>
+  <div class="card"><h4>📰 閱讀</h4>The Guardian 雙語新聞、自定義文章（群組、翻譯快取、書籤、朗讀）。</div>
+</div>
+<p>帳號只需輸入名稱（沒有密碼）。名稱最多 30 字，不可包含 <code>[ ] * ? / \ : ' "</code>。</p>
+
+<!-- ================================================================ -->
+<h2 id="files">3. 檔案結構</h2>
+<div class="tbl"><table>
+<tr><th>檔案</th><th>用途</th></tr>
+<tr><td><code>index.html</code></td><td>主頁面（只有畫面結構，沒有程式）。</td></tr>
+<tr><td><code>vcl.html</code></td><td>舊網址轉址頁，讓已安裝的舊 App 自動轉到 <code>index.html</code>。</td></tr>
+<tr><td><code>css/style.css</code></td><td>所有樣式。</td></tr>
+<tr><td><code>js/config.js</code></td><td>GAS 網址、版本號、常數、13 種主題、字根表。</td></tr>
+<tr><td><code>js/utils.js</code></td><td>小工具、Toast、對話框（取代 alert/confirm/prompt）、事件委派（<code>data-action</code>）。</td></tr>
+<tr><td><code>js/api.js</code></td><td>呼叫後端、<b>離線寫入佇列</b>。</td></tr>
+<tr><td><code>js/store.js</code></td><td>資料狀態、本機快取、單字增修刪、與雲端同步。</td></tr>
+<tr><td><code>js/services.js</code></td><td>翻譯（含快取與備援）、字典、音標、語音。</td></tr>
+<tr><td><code>js/words.js</code></td><td>新增、智慧翻譯、OCR、快速新增面板、單字本、單字清單、搜尋、批次管理、編輯、垃圾桶、造句、SRS 時間表。</td></tr>
+<tr><td><code>js/srs.js</code></td><td>SRS 演算法、翻卡、學習統計。</td></tr>
+<tr><td><code>js/dict.js</code></td><td>字典頁與單字的「字典內容」展開。</td></tr>
+<tr><td><code>js/reader.js</code></td><td>新聞、自定義文章、群組、閱讀器、AI 主題單字包。</td></tr>
+<tr><td><code>js/games.js</code></td><td>兩款遊戲與循環播放。</td></tr>
+<tr><td><code>js/io.js</code></td><td>CSV／Anki 匯出、完整備份、CSV 匯入、每日提醒。</td></tr>
+<tr><td><code>js/app.js</code></td><td>分頁切換、登入、主題、版本更新提示、啟動流程。</td></tr>
+<tr><td><code>sw.js</code></td><td>Service Worker：自己的檔案「網路優先」，離線時用快取。</td></tr>
+<tr><td><code>manifest.json</code>、<code>icons/</code></td><td>PWA 設定與 192／512 圖示。</td></tr>
+<tr><td><code>GAS.gs</code></td><td>後端程式碼（貼到 Apps Script）。</td></tr>
+</table></div>
+
+<!-- ================================================================ -->
+<h2 id="arch">4. 系統架構與同步機制</h2>
+<div class="arch">
+  <div class="box"><b>前端（瀏覽器 / PWA）</b><br>畫面、SRS 計算、翻譯。<br><span class="sub">本機快取：單字、設定、文章、待送佇列</span></div>
+  <div class="arrow">⇄</div>
+  <div class="box"><b>GAS Web App</b><br><code>POST</code> JSON，以 <code>action</code> 分派；寫入時用 <code>LockService</code> 排隊。</div>
+  <div class="arrow">⇄</div>
+  <div class="box"><b>Google 試算表</b><br>每位使用者 4 張表：單字、文章、設定、學習紀錄。</div>
+</div>
+<ul>
+  <li><b>所有寫入</b>先存進本機佇列（<code>localStorage</code>），再依序送出。離線或失敗時保留，恢復連線、每 30 秒、或回到 App 時自動補送。右上角會顯示「N 筆待同步」。</li>
+  <li>每個單字有唯一 ID（前端產生），重送不會重複新增。後端拒絕的操作會跳出提示並自動重新同步，讓畫面與雲端一致。</li>
+  <li><b>同步</b>：先送完佇列，再抓雲端資料。平時只抓「上次同步後有變動的單字」（增量同步）；按「同步資料」會完整重抓。</li>
+  <li>單字清單快取在本機，<b>離線也能瀏覽與複習</b>，評分會在恢復連線後送出。</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="features">5. 功能說明</h2>
+<h3>新增</h3>
+<ul>
+  <li><b>手動新增</b>：輸入英文後自動填中文、詞性；同一本已有這個字會提醒。可填備註與例句。📷 拍照 OCR（第一次使用才下載辨識元件），已收錄的字會淡色顯示。</li>
+  <li><b>智慧翻譯</b>：英↔中雙向；結果裡的英文字可點擊加入。</li>
+</ul>
+<h3>單字本</h3>
+<ul>
+  <li>「今日需複習」顯示「到期幾個・新字幾個」。</li>
+  <li><b>全域搜尋</b>所有單字本；單字本內也有搜尋框。</li>
+  <li>同步、複習全部、循環播放、緊湊／卡片模式、SRS 時間表、拖曳調整順序（順序存雲端，換手機也一樣）、建立新單字本。</li>
+  <li>單字清單：音標（第一次查到後存回雲端，不再重抓）、發音、編輯（可改英文與單字本）、刪除到垃圾桶（可復原）、字典內容與字根。</li>
+  <li>批次管理：全選、搬移（可直接新增單字本）、丟垃圾桶；在垃圾桶裡刪除才是永久刪除，也可一鍵清空垃圾桶。</li>
+</ul>
+<h3>翻卡</h3>
+<p>看英文猜中文、看中文猜英文、聽音拼寫；從「今日需複習」進入時，四個評分按鈕會依每個字當下的狀態顯示下次複習時間。</p>
+<h3>字典</h3>
+<p>Free Dictionary（音標、原音、英英釋義）＋ Google 翻譯（多重語意、例句）＋ Word Family；最近 10 筆查詢。</p>
+<h3>遊戲</h3>
+<p>跑酷（看中文選英文）、星際雷射（看中文拼英文）。結束時列出答錯的字，這些字會<b>立刻排進今日需複習</b>（不改變難易係數）。最高分存雲端。</p>
+<h3>閱讀</h3>
+<ul>
+  <li>自定義文章：群組（存雲端）、排序、段落合併 1–5 段、逐段翻譯（最多同時 3 段，翻好後存回雲端當快取）、朗讀、書籤。</li>
+  <li>The Guardian 新聞：經由 GAS 代理抓取，金鑰不會出現在前端。</li>
+</ul>
+<h3>設定與統計</h3>
+<ul>
+  <li>統計：總收錄、精熟、今日新增、今日待複習、<b>連續學習天數</b>、<b>近 30 天正確率</b>、<b>近 30 天每日複習長條圖</b>。</li>
+  <li>主題單字包：AI 生成後可勾選、選單字本、一次全部加入。</li>
+  <li>每日新字上限（預設 20）、預設單字本。</li>
+  <li>匯出 CSV／Anki、完整備份（JSON）、匯入 CSV。</li>
+  <li>字體大小、13 種主題、每日 18:00 提醒開關。</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="srs">6. SRS 間隔複習</h2>
+<div class="tbl"><table>
+<tr><th>評分</th><th>新間隔</th><th>難易係數</th><th>下次複習</th></tr>
+<tr><td>忘記</td><td>0</td><td>−0.2（最低 1.3）</td><td>10 分鐘後</td></tr>
+<tr><td>困難</td><td>首次 1 天；之後 ×1.2</td><td>−0.15</td><td>間隔天數後</td></tr>
+<tr><td>簡單</td><td>首次 4 天；之後 × 難易係數</td><td>+0.15</td><td>間隔天數後</td></tr>
+<tr><td>熟悉</td><td>10–15 天隨機，若原本間隔×係數更長則用較長者</td><td>+0.1（最高 3.0）</td><td>間隔天數後</td></tr>
+</table></div>
+<p><b>今日需複習</b> = 已到期的單字 ＋ 從沒學過的新字（依加入順序，每天最多「每日新字上限」個）。垃圾桶裡的字不會出現。</p>
+
+<!-- ================================================================ -->
+<h2 id="data">7. 資料結構</h2>
+<h3><code>{帳號}</code>（單字）</h3>
+<p><code>ID, Book, English, Chinese, Notes, Timestamp, NextReviewTime, Interval, EaseFactor, POS, Example, Phonetic, Updated, Reviews, Lapses</code></p>
+<h3><code>{帳號}_Articles</code>（文章）</h3>
+<p><code>ID, Title, Content, ParasPerBlock, Created, BookmarkIndex, Translations, Folder, Order</code></p>
+<h3><code>{帳號}_Settings</code>（設定，Key / Value）</h3>
+<p><code>books</code>（單字本順序）、<code>defaultBook</code>、<code>folders</code>（文章群組）、<code>newPerDay</code>。</p>
+<h3><code>{帳號}_Log</code>（每日學習紀錄）</h3>
+<p><code>Date, Reviews, Correct, New</code></p>
+<h3>其他</h3>
+<p>遊戲最高分存在指令碼屬性 <code>{帳號}_meteor</code>／<code>{帳號}_runner</code>。只存在本機的：主題、字體、緊湊模式、文章群組摺疊狀態、字典查詢紀錄、翻譯快取。</p>
+
+<!-- ================================================================ -->
+<h2 id="api">8. 後端 API</h2>
+<p><code>POST {GAS 網址}</code>，body 為 JSON，必帶 <code>action</code>、<code>username</code>；回應 <code>{status, apiVersion, ...}</code>。<code>GET</code> 可用來確認後端版本。</p>
+<div class="tbl"><table>
+<tr><th>action</th><th>參數</th><th>說明</th></tr>
+<tr><td>login</td><td>—</td><td>建立或升級工作表，回傳設定</td></tr>
+<tr><td>getData</td><td>since</td><td>單字（增量）、所有 ID、設定、近 120 天學習紀錄</td></tr>
+<tr><td>addWords</td><td>words[]</td><td>新增；ID 已存在則略過</td></tr>
+<tr><td>updateWords</td><td>updates[{id, fields}]</td><td>修改（編輯、搬移、垃圾桶、SRS、音標）</td></tr>
+<tr><td>deleteWords / deleteBook</td><td>ids[] / book</td><td>永久刪除</td></tr>
+<tr><td>getArticles / saveArticle</td><td>— / article</td><td>讀取 / 新增或覆寫一篇</td></tr>
+<tr><td>updateArticles / deleteArticles / reorderArticles</td><td>updates[] / ids[] / ids[]</td><td>改欄位 / 刪除 / 只改 Order 欄</td></tr>
+<tr><td>saveSettings</td><td>settings{}</td><td>合併寫入設定</td></tr>
+<tr><td>logReview</td><td>date, reviews, correct, newCount</td><td>累加當日學習紀錄</td></tr>
+<tr><td>saveScore / getScores</td><td>game, score</td><td>遊戲最高分</td></tr>
+<tr><td>translate</td><td>texts[], sl, tl</td><td>翻譯備援（LanguageApp），每分鐘 120 次</td></tr>
+<tr><td>news</td><td>section</td><td>Guardian 代理，每分鐘 30 次</td></tr>
+<tr><td>gemini</td><td>history</td><td>Gemini 代理，每分鐘 10 次；記住上次成功的模型</td></tr>
+</table></div>
+
+<!-- ================================================================ -->
+<h2 id="external">9. 外部服務</h2>
+<div class="tbl"><table>
+<tr><th>服務</th><th>用途</th><th>備註</th></tr>
+<tr><td>Google 翻譯（免費端點）</td><td>各處翻譯</td><td>失敗時自動改用 GAS 的 LanguageApp；結果會快取在本機</td></tr>
+<tr><td>Free Dictionary API</td><td>音標、發音、詞性、釋義</td><td>音標查到後存回試算表</td></tr>
+<tr><td>Datamuse</td><td>Word Family</td><td>免費</td></tr>
+<tr><td>The Guardian（經 GAS）</td><td>雙語新聞</td><td><code>GUARDIAN_API_KEY</code>，未設定時用測試金鑰</td></tr>
+<tr><td>Google Gemini（經 GAS）</td><td>主題單字包</td><td><code>GEMINI_API_KEY</code></td></tr>
+<tr><td>Tesseract.js 5.1.1</td><td>拍照 OCR</td><td>第一次使用才載入</td></tr>
+<tr><td>Web Speech API</td><td>朗讀</td><td>音色依裝置而定</td></tr>
+</table></div>
+
+<!-- ================================================================ -->
+<h2 id="deploy">10. 部署與日常更新</h2>
+<h3>改了後端（GAS.gs）</h3>
+<p>貼上新程式碼 → 部署 → 管理部署作業 → 編輯 → 新版本。網址不變。</p>
+<h3>改了前端</h3>
+<ol class="steps">
+  <li>把 <code>sw.js</code> 第一行的 <code>VERSION</code> 加一（例如 <code>vp-v2.0.1</code>），<code>js/config.js</code> 的 <code>APP_VERSION</code> 也一起改。</li>
+  <li>上傳到 GitHub Pages。使用者開 App 時會看到「有新版本 → 立即更新」。</li>
+</ol>
+<h3>本機測試</h3>
+<p>在瀏覽器主控台執行 <code>localStorage.setItem("vp_api_override", "你的測試後端網址")</code> 可改連其他後端，<code>localStorage.removeItem("vp_api_override")</code> 恢復。</p>
+
+<!-- ================================================================ -->
+<h2 id="limits">11. 已知限制</h2>
+<ul>
+  <li><b>沒有密碼</b>（依你的決定維持）：知道 GAS 網址與帳號名稱的人能讀寫該帳號。</li>
+  <li>每日提醒只在 App 開著時觸發（瀏覽器限制；未使用伺服器推播）。</li>
+  <li>Google 翻譯免費端點為非官方介面，若失效會改用 GAS 翻譯（速度較慢、每日有配額）。</li>
+  <li>兩台裝置同時離線修改同一個單字時，後送出的那台會覆蓋先送的。</li>
+  <li>遊戲畫面的動態位置仍使用行內樣式（每一幀計算的位置），其餘畫面已改為 CSS class。</li>
+</ul>
+
+<!-- ================================================================ -->
+<h2 id="changelog">12. 2.0 改版內容</h2>
+<div class="grid">
+  <div class="card"><h4>安全</h4><ul>
+    <li>Gemini 金鑰移到指令碼屬性；Guardian 經後端代理</li>
+    <li>帳號名稱格式檢查</li>
+    <li>所有使用者內容都經過跳脫，改用事件委派，不再把資料拼進 onclick</li>
+    <li>AI／翻譯／新聞代理加上每分鐘次數限制</li>
+  </ul></div>
+  <div class="card"><h4>資料正確性</h4><ul>
+    <li>所有寫入（含 SRS 評分）走離線佇列，逐筆確認後才移除</li>
+    <li>後端寫入加鎖；不再「先清空整張表」</li>
+    <li>單字唯一 ID，重複單字提醒</li>
+    <li>單字本順序、預設本、文章群組存雲端（舊本機資料自動帶入）</li>
+    <li>後端拒絕時自動重新同步</li>
+  </ul></div>
+  <div class="card"><h4>效能</h4><ul>
+    <li>增量同步；修改只寫受影響的列</li>
+    <li>音標存回試算表、同時最多 3 個請求</li>
+    <li>文章排序只改 Order 欄；段落平行翻譯</li>
+    <li>翻譯結果本機快取；OCR 元件按需載入並重複使用</li>
+    <li>洗牌改用 Fisher–Yates</li>
+  </ul></div>
+  <div class="card"><h4>PWA 與體驗</h4><ul>
+    <li>網路優先的 Service Worker、版本化快取、更新提示</li>
+    <li>離線可瀏覽與複習</li>
+    <li>自訂對話框取代 alert/confirm/prompt</li>
+    <li>每日新字上限、評分按鈕顯示實際間隔</li>
+    <li>全域與單字本內搜尋、匯出／匯入／備份、學習統計圖</li>
+    <li>主題單字包可勾選並一次加入</li>
+    <li>遊戲答錯自動排進複習</li>
+  </ul></div>
+</div>
+
+<footer>本說明書描述 Vocab Pro 2.0.0（2026-10-31）。之後功能調整時請一併更新。</footer>
+</div>
+</body>
+</html>

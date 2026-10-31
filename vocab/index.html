@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Vocab Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span></span></div>
+
+    <header>
+        <h1 id="header-title">Vocab Pro</h1>
+        <div id="user-info" class="user-info" hidden>
+            <button id="sync-chip" class="sync-chip" data-action="syncNow" hidden></button>
+            <div class="user-chip"><i class="fas fa-user-circle"></i><span id="current-username-display"></span></div>
+            <button class="icon-btn" data-action="logout" title="登出"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 登入 -->
+        <section id="sec-login" class="active">
+            <div class="card login-card">
+                <i class="fas fa-user-astronaut"></i>
+                <h2>登入專屬單字庫</h2>
+                <p>輸入帳號即可登入<br>若無帳號將自動建立全新資料庫</p>
+                <div class="input-group">
+                    <input type="text" id="login-username" class="login-input" placeholder="請輸入帳號名稱..." maxlength="30" autocomplete="username" data-enter="login">
+                </div>
+                <button class="btn-primary btn-block" id="btn-login" data-action="login"><i class="fas fa-sign-in-alt"></i> 登入 / 註冊</button>
+            </div>
+        </section>
+
+        <!-- 新增 -->
+        <section id="sec-add">
+            <div class="segmented" id="add-mode-switch">
+                <button class="active" data-action="switchAddMode" data-arg="manual"><i class="fas fa-edit"></i> 手動新增</button>
+                <button data-action="switchAddMode" data-arg="trans"><i class="fas fa-language"></i> 智慧翻譯</button>
+            </div>
+
+            <div id="add-mode-manual" class="card card-accent card-tight">
+                <h2 class="card-title" style="font-size:16px;">
+                    <i class="fas fa-pen-nib"></i> 新增字卡
+                    <span class="grow"></span>
+                    <label class="btn-icon-small primary" title="拍照辨識單字">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" accept="image/*" capture="environment" id="ocr-upload" hidden>
+                    </label>
+                </h2>
+                <div class="row">
+                    <div>
+                        <label class="label-sm" for="active-book-select">單字本</label>
+                        <div class="input-wrapper"><select id="active-book-select" class="input-sm book-select"></select><i class="fas fa-chevron-down select-icon"></i></div>
+                    </div>
+                    <div>
+                        <label class="label-sm" for="word-pos">詞性</label>
+                        <div class="input-wrapper"><select id="word-pos" class="input-sm pos-select" data-empty="(自動)"></select><i class="fas fa-chevron-down select-icon"></i></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label class="label-sm" for="word-en">英文</label>
+                        <input type="text" id="word-en" class="input-sm" placeholder="輸入完自動翻譯" autocomplete="off" autocapitalize="off">
+                    </div>
+                    <div>
+                        <label class="label-sm" for="word-zh">中文</label>
+                        <input type="text" id="word-zh" class="input-sm" placeholder="翻譯結果" autocomplete="off">
+                    </div>
+                </div>
+                <div id="word-dup-warn" class="dup-warn" hidden></div>
+                <div class="mb-12">
+                    <label class="label-sm" for="word-notes">備註 (選填)</label>
+                    <input type="text" id="word-notes" class="input-sm" placeholder="寫些需要提醒自己的重點...">
+                </div>
+                <div class="mb-12">
+                    <label class="label-sm" for="word-example">例句 (選填)</label>
+                    <input type="text" id="word-example" class="input-sm" placeholder="用這個字造一個句子...">
+                </div>
+                <button class="btn-primary btn-block" id="btn-save" data-action="saveWord"><i class="fas fa-check-circle"></i> 儲存單字</button>
+            </div>
+
+            <div id="add-mode-trans" class="card card-accent" hidden>
+                <h2 class="card-title"><i class="fas fa-language"></i> 翻譯與擷取</h2>
+                <p class="card-desc">輸入單字或句子進行雙向翻譯。點擊結果中的英文單字，即可快速加入單字本！</p>
+                <div class="input-wrapper mb-12">
+                    <select id="trans-dir" class="input-sm">
+                        <option value="en2zh">🇬🇧 英文 ➔ 🇹🇼 中文</option>
+                        <option value="zh2en">🇹🇼 中文 ➔ 🇬🇧 英文</option>
+                        <option value="auto">🤖 自動偵測 ➔ 🇹🇼 中文</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-icon"></i>
+                </div>
+                <textarea id="trans-input" class="mb-12" placeholder="請輸入要翻譯的文字..."></textarea>
+                <button class="btn-primary btn-block mb-16" id="btn-trans" data-action="doTranslation"><i class="fas fa-exchange-alt"></i> 開始翻譯</button>
+                <div id="trans-result-card" class="result-box" hidden>
+                    <div class="flex-row mb-12" style="justify-content:space-between;">
+                        <h4 class="small muted">翻譯結果：</h4>
+                        <button class="btn-icon-small primary" data-action="playTransTTS" title="朗讀英文"><i class="fas fa-volume-up"></i></button>
+                    </div>
+                    <div id="trans-output"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 單字本總覽 -->
+        <section id="sec-books">
+            <div class="card due-banner" data-action="startDueFlashcards">
+                <div>
+                    <h3><i class="fas fa-fire"></i> 今日需複習</h3>
+                    <p id="due-detail">點擊進入間隔重複記憶訓練</p>
+                </div>
+                <div class="due-count"><span id="btn-due-count">0</span></div>
+            </div>
+
+            <div class="btn-grid">
+                <button class="btn-outline primary" id="btn-sync" data-action="syncNow"><i class="fas fa-sync-alt"></i> 同步資料</button>
+                <button class="btn-outline primary" data-action="startAllFlashcards"><i class="fas fa-layer-group"></i> 複習全部</button>
+                <button class="btn-outline primary" data-action="openRadioSetup"><i class="fas fa-headphones"></i> 循環播放</button>
+                <button class="btn-outline primary" id="btn-compact-toggle" data-action="toggleCompactView"><i class="fas fa-list"></i> 緊湊模式</button>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="search" id="global-search" placeholder="搜尋所有單字本（英文或中文）..." autocomplete="off">
+            </div>
+            <div id="global-search-results" class="card card-tight" hidden></div>
+
+            <div class="section-head" style="padding:0 8px;">
+                <button class="link-btn" data-action="openSrsList"><i class="fas fa-calendar-check"></i> 查看 SRS 時間表</button>
+                <button id="book-reorder-btn" class="btn-outline primary btn-sm" data-action="toggleBookReorderMode"><i class="fas fa-sort"></i> 調整順序</button>
+            </div>
+            <div class="card" style="padding:16px 24px;" id="books-card">
+                <div id="books-list"></div>
+                <button class="btn-secondary btn-block mt-16" data-action="addNewBook"><i class="fas fa-plus"></i> 建立新單字本</button>
+            </div>
+        </section>
+
+        <!-- SRS 時間表 -->
+        <section id="sec-srs-list">
+            <div class="section-head">
+                <button class="btn-outline btn-sm" data-action="go" data-arg="sec-books"><i class="fas fa-arrow-left"></i> 返回</button>
+                <h2>SRS 時間表</h2>
+            </div>
+            <div class="card card-tight table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>單字</th><th>中文</th><th>下次複習</th><th>間隔(天)</th></tr></thead>
+                    <tbody id="srs-table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 造句 -->
+        <section id="sec-sentence-maker">
+            <div class="section-head">
+                <button class="btn-outline btn-sm" data-action="go" data-arg="sec-words"><i class="fas fa-arrow-left"></i> 返回</button>
+                <h2>未造句單字</h2>
+            </div>
+            <div class="card card-tight table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>單字</th><th>中文</th><th style="text-align:right;">操作</th></tr></thead>
+                    <tbody id="sentence-table-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 循環播放設定 -->
+        <section id="sec-radio-setup">
+            <div class="section-head">
+                <button class="btn-outline btn-sm" data-action="go" data-arg="sec-books"><i class="fas fa-arrow-left"></i> 返回</button>
+                <h2>🎧 單字循環播放</h2>
+            </div>
+            <div class="card" style="padding:20px;">
+                <h3 class="mb-12" style="font-size:16px;">選擇要播放的單字本</h3>
+                <div id="radio-books-container" class="check-list"></div>
+                <div class="input-group">
+                    <label>播放順序</label>
+                    <div class="radio-choice">
+                        <label><input type="radio" name="radio-order" value="sequential" checked> 照順序</label>
+                        <label><input type="radio" name="radio-order" value="shuffle"> 隨機打亂</label>
+                    </div>
+                </div>
+                <button class="btn-primary btn-block" data-action="startRadioMode"><i class="fas fa-play"></i> 開始循環播放</button>
+            </div>
+        </section>
+
+        <!-- 循環播放中 -->
+        <section id="sec-radio-player">
+            <div class="section-head">
+                <button class="btn-outline btn-sm" data-action="stopRadioMode"><i class="fas fa-arrow-left"></i> 退出</button>
+                <h2 class="muted" style="font-size:16px;"><i class="fas fa-broadcast-tower text-primary"></i> 播放中 <span id="radio-progress"></span></h2>
+            </div>
+            <div class="card radio-stage">
+                <div id="radio-current-en" class="radio-en"></div>
+                <div id="radio-current-zh" class="radio-zh"></div>
+                <div id="radio-current-ex" class="radio-ex"></div>
+                <div class="flex-row" style="justify-content:center;">
+                    <button id="radio-play-btn" class="btn-primary round-btn" data-action="resumeRadio" hidden><i class="fas fa-play"></i></button>
+                    <button id="radio-pause-btn" class="btn-outline primary round-btn" data-action="pauseRadio"><i class="fas fa-pause"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 單字清單 -->
+        <section id="sec-words">
+            <div class="toolbar mb-12">
+                <button class="btn-outline btn-sm" data-action="go" data-arg="sec-books"><i class="fas fa-arrow-left"></i> 返回</button>
+                <span class="grow"></span>
+                <button id="manage-mode-btn" class="btn-outline primary btn-sm" data-action="toggleManageMode"><i class="fas fa-tasks"></i> 批次管理</button>
+                <button id="sort-order-btn" class="btn-outline primary btn-sm" data-action="toggleWordSortOrder"><i class="fas fa-clock"></i> 最新</button>
+                <button class="tts-rate-btn btn-outline primary btn-sm" data-action="toggleTTSRate" title="切換語速"><i class="fas fa-tachometer-alt"></i> 1x</button>
+                <button class="btn-outline primary btn-sm" data-action="renameCurrentBook" title="重新命名單字本"><i class="fas fa-edit"></i></button>
+                <button class="btn-outline btn-sm text-danger" data-action="deleteCurrentBook" title="刪除此單字本"><i class="fas fa-trash-alt"></i></button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="search" id="book-search" placeholder="在這本單字本中搜尋..." autocomplete="off">
+            </div>
+            <div class="row mb-16">
+                <button class="btn-outline primary" style="flex:1;" data-action="openSentenceMaker"><i class="fas fa-pen-nib"></i> 造句</button>
+                <button class="btn-primary" style="flex:2;" data-action="startFlashcard"><i class="fas fa-play"></i> 開始背單字</button>
+            </div>
+            <div id="words-list"></div>
+            <div id="manage-action-bar" class="manage-bar" hidden>
+                <span class="count">已選 <span id="manage-count">0</span> 字</span>
+                <button class="btn-secondary" data-action="selectAllWords">全選</button>
+                <button class="btn-primary" data-action="moveSelectedWords"><i class="fas fa-exchange-alt"></i> 搬移</button>
+                <button class="btn-outline text-danger" data-action="deleteSelectedWords"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </section>
+
+        <!-- 閃卡 -->
+        <section id="sec-flashcard">
+            <div class="section-head">
+                <button class="btn-outline btn-sm" data-action="exitFlashcard"><i class="fas fa-times"></i> 結束</button>
+                <span id="fc-counter" class="fc-counter">1 / 1</span>
+            </div>
+            <div class="card card-tight">
+                <div class="row mb-0">
+                    <div class="input-wrapper">
+                        <select id="fc-mode">
+                            <option value="en-zh">看英文 ➔ 猜中文</option>
+                            <option value="zh-en">看中文 ➔ 猜英文</option>
+                            <option value="dictation">聽音 ➔ 拼寫</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                    <div class="input-wrapper">
+                        <select id="fc-order">
+                            <option value="seq">照順序</option>
+                            <option value="shuffle">打亂</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="scene">
+                <div class="flashcard" id="flashcard-box" data-action="flipCard">
+                    <div class="fc-face fc-front">
+                        <div id="fc-question" class="w-full"></div>
+                        <button class="btn-icon fc-play" id="fc-play-btn" data-action="playCurrentCard"><i class="fas fa-volume-up"></i></button>
+                        <div class="fc-hint"><i class="fas fa-hand-pointer"></i> 點擊卡片對答案</div>
+                    </div>
+                    <div class="fc-face fc-back">
+                        <div id="fc-answer" class="w-full"></div>
+                        <p id="fc-notes" class="fc-notes"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="fc-controls" id="standard-controls">
+                <button class="btn-secondary" data-action="nextCard" data-arg="-1"><i class="fas fa-chevron-left"></i> 上一個</button>
+                <button class="btn-primary" data-action="nextCard" data-arg="1">下一個 <i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="fc-controls srs-controls" id="srs-controls" hidden>
+                <button class="btn-srs btn-forget" data-action="answerSRS" data-arg="forget">忘記<small id="srs-hint-forget"></small></button>
+                <button class="btn-srs btn-hard" data-action="answerSRS" data-arg="hard">困難<small id="srs-hint-hard"></small></button>
+                <button class="btn-srs btn-easy" data-action="answerSRS" data-arg="easy">簡單<small id="srs-hint-easy"></small></button>
+                <button class="btn-srs btn-familiar" data-action="answerSRS" data-arg="familiar">熟悉<small id="srs-hint-familiar"></small></button>
+            </div>
+        </section>
+
+        <!-- 字典 -->
+        <section id="sec-dict">
+            <div class="card card-accent">
+                <h2 class="card-title"><i class="fas fa-book"></i> 字典查詢</h2>
+                <p class="card-desc">輸入單字即時查詢。支援原音發音、例句與即時翻譯，並可快速加到單字本中。</p>
+                <div class="flex-row">
+                    <input type="text" id="dict-search-input" placeholder="輸入英文單字..." autocapitalize="off" autocomplete="off" data-enter="searchDictionary">
+                    <button class="btn-primary" id="btn-dict-search" data-action="searchDictionary"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="dict-history-bar" class="mt-16" hidden>
+                    <div class="label-sm"><i class="fas fa-history"></i> 最近查詢</div>
+                    <div id="dict-history-tags" class="history-tags"></div>
+                </div>
+                <div id="dict-result-container" class="mt-16" hidden>
+                    <div id="dict-content" class="result-box"></div>
+                    <button class="btn-primary btn-block mt-16" id="btn-dict-add" data-action="addWordFromDict" hidden><i class="fas fa-plus-circle"></i> 儲存至單字本</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 閱讀 -->
+        <section id="sec-custom">
+            <div class="card mb-16">
+                <div class="section-head mb-16">
+                    <h2 class="card-title mb-0"><i class="fas fa-file-alt"></i> 自定義閱讀</h2>
+                    <button class="btn-secondary btn-sm" data-action="manageCustomFolders"><i class="fas fa-folder"></i> 管理群組</button>
+                </div>
+                <button class="btn-primary btn-block" data-action="openCustomEditModal"><i class="fas fa-plus"></i> 新增文章</button>
+            </div>
+            <div id="custom-articles-list"></div>
+        </section>
+
+        <!-- 設定 -->
+        <section id="sec-settings">
+            <div class="card stats-card">
+                <h3><i class="fas fa-chart-pie"></i> 學習統計數據</h3>
+                <div class="stats-grid">
+                    <div class="stat"><div class="v" id="stat-total">0</div><div class="k">總收錄單字</div></div>
+                    <div class="stat"><div class="v" id="stat-mastered">0</div><div class="k">精熟 (間隔&gt;7天)</div></div>
+                    <div class="stat"><div class="v" id="stat-today">0</div><div class="k">今日新增</div></div>
+                    <div class="stat"><div class="v" id="stat-due">0</div><div class="k">今日待複習</div></div>
+                    <div class="stat"><div class="v" id="stat-streak">0</div><div class="k">連續學習天數</div></div>
+                    <div class="stat"><div class="v" id="stat-accuracy">-</div><div class="k">近 30 天正確率</div></div>
+                </div>
+                <div class="chart">
+                    <div class="chart-title"><span>近 30 天複習次數</span><span id="stat-30-total"></span></div>
+                    <div class="bars" id="stat-bars"></div>
+                    <div class="bar-axis"><span id="stat-axis-start"></span><span>今天</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title" style="font-size:16px;"><i class="fas fa-newspaper"></i> 雙語新聞閱讀 (The Guardian)</h3>
+                <p class="card-desc">閱讀國際新聞並自動雙語翻譯，點擊單字即可加入學習庫。</p>
+                <div class="news-controls">
+                    <div class="stack">
+                        <div class="input-wrapper">
+                            <select id="news-category">
+                                <option value="world">國際時事</option>
+                                <option value="business">商業金融</option>
+                                <option value="politics">政治動態</option>
+                                <option value="technology">科技新知</option>
+                                <option value="science">科學與環境</option>
+                                <option value="society">社會與健康</option>
+                                <option value="education">教育發展</option>
+                                <option value="culture">藝術與文化</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-icon"></i>
+                        </div>
+                        <div class="input-wrapper">
+                            <select id="news-sentences" class="paras-select"></select>
+                            <i class="fas fa-chevron-down select-icon"></i>
+                        </div>
+                    </div>
+                    <button class="btn-primary news-fetch" id="btn-load-news" data-action="loadNews"><i class="fas fa-bolt"></i><span>抓取</span></button>
+                </div>
+            </div>
+
+            <div class="card feature-card" data-action="openTopicPackerModal">
+                <div class="feature-icon"><i class="fas fa-box-open"></i></div>
+                <div class="grow">
+                    <h4>主題單字包一鍵生成</h4>
+                    <p>輸入領域關鍵字，AI 生成必備單字，可一次全部加入單字本。</p>
+                </div>
+                <i class="fas fa-chevron-right muted"></i>
+            </div>
+
+            <div class="card settings-card">
+                <h3><i class="fas fa-graduation-cap"></i> 學習設定</h3>
+                <div class="input-group">
+                    <label for="new-per-day">每日新字上限（今日需複習中，從沒學過的新字最多幾個）</label>
+                    <input type="number" id="new-per-day" min="0" max="500" class="input-sm">
+                </div>
+                <div class="input-group mb-0">
+                    <label for="book-select">預設儲存單字本</label>
+                    <div class="input-wrapper mb-12">
+                        <select id="book-select" class="book-select"></select>
+                        <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                    <div class="row mb-0">
+                        <button class="btn-outline" data-action="setDefaultBook">設定為預設</button>
+                        <button class="btn-secondary" data-action="addNewBook"><i class="fas fa-plus"></i> 新單字本</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card settings-card">
+                <h3><i class="fas fa-file-export"></i> 匯出 / 匯入 / 備份</h3>
+                <div class="row">
+                    <button class="btn-outline" data-action="exportCSV"><i class="fas fa-file-csv"></i> CSV</button>
+                    <button class="btn-outline" data-action="exportAnki"><i class="fas fa-clone"></i> Anki</button>
+                </div>
+                <div class="row mb-0">
+                    <button class="btn-outline" data-action="exportBackup"><i class="fas fa-database"></i> 完整備份</button>
+                    <button class="btn-secondary" data-action="importCSV"><i class="fas fa-file-import"></i> 匯入 CSV</button>
+                </div>
+                <input type="file" id="import-file" accept=".csv,.txt,text/csv" hidden>
+                <p class="card-desc mt-16 mb-0">CSV 欄位：english, chinese, notes, pos, example, book（第一列為標題）。重複的單字會自動略過。</p>
+            </div>
+
+            <div class="card settings-card">
+                <h3><i class="fas fa-cog"></i> 顯示設定</h3>
+                <div class="input-group">
+                    <label for="font-size-select">字體大小</label>
+                    <div class="input-wrapper">
+                        <select id="font-size-select">
+                            <option value="0.9">小 (90%)</option>
+                            <option value="1">標準 (100%)</option>
+                            <option value="1.15">大 (115%)</option>
+                            <option value="1.3">特大 (130%)</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="theme-select">佈景主題</label>
+                    <div class="input-wrapper">
+                        <select id="theme-select"></select>
+                        <i class="fas fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+                <div class="input-group mb-0">
+                    <label>每日 18:00 複習提醒（App 開啟時）</label>
+                    <button class="btn-outline btn-block" id="btn-notify" data-action="toggleNotification"></button>
+                </div>
+                <p class="card-desc mt-16 mb-0 center">Vocab Pro <span id="app-version"></span></p>
+            </div>
+        </section>
+
+        <!-- 遊戲 -->
+        <section id="sec-games">
+            <div class="card game-card game-runner-card">
+                <h3>🏃‍♂️ 單字跑酷大冒險</h3>
+                <p>看中文，切換跑道撞向正確的英文！</p>
+                <div class="best">最高紀錄：<span id="score-runner-best">0</span> 字</div>
+                <button data-action="openGameBookModal" data-arg="runner">開始冒險</button>
+            </div>
+            <div class="card game-card game-meteor-card">
+                <h3>☄️ 星際雷射防禦戰</h3>
+                <p>在隕石撞上基地前拼出英文！</p>
+                <div class="best">最高紀錄：<span id="score-meteor-best">0</span> 字</div>
+                <button data-action="openGameBookModal" data-arg="meteor">發射雷射</button>
+            </div>
+            <p class="card-desc center">遊戲中答錯的單字會自動排進「今日需複習」。</p>
+        </section>
+    </main>
+
+    <!-- 跑酷遊戲 -->
+    <div id="sec-game-runner" class="game-screen" hidden>
+        <div class="game-hud game-exit"><button data-action="exitGameRunner">退出</button></div>
+        <div class="game-hud game-score">得分: <span id="runner-score">0</span></div>
+        <div class="game-hud runner-hp" id="runner-hp-display"></div>
+        <div class="game-hud runner-question" id="runner-question"></div>
+        <div class="game-hud runner-panel">
+            <div class="title">即將到來的選項：</div>
+            <div class="runner-opt"><span class="dot"><i class="fas fa-arrow-up"></i></span><span id="runner-static-0"></span></div>
+            <div class="runner-opt"><span class="dot mid"><i class="fas fa-minus"></i></span><span id="runner-static-1"></span></div>
+            <div class="runner-opt"><span class="dot"><i class="fas fa-arrow-down"></i></span><span id="runner-static-2"></span></div>
+        </div>
+        <div class="game-hud runner-feedback" id="runner-feedback"></div>
+        <div class="runner-world">
+            <div class="runner-ground"></div>
+            <div class="runner-player" id="runner-player">🏃</div>
+            <div class="runner-doors" id="runner-doors">
+                <div class="runner-door" id="runner-door-0"></div>
+                <div class="runner-door" id="runner-door-1"></div>
+                <div class="runner-door" id="runner-door-2"></div>
+            </div>
+        </div>
+        <div class="game-hud runner-controls">
+            <button data-action="runnerMove" data-arg="up"><i class="fas fa-arrow-up"></i></button>
+            <button data-action="runnerMove" data-arg="down"><i class="fas fa-arrow-down"></i></button>
+        </div>
+        <div class="game-hud runner-tip">鍵盤 ↑ ↓ 或右側按鈕移動</div>
+    </div>
+
+    <!-- 隕石遊戲 -->
+    <div id="sec-game-meteor" class="game-screen" hidden>
+        <div class="game-hud game-exit"><button data-action="exitGameMeteor">退出</button></div>
+        <div class="game-hud game-score meteor-score">擊破: <span id="meteor-score">0</span></div>
+        <div class="game-hud meteor-hp"><div id="meteor-hp-fill"></div></div>
+        <div class="meteor-field" id="meteor-container"></div>
+        <div class="meteor-line"></div>
+        <div class="meteor-base"><div class="meteor-turret" id="meteor-base-turret"></div></div>
+        <div class="game-hud meteor-target" id="meteor-target-zh"></div>
+        <input type="text" id="meteor-input" class="meteor-input" placeholder="在此輸入英文..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    </div>
+
+    <nav class="bottom-nav" id="bottom-nav" hidden>
+        <button class="nav-item" data-action="go" data-arg="sec-add" id="nav-sec-add"><i class="fas fa-plus-circle"></i><span>新增</span></button>
+        <button class="nav-item" data-action="go" data-arg="sec-books" id="nav-sec-books"><i class="fas fa-layer-group"></i><span>單字本</span></button>
+        <button class="nav-item" data-action="go" data-arg="sec-dict" id="nav-sec-dict"><i class="fas fa-book"></i><span>字典</span></button>
+        <button class="nav-item" data-action="go" data-arg="sec-games" id="nav-sec-games"><i class="fas fa-gamepad"></i><span>遊戲</span></button>
+        <button class="nav-item" data-action="go" data-arg="sec-custom" id="nav-sec-custom"><i class="fas fa-file-alt"></i><span>閱讀</span></button>
+        <button class="nav-item" data-action="go" data-arg="sec-settings" id="nav-sec-settings"><i class="fas fa-cog"></i><span>設定</span></button>
+    </nav>
+
+    <!-- 通用對話框（取代 alert / confirm / prompt） -->
+    <div id="dialog" class="overlay" hidden>
+        <div class="modal-box">
+            <h3 id="dialog-title"></h3>
+            <div id="dialog-msg" class="msg"></div>
+            <div id="dialog-body"></div>
+            <input type="text" id="dialog-input" class="input-sm" hidden>
+            <div class="modal-actions" id="dialog-actions"></div>
+        </div>
+    </div>
+
+    <!-- 群組管理 -->
+    <div id="folder-manage-modal" class="overlay sheet" hidden>
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3>群組管理</h3>
+                <button class="btn-icon-small" data-action="closeModal" data-arg="folder-manage-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <button class="btn-primary btn-block mb-16" data-action="actionAddFolder"><i class="fas fa-plus"></i> 新增空群組</button>
+            <div id="folder-manage-list"></div>
+        </div>
+    </div>
+
+    <!-- 新增 / 編輯文章 -->
+    <div id="custom-edit-modal" class="fullscreen" hidden>
+        <div class="fs-bar">
+            <div class="side"></div>
+            <h3 id="custom-edit-title-h3">新增文章</h3>
+            <div class="side end"><button class="btn-icon-small" data-action="closeModal" data-arg="custom-edit-modal"><i class="fas fa-times"></i></button></div>
+        </div>
+        <div class="fs-body">
+            <input type="hidden" id="custom-edit-id">
+            <div class="input-group mb-12">
+                <label for="custom-edit-title">文章標題</label>
+                <input type="text" id="custom-edit-title" class="input-sm" placeholder="請輸入標題">
+            </div>
+            <div class="input-group mb-12">
+                <label for="custom-edit-paras">段落合併設定 (翻譯區塊大小)</label>
+                <select id="custom-edit-paras" class="input-sm paras-select"></select>
+            </div>
+            <div class="input-group mb-12">
+                <label for="custom-edit-folder-select">文章群組</label>
+                <select id="custom-edit-folder-select" class="input-sm"></select>
+                <input type="text" id="custom-edit-folder-new" class="input-sm mt-8" placeholder="請輸入新群組名稱..." hidden>
+            </div>
+            <div class="input-group mb-12">
+                <label for="custom-edit-content">文章內容（段落之間空一行）</label>
+                <textarea id="custom-edit-content" rows="12" placeholder="請貼上英文文章內容..."></textarea>
+            </div>
+            <button class="btn-primary btn-block" data-action="saveCustomArticle"><i class="fas fa-save"></i> 儲存文章</button>
+        </div>
+    </div>
+
+    <!-- 主題單字包 -->
+    <div id="topic-packer-modal" class="fullscreen" hidden>
+        <div class="fs-bar">
+            <div class="side"></div>
+            <h3>主題單字包一鍵生成</h3>
+            <div class="side end"><button class="btn-icon-small" data-action="closeModal" data-arg="topic-packer-modal"><i class="fas fa-times"></i></button></div>
+        </div>
+        <div class="fs-body">
+            <div class="input-group mb-12">
+                <label for="topic-packer-keyword">想學習的領域或關鍵字</label>
+                <input type="text" id="topic-packer-keyword" class="input-sm" placeholder="例如：區塊鏈、咖啡廳菜單、醫學專有名詞" data-enter="generateTopicWordPack">
+            </div>
+            <div class="input-group mb-16">
+                <label for="topic-packer-count">生成數量 (1~50)</label>
+                <input type="number" id="topic-packer-count" class="input-sm" value="20" min="1" max="50">
+            </div>
+            <button class="btn-success btn-block mb-16" id="topic-packer-btn" data-action="generateTopicWordPack"><i class="fas fa-magic"></i> AI 生成單字包</button>
+            <div id="topic-packer-result" hidden>
+                <p class="small mb-12"><i class="fas fa-check-circle" style="color:var(--success);"></i> <span id="topic-packer-summary"></span></p>
+                <div class="chip-wrap mb-16" id="topic-packer-chips"></div>
+                <div class="row">
+                    <div class="input-wrapper"><select id="topic-packer-book" class="input-sm book-select"></select><i class="fas fa-chevron-down select-icon"></i></div>
+                </div>
+                <div class="row">
+                    <button class="btn-outline" data-action="topicToggleAll">全選 / 全不選</button>
+                    <button class="btn-primary" id="topic-packer-add" data-action="topicAddSelected"><i class="fas fa-plus"></i> 加入選取的單字</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文章閱讀 -->
+    <div id="custom-reader-modal" class="fullscreen" hidden>
+        <div class="fs-bar">
+            <div class="side">
+                <button class="btn-icon-small primary" id="custom-prev-btn" data-action="openPrevCustomArticle"><i class="fas fa-chevron-left"></i></button>
+                <button class="btn-icon-small primary" id="custom-next-btn" data-action="openNextCustomArticle"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <h3 id="custom-reader-title-display"></h3>
+            <div class="side end"><button class="btn-icon-small" data-action="closeCustomReaderModal"><i class="fas fa-times"></i></button></div>
+        </div>
+        <div class="fs-body" id="custom-reader-full"></div>
+    </div>
+
+    <!-- 新聞閱讀 -->
+    <div id="news-modal" class="fullscreen" hidden>
+        <div class="fs-bar">
+            <div class="side"></div>
+            <h3>The Guardian 雙語閱讀</h3>
+            <div class="side end"><button class="btn-icon-small" data-action="closeNewsModal"><i class="fas fa-times"></i></button></div>
+        </div>
+        <div class="fs-body" id="news-modal-content"></div>
+    </div>
+
+    <!-- OCR -->
+    <div id="ocr-modal" class="overlay" hidden>
+        <div class="modal-box">
+            <h3 id="ocr-modal-title">鏡頭辨識中...</h3>
+            <p class="msg" id="ocr-modal-desc">請稍候，正在解析圖片中的英文單字</p>
+            <div id="ocr-loading" class="spinner-line"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i></div>
+            <div id="ocr-results" class="chip-wrap" hidden></div>
+            <div id="ocr-actions" class="modal-actions" hidden>
+                <button class="btn-outline" data-action="closeOCRModal">取消</button>
+                <button class="btn-primary" data-action="processBatchAddOCR">批次匯入 (<span id="ocr-selected-count">0</span>)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速新增（翻譯、字典、新聞、文章共用） -->
+    <div id="quick-add" class="quick-add" hidden>
+        <div class="inner">
+            <div class="modal-head">
+                <h4><i class="fas fa-bolt text-primary"></i> 快速新增單字</h4>
+                <button class="btn-icon-small" data-action="closeQuickAdd"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="row">
+                <div class="input-wrapper"><select id="qa-book" class="input-sm book-select"></select><i class="fas fa-chevron-down select-icon"></i></div>
+                <div class="input-wrapper" style="flex:0 0 130px;"><select id="qa-pos" class="input-sm pos-select" data-empty="無詞性"></select><i class="fas fa-chevron-down select-icon"></i></div>
+            </div>
+            <div class="row">
+                <input type="text" id="qa-en" class="input-sm" placeholder="英文單字..." autocapitalize="off" style="font-weight:700;">
+                <input type="text" id="qa-zh" class="input-sm" placeholder="中文意思...">
+            </div>
+            <div id="qa-dup-warn" class="dup-warn" hidden></div>
+            <div class="row mb-0">
+                <input type="text" id="qa-notes" class="input-sm" placeholder="備註(選填)...">
+                <button class="btn-primary" id="qa-save" style="flex:0 0 auto;" data-action="saveQuickAdd"><i class="fas fa-plus"></i> 儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編輯單字 -->
+    <div id="edit-word-modal" class="overlay" hidden>
+        <div class="modal-box">
+            <h3>編輯單字</h3>
+            <input type="hidden" id="edit-id">
+            <div class="input-group mb-12">
+                <label for="edit-word-en">英文單字</label>
+                <input type="text" id="edit-word-en" class="input-sm" autocapitalize="off">
+            </div>
+            <div class="row">
+                <div class="input-wrapper" style="flex:0 0 120px;"><select id="edit-word-pos" class="input-sm pos-select" data-empty="無"></select><i class="fas fa-chevron-down select-icon"></i></div>
+                <input type="text" id="edit-word-zh" class="input-sm" placeholder="中文意思">
+            </div>
+            <div class="input-group mb-12">
+                <label for="edit-word-book">單字本</label>
+                <select id="edit-word-book" class="input-sm book-select"></select>
+            </div>
+            <div class="input-group mb-12">
+                <label for="edit-word-notes">備註</label>
+                <input type="text" id="edit-word-notes" class="input-sm" placeholder="可留空">
+            </div>
+            <div class="input-group mb-0">
+                <label for="edit-word-example">例句 (造句)</label>
+                <textarea id="edit-word-example" rows="2" class="input-sm" style="min-height:70px;" placeholder="輸入例句"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-outline" data-action="closeModal" data-arg="edit-word-modal">取消</button>
+                <button class="btn-primary" data-action="saveEditWord">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 選擇單字本（遊戲） -->
+    <div id="game-book-modal" class="overlay" hidden>
+        <div class="modal-box">
+            <h3>選擇單字本</h3>
+            <div id="game-books-container" class="check-list"></div>
+            <div class="modal-actions">
+                <button class="btn-outline" data-action="closeModal" data-arg="game-book-modal">取消</button>
+                <button class="btn-primary" data-action="confirmStartGame">開始遊戲</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/words.js"></script>
+    <script src="js/srs.js"></script>
+    <script src="js/dict.js"></script>
+    <script src="js/reader.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
