@@ -130,6 +130,7 @@ const Tower = (() => {
     else {
       if (mods.analyze) mdef = Math.floor(mdef * (1 - mods.analyze));
       if (mods.magic) mdef = Math.floor(mdef * (1 - mods.magic));
+      if (mods.petBreak) mdef = Math.floor(mdef * (1 - mods.petBreak));
     }
     let atk = P.atk * (1 + (mods.atkMult || 0));
     if (m.elite || m.boss) atk *= 1 + (mods.bossAtk || 0);
@@ -145,30 +146,42 @@ const Tower = (() => {
     const hitOf = mult => Math.floor(Math.floor(base * mult) * keep);
     const first = m.first && !mods.alwaysFirst && !mods.noFirst && !mods.bastionFirst;
     const ev = [];
-    let total = 0, hits = 0;
+    let total = 0, hits = 0, peak = 0;
+    // 寵物：開場撞擊、追擊（受硬甲上限限制）、受傷後治療
+    const capPet = d => Math.max(1, m.cap && !mods.noHard ? Math.min(d, m.cap) : d);
+    const petOpen = mods.petOpen ? capPet(Math.floor(pd * mods.petOpen)) : 0;
+    const petHit = mods.petHit ? capPet(Math.floor(pd * mods.petHit)) : 0, every = mods.petEvery || 1;
+    const hurt = d => { total += d; peak = Math.max(peak, total); };
     const mAttack = (mult, mhp) => {
       const n = m.fx === 'double' ? 2 : 1;
-      for (let k = 0; k < n; k++) { const d = hitOf(mult); total += d; ev.push({ by: 'm', dmg: d, mhp }); }
+      for (let k = 0; k < n; k++) {
+        const d = hitOf(mult); hurt(d); ev.push({ by: 'm', dmg: d, mhp });
+        const h = mods.petHeal && d ? Math.floor(d * mods.petHeal) : 0;
+        if (h) { total -= h; ev.push({ by: 'p', heal: h, mhp }); }
+      }
     };
     const fights = [m.hp];
     if (m.revives && !mods.cross) fights.push(Math.ceil(m.hp / 2));
-    if (m.fx === 'drain') { const d = Math.floor(Math.floor(P.hp / 5) * keep); total += d; ev.push({ by: 'm', dmg: d, tag: '吸血', mhp: m.hp }); }
+    if (m.fx === 'drain') { const d = Math.floor(Math.floor(P.hp / 5) * keep); hurt(d); ev.push({ by: 'm', dmg: d, tag: '吸血', mhp: m.hp }); }
     const thorn = m.fx === 'thorns' && !mods.noThorns ? Math.max(1, Math.floor(m.U * 0.15 * (1 - (mods.hazard || 0)))) : 0;
     fights.forEach((fhp, fi) => {
-      let mhp = fhp, skip = mods.skipFirstHit ? 1 : 0;
+      let mhp = fhp, skip = mods.skipFirstHit ? 1 : 0, n = 0;
       if (fi > 0) ev.push({ by: 'x', tag: '再次站起！', mhp });
+      if (fi === 0 && petOpen) { const d = Math.min(petOpen, mhp); mhp -= d; ev.push({ by: 'p', dmg: d, mhp }); if (mhp <= 0) return; }
       if (first) { if (skip) skip--; else mAttack(1, mhp); }
       for (let guard = 0; guard < 500; guard++) {
         const d = Math.min(pd, mhp); mhp -= d; hits++;
         ev.push({ by: 'h', dmg: d, mhp });
-        if (thorn) { total += thorn; ev.push({ by: 'm', dmg: thorn, tag: '反傷', mhp }); }
+        if (thorn) { hurt(thorn); ev.push({ by: 'm', dmg: thorn, tag: '反傷', mhp }); }
         if (mhp <= 0) break;
+        if (petHit && ++n % every === 0) { const p = Math.min(petHit, mhp); mhp -= p; ev.push({ by: 'p', dmg: p, mhp }); if (mhp <= 0) break; }
         if (skip) { skip--; continue; }
         mAttack(m.boss && mhp <= fhp / 2 ? 1.3 : 1, mhp);
       }
     });
-    if (m.fx === 'explode' && !mods.noThorns) { const d = Math.floor(m.U * (1 - (mods.hazard || 0))); total += d; ev.push({ by: 'm', dmg: d, tag: '爆炸', mhp: 0 }); }
-    return { can: total < P.hp, dmg: total, events: ev, hits, reason: total >= P.hp ? '生命不足' : '' };
+    if (m.fx === 'explode' && !mods.noThorns) { const d = Math.floor(m.U * (1 - (mods.hazard || 0))); hurt(d); ev.push({ by: 'm', dmg: d, tag: '爆炸', mhp: 0 }); }
+    // 以戰鬥中最低點判斷撐不撐得住（治療是事後才補回來的）
+    return { can: peak < P.hp, dmg: total, peak, events: ev, hits, reason: peak >= P.hp ? '生命不足' : '' };
   }
 
   // ---------- 地圖格局 ----------

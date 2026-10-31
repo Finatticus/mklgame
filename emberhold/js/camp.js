@@ -37,6 +37,7 @@ const CAMP_LAYOUT = {
   hearth:     [50, 80, 100],
   market:     [27, 97, 66],
   forge:      [66, 98, 66],
+  nest:       [50, 59, 50],
 };
 
 const Camp = {
@@ -156,6 +157,7 @@ const Camp = {
     if (Store.S.buildings[id] >= Store.bMax(id)) return;
     if (!Store.pay(Store.bCost(id))) return FX.toast('資源不足', 'bad');
     Store.S.buildings[id]++;
+    if (id === 'nest' && !Store.S.pets.gift) { Store.S.pets.gift = true; Store.S.pets.eggs++; FX.toast('寵物小窩送你一顆寵物蛋！到「英雄」頁孵化', 'gold'); }
     FX.sfx('upgrade');
     FX.toast(`${BUILDINGS[id].name} 提升至 Lv${Store.S.buildings[id]}`);
     App.commit();
@@ -223,7 +225,7 @@ const Camp = {
     if (!r) return;
     const extra = { potion: '1 瓶藥水', keyY: '1 把黃鑰匙', keyB: '1 把藍鑰匙', seed: '1 顆星莓種子', ember: '1 餘燼' }[r.extra];
     FX.sfx('coin');
-    FX.modal(`<div class="center">${UI.token(HEROES[r.hero].icon, 'big')}<h3>探索歸來</h3><div class="loot">${Object.keys(r.got).filter(k => r.got[k] >= 1).map(k => `<span>${UI.res(k)}+${fmt(r.got[k])}</span>`).join('')}</div>${extra ? `<p class="gold">額外帶回：${extra}</p>` : ''}</div>`);
+    FX.modal(`<div class="center">${UI.token(HEROES[r.hero].icon, 'big')}<h3>探索歸來</h3><div class="loot">${Object.keys(r.got).filter(k => r.got[k] >= 1).map(k => `<span>${UI.res(k)}+${fmt(r.got[k])}</span>`).join('')}</div>${extra ? `<p class="gold">額外帶回：${extra}</p>` : ''}${r.egg ? '<p class="gold">還撿到一顆寵物蛋！</p>' : ''}</div>`);
     App.commit();
   },
 
@@ -311,32 +313,69 @@ const Camp = {
 };
 
 const Heroes = {
+  // 主畫面：出戰英雄、三格裝備、出戰寵物；點了才打開更換清單
   render() {
-    const S = Store.S;
-    return '<div class="list">' + HERO_ORDER.map(hid => {
-      const d = HEROES[hid], h = S.heroes[hid], st = Store.heroStats(hid);
-      const active = S.active === hid, away = S.expeditions.some(e => e.hero === hid);
-      const aw = h.awaken ? `<span class="awk">${'✦'.repeat(h.awaken)}</span>` : '';
-      const kit = `<div class="kit"><div><b>被動</b>${h.awaken >= 1 ? d.passive2 : d.passive}</div><div><b>${d.skill.name}</b>${d.skill.desc}（每層 ${d.skill.uses + (h.branch === 'A' ? 1 : 0)} 次）${h.branch ? `<span class="gold">・${d.branch[h.branch]}</span>` : ''}</div></div>`;
-      if (!h.owned) {
-        const need = S.buildings.tavern < d.tavern;
-        return `<div class="card hero-card"><div class="hero-top">${UI.token(d.icon, 'big off')}<div class="card-body">
-          <div class="card-head"><b>${d.name}</b></div><div class="dim">${d.lore}</div></div></div>${kit}
-          ${need ? `<button class="btn" disabled>需要酒館 Lv${d.tavern}</button>` : UI.costBtn('recruit', hid, d.cost, '<span class="lbl">招募</span>', 'go')}</div>`;
-      }
-      const gm = Store.gearMax();
-      const gear = ['weapon', 'armor'].map(slot => {
-        const l = h[slot], nm = slot === 'weapon' ? '武器（攻擊 +2）' : '護甲（防禦 +2）';
-        const btn = l >= gm ? `<button class="btn sm" disabled>${gm ? '已達上限' : '需鐵匠鋪'}</button>` : UI.costBtn('gear', hid + ':' + slot, Store.gearCost(slot, l), '', 'sm');
-        return `<div class="gear-row"><span>${nm} <b>+${l}</b></span>${btn}</div>`;
-      }).join('');
-      return `<div class="card hero-card ${active ? 'active' : ''}"><div class="hero-top">${UI.token(d.icon, 'big')}<div class="card-body">
+    const S = Store.S, hid = S.active, d = HEROES[hid], h = S.heroes[hid], st = Store.heroStats(hid), g = Store.gearTotals();
+    const aw = h.awaken ? `<span class="awk">${'✦'.repeat(h.awaken)}</span>` : '';
+    const owned = HERO_ORDER.filter(x => S.heroes[x].owned).length;
+    const plus = v => v ? `<small>+${v}</small>` : '';
+    const hero = `<div class="card hero-card hero-main" data-act="heroPick"><div class="hero-top">${UI.token(d.icon, 'huge')}<div class="card-body">
         <div class="card-head"><b>${d.name}${aw}</b><span class="lv">Lv ${h.lvl}</span></div>
         ${UI.bar(h.xp, Store.xpNeed(h.lvl), 'xp')}
-        <div class="stats"><span>攻擊<b>${st.atk}</b></span><span>防禦<b>${st.def}</b></span><span>生命<b>${st.hp}</b></span></div></div></div>
-        ${kit}${gear}
-        ${away ? '<button class="btn" disabled>派遣中</button>' : active ? '<button class="btn" disabled>✓ 目前的英雄</button>' : `<button class="btn primary" data-act="setActive" data-arg="${hid}">設為出征英雄</button>`}</div>`;
-    }).join('') + '</div>';
+        <div class="stats"><span>攻擊<b>${st.atk}</b>${plus(g.atk)}</span><span>防禦<b>${st.def}</b>${plus(g.def)}</span><span>生命<b>${st.hp}</b></span></div></div></div>
+        ${this.kit(hid)}
+        <div class="swap"><span>更換英雄</span><b>${owned} / ${HERO_ORDER.length}</b></div></div>`;
+    const slots = GEAR_SLOT_ORDER.map(slot => {
+      const it = Store.equipped(slot);
+      if (!it) return `<button class="eq-slot empty" data-act="gearSlot" data-arg="${slot}">${UI.ico(GEAR_SLOTS[slot].icon, 'eq-ico')}<b>${GEAR_SLOTS[slot].name}</b><small>未裝備</small></button>`;
+      return `<button class="eq-slot" data-act="gearSlot" data-arg="${slot}" style="--rc:${GEAR_RARITY[it.r].color}">${UI.ico(Store.gearIcon(it), 'eq-ico')}${it.p ? `<i class="plus">+${it.p}</i>` : ''}
+        <b>${Store.gearName(it)}</b><small>${this.mainText(it)}</small></button>`;
+    }).join('');
+    const pid = S.pets.active, pet = pid && S.pets.own[pid];
+    const nest = S.buildings.nest;
+    const petBox = pet
+      ? `<button class="pet-slot" data-act="petSheet" style="--rc:${PET_ROLES[PETS[pid].role].color}">${UI.token(PETS[pid].icon, 'big')}<div class="card-body">
+          <div class="card-head"><b>${PETS[pid].name}</b><span class="lv">Lv ${pet.lvl}</span></div>
+          <span class="role">${PET_ROLES[PETS[pid].role].name}・<em style="color:${GEAR_RARITY[PETS[pid].r].color}">${GEAR_RARITY[PETS[pid].r].name}</em></span>
+          <span class="dim">${Store.petDesc(pid, pet.lvl)}</span></div>${S.pets.eggs ? `<i class="egg-badge">蛋 ×${S.pets.eggs}</i>` : ''}</button>`
+      : `<button class="pet-slot empty" data-act="petSheet">${UI.token('mon/blob1', 'big off')}<div class="card-body"><b>還沒有寵物</b>
+          <span class="dim">${nest ? (S.pets.eggs ? `你有 ${S.pets.eggs} 顆蛋，點這裡孵化` : '到寵物小窩買蛋，或打倒首領取得') : '在營地蓋好「寵物小窩」就能孵蛋'}</span></div></button>`;
+    return `<div class="party">${hero}
+      <div class="sec">裝備<small>穿在隊伍身上，換英雄也會跟著走</small></div>
+      <div class="eq-grid">${slots}</div>
+      <div class="row eq-tools"><button class="btn sm" data-act="bagSheet">背包 ${S.bag.length}/${GEAR_BAG}</button><button class="btn sm" data-act="forgeSheet">${S.buildings.forge ? `鐵匠鋪打造（品階 ${Store.forgeTier()}）` : '鐵匠鋪打造'}</button></div>
+      <div class="sec">寵物<small>跟著英雄進塔，幫忙打怪、治療或輔助</small></div>
+      ${petBox}</div>`;
+  },
+  kit(hid) {
+    const d = HEROES[hid], h = Store.S.heroes[hid];
+    return `<div class="kit"><div><b>被動</b>${h.awaken >= 1 ? d.passive2 : d.passive}</div><div><b>${d.skill.name}</b>${d.skill.desc}（每層 ${d.skill.uses + (h.branch === 'A' ? 1 : 0)} 次）${h.branch ? `<span class="gold">・${d.branch[h.branch]}</span>` : ''}</div></div>`;
+  },
+  mainText(it, p) {
+    const m = Store.gearMain(it, p);
+    return [m.atk && `攻擊 +${m.atk}`, m.def && `防禦 +${m.def}`].filter(Boolean).join('　');
+  },
+  affixText(it) { return it.a.map(([k, v]) => `<span class="afx">${AFFIXES[k].text.replace('{v}', v)}</span>`).join(''); },
+
+  // ---------- 英雄清單 ----------
+  pick() {
+    App.openSheet(() => {
+      const S = Store.S;
+      return '<h3>選擇出戰英雄</h3><p class="dim">裝備與寵物會跟著出戰英雄。正在派遣的英雄不能出戰。</p><div class="list hero-list">' + HERO_ORDER.map(hid => {
+        const d = HEROES[hid], h = S.heroes[hid], away = S.expeditions.some(e => e.hero === hid), act = S.active === hid;
+        if (!h.owned) {
+          const need = S.buildings.tavern < d.tavern;
+          return `<div class="hrow off">${UI.token(d.icon, 'off')}<div class="card-body"><b>${d.name}</b><span class="dim">${d.passive}</span>
+            ${need ? `<button class="btn sm" disabled>需要酒館 Lv${d.tavern}</button>` : UI.costBtn('recruit', hid, d.cost, '<span class="lbl">招募</span>', 'sm go')}</div></div>`;
+        }
+        const st = Store.heroStats(hid);
+        return `<div class="hrow ${act ? 'on' : ''}">${UI.token(d.icon)}<div class="card-body">
+          <div class="card-head"><b>${d.name}${h.awaken ? `<span class="awk">${'✦'.repeat(h.awaken)}</span>` : ''}</b><span class="lv">Lv ${h.lvl}</span></div>
+          <div class="stats"><span>攻<b>${st.atk}</b></span><span>防<b>${st.def}</b></span><span>命<b>${st.hp}</b></span></div>
+          <span class="dim">${h.awaken >= 1 ? d.passive2 : d.passive}・${d.skill.name}：${d.skill.desc}</span>
+          ${act ? '<button class="btn sm" disabled>✓ 出戰中</button>' : away ? '<button class="btn sm" disabled>派遣中</button>' : `<button class="btn sm primary" data-act="setActive" data-arg="${hid}">出戰</button>`}</div></div>`;
+      }).join('') + '</div>';
+    });
   },
   recruit(hid) {
     if (!Store.pay(HEROES[hid].cost)) return FX.toast('資源不足', 'bad');
@@ -344,15 +383,136 @@ const Heroes = {
     FX.sfx('win'); FX.toast(`${HEROES[hid].name} 加入了營地！`);
     App.commit(); App.checkAch();
   },
-  gear(arg) {
-    const [hid, slot] = arg.split(':'), h = Store.S.heroes[hid];
-    if (h[slot] >= Store.gearMax()) return;
-    if (!Store.pay(Store.gearCost(slot, h[slot]))) return FX.toast('資源不足', 'bad');
-    h[slot]++; FX.sfx('upgrade'); App.commit();
-  },
   setActive(hid) {
     if (Store.S.expeditions.some(e => e.hero === hid)) return FX.toast('這位英雄正在派遣中', 'bad');
-    Store.S.active = hid; FX.sfx('click'); App.commit();
+    Store.S.active = hid; FX.sfx('click'); App.closeSheet(); App.commit();
+  },
+
+  // ---------- 裝備 ----------
+  // 一列裝備：圖示、名稱、主屬性、詞綴，以及和目前裝備的差距
+  row(it, cur, btns) {
+    const m = Store.gearMain(it), c = cur ? Store.gearMain(cur) : { atk: 0, def: 0 };
+    const diff = cur && cur.id !== it.id ? ['atk', 'def'].map(k => m[k] - c[k] ? `<i class="${m[k] > c[k] ? 'up' : 'down'}">${k === 'atk' ? '攻' : '防'}${m[k] > c[k] ? '▲' : '▼'}${Math.abs(m[k] - c[k])}</i>` : '').join('') : '';
+    return `<div class="grow" style="--rc:${GEAR_RARITY[it.r].color}">${UI.ico(Store.gearIcon(it), 'eq-ico')}<div class="card-body">
+      <div class="card-head"><b>${Store.gearName(it)}${it.p ? ` <span class="plus">+${it.p}</span>` : ''}</b><span class="rar">${it.lock ? '🔒' : ''}${GEAR_RARITY[it.r].name}・品階 ${it.t}</span></div>
+      <div class="gmain">${this.mainText(it)}${diff ? `<span class="diff">${diff}</span>` : ''}</div>${it.a.length ? `<div class="afxs">${this.affixText(it)}</div>` : ''}
+      <div class="row">${btns}</div></div></div>`;
+  },
+  rowBtns(it) {
+    if (Store.isEquipped(it)) return '<button class="btn sm" disabled>✓ 已裝備</button>';
+    return `<button class="btn sm primary" data-act="equip" data-arg="${it.id}">裝備</button>
+      <button class="btn sm ghost" data-act="lockGear" data-arg="${it.id}">${it.lock ? '解鎖' : '鎖定'}</button>
+      ${it.lock ? '' : `<button class="btn sm ghost" data-act="salvage" data-arg="${it.id}">分解</button>`}`;
+  },
+  slotSheet(slot) {
+    App.openSheet(() => {
+      const S = Store.S, cur = Store.equipped(slot), cap = Store.plusCap();
+      const list = S.bag.filter(x => x.s === slot && x !== cur).sort((a, b) => Store.gearScore(b) - Store.gearScore(a));
+      let top = `<p class="dim">還沒有裝備${GEAR_SLOTS[slot].name}。到鐵匠鋪打造，或打倒塔裡的精英與首領取得。</p>`;
+      if (cur) {
+        const up = cur.p >= cap ? `<button class="btn sm" disabled>${S.buildings.forge ? `強化上限 +${cap}（提升鐵匠鋪）` : '需要鐵匠鋪'}</button>`
+          : UI.costBtn('enhance', cur.id, Store.enhanceCost(cur), `<span class="lbl">強化 +${cur.p + 1}：${this.mainText(cur, cur.p + 1)}</span>`, 'sm go');
+        top = this.row(cur, null, `${up}<button class="btn sm ghost" data-act="unequip" data-arg="${slot}">卸下</button>`);
+      }
+      return `<h3>${GEAR_SLOTS[slot].name}</h3><div class="sec">目前裝備</div>${top}
+        <div class="sec">背包裡的${GEAR_SLOTS[slot].name}<small>${list.length} 件</small></div>
+        <div class="list">${list.map(it => this.row(it, cur, this.rowBtns(it))).join('') || '<p class="dim center">沒有其他的了</p>'}</div>`;
+    });
+  },
+  bagSheet() {
+    App.openSheet(() => {
+      const S = Store.S, junk = S.bag.filter(x => x.r === 0 && !Store.isEquipped(x) && !x.lock).length;
+      const list = S.bag.slice().sort((a, b) => GEAR_SLOT_ORDER.indexOf(a.s) - GEAR_SLOT_ORDER.indexOf(b.s) || Store.gearScore(b) - Store.gearScore(a));
+      return `<h3>背包 <small class="dim">${S.bag.length} / ${GEAR_BAG}</small></h3><p class="dim">背包滿了以後，新拿到的裝備會自動分解成材料。鎖定的裝備不會被分解。</p>
+        <div class="row"><button class="btn sm" data-act="salvageJunk" ${junk ? '' : 'disabled'}>分解全部普通裝備（${junk}）</button></div>
+        <div class="list">${list.map(it => this.row(it, Store.equipped(it.s), this.rowBtns(it))).join('') || '<p class="dim center">背包是空的</p>'}</div>`;
+    });
+  },
+  equip(id) {
+    const it = Store.equip(+id); if (!it) return;
+    FX.sfx('upgrade'); FX.toast(`裝備了 ${Store.gearName(it)}`);
+    App.commit();
+  },
+  unequip(slot) { Store.unequip(slot); FX.sfx('click'); App.commit(); },
+  enhance(id) {
+    if (!Store.enhance(+id)) return FX.toast('材料不足', 'bad');
+    FX.sfx('upgrade'); App.commit(); App.checkAch();
+  },
+  lock(id) { const it = Store.gearById(+id); if (it) { it.lock = !it.lock; App.commit(); } },
+  async salvage(id) {
+    const it = Store.gearById(+id); if (!it) return;
+    if (it.r >= 2 && !await FX.modal(`<h3>分解 ${Store.gearName(it)}？</h3><p class="dim">這是${GEAR_RARITY[it.r].name}裝備，分解後就沒了。</p>`, [{ label: '取消', value: false }, { label: '分解', value: true, cls: 'danger' }])) return;
+    const g = Store.salvage(+id); if (!g) return;
+    FX.sfx('click'); FX.toast('分解獲得 ' + Object.keys(g).map(k => `${RES[k].name} ${g[k]}`).join('、'));
+    App.commit();
+  },
+  salvageJunk() {
+    const S = Store.S, ids = S.bag.filter(x => x.r === 0 && !Store.isEquipped(x) && !x.lock).map(x => x.id), sum = {};
+    for (const id of ids) { const g = Store.salvage(id); for (const k in g) sum[k] = (sum[k] || 0) + g[k]; }
+    if (ids.length) FX.toast(`分解 ${ids.length} 件，獲得 ` + Object.keys(sum).map(k => `${RES[k].name} ${sum[k]}`).join('、'));
+    App.commit();
+  },
+  forgeSheet() {
+    App.openSheet(() => {
+      const S = Store.S, f = S.buildings.forge;
+      if (!f) return `<div class="sheet-head">${UI.token(BUILDINGS.forge.npc, 'big')}<div><h3>鐵匠鋪</h3><p class="dim">在營地蓋好鐵匠鋪，就能打造與強化裝備。</p></div></div>`;
+      const odds = Store.craftOdds(), sum = odds.reduce((a, b) => a + b, 0), full = S.bag.length >= GEAR_BAG;
+      return `<div class="sheet-head">${UI.token(BUILDINGS.forge.npc, 'big')}<div><h3>鐵匠鋪 Lv${f}</h3>
+          <p class="dim">打造品階 ${Store.forgeTier()}（${GEAR_TIER_NAME[Store.forgeTier() - 1]}）・強化上限 +${Store.plusCap()}。每 3 級品階 +1。</p></div></div>
+        <div class="odds">${GEAR_RARITY.map((r, i) => `<span style="color:${r.color}">${r.name} ${(odds[i] / sum * 100).toFixed(odds[i] / sum < 0.1 ? 1 : 0)}%</span>`).join('')}</div>
+        ${full ? '<p class="dim center">背包已滿，先整理背包吧</p>' : ''}
+        <div class="col">${GEAR_SLOT_ORDER.map(slot => UI.costBtn('craft', slot, Store.craftCost(), `<span class="lbl">${UI.ico(GEAR_SLOTS[slot].icon, 'ri')} 打造${GEAR_SLOTS[slot].name}</span>`, 'go')).join('')}</div>
+        <p class="dim">精良以上的裝備會帶有特殊詞綴，傳說有兩條。塔裡的精英有機會、首領一定會掉裝備，越高層品階越高。</p>`;
+    });
+  },
+  craft(slot) {
+    const S = Store.S;
+    if (S.bag.length >= GEAR_BAG) return FX.toast('背包已滿', 'bad');
+    const r = Store.craft(slot);
+    if (!r) return FX.toast('材料不足', 'bad');
+    const it = r.it, cur = Store.equipped(slot);
+    FX.sfx(it.r >= 2 ? 'win' : 'upgrade');
+    App.commit(); App.checkAch();
+    FX.modal(`<div class="center"><h3 style="color:${GEAR_RARITY[it.r].color}">${GEAR_RARITY[it.r].name}！</h3></div>${this.row(it, cur, '')}`,
+      [{ label: '收進背包', value: false }, { label: '直接裝備', value: true, cls: 'primary' }]).then(v => { if (v) this.equip(it.id); });
+  },
+
+  // ---------- 寵物 ----------
+  petSheet() {
+    App.openSheet(() => {
+      const S = Store.S, P = S.pets, nest = S.buildings.nest, cap = Store.petCap();
+      if (!nest) return `<div class="sheet-head">${UI.token(BUILDINGS.nest.npc, 'big')}<div><h3>寵物小窩</h3><p class="dim">在營地蓋好寵物小窩，就能孵化寵物蛋。第一次蓋好會送你一顆蛋。</p></div></div>`;
+      const bought = P.eggDay === Store.today();
+      const eggs = `<div class="egg-bar glass"><span class="egg">${UI.ico('item/backpack')}<b>寵物蛋 ×${P.eggs}</b></span>
+        <button class="btn sm ${P.eggs ? 'primary' : ''}" data-act="hatch" ${P.eggs ? '' : 'disabled'}>孵化</button>
+        ${bought ? '<button class="btn sm" disabled>今天已買過蛋</button>' : UI.costBtn('buyEgg', '', Store.eggPrice(), '<span class="lbl">買一顆</span>', 'sm')}</div>
+        <p class="dim">寵物等級上限 ${cap}（小窩每級 +3）。重複孵到的寵物會變成魂晶。首領會掉蛋，精英、派遣、每週謎題也有機會。</p>`;
+      const rows = PET_ORDER.map(id => {
+        const d = PETS[id], own = P.own[id], role = PET_ROLES[d.role], rar = GEAR_RARITY[d.r];
+        if (!own) return `<div class="prow off">${UI.token(d.icon, 'off')}<div class="card-body"><b>？？？</b><span class="role" style="color:${role.color}">${role.name}・<em style="color:${rar.color}">${rar.name}</em></span><span class="dim">還沒孵出來</span></div></div>`;
+        const act = P.active === id;
+        const up = own.lvl >= cap ? `<button class="btn sm" disabled>${own.lvl >= 5 + 30 ? '已滿級' : '提升小窩等級'}</button>` : UI.costBtn('petUp', id, Store.petUpCost(own.lvl), `<span class="lbl">升到 Lv${own.lvl + 1}</span>`, 'sm');
+        return `<div class="prow ${act ? 'on' : ''}">${UI.token(d.icon)}<div class="card-body">
+          <div class="card-head"><b>${d.name}</b><span class="lv">Lv ${own.lvl}</span></div>
+          <span class="role" style="color:${role.color}">${role.name}・<em style="color:${rar.color}">${rar.name}</em></span>
+          <span class="dim">${Store.petDesc(id, own.lvl)}</span>
+          <div class="row">${act ? '<button class="btn sm" disabled>✓ 出戰中</button>' : `<button class="btn sm primary" data-act="petSet" data-arg="${id}">出戰</button>`}${up}</div></div></div>`;
+      }).join('');
+      const n = Object.keys(P.own).length;
+      return `<h3>寵物 <small class="dim">${n} / ${PET_ORDER.length}</small></h3>${eggs}<div class="list">${rows}</div>`;
+    });
+  },
+  petSet(id) { if (!Store.S.pets.own[id]) return; Store.S.pets.active = id; FX.sfx('click'); App.commit(); },
+  petUp(id) { if (!Store.petUp(id)) return FX.toast('材料不足', 'bad'); FX.sfx('upgrade'); App.commit(); },
+  buyEgg() { if (!Store.buyEgg()) return FX.toast('魂晶不足', 'bad'); FX.sfx('upgrade'); App.commit(); },
+  async hatch() {
+    const r = Store.hatch(); if (!r) return;
+    const d = PETS[r.id];
+    App.commit(); App.checkAch();
+    FX.sfx('win');
+    await FX.modal(`<div class="center hatch">${UI.token(d.icon, 'huge')}<h3>${r.dup ? `又是${d.name}！` : `${d.name} 誕生了！`}</h3>
+      <p style="color:${PET_ROLES[d.role].color}">${PET_ROLES[d.role].name}・<b style="color:${GEAR_RARITY[d.r].color}">${GEAR_RARITY[d.r].name}</b></p>
+      <p>${Store.petDesc(r.id, Store.S.pets.own[r.id].lvl)}</p>${r.dup ? `<p class="dim">重複的寵物化為魂晶 +${r.dup.soul}</p>` : ''}</div>`, [{ label: '太好了', value: true, cls: 'primary' }]);
   },
 };
 

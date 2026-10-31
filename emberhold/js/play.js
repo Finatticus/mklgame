@@ -21,7 +21,9 @@ const Play = {
     const T = this.T, S = Store.S, m = {}, h = S.active, aw = this.hs().awaken, br = this.hs().branch;
     if (T.fixed) return { cross: !!T.tools.cross };
     for (const id of T.treasures) { const t = TREASURES[id].mods; for (const k in t) m[k] = (m[k] || 0) + t[k]; }
-    if (h === 'knight') m.reduce = aw >= 1 ? 0.18 : 0.1;
+    const add = o => { for (const k in o) m[k] = (m[k] || 0) + o[k]; };
+    add(Store.gearMods()); add(Store.petMods());
+    if (h === 'knight') m.reduce = (m.reduce || 0) + (aw >= 1 ? 0.18 : 0.1);
     if (h === 'ranger') { m.alwaysFirst = 1; if (aw >= 1) m.fam_beast = (m.fam_beast || 0) + 0.2; }
     if (h === 'wizard') m.magic = aw >= 1 ? 0.35 : 0.2;
     if (h === 'assassin') m.goldPct = (m.goldPct || 0) + (aw >= 1 ? 0.8 : 0.5);
@@ -34,7 +36,8 @@ const Play = {
     if (T.flags.bastion === T.floor) { m.bastion = br === 'A' && h === 'guardian' ? 0.3 : 0.2; if (br === 'B' && h === 'guardian') m.bastionFirst = 1; }
     if (T.tools.cross) { m.cross = 1; m.fam_undead = (m.fam_undead || 0) + 0.2; }
     m.bossAtk = (m.bossAtk || 0) + S.talents.hunter * 0.05;
-    m.hazard = S.talents.antidote * 0.25;
+    m.hazard = Math.min(0.9, (m.hazard || 0) + S.talents.antidote * 0.25);
+    if (m.reduce) m.reduce = Math.min(0.5, m.reduce);
     const firstFight = !T.fought || T.fought !== T.floor;
     if (firstFight && S.talents.fury) m.atkMult = (m.atkMult || 0) + S.talents.fury * 0.1;
     if (firstFight && S.talents.aegis) m.firstFight = 0.5;
@@ -73,11 +76,13 @@ const Play = {
   skillLeft() { const s = this.T.skill; return s.f === this.T.floor ? this.skillMax() - s.n : this.skillMax(); },
   sees(kind) {
     const T = this.T, h = Store.S.active;
-    if (kind === 'hidden') return h === 'apprentice' || Store.S.talents.scout > 0;
-    if (kind === 'invisible') return h === 'apprentice' || Store.has('bestiary');
+    const pet = !T.fixed && Store.petMods().seeAll;
+    if (kind === 'hidden') return h === 'apprentice' || Store.S.talents.scout > 0 || !!pet;
+    if (kind === 'invisible') return h === 'apprentice' || Store.has('bestiary') || !!pet;
     return false;
   },
-  sight() { return 3 + (Store.has('maps') ? 2 : 0) + (Store.S.active === 'apprentice' ? 2 : 0); },
+  sight() { return 3 + (Store.has('maps') ? 2 : 0) + (Store.S.active === 'apprentice' ? 2 : 0) + (Store.petMods().sight || 0); },
+  pet() { const id = Store.S.pets.active; return id && !this.T.fixed ? { id, ...PETS[id], lvl: Store.S.pets.own[id].lvl } : null; },
 
   // ---------- 建立 / 進出 ----------
   blank(mode, hp) {
@@ -176,10 +181,12 @@ const Play = {
       const soul = first ? Math.round(30 * soulMult) : 0;
       S.res.soul += soul;
       if (first) S.res.ember += 1;
+      const egg = first && S.buildings.nest > 0 ? 1 : 0;
+      S.pets.eggs += egg;
       App.commit();
       FX.sfx('win');
       FX.modal(`<div class="center">${UI.ico('item/scroll_red', 'hero-ico')}<h3>謎題塔完成！</h3><p>剩餘生命 <b class="gold">${T.hp}</b>${T.hp > prev && !first ? '（新紀錄！）' : ''}</p>
-        ${first ? `<div class="loot"><span>${UI.res('soul')}+${soul}</span><span>${UI.res('ember')}+1</span></div>` : '<p class="dim">本週獎勵已領過，挑戰更高分吧</p>'}</div>`);
+        ${first ? `<div class="loot"><span>${UI.res('soul')}+${soul}</span><span>${UI.res('ember')}+1</span>${egg ? `<span>${UI.ico('item/backpack', 'ri')}寵物蛋 +1</span>` : ''}</div>` : '<p class="dim">本週獎勵已領過，挑戰更高分吧</p>'}</div>`);
     } else App.commit();
   },
 
@@ -317,7 +324,7 @@ const Play = {
     if (Tower.nbrs(target).includes(this.T.pos)) return [];
     let best = null;
     for (const j of Tower.nbrs(target)) {
-      if (!Tower.walkable(this.fl().cells[j])) continue;
+      if (!Tower.walkable(this.fl().cells[j]) || this.fl().cells[j].startsWith('T:')) continue;
       const p = this.path(this.T.pos, j);
       if (p && p.length && p[p.length - 1].slice(-1)[0] === j && (!best || p.length < best.length)) best = p;
     }
@@ -458,6 +465,8 @@ const Play = {
     if (i === T.pos || !this.visible(i)) return;
     if (this.mode && Tower.nbrs(T.pos).includes(i)) return this.useMode(i);
     if (Tower.walkable(c) || c === 'U' || c === 'D') {
+      // 點傳送陣＝使用它：目的地是另一端（否則會走過去、再踩對面的陣傳回來）
+      if (c.startsWith('T:')) { const o = fl.cells.findIndex((x, j) => j !== i && x === c); if (o >= 0) { if (o === T.pos) return; i = o; } }
       const p = this.path(T.pos, i);
       if (!p) return FX.toast('走不過去', 'bad');
       return this.run(() => this.walk(p));
@@ -558,8 +567,13 @@ const Play = {
     const soul = (m.elite || m.boss) && fresh ? Math.round((m.boss ? 10 + T.floor : 3 + T.floor / 2) * this.soulMult()) : 0;
     const ember = m.boss && fresh ? 1 + Tower.zoneOf(T.floor) + (T.curse || 0) : 0;
     const feast = T.flags.feast ? (br === 'B' && h === 'vampire' ? 1.5 : 1) : 0;
-    const loot = [`${UI.ico('icon/goldcoins', 'ri')}+${gold}`, exp && `經驗 +${exp}`, soul && `${UI.res('soul')}+${soul}`, ember && `${UI.res('ember')}+${ember}`, feast && '血宴吸回生命'].filter(Boolean);
-    await Battle.play({ name: T.fixed ? '挑戰者' : this.hero().name, icon: this.hero().icon, hp: T.hp, atk: P.atk, def: P.def }, m, pr, loot);
+    // 精英 20%、首領必掉裝備；首領掉寵物蛋，精英 5%（每週謎題不掉）
+    const drop = !T.fixed && fresh && (m.boss || (m.elite && Math.random() < 0.2)) ? Store.dropGear(m.boss ? 'boss' : 'elite', T.floor, T.curse) : null;
+    const egg = !T.fixed && fresh && (m.boss || (m.elite && Math.random() < 0.05)) ? 1 : 0;
+    if (egg) S.pets.eggs += egg;
+    const gearTxt = drop && `<em style="color:${GEAR_RARITY[drop.it.r].color}">${UI.ico(Store.gearIcon(drop.it), 'ri')}${Store.gearName(drop.it)}${drop.salvaged ? '（背包滿，已分解）' : ''}</em>`;
+    const loot = [`${UI.ico('icon/goldcoins', 'ri')}+${gold}`, exp && `經驗 +${exp}`, soul && `${UI.res('soul')}+${soul}`, ember && `${UI.res('ember')}+${ember}`, feast && '血宴吸回生命', gearTxt, egg && `${UI.ico('item/backpack', 'ri')}寵物蛋 +1`].filter(Boolean);
+    await Battle.play({ name: T.fixed ? '挑戰者' : this.hero().name, icon: this.hero().icon, hp: T.hp, atk: P.atk, def: P.def, pet: this.pet() }, m, pr, loot);
 
     T.hp -= pr.dmg;
     if (feast) T.hp += Math.round(pr.dmg * feast);
@@ -879,7 +893,8 @@ const Play = {
     const tools = Object.keys(T.tools).map(k => `<span class="tr tool" data-act="toolInfo" data-arg="${k}">${Art.img(TOOLS[k].icon)}</span>`).join('');
     const b = this.key === 'main' ? S.stars[T.floor] || 0 : 0;
     const stars = this.key === 'main' ? `<span class="stars">${[1, 2, 4].map(k => `<i class="${b & k ? 'on' : ''}">★</i>`).join('')}</span>` : '';
-    setHtml(h, `<div class="hs">${UI.token(this.hero().icon)}<div class="hv">
+    const pet = this.pet();
+    setHtml(h, `<div class="hs">${UI.token(this.hero().icon)}${pet ? `<span class="hud-pet" data-act="petInfo">${Art.img(pet.icon)}</span>` : ''}<div class="hv">
         <span class="hp">生命 <b>${fmt(T.hp)}</b></span><span>攻擊 <b>${P.atk}</b></span><span>防禦 <b>${P.def}</b></span>
         <span>${T.fixed ? '謎題' : 'Lv'} <b>${T.fixed ? T.floor : this.hs().lvl}</b></span></div></div>
       <div class="keys">${['Y', 'B'].map(k => `<span>${Art.img('item/key_' + k.toLowerCase())}<b>${T.keys[k]}</b></span>`).join('')}
@@ -901,6 +916,10 @@ const Play = {
   treasureInfo(id) {
     const t = TREASURES[id];
     FX.modal(`<div class="center">${UI.ico(t.icon, 'hero-ico')}<h3>${t.name}</h3><p style="color:${RARITY[t.r].color}">${RARITY[t.r].name}</p><p>${t.desc}</p></div>`);
+  },
+  petInfo() {
+    const p = this.pet(); if (!p) return;
+    FX.modal(`<div class="center">${UI.token(p.icon, 'huge')}<h3>${p.name} <small>Lv${p.lvl}</small></h3><p style="color:${PET_ROLES[p.role].color}">${PET_ROLES[p.role].name}寵物</p><p>${Store.petDesc(p.id, p.lvl)}</p></div>`);
   },
   toolInfo(k) { FX.modal(`<div class="center">${UI.ico(TOOLS[k].icon, 'hero-ico')}<h3>${TOOLS[k].name}</h3><p>${TOOLS[k].desc}</p></div>`); },
 

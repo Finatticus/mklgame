@@ -23,7 +23,7 @@ const Store = (() => {
   function fresh() {
     const now = Date.now();
     const heroes = {};
-    HERO_ORDER.forEach(h => heroes[h] = { owned: h === 'knight', lvl: 1, xp: 0, weapon: 0, armor: 0, awaken: 0, branch: null });
+    HERO_ORDER.forEach(h => heroes[h] = { owned: h === 'knight', lvl: 1, xp: 0, awaken: 0, branch: null });
     const buildings = {};
     BUILDING_ORDER.forEach(b => buildings[b] = 0);
     buildings.hearth = 1; buildings.lumber = 1;
@@ -42,6 +42,8 @@ const Store = (() => {
       visitor: null, nextVisitor: now + 20 * 60000,
       prayer: null, buffs: {},
       memory: { seen: {}, inscribed: {}, equipped: [] },
+      bag: [], gear: { weapon: null, armor: null, charm: null }, gearSeq: 1,
+      pets: { own: {}, active: null, eggs: 0, eggDay: null, gift: false },
       codex: {}, title: null, story: {},
       stats: { kills: 0, bestFloor: 0, bestDaily: 0, bossKills: 0, towers: 0, clears: 0, bestCurse: -1, stars: 0, weekly: 0, dishes: 0 },
       ach: {}, tutorial: 0,
@@ -53,8 +55,18 @@ const Store = (() => {
   function migrate(s) {
     const f = fresh();
     if (!s || (s.v || 1) < VER) { f.settings = (s && s.settings) || f.settings; return f; }
+    // 舊的「武器／護甲等級」（每級 +2）換成一件同等強度的普通裝備
+    if (!s.bag) {
+      s.bag = []; s.gearSeq = 1; s.gear = { weapon: null, armor: null, charm: null };
+      for (const [slot, key] of [['weapon', 'weapon'], ['armor', 'armor']]) {
+        const lv = Math.max(0, ...HERO_ORDER.map(h => (s.heroes[h] && s.heroes[h][key]) || 0));
+        if (!lv) continue;
+        const it = { id: s.gearSeq++, s: slot, b: 0, t: 1, r: 0, p: Math.min(20, Math.max(0, lv * 2 - 3)), a: [] };
+        s.bag.push(it); s.gear[slot] = it.id;
+      }
+    }
     for (const k in f) if (s[k] === undefined) s[k] = f[k];
-    for (const grp of ['res', 'stash', 'buildings', 'talents', 'stats', 'settings', 'tower', 'research', 'farm', 'memory'])
+    for (const grp of ['res', 'stash', 'buildings', 'talents', 'stats', 'settings', 'tower', 'research', 'farm', 'memory', 'gear', 'pets'])
       for (const k in f[grp]) if (s[grp][k] === undefined) s[grp][k] = f[grp][k];
     for (const h of HERO_ORDER) { if (!s.heroes[h]) s.heroes[h] = f.heroes[h]; for (const k in f.heroes[h]) if (s.heroes[h][k] === undefined) s.heroes[h][k] = f.heroes[h][k]; }
     for (const k in s.buildings) if (!BUILDINGS[k]) delete s.buildings[k];
@@ -150,9 +162,11 @@ const Store = (() => {
     if (extra === 'keyB') S.stash.B += 1;
     if (extra === 'seed') S.farm.pantry.seed += 1;
     if (extra === 'ember') S.res.ember += 1;
+    const egg = S.buildings.nest > 0 && Math.random() < 0.04 + e.hours * 0.01;
+    if (egg) S.pets.eggs++;
     addXp(e.hero, Math.round(8 * e.hours));
     S.expeditions.splice(idx, 1);
-    return { got, extra, hero: e.hero };
+    return { got, extra, egg, hero: e.hero };
   }
 
   // ---------- 農田與料理 ----------
@@ -220,12 +234,6 @@ const Store = (() => {
   function xpMult() {
     return (1 + S.buildings.tavern * 0.1) * (buff('xp') ? 1.3 : 1) * (S.buffs.bard === today() ? 1.1 : 1) * (has('bestiary') ? 1.15 : 1);
   }
-  function gearMax() { return S.buildings.forge * 2; }
-  function gearCost(slot, l) {
-    return slot === 'weapon'
-      ? round({ ore: 15 * Math.pow(1.4, l), gold: 12 * Math.pow(1.4, l) })
-      : round({ ore: 12 * Math.pow(1.4, l), wood: 20 * Math.pow(1.4, l) });
-  }
   function addXp(hid, xp) {
     const h = S.heroes[hid];
     h.xp += xp;
@@ -236,11 +244,127 @@ const Store = (() => {
   // 英雄的永久屬性（不含塔內寶石）
   function heroStats(hid) {
     const d = HEROES[hid], h = S.heroes[hid], t = S.talents;
-    let atk = d.atk + (h.lvl - 1) + h.weapon * 2 + t.might + (has('tactics') ? 2 : 0) + (buff('atk') ? 3 : 0);
-    let def = d.def + (h.lvl - 1) + h.armor * 2 + t.guard + (has('armor') ? 2 : 0) + (buff('def') ? 3 : 0);
+    const g = gearTotals();
+    let atk = d.atk + (h.lvl - 1) + g.atk + t.might + (has('tactics') ? 2 : 0) + (buff('atk') ? 3 : 0);
+    let def = d.def + (h.lvl - 1) + g.def + t.guard + (has('armor') ? 2 : 0) + (buff('def') ? 3 : 0);
     let hp = d.hp + (h.lvl - 1) * 50 + t.vigor * 100;
     if (h.awaken >= 3) { atk = Math.floor(atk * 1.1); def = Math.floor(def * 1.1); hp = Math.floor(hp * 1.1); }
     return { atk, def, hp };
+  }
+
+  // ---------- 裝備 ----------
+  function rollIdx(w) { let x = Math.random() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < w.length; i++) { x -= w[i]; if (x <= 0) return i; } return 0; }
+  function makeGear(slot, t, r) {
+    slot = slot || GEAR_SLOT_ORDER[Math.floor(Math.random() * 3)];
+    const keys = Object.keys(AFFIXES), a = [];
+    while (a.length < GEAR_RARITY[r].affix) { const k = keys[Math.floor(Math.random() * keys.length)]; if (!a.some(x => x[0] === k)) a.push([k, AFFIXES[k].v[r - 1]]); }
+    return { s: slot, b: Math.floor(Math.random() * GEAR_BASES[slot].length), t: Math.max(1, Math.min(8, t)), r, p: 0, a };
+  }
+  function gearMain(it, p = it.p) {
+    // 每強化一級 +10% 基礎值（至少 +1），確保每一級都看得到成長
+    const w = GEAR_BASES[it.s][it.b][2] || GEAR_SLOTS[it.s].main, k = GEAR_TIER[it.t - 1] * GEAR_RARITY[it.r].mult, o = { atk: 0, def: 0 };
+    for (const x in w) { const b = w[x] * k; o[x] = Math.round(b) + p * Math.max(1, Math.round(b * 0.1)); }
+    return o;
+  }
+  const gearName = it => GEAR_TIER_NAME[it.t - 1] + GEAR_BASES[it.s][it.b][1];
+  const gearIcon = it => GEAR_BASES[it.s][it.b][0];
+  function gearScore(it) { const m = gearMain(it); return m.atk + m.def + it.a.length * 2 * GEAR_TIER[it.t - 1]; }
+  const gearById = id => S.bag.find(x => x.id === id) || null;
+  const equipped = slot => gearById(S.gear[slot]);
+  const isEquipped = it => S.gear[it.s] === it.id;
+  function gearTotals() {
+    const o = { atk: 0, def: 0 };
+    for (const slot of GEAR_SLOT_ORDER) { const it = equipped(slot); if (it) { const m = gearMain(it); o.atk += m.atk; o.def += m.def; } }
+    return o;
+  }
+  // 詞綴加總（% 類轉成小數）
+  function gearMods() {
+    const m = {};
+    for (const slot of GEAR_SLOT_ORDER) {
+      const it = equipped(slot); if (!it) continue;
+      for (const [k, v] of it.a) m[k] = (m[k] || 0) + (AFFIXES[k].raw ? v : v / 100);
+    }
+    return m;
+  }
+  function addGear(it) {
+    it.id = S.gearSeq++;
+    S.stats.bestGear = Math.max(S.stats.bestGear || 0, it.r);
+    if (S.bag.length >= GEAR_BAG) { const g = salvageValue(it); gain(g); return { it, salvaged: g }; }
+    S.bag.push(it);
+    return { it };
+  }
+  // 塔內掉落：品階跟著區域與詛咒等級走
+  function dropGear(kind, floor, curse) {
+    const t = 1 + Math.min(4, Math.floor((floor - 1) / 10)) + Math.floor((curse || 0) / 2);
+    return addGear(makeGear(null, t, rollIdx(GEAR_DROP[kind])));
+  }
+  function forgeTier() { return Math.min(8, 1 + Math.floor(S.buildings.forge / 3)); }
+  function plusCap() { return Math.min(20, S.buildings.forge * 2); }
+  function craftCost() { const t = forgeTier(); return round({ ore: 60 * Math.pow(2.2, t - 1), gold: 45 * Math.pow(2.2, t - 1) }); }
+  function craftOdds() { const f = S.buildings.forge; return [Math.max(30, 70 - f * 2), 25, 4 + f * 0.6, 1 + f * 0.2]; }
+  function craft(slot) {
+    if (!S.buildings.forge || !pay(craftCost())) return null;
+    return addGear(makeGear(slot, forgeTier(), rollIdx(craftOdds())));
+  }
+  function enhanceCost(it) { const k = GEAR_TIER[it.t - 1] * (1 + 0.3 * it.r) * Math.pow(1.3, it.p); return round({ ore: 15 * k, gold: 12 * k }); }
+  function enhance(id) {
+    const it = gearById(id);
+    if (!it || it.p >= plusCap() || !pay(enhanceCost(it))) return false;
+    it.p++; S.stats.bestPlus = Math.max(S.stats.bestPlus || 0, it.p);
+    return true;
+  }
+  function salvageValue(it) {
+    const k = GEAR_TIER[it.t - 1] * (1 + it.r) * (1 + 0.25 * it.p), o = { ore: Math.round(20 * k), gold: Math.round(10 * k) };
+    if (it.r >= 2) o.soul = it.r * 2 * it.t;
+    return o;
+  }
+  function salvage(id) {
+    const i = S.bag.findIndex(x => x.id === id), it = S.bag[i];
+    if (!it || isEquipped(it) || it.lock) return null;
+    S.bag.splice(i, 1);
+    const g = salvageValue(it); gain(g); return g;
+  }
+  function equip(id) { const it = gearById(id); if (it) S.gear[it.s] = it.id; return it; }
+  function unequip(slot) { S.gear[slot] = null; }
+
+  // ---------- 寵物 ----------
+  function petCap() { return 5 + S.buildings.nest * 3; }
+  const petScale = l => 1 + 0.04 * (l - 1);
+  function petFx(id, lvl) {
+    const d = PETS[id], o = {};
+    for (const k in d.fx) o[k] = d.fx[k] * petScale(lvl);
+    return Object.assign(o, d.flag || {});
+  }
+  function petDesc(id, lvl) {
+    const d = PETS[id], v = petFx(id, lvl);
+    return d.desc.replace(/\{(\w+)\}/g, (_, k) => k === 'killHeal' ? (+v[k].toFixed(2)) : Math.round(v[k] * 100));
+  }
+  function petMods() {
+    const id = S.pets.active, p = id && S.pets.own[id];
+    if (!p) return {};
+    const m = petFx(id, p.lvl);
+    if (PETS[id].every) m.petEvery = PETS[id].every;
+    return m;
+  }
+  function petUpCost(l) { return round({ gold: 40 * Math.pow(1.28, l - 1), soul: l * 0.8 }); }
+  function petUp(id) {
+    const p = S.pets.own[id];
+    if (!p || p.lvl >= petCap() || !pay(petUpCost(p.lvl))) return false;
+    p.lvl++; return true;
+  }
+  function eggPrice() { return { soul: 30 + S.buildings.nest * 5 }; }
+  function buyEgg() {
+    if (!S.buildings.nest || S.pets.eggDay === today() || !pay(eggPrice())) return false;
+    S.pets.eggDay = today(); S.pets.eggs++; return true;
+  }
+  function hatch() {
+    if (!S.buildings.nest || S.pets.eggs <= 0) return null;
+    S.pets.eggs--;
+    const r = rollIdx(PET_HATCH), pool = PET_ORDER.filter(k => PETS[k].r === r), id = pool[Math.floor(Math.random() * pool.length)];
+    if (S.pets.own[id]) { const g = { soul: 15 * (r + 1) }; gain(g); return { id, dup: g }; }
+    S.pets.own[id] = { lvl: 1 };
+    if (!S.pets.active) S.pets.active = id;
+    return { id };
   }
 
   // ---------- 天賦樹 ----------
@@ -273,7 +397,10 @@ const Store = (() => {
     canAfford, pay, gain, bMax, bCost, bLocked, rates, prodMult, stashRates, stashCap, tick, offlineCapHours,
     researchMins, canResearch, startResearch, expSlots, sendExpedition, collectExpedition,
     plotCount, cropMins, plant, harvest, cook,
-    xpNeed, xpMult, gearMax, gearCost, addXp, heroStats, talentBranch, talentUnlocked, talentCost, talentCap,
+    xpNeed, xpMult, addXp, heroStats,
+    makeGear, gearMain, gearName, gearIcon, gearScore, gearById, equipped, isEquipped, gearTotals, gearMods, addGear, dropGear,
+    forgeTier, plusCap, craftCost, craftOdds, craft, enhanceCost, enhance, salvageValue, salvage, equip, unequip,
+    petCap, petFx, petDesc, petMods, petUpCost, petUp, eggPrice, buyEgg, hatch, talentBranch, talentUnlocked, talentCost, talentCap,
     memorySlots, inscribeCost, starCount, zoneStars, newAchievements, titles,
   };
 })();

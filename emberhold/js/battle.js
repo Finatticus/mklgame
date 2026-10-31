@@ -8,7 +8,7 @@ const Battle = {
       wrap.className = 'battle';
       wrap.innerHTML = `<div class="bt ${m.boss ? 'boss' : m.elite ? 'elite' : ''}">
         <div class="bt-arena">
-          <div class="bt-u hero" id="btH">${UI.token(hero.icon, 'big')}<b>${hero.name}</b>
+          <div class="bt-u hero" id="btH">${UI.token(hero.icon, 'big')}${hero.pet ? `<span class="bt-pet" id="btP">${Art.img(hero.pet.icon)}</span>` : ''}<b>${hero.name}</b>
             <div class="bar hp"><i></i><span></span></div><div class="bt-st">攻 ${hero.atk}　防 ${hero.def}</div></div>
           <div class="bt-vs"><b>VS</b><small id="btR">第 1 回合</small></div>
           <div class="bt-u mon" id="btM">${UI.token(m.icon, 'big')}<b>${m.name}${fx ? `<em class="fx">${fx}</em>` : ''}</b>
@@ -33,6 +33,19 @@ const Battle = {
         if (e.by === 'x') {
           mmax = e.mhp; setBar(M, e.mhp, mmax);
           if (!fast) { FX.float(M.querySelector('.tok-wrap'), e.tag, 'status'); FX.anim(M, 'rise-up', 500); await sleep(500); }
+          continue;
+        }
+        // 寵物：追擊打怪物，或替英雄治療
+        if (e.by === 'p') {
+          const pet = wrap.querySelector('#btP');
+          if (e.heal) { hhp += e.heal; setBar(H, hhp, hero.hp); } else setBar(M, e.mhp, mmax);
+          if (!fast) {
+            if (pet) FX.anim(pet, 'hop', 350);
+            await sleep(step * 0.3);
+            if (e.heal) FX.float(H.querySelector('.tok-wrap'), '+' + e.heal, 'heal');
+            else { FX.anim(M, 'hurt', 260); FX.float(M.querySelector('.tok-wrap'), '-' + e.dmg, 'dmg'); FX.sfx('hit'); }
+            await sleep(step * 0.5);
+          }
           continue;
         }
         const atkEl = e.by === 'h' ? H : M, defEl = e.by === 'h' ? M : H;
