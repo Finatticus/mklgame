@@ -26,8 +26,8 @@ body.redflash .vignette { animation: redflash .45s; }
 #app { position: relative; z-index: 2; height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
 #main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px 16px 28px; scrollbar-width: none; }
 #main::-webkit-scrollbar { display: none; }
-#main > * { animation: rise .4s cubic-bezier(.2,.8,.3,1) both; }
-#main > *:nth-child(2) { animation-delay: .05s; } #main > *:nth-child(3) { animation-delay: .1s; }
+#main.enter > * { animation: rise .4s cubic-bezier(.2,.8,.3,1) both; }
+#main.enter > *:nth-child(2) { animation-delay: .05s; } #main.enter > *:nth-child(3) { animation-delay: .1s; }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
 
 h1, h2, h3 { font-family: var(--round); font-weight: 400; margin: 0; letter-spacing: .04em; }
@@ -338,6 +338,12 @@ b.sync-ok { color: var(--mint); background: none; box-shadow: none; } b.sync-err
 /* ---------- 塔內 ---------- */
 #main[data-view="run"] { padding-left: 8px; padding-right: 8px; }
 .tower { display: flex; flex-direction: column; gap: 8px; }
+/* 塔內畫面固定：不捲動，地圖縮放到剩餘空間 */
+#main.lock { overflow: hidden; overscroll-behavior: none; touch-action: none; padding-bottom: 10px; }
+#main.lock .tower { height: 100%; }
+#main.lock .board-wrap { flex: 1; min-height: 0; container-type: size; display: flex; justify-content: center; align-items: flex-start; }
+#main.lock .board { width: min(100cqw, 100cqh); }
+#main.lock .t-items { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; touch-action: pan-x; scrollbar-width: none; }
 .t-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 4px; }
 .t-head b { font: 400 18px var(--round); margin-right: 8px; }
 .t-head span { color: var(--dim); font-size: 13px; }

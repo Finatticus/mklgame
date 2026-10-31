@@ -286,6 +286,8 @@ function fmt(n) {
   while (n >= 1000 && i < u.length - 1) { n /= 1000; i++; }
   return (n < 10 ? n.toFixed(2) : n < 100 ? n.toFixed(1) : Math.floor(n)) + u[i];
 }
+// 內容沒變就不動 DOM，避免圖片重建造成閃爍
+function setHtml(el, html) { if (el && el._h !== html) { el._h = html; el.innerHTML = html; } }
 function fmtTime(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
   return h ? `${h}時${String(m).padStart(2, '0')}分` : m ? `${m}分${String(sec).padStart(2, '0')}秒` : `${sec}秒`;

@@ -794,7 +794,7 @@ const Play = {
       <div class="t-head"><div><b>${this.key === 'weekly' ? '每週謎題' : z.name}</b><span>${title}${tag}</span></div>
         <div class="row"><button class="btn sm" data-act="towerManual">手冊</button>${T.maxFloor > 1 && this.key !== 'weekly' ? '<button class="btn sm" data-act="towerFly">傳送</button>' : ''}<button class="btn sm ghost" data-act="towerLeave">${this.key === 'main' ? '回營地' : '結束'}</button></div></div>
       <div id="tHud" class="t-hud glass"></div>
-      <div id="board" class="board ${this.mode ? 'mode-' + this.mode : ''} ${fl.dark ? 'dark' : ''}" style="--fl:${z.pal[0]};--fl2:${z.pal[1]};--wa:${z.pal[2]};--wb:${z.pal[3]};--glow:${z.pal[4]}"></div>
+      <div class="board-wrap"><div id="board" class="board ${this.mode ? 'mode-' + this.mode : ''} ${fl.dark ? 'dark' : ''}" style="--fl:${z.pal[0]};--fl2:${z.pal[1]};--wa:${z.pal[2]};--wb:${z.pal[3]};--glow:${z.pal[4]}"></div></div>
       <div class="t-foot">${T.fixed ? '' : '<button class="btn skillbtn" data-act="towerSkill" id="tSkill"></button>'}
         <button class="btn" data-act="towerPotion" id="tPotion"></button></div>
       <div id="tItems" class="t-items"></div>
@@ -855,7 +855,15 @@ const Play = {
   drawBoard() {
     const b = document.getElementById('board'); if (!b || !this.T) return;
     const fl = this.fl(), P = this.P(), mods = this.mods();
-    b.innerHTML = fl.cells.map((c, i) => this.cellHtml(c, i, fl, P, mods)).join('') + `<div id="heroTok" class="hero-tok">${Art.img(this.hero().icon)}</div>`;
+    const html = fl.cells.map((c, i) => this.cellHtml(c, i, fl, P, mods)), icon = this.hero().icon;
+    // 只換掉有變的格子；整盤重建會讓所有圖片和動畫重來而閃爍
+    if (b._fl !== fl || b._icon !== icon || !b._cells) {
+      b.innerHTML = html.join('') + `<div id="heroTok" class="hero-tok">${Art.img(icon)}</div>`;
+      b._fl = fl; b._icon = icon; b._cells = html;
+    } else {
+      const els = b.children;
+      html.forEach((h, i) => { if (b._cells[i] !== h) { els[i].outerHTML = h; b._cells[i] = h; } });
+    }
     this.drawToken();
   },
   drawToken() {
@@ -871,7 +879,7 @@ const Play = {
     const tools = Object.keys(T.tools).map(k => `<span class="tr tool" data-act="toolInfo" data-arg="${k}">${Art.img(TOOLS[k].icon)}</span>`).join('');
     const b = this.key === 'main' ? S.stars[T.floor] || 0 : 0;
     const stars = this.key === 'main' ? `<span class="stars">${[1, 2, 4].map(k => `<i class="${b & k ? 'on' : ''}">★</i>`).join('')}</span>` : '';
-    h.innerHTML = `<div class="hs">${UI.token(this.hero().icon)}<div class="hv">
+    setHtml(h, `<div class="hs">${UI.token(this.hero().icon)}<div class="hv">
         <span class="hp">生命 <b>${fmt(T.hp)}</b></span><span>攻擊 <b>${P.atk}</b></span><span>防禦 <b>${P.def}</b></span>
         <span>${T.fixed ? '謎題' : 'Lv'} <b>${T.fixed ? T.floor : this.hs().lvl}</b></span></div></div>
       <div class="keys">${['Y', 'B'].map(k => `<span>${Art.img('item/key_' + k.toLowerCase())}<b>${T.keys[k]}</b></span>`).join('')}
@@ -879,13 +887,13 @@ const Play = {
         ${T.poison ? '<span class="poison-tag">中毒</span>' : ''}${T.curseDebuff ? '<span class="poison-tag curse">詛咒</span>' : ''}
         ${['shield', 'pierce', 'analyze', 'feast'].filter(k => T.flags[k]).map(k => `<span class="buff">${HERO_ORDER.map(x => HEROES[x].skill).find(s => s.id === k).name}</span>`).join('')}
         ${T.flags.bastion === T.floor ? '<span class="buff">堡壘</span>' : ''}${T.meal ? `<span class="buff meal">${DISHES[T.meal].name}</span>` : ''}</div>
-      ${tr || tools ? `<div class="trs">${tools}${tr}</div>` : ''}`;
+      ${tr || tools ? `<div class="trs">${tools}${tr}</div>` : ''}`);
     const s = document.getElementById('tSkill');
-    if (s) s.innerHTML = `${sk.name}<small>剩 ${this.skillLeft()} 次</small>`;
+    setHtml(s, `${sk.name}<small>剩 ${this.skillLeft()} 次</small>`);
     const p = document.getElementById('tPotion');
-    if (p) p.innerHTML = `${UI.ico('item/potion_red', 'ri')}藥水 ×${T.potions}`;
+    setHtml(p, `${UI.ico('item/potion_red', 'ri')}藥水 ×${T.potions}`);
     const it = document.getElementById('tItems');
-    if (it) it.innerHTML = Object.keys(ITEMS).filter(k => T.items[k]).map(k => `<button class="btn sm" data-act="towerItem" data-arg="${k}">${UI.ico(ITEMS[k].icon, 'ri')}${ITEMS[k].name} ×${T.items[k]}</button>`).join('');
+    setHtml(it, Object.keys(ITEMS).filter(k => T.items[k]).map(k => `<button class="btn sm" data-act="towerItem" data-arg="${k}">${UI.ico(ITEMS[k].icon, 'ri')}${ITEMS[k].name} ×${T.items[k]}</button>`).join(''));
     const l = document.getElementById('tLog');
     if (l) l.textContent = this.mode ? { wall: '穿牆術：點旁邊的牆', tool: '破牆鎬：點旁邊的牆', pick: '開鎖：點旁邊的門', midas: '點金術：點旁邊的怪物' }[this.mode]
       : (T.log || '點格子移動，也可以滑動。點怪物會走過去開打。');

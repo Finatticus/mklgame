@@ -33,6 +33,8 @@ const App = {
     FX.sfx('click');
     this.render();
     this.scrollTop();
+    const main = document.getElementById('main');
+    main.classList.remove('enter'); void main.offsetWidth; main.classList.add('enter');
   },
   scrollTop() { document.getElementById('main').scrollTo({ top: 0 }); },
 
@@ -47,6 +49,7 @@ const App = {
     const main = document.getElementById('main');
     main.innerHTML = this.views[this.view].render();
     main.dataset.view = this.view;
+    main.classList.toggle('lock', !!main.querySelector('.tower'));
     if (this.view === 'run') Play.afterRender();
     document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.arg === this.view));
     document.querySelectorAll('#nav .ni').forEach(n => { if (!n.firstChild) n.innerHTML = Art.img(n.dataset.i); });
@@ -68,9 +71,15 @@ const App = {
   // 每秒：更新資源與按鈕可否購買（不重繪整頁）
   refresh() {
     const S = Store.S, r = Store.rates();
-    document.getElementById('top').innerHTML = Object.keys(RES).map(k =>
-      `<div class="res">${UI.res(k)}<b>${fmt(S.res[k])}</b>${r[k] ? `<small>+${r[k] < 10 ? r[k].toFixed(1) : fmt(r[k])}</small>` : ''}</div>`).join('') +
-      `<i class="sync-dot sync-${Sync.status}" title="同步狀態"></i>`;
+    const top = document.getElementById('top');
+    if (!top.querySelector('.sync-dot')) top.innerHTML = Object.keys(RES).map(k =>
+      `<div class="res" data-k="${k}">${UI.res(k)}<b></b><small></small></div>`).join('') + '<i class="sync-dot" title="同步狀態"></i>';
+    top.querySelectorAll('.res').forEach(el => {
+      const k = el.dataset.k, b = fmt(S.res[k]), sm = r[k] ? '+' + (r[k] < 10 ? r[k].toFixed(1) : fmt(r[k])) : '';
+      if (el.children[1].textContent !== b) el.children[1].textContent = b;
+      if (el.children[2].textContent !== sm) el.children[2].textContent = sm;
+    });
+    top.querySelector('.sync-dot').className = 'sync-dot sync-' + Sync.status;
     document.querySelectorAll('[data-cost]').forEach(btn => {
       const cost = JSON.parse(btn.dataset.cost);
       btn.disabled = !Store.canAfford(cost);
