@@ -2,7 +2,8 @@
 const NAV_OF = {
     "sec-today": "sec-today", "sec-books": "sec-books", "sec-words": "sec-books", "sec-srs-list": "sec-books",
     "sec-sentence-maker": "sec-books", "sec-radio-setup": "sec-books", "sec-radio-player": "sec-books",
-    "sec-flashcard": "sec-today", "sec-dict": "sec-dict", "sec-read": "sec-read", "sec-more": "sec-more"
+    "sec-flashcard": "sec-today", "sec-dict": "sec-dict", "sec-read": "sec-read", "sec-more": "sec-more",
+    "sec-class": "sec-class", "sec-lesson": "sec-class", "sec-verb": "sec-class"
 };
 
 const App = {
@@ -18,6 +19,8 @@ const App = {
         if (id === "sec-books") renderBooksList();
         if (id === "sec-read") fetchCustomArticles();
         if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); Notify.updateButton(); loadHighScores(); }
+        if (id === "sec-class") renderClassHome();
+        if (id !== "sec-lesson" && id !== "sec-verb") TTS.stop();
         window.scrollTo({ top: 0 });
     },
 
@@ -56,6 +59,7 @@ function applyLang() {
     root.lang = S.lang === "fr" ? "fr" : "zh-TW";
     document.querySelectorAll("#lang-switch button").forEach(b => b.classList.toggle("on", b.dataset.arg === S.lang));
     $("wordmark-lang").textContent = l.name;
+    show("nav-class", S.lang === "fr");
     $("today-title").innerHTML = S.lang === "fr" ? "Bonjour, <em>on révise ?</em>" : "Hello, <em>ready to review?</em>";
     $("today-date").textContent = new Date().toLocaleDateString("zh-TW", { month: "long", day: "numeric", weekday: "long" }) + " · " + l.label;
     ["books-lang", "dict-lang", "read-lang", "more-lang"].forEach(id => { $(id).textContent = `${l.name} · ${l.label}`; });
@@ -83,7 +87,7 @@ Actions.switchLang = (lang) => {
     lsSet("vocab_lang", lang);
     S.articles = [];
     applyLang();
-    const stay = ["sec-today", "sec-books", "sec-dict", "sec-read", "sec-more"];
+    const stay = ["sec-today", "sec-books", "sec-dict", "sec-read", "sec-more"].concat(lang === "fr" ? ["sec-class"] : []);
     App.go(stay.includes(App.current) ? App.current : "sec-today");
 };
 

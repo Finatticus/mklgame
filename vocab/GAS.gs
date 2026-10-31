@@ -297,15 +297,34 @@ function englishNews(section) {
 function frenchNews(section) {
   var res = UrlFetchApp.fetch("https://www.franceinfo.fr/" + section + ".rss", { muteHttpExceptions: true, followRedirects: true });
   if (res.getResponseCode() !== 200) throw new Error("新聞服務回應錯誤 (" + res.getResponseCode() + ")");
-  var channel = XmlService.parse(res.getContentText()).getRootElement().getChild("channel");
-  var items = channel.getChildren("item").slice(0, 12).map(function (it) {
-    return {
-      title: it.getChildText("title") || "",
-      url: (it.getChildText("link") || "").split("#")[0],
-      summary: stripTags(it.getChildText("description") || "")
-    };
+  var xml = res.getContentText();
+  var items;
+  try {
+    var channel = XmlService.parse(xml).getRootElement().getChild("channel");
+    items = channel.getChildren("item").slice(0, 12).map(function (it) {
+      return { title: it.getChildText("title") || "", url: it.getChildText("link") || "", summary: it.getChildText("description") || "" };
+    });
+  } catch (e) {
+    // RSS 不是嚴格的 XML（例如含有 HTML 實體）時改用文字比對
+    items = (xml.match(/<item[\s>][\s\S]*?<\/item>/g) || []).slice(0, 12).map(function (block) {
+      var pick = function (tag) {
+        var m = block.match(new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">"));
+        return m ? m[1].replace(/^<!\[CDATA\[|\]\]>$/g, "") : "";
+      };
+      return { title: decodeEntities(stripTags(pick("title"))), url: pick("link"), summary: pick("description") };
+    });
+  }
+  items = items.map(function (x) {
+    return { title: decodeEntities(x.title.trim()), url: x.url.trim().split("#")[0], summary: decodeEntities(stripTags(x.summary)) };
   }).filter(function (x) { return x.title && x.summary; });
   return { kind: "digest", items: items };
+}
+
+function decodeEntities(s) {
+  return String(s)
+    .replace(/&#x([0-9a-f]+);/gi, function (m, h) { return String.fromCharCode(parseInt(h, 16)); })
+    .replace(/&#(\d+);/g, function (m, d) { return String.fromCharCode(parseInt(d, 10)); })
+    .replace(/&quot;/g, '"').replace(/&apos;|&rsquo;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
 
 function stripTags(s) {
@@ -340,19 +359,27 @@ function articleSheet(ctx) { return ctx.ss.getSheetByName(ctx.username + "_Artic
 function settingsSheet(ctx) { return ctx.ss.getSheetByName(ctx.username + "_Settings"); }
 function logSheet(ctx) { return ctx.ss.getSheetByName(ctx.username + "_Log"); }
 
+// 第三欄：要設成「純文字」的欄位（避免試算表把「3-4」「1/2」等內容自動轉成日期或數字）
 function ensureUserSheets(ctx, createIfMissing) {
   var specs = [
-    [ctx.username, WORD_HEADERS],
-    [ctx.username + "_Articles", ARTICLE_HEADERS],
-    [ctx.username + "_Settings", SETTINGS_HEADERS],
-    [ctx.username + "_Log", LOG_HEADERS]
+    [ctx.username, WORD_HEADERS, [1, 2, 3, 4, 5, 6, 7, 11, 12, 13]],
+    [ctx.username + "_Articles", ARTICLE_HEADERS, [1, 2, 3, 4, 8, 9]],
+    [ctx.username + "_Settings", SETTINGS_HEADERS, [1, 2]],
+    [ctx.username + "_Log", LOG_HEADERS, [1, 2]]
   ];
   if (!ctx.ss.getSheetByName(ctx.username) && !createIfMissing) throw new Error("找不到該使用者的資料，請重新登入");
   specs.forEach(function (s) {
-    if (ctx.ss.getSheetByName(s[0])) return;
-    var sheet = ctx.ss.insertSheet(s[0]);
-    sheet.getRange(1, 1, 1, s[1].length).setValues([s[1]]).setFontWeight("bold");
-    sheet.setFrozenRows(1);
+    var sheet = ctx.ss.getSheetByName(s[0]);
+    var created = !sheet;
+    if (created) {
+      sheet = ctx.ss.insertSheet(s[0]);
+      sheet.getRange(1, 1, 1, s[1].length).setValues([s[1]]).setFontWeight("bold");
+      sheet.setFrozenRows(1);
+    }
+    // 登入時也套用一次，修正舊版建立的工作表
+    if (created || createIfMissing) {
+      s[2].forEach(function (col) { sheet.getRange(1, col, sheet.getMaxRows(), 1).setNumberFormat("@"); });
+    }
   });
 }
 

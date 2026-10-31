@@ -9,9 +9,11 @@ const Api = {
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ ...payload, action, username: S.user })
         });
+        // 伺服器暫時故障（非 2xx）視為網路問題，之後重送；回應成功卻不是 JSON 則視為後端錯誤，避免佇列永遠卡住
+        if (!res.ok) throw new Error("伺服器暫時無法使用（" + res.status + "）");
         let data;
         try { data = await res.json(); }
-        catch (e) { throw new Error("後端回應格式錯誤"); }
+        catch (e) { throw new ServerError("後端回應格式錯誤，請確認 GAS 已部署最新版本"); }
         if (data.status !== "success") throw new ServerError(data.message || "後端錯誤");
         return data;
     }

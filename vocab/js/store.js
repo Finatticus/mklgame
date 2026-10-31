@@ -91,7 +91,7 @@ const Words = {
     normalize(term) {
         term = String(term || "").trim().replace(/\s+/g, " ");
         // 只有開頭大寫的單一單字（如 "Apple"、"Maison"）轉小寫；全大寫縮寫或片語保留
-        if (term && !term.includes(" ") && term === term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()) term = term.toLowerCase();
+        if (term.length > 1 && !term.includes(" ") && term === term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()) term = term.toLowerCase();
         return term;
     },
 

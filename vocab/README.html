@@ -45,12 +45,12 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <body>
 <div class="wrap">
 
-<p class="sub">說明書 · v1.0.0 · 2026-10-31</p>
+<p class="sub">說明書 · v1.1.0 · 2026-10-31</p>
 <h1>Vocab，<i>英文與法文</i>單字學習</h1>
 <p class="sub">一個帳號、兩種語言。英文和法文各自有自己的單字本、複習進度、設定、文章與遊戲紀錄，用右上角的 EN / FR 切換。</p>
 
 <nav class="toc">
-  <a href="#setup">部署（全新開始）</a><a href="#lang">兩種語言的差異</a><a href="#pages">各頁面</a>
+  <a href="#setup">部署（全新開始）</a><a href="#lang">兩種語言的差異</a><a href="#class">法文教室</a><a href="#accuracy">單字判斷與 AI</a><a href="#pages">各頁面</a>
   <a href="#srs">複習規則</a><a href="#design">設計原則</a><a href="#data">資料結構</a><a href="#api">後端 API</a>
   <a href="#files">檔案</a><a href="#update">日常更新</a><a href="#limits">已知限制</a>
 </nav>
@@ -77,6 +77,34 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td>文章斷字</td><td>一般斷字</td><td>自動拆開 l'、d'、qu' 等縮寫，點 <i>l'homme</i> 會查 <i>homme</i></td></tr>
 <tr><td>朗讀 / 拍照</td><td>en-US / 英文辨識</td><td>fr-FR / 法文辨識</td></tr>
 </table></div>
+
+<h2 id="class">法文教室</h2>
+<p>切到 FR 時底部會多一個「教室」分頁，從零開始一路學到能溝通的程度。所有內容都是預先寫好、檢查過的，不是即時用 AI 產生。</p>
+<div class="tbl"><table>
+<tr><th>級別</th><th>課數</th><th>內容</th></tr>
+<tr><td>A1 入門</td><td>16</td><td>問候、être / avoir、數字、冠詞與陰陽性、所有格、-er 動詞、問句、時間日期、形容詞、部分冠詞、地點介系詞、faire 與天氣、反身動詞、問路、購物、近未來與近過去</td></tr>
+<tr><td>A2 基礎</td><td>16</td><td>複合過去式（avoir / être）、未完成過去式、兩種過去式的區分、直接與間接受詞代名詞、y 與 en、比較級與最高級、簡單未來式、命令式、qui / que / où、健康、交通、各種否定、副詞、強調與所有格代名詞</td></tr>
+<tr><td>B1 進階</td><td>14</td><td>條件式、si 條件句、虛擬式（構成、意願、情感、懷疑）、愈過去式、條件式過去時、dont / ce que、lequel、雙代名詞順序、間接引語、被動語態、副動詞、論證與連接詞、職場法語</td></tr>
+</table></div>
+<ul>
+  <li><b>每一課</b>：本課目標、文法說明（中文）與表格、例句、單字、情境對話、文化小知識、練習（選擇、填空、重組句子、中翻法、聽寫）與單字快問。</li>
+  <li><b>隨時聽</b>：例句、表格、單字、對話每一行旁邊都有朗讀鈕，對話可以一次播放全部，也可以隱藏翻譯練聽力。</li>
+  <li><b>串聯單字本</b>：單字可以一個個加，或「全部加入單字本」存到「教室 A1 / A2 / B1」，會自動進入每日複習；文章裡任何字都能點來查與加入。</li>
+  <li><b>動詞變化</b>：約 90 個常用動詞，自動產生 8 種時態（現在式、複合過去式、未完成過去式、未來式、命令式、條件式、虛擬式、愈過去式），每一行點了都能聽，並有隨機的變化練習。</li>
+  <li><b>發音入門</b>：字母、母音、鼻母音、子音、連音、省音、語調，每個例子都能聽。</li>
+  <li>進度（完成的課、練習最高分、上次學到哪）存在雲端，換手機也接得上。</li>
+</ul>
+
+<h2 id="accuracy">單字判斷與 AI</h2>
+<ul>
+  <li><b>英文</b>：詞性依 Datamuse 的使用頻率與 Google 的權重判斷，並和翻譯出的中文對照，所以詞性與意思會一致（例如 beautiful → adj. 美麗的、still → adv. 仍然）。</li>
+  <li><b>法文</b>：Google 直接翻譯常因透過英文轉譯出錯（élève → 瞳孔），所以會和 Wiktionary 的釋義比對，對不上時改用字典的意思（élève → 學生、pièce → 房間）；名詞的陰陽性來自 Wiktionary。</li>
+  <li><b>其他常見意思</b>：意思欄下方會列出不同詞性的意思，點一下就能換。</li>
+  <li><b>變化形提示</b>：輸入 chevaux、mange 這類變化形時，會提示原形並可一鍵改用。</li>
+  <li><b>改單字會重新帶入</b>：把單字改掉後，自動帶入的意思、詞性、例句會跟著更新；自己手動改過的欄位不會被覆蓋。</li>
+  <li><b>AI 校對</b>（需要 GEMINI_API_KEY）：用 Gemini 取得最常用的意思、詞性與例句，也會修正拼字。</li>
+  <li><b>AI 檢查例句</b>：在編輯單字時，可以請 AI 檢查自己寫的例句（文法、拼字、重音、自然度），或請它給一句範例。</li>
+</ul>
 
 <h2 id="pages">各頁面</h2>
 <div class="cols">
@@ -145,6 +173,10 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td><code>js/utils.js</code> <code>api.js</code> <code>store.js</code></td><td>工具與對話框、後端呼叫與離線佇列、資料與同步</td></tr>
 <tr><td><code>js/services.js</code></td><td>翻譯、英法字典、音標、朗讀</td></tr>
 <tr><td><code>js/words.js</code> <code>srs.js</code> <code>dict.js</code> <code>reader.js</code> <code>games.js</code> <code>io.js</code> <code>app.js</code></td><td>各頁面功能與啟動流程</td></tr>
+<tr><td><code>js/classroom/verbs.js</code></td><td>法文動詞變化引擎與動詞清單</td></tr>
+<tr><td><code>js/classroom/sounds.js</code></td><td>發音入門資料</td></tr>
+<tr><td><code>js/classroom/lessons-a1.js</code> <code>lessons-a2.js</code> <code>lessons-b1.js</code></td><td>46 課的課程內容（要修改或新增課程就改這裡）</td></tr>
+<tr><td><code>js/classroom/classroom.js</code></td><td>教室畫面、練習批改、進度</td></tr>
 <tr><td><code>sw.js</code>、<code>manifest.json</code>、<code>icons/</code></td><td>PWA</td></tr>
 <tr><td><code>GAS.gs</code></td><td>後端</td></tr>
 </table></div>
@@ -165,7 +197,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li>Google 翻譯免費端點若失效，會改用 GAS 翻譯（較慢、有每日配額）。</li>
 </ul>
 
-<footer>Vocab v1.0.0。之後調整功能時請一併更新本文件。</footer>
+<footer>Vocab v1.1.0。之後調整功能時請一併更新本文件。</footer>
 </div>
 </body>
 </html>

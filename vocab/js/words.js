@@ -1,29 +1,133 @@
+// ===================== 自動帶入（今日新增與快速新增共用） =====================
+// 單字改了就重新查；只覆蓋「上一次自動帶入、使用者沒改過」的欄位
+function makeAutoFill(ids) {
+    const st = { term: "", auto: {}, token: 0, phonetic: "", senses: [] };
+    const el = (k) => (ids[k] ? $(ids[k]) : null);
+
+    const setAuto = (k, v, force) => {
+        const f = el(k);
+        if (!f) return;
+        if (force || !f.value.trim() || f.value === (st.auto[k] || "")) f.value = v || "";
+        st.auto[k] = v || "";
+    };
+
+    function renderSenses() {
+        const box = el("senses");
+        if (!box) return;
+        const cur = el("meaning").value, curPos = el("pos").value;
+        box.innerHTML = st.senses.map((s, i) =>
+            `<button type="button" class="chip${s.meaning === cur && s.pos === curPos ? " on" : ""}" data-sense="${i}">${esc(s.pos)} <small>${esc(s.meaning)}</small></button>`).join("");
+        box.hidden = st.senses.length < 2;
+    }
+
+    function setHint(html) {
+        const h = el("hint");
+        if (!h) return;
+        h.innerHTML = html;
+        h.hidden = !html;
+    }
+
+    async function run(force) {
+        const term = Words.normalize(el("term").value);
+        if (ids.dup) checkDuplicate(ids.term, ids.book, ids.dup);
+        if (!term) {
+            ["meaning", "pos", "example"].forEach(k => setAuto(k, ""));
+            st.term = ""; st.senses = []; st.phonetic = "";
+            renderSenses(); setHint("");
+            return;
+        }
+        if (term === st.term && !force) return;
+        st.term = term;
+        const token = ++st.token;
+        const m = el("meaning");
+        m.placeholder = "查詢中…";
+        const info = await Svc.lookup(term);
+        if (token !== st.token) return;
+        m.placeholder = "中文意思";
+        setAuto("meaning", info.meaning);
+        setAuto("pos", info.pos);
+        setAuto("example", "");
+        st.phonetic = info.phonetic || "";
+        st.senses = info.senses || [];
+        renderSenses();
+        setHint(info.lemma ? `這是 <b>${esc(info.lemma)}</b> 的變化形。<button class="link" type="button" data-use-lemma="${esc(info.lemma)}">改用原形</button>` : "");
+    }
+
+    // 外部帶入初始值（字典、AI 單字包），之後改單字時這些值也會被換掉
+    function prime(term, values) {
+        st.term = Words.normalize(term);
+        st.token++;
+        st.senses = [];
+        st.phonetic = values.phonetic || "";
+        ["meaning", "pos", "example"].forEach(k => { const f = el(k); if (f) f.value = values[k] || ""; st.auto[k] = values[k] || ""; });
+        renderSenses(); setHint("");
+    }
+
+    function applyAi(r) {
+        if (r.term && Words.normalize(r.term) !== st.term) {
+            el("term").value = r.term;
+            st.term = Words.normalize(r.term);
+            showToast(`已修正拼字為「${r.term}」`);
+        }
+        setAuto("meaning", r.meaning, true);
+        setAuto("pos", r.pos, true);
+        if (r.example) setAuto("example", r.example);
+        renderSenses();
+        if (ids.dup) checkDuplicate(ids.term, ids.book, ids.dup);
+    }
+
+    el("term").addEventListener("input", debounce(() => run(), 700));
+    el("term").addEventListener("blur", () => run());
+    if (ids.book && ids.dup) el("book").addEventListener("change", () => checkDuplicate(ids.term, ids.book, ids.dup));
+    if (el("senses")) el("senses").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-sense]");
+        if (!b) return;
+        const s = st.senses[Number(b.dataset.sense)];
+        el("meaning").value = s.meaning; st.auto.meaning = s.meaning;
+        el("pos").value = s.pos; st.auto.pos = el("pos").value;
+        renderSenses();
+    });
+    if (el("hint")) el("hint").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-use-lemma]");
+        if (!b) return;
+        el("term").value = b.dataset.useLemma;
+        run(true);
+    });
+    el("meaning").addEventListener("input", renderSenses);
+    el("pos").addEventListener("change", renderSenses);
+
+    return { run, prime, applyAi, reset: () => prime("", {}), get phonetic() { return st.phonetic; } };
+}
+
+// AI 校對：用 Gemini 取得最常用的意思、詞性與例句
+Actions.aiProofread = async (which, btn) => {
+    const form = which === "qa" ? QuickAdd.fill : AddForm;
+    const termId = which === "qa" ? "qa-term" : "word-term";
+    const term = Words.normalize($(termId).value);
+    if (!term) { showToast("請先輸入單字", "error"); return; }
+    setBusy(btn, true, "校對中…");
+    try {
+        form.applyAi(await Svc.aiLookup(term));
+        if (which !== "qa") $("add-more").classList.add("open");
+        showToast("已用 AI 校對");
+    } catch (e) {
+        showToast("AI 校對失敗：" + e.message, "error", 4000);
+    } finally {
+        setBusy(btn, false);
+    }
+};
+
 // ===================== 今日：新增單字 =====================
-let lastAutoLookup = "";
+const AddForm = makeAutoFill({
+    term: "word-term", meaning: "word-meaning", pos: "word-pos", example: "word-example",
+    book: "word-book", dup: "word-dup-warn", senses: "word-senses", hint: "word-hint"
+});
 
 Actions.toggleAddMore = (arg, btn) => {
     const box = $("add-more");
     box.classList.toggle("open");
     btn.querySelector("i").className = box.classList.contains("open") ? "icon-chevron-up" : "icon-chevron-down";
 };
-
-async function autoLookup() {
-    const raw = $("word-term").value.trim();
-    const term = Words.normalize(raw);
-    checkDuplicate("word-term", "word-book", "word-dup-warn");
-    if (!term || term === lastAutoLookup) return;
-    lastAutoLookup = term;
-    const meaning = $("word-meaning");
-    meaning.placeholder = "翻譯中…";
-    try {
-        const info = await Svc.lookup(term);
-        if ($("word-term").value.trim() !== raw) return;
-        if (info.meaning && !meaning.value.trim()) meaning.value = info.meaning;
-        if (info.pos && !$("word-pos").value) $("word-pos").value = info.pos;
-    } finally {
-        meaning.placeholder = "自動翻譯";
-    }
-}
 
 function checkDuplicate(termId, bookId, warnId) {
     const term = Words.normalize($(termId).value);
@@ -48,12 +152,11 @@ Actions.saveWord = async () => {
     const meaning = $("word-meaning").value.trim();
     if (!term || !meaning) { showToast("請填寫單字與中文意思", "error"); return; }
     if (!(await confirmDuplicate(term, book))) return;
-    Words.add([{ book, term, meaning, notes: $("word-notes").value, pos: $("word-pos").value, example: $("word-example").value }]);
+    Words.add([{ book, term, meaning, notes: $("word-notes").value, pos: $("word-pos").value, example: $("word-example").value, phonetic: AddForm.phonetic }]);
     showToast(`已加入「${book}」`);
-    ["word-term", "word-meaning", "word-notes", "word-example"].forEach(id => { $(id).value = ""; });
-    $("word-pos").value = "";
+    ["word-term", "word-notes"].forEach(id => { $(id).value = ""; });
+    AddForm.reset();
     hide("word-dup-warn");
-    lastAutoLookup = "";
     renderRecent();
     $("word-term").focus();
 };
@@ -77,28 +180,23 @@ $("recent-list").addEventListener("click", (e) => {
 
 // ===================== 快速新增面板（字典、翻譯、新聞、文章、AI 單字包共用） =====================
 const QuickAdd = {
-    phonetic: "",
+    fill: makeAutoFill({
+        term: "qa-term", meaning: "qa-meaning", pos: "qa-pos", example: "qa-example",
+        book: "qa-book", dup: "qa-dup-warn", senses: "qa-senses", hint: "qa-hint"
+    }),
 
-    async open(term, { meaning = "", notes = "", pos = "", phonetic = "", lookup = true } = {}) {
+    // lookup=false：呼叫端已提供意思（字典、AI 單字包），不再重查
+    open(term, { meaning = "", notes = "", pos = "", phonetic = "", example = "", lookup = true } = {}) {
         term = Words.normalize(term);
         if (!term) return;
-        QuickAdd.phonetic = phonetic;
         refreshBookSelects();
         $("qa-book").value = $("word-book").value || Store.defaultBook();
         $("qa-term").value = term;
-        $("qa-meaning").value = meaning;
-        $("qa-meaning").placeholder = lookup && !meaning ? "翻譯中…" : "中文意思";
         $("qa-notes").value = notes;
-        $("qa-pos").value = pos;
+        QuickAdd.fill.prime(term, { meaning, pos, example, phonetic });
         show("quick-add");
         checkDuplicate("qa-term", "qa-book", "qa-dup-warn");
-        if (!lookup) return;
-        const info = await Svc.lookup(term);
-        if ($("qa-term").value !== term) return;
-        $("qa-meaning").placeholder = "中文意思";
-        if (!meaning && !$("qa-meaning").value) $("qa-meaning").value = info.meaning;
-        if (!pos && info.pos) $("qa-pos").value = info.pos;
-        QuickAdd.phonetic = info.phonetic;
+        if (lookup) QuickAdd.fill.run(true);
     }
 };
 
@@ -111,7 +209,7 @@ Actions.saveQuickAdd = async () => {
     const book = $("qa-book").value || Store.defaultBook();
     if (!term || !meaning) { showToast("請填寫單字與中文意思", "error"); return; }
     if (!(await confirmDuplicate(term, book))) return;
-    Words.add([{ book, term, meaning, notes: $("qa-notes").value, pos: $("qa-pos").value, phonetic: QuickAdd.phonetic }]);
+    Words.add([{ book, term, meaning, notes: $("qa-notes").value, pos: $("qa-pos").value, example: $("qa-example").value, phonetic: QuickAdd.fill.phonetic }]);
     showToast(`已加入「${book}」`);
     Actions.closeQuickAdd();
 };
@@ -462,8 +560,58 @@ function openEditModal(id) {
     const bookSel = $("edit-word-book");
     if (w.book === TRASH_BOOK) bookSel.add(new Option(TRASH_BOOK, TRASH_BOOK));
     bookSel.value = w.book;
+    hide("edit-ai-result");
     show("edit-word-modal");
 }
+
+// AI 檢查自己寫的例句（文法、拼字、重音、自然度）
+Actions.aiCheckExample = async (arg, btn) => {
+    const term = $("edit-word-term").value.trim();
+    const sentence = $("edit-word-example").value.trim();
+    if (!sentence) { showToast("請先寫一個例句", "error"); return; }
+    setBusy(btn, true, "檢查中…");
+    const box = $("edit-ai-result");
+    try {
+        const r = await Svc.aiCheckSentence(term, sentence);
+        box.innerHTML = r.ok
+            ? `<div class="verdict good">正確</div><div class="small muted">${esc(r.translation || "")}</div>`
+            : `<div class="verdict warn">建議修改</div>
+               <div class="serif">${esc(r.corrected || "")}</div>
+               <div class="small muted mt-8">${esc(r.translation || "")}</div>
+               <div class="small mt-8">${esc(r.explanation || "")}</div>
+               <button class="link small mt-8" type="button" data-apply-example="${esc(r.corrected || "")}">套用修改</button>`;
+        show(box);
+    } catch (e) {
+        showToast("AI 檢查失敗：" + e.message, "error", 4000);
+    } finally {
+        setBusy(btn, false);
+    }
+};
+
+Actions.aiSuggestExample = async (arg, btn) => {
+    const term = Words.normalize($("edit-word-term").value);
+    if (!term) return;
+    setBusy(btn, true, "產生中…");
+    try {
+        const r = await Svc.aiLookup(term);
+        if (r.example) {
+            $("edit-word-example").value = r.example;
+            $("edit-ai-result").innerHTML = `<div class="small muted">${esc(r.exampleZh || "")}</div>`;
+            show("edit-ai-result");
+        }
+    } catch (e) {
+        showToast("AI 產生失敗：" + e.message, "error", 4000);
+    } finally {
+        setBusy(btn, false);
+    }
+};
+
+$("edit-ai-result").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-apply-example]");
+    if (!b) return;
+    $("edit-word-example").value = b.dataset.applyExample;
+    hide("edit-ai-result");
+});
 
 Actions.saveEditWord = () => {
     const id = $("edit-id").value;
@@ -611,14 +759,4 @@ Actions.openSrsList = () => {
 };
 
 // ===================== 初始化 =====================
-$("word-term").addEventListener("blur", autoLookup);
-$("word-term").addEventListener("input", () => { if (!$("word-term").value.trim()) hide("word-dup-warn"); });
-$("word-book").addEventListener("change", () => checkDuplicate("word-term", "word-book", "word-dup-warn"));
-$("qa-term").addEventListener("change", () => {
-    const book = $("qa-book").value;
-    QuickAdd.open($("qa-term").value);
-    $("qa-book").value = book;
-    checkDuplicate("qa-term", "qa-book", "qa-dup-warn");
-});
-$("qa-book").addEventListener("change", () => checkDuplicate("qa-term", "qa-book", "qa-dup-warn"));
 $("ocr-upload").addEventListener("change", handleOCR);

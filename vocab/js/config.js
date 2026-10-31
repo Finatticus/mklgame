@@ -1,9 +1,9 @@
 // ===================== 全域設定 =====================
 // 部署新的 GAS 後，把網址貼在這裡
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwLMujCmeWLdIqDlT6r0vwwySffkwSg42yrWfvwGrW2tY1olNmaf35jxq9ngw-3wUw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwNuQgMxCF1_snTNYTmjuLRCo5AfIp6m9aX-yN90scHQt13gasoQZrF_x7qScXG7SE/exec";
 // 測試用：localStorage.setItem("vocab_api_override", "其他後端網址") 可改連其他後端
 const API_URL = (() => { try { return localStorage.getItem("vocab_api_override") || GAS_URL; } catch (e) { return GAS_URL; } })();
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.1.0";
 const MIN_API_VERSION = 1;
 
 const DEFAULT_BOOK = "我的單字";
@@ -18,7 +18,7 @@ const LANGS = {
         code: "en", name: "English", label: "英文", short: "EN",
         tts: "en-US", gtx: "en", ocr: "eng",
         accent: "#2E4A6B", accentSoft: "rgba(46, 74, 107, 0.08)",
-        pos: [["n.", "名詞"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prep.", "介系詞"], ["conj.", "連接詞"], ["phr.", "片語"]],
+        pos: [["n.", "名詞"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prep.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["interj.", "感嘆詞"], ["phr.", "片語"]],
         accents: [],
         news: [["world", "國際"], ["business", "商業"], ["politics", "政治"], ["technology", "科技"], ["science", "科學"], ["society", "社會"], ["education", "教育"], ["culture", "文化"]],
         newsSource: "The Guardian",
@@ -28,7 +28,7 @@ const LANGS = {
         code: "fr", name: "Français", label: "法文", short: "FR",
         tts: "fr-FR", gtx: "fr", ocr: "fra",
         accent: "#7E3438", accentSoft: "rgba(126, 52, 56, 0.08)",
-        pos: [["n.m.", "陽性名詞"], ["n.f.", "陰性名詞"], ["n.", "名詞（陰陽同形）"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prép.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["loc.", "片語"]],
+        pos: [["n.m.", "陽性名詞"], ["n.f.", "陰性名詞"], ["n.", "名詞（陰陽同形）"], ["v.", "動詞"], ["adj.", "形容詞"], ["adv.", "副詞"], ["prép.", "介系詞"], ["conj.", "連接詞"], ["pron.", "代名詞"], ["dét.", "限定詞／冠詞"], ["interj.", "感嘆詞"], ["loc.", "片語"]],
         accents: ["é", "è", "ê", "ë", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "ü", "œ"],
         news: [["monde", "國際"], ["economie", "經濟"], ["politique", "政治"], ["internet", "科技"], ["sciences", "科學"], ["societe", "社會"], ["sante", "健康"], ["culture", "文化"]],
         newsSource: "franceinfo",

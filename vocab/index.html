@@ -6,8 +6,8 @@
     <title>Vocab</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#FAF8F4">
-    <link rel="icon" href="icons/icon-192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" href="icons/icon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
@@ -67,8 +67,13 @@
                 <input type="text" id="word-term" class="input-big" autocomplete="off" autocapitalize="off" spellcheck="false">
                 <div class="accent-keys" data-target="word-term" hidden></div>
                 <div id="word-dup-warn" class="hint mt-8" hidden></div>
-                <div class="row mt-16">
-                    <label class="field"><span>中文意思</span><input type="text" id="word-meaning" autocomplete="off" placeholder="自動翻譯"></label>
+                <div id="word-hint" class="note-line mt-8" hidden></div>
+                <div class="row mt-12">
+                    <label class="field"><span>中文意思</span><input type="text" id="word-meaning" autocomplete="off" placeholder="中文意思"></label>
+                </div>
+                <div class="field-tools">
+                    <div class="chips senses" id="word-senses" hidden></div>
+                    <button class="link small" data-action="aiProofread" data-arg="add"><i class="icon-sparkles"></i> AI 校對</button>
                 </div>
                 <div class="row mt-8">
                     <label class="field"><span>詞性</span><select id="word-pos" class="pos-select" data-empty="自動"></select></label>
@@ -365,12 +370,93 @@
                 <p class="tiny muted mt-16">Vocab <span id="app-version"></span></p>
             </div>
         </section>
+
+        <!-- 法文教室 -->
+        <section id="sec-class">
+            <div class="page-head"><p class="eyebrow">Français · 法文教室</p><h1>從零開始的法文課</h1></div>
+            <div class="class-summary">
+                <div class="grow">
+                    <div class="small muted" id="class-progress"></div>
+                    <div class="progress mt-8"><div id="class-progress-bar"></div></div>
+                </div>
+                <button class="btn primary sm" id="class-continue-btn" data-action="continueLesson">繼續</button>
+            </div>
+            <button class="link small mb-8" id="class-continue" data-action="openLesson"></button>
+            <div class="tabs" id="class-tabs">
+                <button class="on" data-action="classTab" data-arg="course">課程</button>
+                <button data-action="classTab" data-arg="verbs">動詞變化</button>
+                <button data-action="classTab" data-arg="sounds">發音</button>
+            </div>
+            <div id="class-course"><div class="course-list"></div></div>
+            <div id="class-verbs" hidden>
+                <div class="search mb-8"><i class="icon-search"></i><input type="search" id="verb-search" placeholder="搜尋動詞（法文或中文）" autocomplete="off"></div>
+                <div id="verb-list"></div>
+            </div>
+            <div id="class-sounds" hidden></div>
+        </section>
+
+        <section id="sec-lesson">
+            <div class="back-row">
+                <button class="icon-btn" data-action="go" data-arg="sec-class" title="回到課程"><i class="icon-arrow-left"></i></button>
+                <span class="grow"></span>
+                <button class="icon-btn" id="lesson-prev" data-action="lessonNav" data-arg="-1" title="上一課"><i class="icon-chevron-left"></i></button>
+                <button class="icon-btn" id="lesson-next" data-action="lessonNav" data-arg="1" title="下一課"><i class="icon-chevron-right"></i></button>
+            </div>
+            <div class="page-head">
+                <p class="eyebrow" id="lesson-eyebrow"></p>
+                <h1 id="lesson-title"></h1>
+                <p class="serif lesson-fr" id="lesson-fr"></p>
+            </div>
+            <p class="lesson-goal" id="lesson-goal"></p>
+
+            <div class="block">
+                <div class="block-head"><h2>文法</h2></div>
+                <div id="lesson-grammar"></div>
+            </div>
+            <div class="block">
+                <div class="block-head"><h2>單字</h2><button class="link small" data-action="addAllLessonVocab"><i class="icon-plus"></i> 全部加入單字本</button></div>
+                <div id="lesson-vocab"></div>
+            </div>
+            <div class="block" id="lesson-dialog-block">
+                <div class="block-head"><h2>對話</h2>
+                    <div class="links"><button class="link small muted" data-action="toggleDialogZh">隱藏翻譯</button><button class="link small" data-action="playDialog"><i class="icon-play"></i> 播放全部</button></div>
+                </div>
+                <div id="lesson-dialog"></div>
+            </div>
+            <div class="block" id="lesson-culture" hidden></div>
+            <div class="block" id="lesson-ex-block">
+                <div class="block-head"><h2>練習</h2><button class="link small" data-action="vocabQuiz">單字快問</button></div>
+                <div id="lesson-ex"></div>
+                <div class="accent-keys" id="lesson-ex-keys"></div>
+                <div class="row mt-16">
+                    <button class="btn primary" data-action="checkExercises">對答案</button>
+                    <button class="btn" data-action="resetExercises">重做</button>
+                    <span class="small muted grow" id="lesson-ex-score"></span>
+                </div>
+            </div>
+            <div class="block">
+                <button class="btn block" id="lesson-done" data-action="lessonDone">完成本課</button>
+            </div>
+        </section>
+
+        <section id="sec-verb">
+            <div class="back-row">
+                <button class="icon-btn" data-action="backToVerbs" title="返回"><i class="icon-arrow-left"></i></button>
+                <span class="grow"></span>
+                <button class="link small" data-action="addVerbToBook"><i class="icon-plus"></i> 加入單字本</button>
+            </div>
+            <div class="page-head"><h1 class="serif" id="verb-title"></h1><p id="verb-meta"></p></div>
+            <button class="btn primary sm mb-16" data-action="verbDrill"><i class="icon-pencil"></i> 練習變化</button>
+            <p class="small muted mb-8">點任何一行就能聽發音。</p>
+            <div id="verb-tables" class="tenses"></div>
+        </section>
     </main>
 
     <nav class="nav" id="bottom-nav" hidden>
         <div class="nav-inner">
             <button data-action="go" data-arg="sec-today"><i class="icon-sun"></i><span>今日</span></button>
             <button data-action="go" data-arg="sec-books"><i class="icon-library"></i><span>單字</span></button>
+            <button data-action="go" data-arg="sec-class" id="nav-class" hidden><i class="icon-graduation-cap"></i><span>教室</span></button>
             <button data-action="go" data-arg="sec-dict"><i class="icon-book-open"></i><span>字典</span></button>
             <button data-action="go" data-arg="sec-read"><i class="icon-newspaper"></i><span>閱讀</span></button>
             <button data-action="go" data-arg="sec-more"><i class="icon-ellipsis"></i><span>更多</span></button>
@@ -402,6 +488,12 @@
                 </div>
                 <label class="field"><span>備註</span><input type="text" id="edit-word-notes"></label>
                 <label class="field"><span>例句</span><textarea id="edit-word-example" rows="2" style="min-height:64px;"></textarea></label>
+                <div class="field-tools">
+                    <span class="grow"></span>
+                    <button class="link small" data-action="aiCheckExample"><i class="icon-sparkles"></i> AI 檢查例句</button>
+                    <button class="link small muted" data-action="aiSuggestExample">AI 給一句</button>
+                </div>
+                <div id="edit-ai-result" class="ai-result" hidden></div>
             </div>
             <div class="dialog-actions">
                 <button class="btn" data-action="closeModal" data-arg="edit-word-modal">取消</button>
@@ -419,9 +511,15 @@
                 <button class="icon-btn" data-action="closeQuickAdd" title="關閉"><i class="icon-x"></i></button>
             </div>
             <div id="qa-dup-warn" class="hint mb-8" hidden></div>
-            <div class="row mb-8">
+            <div id="qa-hint" class="note-line mb-8" hidden></div>
+            <div class="row">
                 <input type="text" id="qa-meaning" placeholder="中文意思">
             </div>
+            <div class="field-tools mb-8">
+                <div class="chips senses" id="qa-senses" hidden></div>
+                <button class="link small" data-action="aiProofread" data-arg="qa"><i class="icon-sparkles"></i> AI 校對</button>
+            </div>
+            <input type="text" id="qa-example" class="mb-8" placeholder="例句（選填）">
             <div class="row">
                 <select id="qa-pos" class="pos-select" data-empty="詞性"></select>
                 <select id="qa-book" class="book-select"></select>
@@ -579,6 +677,12 @@
     <script src="js/dict.js"></script>
     <script src="js/reader.js"></script>
     <script src="js/games.js"></script>
+    <script src="js/classroom/verbs.js"></script>
+    <script src="js/classroom/sounds.js"></script>
+    <script src="js/classroom/lessons-a1.js"></script>
+    <script src="js/classroom/lessons-a2.js"></script>
+    <script src="js/classroom/lessons-b1.js"></script>
+    <script src="js/classroom/classroom.js"></script>
     <script src="js/io.js"></script>
     <script src="js/app.js"></script>
 </body>

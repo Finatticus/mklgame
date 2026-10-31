@@ -5,17 +5,20 @@ let currentDict = null; // {term, meaning, pos, phonetic, notes}
 async function renderDictEntry(word, container, { compact = false } = {}) {
     const lang = S.lang;
     container.innerHTML = '<p class="muted small">查詢中…</p>';
-    const [entry, rich] = await Promise.all([Svc.dict(word, lang), Svc.translateRich(word, lang)]);
-    if (!entry && !(rich && rich.basic)) {
+    // 意思與詞性用和「新增單字」相同的判斷，兩邊不會不一致
+    const [info, rich] = await Promise.all([Svc.lookup(word, lang), lang === "en" ? Svc.translateRich(word, lang) : Promise.resolve(null)]);
+    const entry = info.entry;
+    if (!entry && !info.meaning) {
         container.innerHTML = `<p class="muted">找不到「${esc(word)}」，請確認拼字。</p>`;
         return null;
     }
     const display = entry ? entry.word : word;
-    const pos = Svc.posOf(entry, lang);
+    const pos = info.pos;
     const tasks = [];
-    const slot = (text) => {
+    // sl：釋義是英文；例句是學習中的語言
+    const slot = (text, sl = "en") => {
         const id = "tr-" + uid();
-        tasks.push({ id, text });
+        tasks.push({ id, text, sl });
         return `<div class="tr" id="${id}"></div>`;
     };
 
@@ -28,20 +31,24 @@ async function renderDictEntry(word, container, { compact = false } = {}) {
             ${entry && entry.phonetic ? `<span class="phon">${esc(entry.phonetic)}</span>` : ""}
         </div>`;
     }
-    if (rich && rich.basic) html += `<div class="dict-basic">${esc(rich.basic)}</div>`;
+    if (info.meaning) html += `<div class="dict-basic">${esc(info.meaning)}${compact && pos ? ` <span class="small">${posLabel(pos)}</span>` : ""}</div>`;
+    if (info.lemma) html += `<div class="note-line mt-8">這是 <span class="cw serif" data-word="${esc(info.lemma)}">${esc(info.lemma)}</span> 的變化形</div>`;
 
-    if (rich && rich.senses.length) {
+    if (info.senses && info.senses.length > 1) {
         html += `<div class="dict-section"><span class="eyebrow">常見意思</span>` +
-            rich.senses.map(s => `<div class="sense"><span class="pos">${esc(s.pos)}</span><span>${esc(s.terms.slice(0, 8).join("、"))}</span></div>`).join("") + `</div>`;
+            info.senses.map(s => `<div class="sense"><span>${posLabel(s.pos)}</span><span>${esc(s.meaning)}</span></div>`).join("") + `</div>`;
     }
 
     if (entry && entry.meanings.length) {
-        // Wiktionary 與 Free Dictionary 的釋義都是英文，一律由英文翻成中文
+        // Wiktionary 與 Free Dictionary 的釋義都是英文，翻成中文對照
         html += `<div class="dict-section"><span class="eyebrow">釋義</span>`;
-        entry.meanings.slice(0, compact ? 2 : 5).forEach(m => {
-            html += `<div class="small mt-8"><span class="pos">${esc(m.pos)}</span></div>`;
+        // 和判斷出的詞性相同的釋義排前面（Free Dictionary 有時把罕見用法排第一）
+        const rank = (m) => Svc.posCode(m.pos, lang, m.gender) === pos ? 0 : 1;
+        [...entry.meanings].sort((a, b) => rank(a) - rank(b)).slice(0, compact ? 2 : 5).forEach(m => {
+            const code = Svc.posCode(m.pos, lang, m.gender);
+            html += `<div class="small mt-8">${code ? posLabel(code) : `<span class="pos">${esc(m.pos)}</span>`}</div>`;
             m.defs.slice(0, compact ? 2 : 3).forEach(d => {
-                html += `<div class="def"><div>${esc(d.def)}</div>${slot(d.def)}${d.example ? `<div class="eg">${esc(d.example)}</div>` : ""}</div>`;
+                html += `<div class="def"><div>${esc(d.def)}</div>${slot(d.def)}${d.example ? `<div class="eg">${esc(d.example)}</div>${slot(d.example, LANGS[lang].gtx)}` : ""}</div>`;
             });
             const syn = (m.synonyms || []).slice(0, 5);
             if (syn.length && !compact) html += `<div class="small muted">同義：${esc(syn.join(", "))}</div>`;
@@ -51,7 +58,7 @@ async function renderDictEntry(word, container, { compact = false } = {}) {
 
     if (rich && rich.examples.length) {
         html += `<div class="dict-section"><span class="eyebrow">例句</span>` +
-            rich.examples.slice(0, compact ? 2 : 3).map(ex => `<div class="def"><div class="eg" style="margin:0;">${esc(ex)}</div>${slot(ex)}</div>`).join("") + `</div>`;
+            rich.examples.slice(0, compact ? 2 : 3).map(ex => `<div class="def"><div class="eg" style="margin:0;">${esc(ex)}</div>${slot(ex, LANGS[lang].gtx)}</div>`).join("") + `</div>`;
     }
 
     if (lang === "en" && !compact) {
@@ -64,12 +71,10 @@ async function renderDictEntry(word, container, { compact = false } = {}) {
     container.innerHTML = html;
 
     const run = limiter(3);
-    tasks.forEach((t, i) => run(async () => {
+    tasks.forEach(t => run(async () => {
         const el = document.getElementById(t.id);
         if (!el) return;
-        // 釋義是英文；例句是目前語言
-        const isExample = rich && rich.examples.includes(t.text);
-        try { el.textContent = await Svc.translate(t.text, { sl: isExample ? LANGS[lang].gtx : "en" }); } catch (e) { el.remove(); }
+        try { el.textContent = await Svc.translate(t.text, { sl: t.sl }); } catch (e) { el.remove(); }
     }));
 
     const familyNotes = [];
@@ -88,7 +93,7 @@ async function renderDictEntry(word, container, { compact = false } = {}) {
         }
     }
 
-    return { term: display, meaning: rich && rich.basic ? rich.basic : "", pos, phonetic: entry ? entry.phonetic : "", notes: familyNotes.join("\n") };
+    return { term: display, meaning: info.meaning, pos, phonetic: entry ? entry.phonetic : "", notes: familyNotes.join("\n") };
 }
 
 document.addEventListener("click", (e) => {

@@ -1,10 +1,13 @@
 // 每次發佈新版前端時把版本號 +1，舊快取會在啟用時自動清除
-const VERSION = "vocab-v1.0.0";
+const VERSION = "vocab-v1.1.0";
 const APP_FILES = [
     "./", "./index.html", "./manifest.json", "./css/style.css",
     "./js/config.js", "./js/utils.js", "./js/api.js", "./js/store.js", "./js/services.js",
     "./js/words.js", "./js/srs.js", "./js/dict.js", "./js/reader.js", "./js/games.js",
-    "./js/io.js", "./js/app.js", "./icons/icon-192.png", "./icons/icon-512.png"
+    "./js/io.js", "./js/app.js",
+    "./js/classroom/verbs.js", "./js/classroom/sounds.js", "./js/classroom/lessons-a1.js", "./js/classroom/lessons-a2.js",
+    "./js/classroom/lessons-b1.js", "./js/classroom/classroom.js",
+    "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-180.png", "./icons/icon-32.png"
 ];
 const CDN_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com", "cdn.jsdelivr.net"];
 
