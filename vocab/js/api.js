@@ -22,7 +22,7 @@ const Queue = {
     flushing: null,
     needsResync: false,
 
-    key() { return "vp_queue_" + S.user; },
+    key() { return "vocab_queue_" + S.user; },
     items() { return lsGet(Queue.key(), []); },
     save(items) { lsSet(Queue.key(), items); Queue.updateBadge(); },
     size() { return S.user ? Queue.items().length : 0; },
@@ -72,8 +72,9 @@ const Queue = {
         chip.hidden = n === 0 && !offline;
         chip.classList.toggle("offline", offline);
         chip.innerHTML = offline
-            ? `<i class="fas fa-wifi"></i> 離線${n ? ` · ${n} 筆待同步` : ""}`
-            : `<i class="fas fa-cloud-upload-alt"></i> ${n} 筆待同步`;
+            ? `<i class="icon-wifi-off"></i> 離線${n ? ` · ${n}` : ""}`
+            : `<i class="icon-cloud-upload"></i> ${n}`;
+        chip.title = n ? `${n} 筆修改等待同步` : "目前離線";
     }
 };
 

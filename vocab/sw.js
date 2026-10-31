@@ -1,7 +1,7 @@
 // 每次發佈新版前端時把版本號 +1，舊快取會在啟用時自動清除
-const VERSION = "vp-v2.0.0";
+const VERSION = "vocab-v1.0.0";
 const APP_FILES = [
-    "./", "./index.html", "./vcl.html", "./manifest.json", "./css/style.css",
+    "./", "./index.html", "./manifest.json", "./css/style.css",
     "./js/config.js", "./js/utils.js", "./js/api.js", "./js/store.js", "./js/services.js",
     "./js/words.js", "./js/srs.js", "./js/dict.js", "./js/reader.js", "./js/games.js",
     "./js/io.js", "./js/app.js", "./icons/icon-192.png", "./icons/icon-512.png"
@@ -15,7 +15,8 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         caches.keys()
-            .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+            // 同網域還有其他 App，只刪這個 App 自己（含舊版 vp-）的快取
+            .then(keys => Promise.all(keys.filter(k => k !== VERSION && (k.startsWith("vocab-") || k.startsWith("vp-"))).map(k => caches.delete(k))))
             .then(() => self.clients.claim())
     );
 });
