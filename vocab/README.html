@@ -45,7 +45,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <body>
 <div class="wrap">
 
-<p class="sub">說明書 · v1.4.0 · 2026-10-31</p>
+<p class="sub">說明書 · v1.4.1 · 2026-10-31</p>
 <h1>Vocab，<i>英文與法文</i>單字學習</h1>
 <p class="sub">一個帳號、兩種語言。英文和法文各自有自己的單字本、複習進度、設定、文章與遊戲紀錄，用右上角的 EN / FR 切換。</p>
 
@@ -115,6 +115,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li><b>每日目標</b>：今日頁顯示複習、新字、學習次數的進度與連續天數；目標在「更多 → 學習設定」調整。完成一課、一次測驗、一段 AI 練習或一輪練習各算一次學習。</li>
   <li><b>閃卡例句</b>：有例句的字翻面後會顯示例句、朗讀鈕與中文翻譯。</li>
   <li><b>深色模式</b>：「更多 → 外觀 → 底色」預設為「自動（跟隨手機）」，手機切換深色時自動改用夜讀配色。</li>
+  <li><b>朗讀速度</b>：「更多 → 外觀 → 朗讀速度」可選很慢（0.7）到稍快（1.1），英文、法文分開設定，所有朗讀（課程、閃卡、對話、循環播放、跟讀）都會照這個速度；中文朗讀不受影響。</li>
 </ul>
 
 <h2 id="ai">AI 設定（Claude / Gemini）</h2>
@@ -164,7 +165,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <h3>閱讀</h3>
 <p>新聞，以及「我的文章」：貼上文章後逐段翻譯（翻好會存起來，下次不用重翻）、朗讀、書籤、群組。段落以空行分隔，整篇沒有空行時改用換行分段；一篇最多 40,000 字元（試算表一格的上限是 50,000），太長請分成幾篇。</p>
 <h3>更多</h3>
-<p>學習紀錄（收錄、熟練、連續天數、30 天答對率與每日長條圖）、兩個遊戲、每日新字上限、預設單字本、匯出／匯入／備份、底色與字體、提醒、登出。</p>
+<p>學習紀錄（收錄、熟練、連續天數、30 天答對率與每日長條圖）、兩個遊戲、每日新字上限、預設單字本、匯出／匯入／備份、底色、字體與朗讀速度、提醒、登出。</p>
 <h3>複習</h3>
 <p>看單字想意思、看中文想單字、聽寫三種模式。鍵盤可用空白鍵翻面、1–4 評分、左右鍵切換。</p>
 </div>
@@ -196,7 +197,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td><code>帳號_Settings</code></td><td>Key, Value。Key 以語言開頭：<code>en.books</code>、<code>fr.newPerDay</code>、<code>fr.folders</code>、<code>en.defaultBook</code></td></tr>
 <tr><td><code>帳號_Log</code></td><td>Date, Lang, Reviews, Correct, New</td></tr>
 </table></div>
-<p>遊戲最高分存在指令碼屬性 <code>帳號_語言_遊戲</code>。只存在本機的：目前語言、底色、字體、緊湊顯示、群組摺疊、查字紀錄、翻譯快取。</p>
+<p>遊戲最高分存在指令碼屬性 <code>帳號_語言_遊戲</code>。只存在本機的：目前語言、底色、字體、朗讀速度、緊湊顯示、群組摺疊、查字紀錄、翻譯快取。</p>
 <p>所有修改先存在本機佇列，再依序送到後端；離線時保留，恢復連線後自動補送（右上角會顯示待同步數量）。</p>
 
 <h2 id="api">後端 API</h2>
@@ -249,7 +250,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li>Google 翻譯免費端點若失效，會改用 GAS 翻譯（較慢、有每日配額）。</li>
 </ul>
 
-<footer>Vocab v1.4.0。之後調整功能時請一併更新本文件。</footer>
+<footer>Vocab v1.4.1。之後調整功能時請一併更新本文件。</footer>
 </div>
 </body>
 </html>

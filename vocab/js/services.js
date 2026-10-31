@@ -447,13 +447,17 @@ const Phon = {
 
 // ===================== 語音 =====================
 const TTS = {
-    rate: 1.0,
+    // 使用者設定的朗讀速度（依語言分開，存在這台裝置）；中文不受影響
+    base(lang = S.lang) { const r = Number(lsGet("vocab_tts_rate_" + lang, 1)); return r > 0 ? r : 1; },
+    setBase(r) { lsSet("vocab_tts_rate_" + S.lang, r); },
 
     speak(text, { lang = L().tts, rate, onend } = {}) {
         if (!text || !("speechSynthesis" in window)) { if (onend) setTimeout(onend, 800); return; }
         const u = new SpeechSynthesisUtterance(text);
         u.lang = lang;
-        u.rate = rate || TTS.rate;
+        // 呼叫端給的 rate 是相對值（0.9 = 比平常慢一點），再乘上使用者設定的速度
+        const base = /^zh/i.test(lang) ? 1 : TTS.base();
+        u.rate = Math.max(0.5, Math.min(1.5, (rate || 1) * base));
         const voices = speechSynthesis.getVoices();
         const norm = (v) => (v.lang || "").replace("_", "-");
         const voice = voices.find(v => norm(v) === lang) || voices.find(v => norm(v).startsWith(lang.slice(0, 2)));

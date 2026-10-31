@@ -22,7 +22,7 @@ const App = {
         if (id === "sec-practice") renderPracticePage();
         if (id === "sec-books") renderBooksList();
         if (id === "sec-read") fetchCustomArticles();
-        if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); const g = Goals.conf(); $("goal-reviews").value = g.reviews; $("goal-words").value = g.words; $("goal-study").value = g.study; Notify.updateButton(); loadHighScores(); loadAiInfo(); }
+        if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); const g = Goals.conf(); $("goal-reviews").value = g.reviews; $("goal-words").value = g.words; $("goal-study").value = g.study; Notify.updateButton(); loadHighScores(); loadAiInfo(); renderTtsRate(); }
         if (id === "sec-class") renderClassHome();
         if (!KEEP_TTS.includes(id)) { TTS.stop(); Speech.stop(); }
         window.scrollTo({ top: 0 });
@@ -113,6 +113,15 @@ function applyTheme(name) {
     Object.entries(theme.vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
     document.querySelector('meta[name="theme-color"]').content = theme.vars["--bg"];
     lsSet("vocab_theme", name);
+}
+
+// 朗讀速度：英文、法文各自設定
+function renderTtsRate() {
+    const sel = $("tts-rate-select");
+    const r = String(TTS.base());
+    if (![...sel.options].some(o => o.value === r)) sel.add(new Option(r + "×", r));
+    sel.value = r;
+    $("tts-rate-label").textContent = `朗讀速度（${L().label}）`;
 }
 
 function applyFontSize(scale) {
@@ -223,6 +232,10 @@ function removeLegacyData() {
         if (darkQuery.addEventListener) darkQuery.addEventListener("change", follow); else darkQuery.addListener(follow);
     }
     $("font-size-select").addEventListener("change", e => applyFontSize(e.target.value));
+    $("tts-rate-select").addEventListener("change", e => {
+        TTS.setBase(Number(e.target.value));
+        TTS.say(S.lang === "fr" ? "Bonjour, comment allez-vous aujourd'hui ?" : "Hello, how are you doing today?");
+    });
     document.querySelectorAll("select.paras-select").forEach(sel => { sel.innerHTML = [1, 2, 3, 4, 5].map(n => `<option value="${n}">${n} 段</option>`).join(""); });
     $("app-version").textContent = APP_VERSION;
 
