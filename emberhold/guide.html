@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>燼火營地 玩法說明</title>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #17143a; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.1); --text: #f4f0ff; --dim: #aaa3cc; --amber: #ffb547; --mint: #6ee7b7; --rose: #ff8fa3; --lav: #b8a6ff; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: radial-gradient(120% 60% at 50% 0%, #3a2c63, var(--bg) 60%, #0d0b1f); background-attachment: fixed; color: var(--text); font: 15px/1.75 'Noto Sans TC', system-ui, sans-serif; }
+main { max-width: 780px; margin: 0 auto; padding: 24px 16px 80px; }
+h1, h2, h3 { font-family: 'Huninn', 'Noto Sans TC', sans-serif; font-weight: 400; letter-spacing: .03em; }
+h1 { font-size: 32px; margin: 8px 0 4px; }
+h2 { font-size: 23px; margin: 44px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); color: var(--amber); }
+h3 { font-size: 18px; margin: 26px 0 8px; color: var(--lav); }
+p { margin: 8px 0; }
+.lead { color: var(--dim); }
+.card { background: var(--card); border-radius: 18px; padding: 14px 16px; box-shadow: inset 0 0 0 1px var(--line); margin: 12px 0; }
+.tip { border-left: 3px solid var(--amber); background: rgba(255,181,71,.08); padding: 10px 14px; border-radius: 0 12px 12px 0; margin: 12px 0; }
+nav.toc { columns: 2; column-gap: 20px; }
+nav.toc a { display: block; color: var(--text); text-decoration: none; padding: 2px 0; }
+nav.toc a:hover { color: var(--amber); }
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 500; white-space: nowrap; }
+td img { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: rgba(255,255,255,.06); }
+td img.sq { border-radius: 6px; object-fit: contain; background: none; }
+.scroll { overflow-x: auto; }
+code { font-family: 'Huninn', monospace; background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 6px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.mon { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.mon img { width: 34px; height: 34px; flex: none; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,.06); }
+.mon small { color: var(--dim); }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; }
+.flow span { background: var(--card); box-shadow: inset 0 0 0 1px var(--line); padding: 6px 12px; border-radius: 999px; font-size: 14px; }
+.flow b { color: var(--amber); }
+.tile { display: inline-block; width: 26px; height: 26px; border-radius: 6px; vertical-align: middle; margin-right: 6px; }
+pre.map { font: 14px/1.25 'Huninn', monospace; background: rgba(0,0,0,.25); padding: 10px 14px; border-radius: 12px; display: inline-block; letter-spacing: .25em; }
+a { color: var(--amber); }
+@media (max-width: 560px) { nav.toc { columns: 1; } th, td { padding: 7px 4px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>燼火營地 玩法說明</h1>
+<p class="lead">「魔塔式爬塔 × 營地經營 × 放置養成」。這份說明涵蓋全部系統、數值與規則；表格直接讀取遊戲資料，和遊戲內完全一致。</p>
+
+<div class="card"><b>目錄</b>
+<nav class="toc">
+<a href="#loop">1. 核心循環</a><a href="#ui">2. 畫面與操作</a><a href="#res">3. 資源</a><a href="#camp">4. 營地設施</a>
+<a href="#idle">5. 放置與離線收益</a><a href="#research">6. 研究</a><a href="#exp">7. 派遣探索</a><a href="#farm">8. 農田與料理</a>
+<a href="#visitor">9. 營地訪客</a><a href="#heroes">10. 英雄與覺醒</a><a href="#talents">11. 天賦樹</a><a href="#pray">12. 每日祈福</a>
+<a href="#memory">13. 寶物記憶</a><a href="#towers">14. 三種塔</a><a href="#tiles">15. 地圖上的東西</a><a href="#mech">16. 機關與地形</a>
+<a href="#combat">17. 戰鬥規則</a><a href="#monsters">18. 怪物、家族與區域</a><a href="#floors">19. 樓層規律</a><a href="#items">20. 道具、工具、寶物</a>
+<a href="#stars">21. 星級與區域任務</a><a href="#ending">22. 結局與新周目</a><a href="#daily">23. 每日挑戰塔</a><a href="#weekly">24. 每週謎題塔與自訂關卡</a>
+<a href="#season">25. 季節活動</a><a href="#ach">26. 成就與稱號、圖鑑</a><a href="#save">27. 存檔與同步</a><a href="#tips">28. 攻略技巧</a>
+</nav></div>
+
+<h2 id="loop">1. 核心循環</h2>
+<p>黑暗之塔矗立在營地旁，共 50 層，塔頂是深淵之主。你要帶著英雄一層一層往上爬，同時經營營地讓英雄變強。</p>
+<div class="flow"><span>營地掛機產資源</span><b>→</b><span>升級設施、研究、天賦、裝備</span><b>→</b><span>帶鑰匙、藥水、料理進塔</span><b>→</b><span>爬得更高、拿星星</span><b>→</b><span>帶回魂晶、餘燼、經驗</span><b>→</b><span>通關後進入新周目</span></div>
+<p>塔裡的怪物不會重生，每打一隻都會損失生命。<b>生命是最重要的資源</b>：規劃先拿哪顆寶石、先打哪隻怪、鑰匙用在哪扇門，用最少的生命走最遠。每 10 層進入新區域，都會出現新的機關與怪物特性，玩法會跟著改變。</p>
+
+<h2 id="ui">2. 畫面與操作</h2>
+<table>
+<tr><th>分頁</th><th>內容</th></tr>
+<tr><td>營地</td><td>夜晚營地場景（點營地成員可升級）；下方分頁：設施／研究／派遣／農田料理。有紅點代表有東西可以收或處理。</td></tr>
+<tr><td>英雄</td><td>8 位英雄的屬性、被動、技能；強化武器護甲、招募、設為出征英雄。</td></tr>
+<tr><td>爬塔</td><td>主塔、每日挑戰塔、每週謎題塔的入口；選料理、選挑戰詞綴、領星星獎勵。在塔內時顯示地圖。</td></tr>
+<tr><td>祭壇</td><td>天賦樹、每日祈福、英雄覺醒、寶物記憶。紅點表示今天還沒祈福。</td></tr>
+<tr><td>更多</td><td>成就與稱號、怪物圖鑑、雲端同步、自訂關卡下載、存檔匯出匯入、設定。</td></tr>
+</table>
+<h3>塔內操作</h3>
+<table>
+<tr><th>動作</th><th>效果</th></tr>
+<tr><td>點空地或道具</td><td>自動找路走過去，沿途經過的道具都會撿起來；自動找路會盡量避開毒沼與岩漿。</td></tr>
+<tr><td>點怪物</td><td>走到旁邊並開打（跳出對戰視窗）。打不過、走不到、會扣掉一半以上生命、或是隱形怪，會先顯示資訊讓你確認。</td></tr>
+<tr><td>點門、NPC、水晶、藤蔓、印記門</td><td>走過去互動。</td></tr>
+<tr><td>在地圖上滑動／方向鍵</td><td>往該方向走一格（冰面會一直滑）；撞到障礙會互動，撞到暗牆會發現它。</td></tr>
+<tr><td>手冊</td><td>本層看得到的所有怪物、特性、家族與預計損失。</td></tr>
+<tr><td>傳送</td><td>去過的樓層（顯示每層拿到的星星）。</td></tr>
+<tr><td>技能、藥水、道具按鈕</td><td>使用英雄技能、喝營地帶來的藥水、使用炸彈／破牆鎬／飛行羽毛。</td></tr>
+</table>
+<p>對戰視窗中雙方輪流出手、血條逐步下降；不死怪會「再次站起」。點畫面可以快轉。</p>
+
+<h2 id="res">3. 資源</h2>
+<table id="resTable"><tr><th>資源</th><th>來源</th><th>用途</th></tr></table>
+<div class="tip"><b>塔內金幣與營地金幣分開。</b>塔裡賺的金幣只能在塔內花（祭壇修女、鑰匙商人），營地金幣只用在營地。</div>
+<p><b>倉庫</b>：鑰匙工坊做的鑰匙、藥師小屋做的藥水先放倉庫，進入主塔時自動帶進去（每日塔、謎題塔不帶）。</p>
+
+<h2 id="camp">4. 營地設施</h2>
+<p>除了篝火，所有設施等級上限＝篝火等級 × 5（部分另有上限）。篝火越高級，營地裡的燈籠越多、也會解鎖新設施。</p>
+<div class="scroll"><table id="bldTable"><tr><th>設施</th><th>效果</th><th>解鎖</th><th>上限</th><th>初始費用</th><th>倍率</th></tr></table></div>
+<p>篝火升級費用：木材 40×2.2<sup>l</sup>、礦石 20×2.2<sup>l−1</sup>；Lv2 起加魂晶 10×1.8<sup>l−2</sup>；Lv5 起加餘燼 (l−4)×2。</p>
+<p>產量＝基礎 × 等級 × 1.08<sup>等級−1</sup> × (1 + 勤勉 10%/級 + 繁榮學 25% + 豐收之光 30%)。</p>
+
+<h2 id="idle">5. 放置與離線收益</h2>
+<ul>
+<li>資源每秒累積，關掉遊戲也會算。離線上限＝2 小時 + 篝火等級（繁榮學再 +4 小時）。</li>
+<li>鑰匙工坊：每級每小時 0.5 把黃鑰匙；Lv3 起每小時 (等級−2)×0.15 把藍鑰匙（鑰匙學 +50%）。倉庫上限：黃 3+等級×2、藍 1+等級÷2。</li>
+<li>藥師小屋：每級每小時 0.4 瓶藥水，上限 2+等級×2。在塔裡喝一瓶回復 8U（見下方 U 的說明）。</li>
+<li>研究、派遣、作物生長都是真實時間，離線時也會進行。</li>
+</ul>
+
+<h2 id="research">6. 研究（研究院）</h2>
+<p>一次研究一項，花資源與時間。研究院每級研究速度 +10%（學識之光再 +50%）。研究有前置順序與研究院等級需求。</p>
+<div class="scroll"><table id="resTable2"><tr><th>研究</th><th>分支</th><th>效果</th><th>需求</th><th>時間</th><th>費用</th></tr></table></div>
+
+<h2 id="exp">7. 派遣探索（酒館）</h2>
+<p>沒有出征、也沒在派遣的英雄可以派去探索。隊伍數：酒館 Lv1 起 1 隊，遠征學 +1，酒館 Lv6 再 +1。地點要主塔抵達對應區域才解鎖。</p>
+<p>收穫＝每小時基礎 × 時數 × (1 + 0.05×時數) × (1 + 英雄等級×3%)，時間越長越划算；另有 25%＋每小時 6% 的機率帶回額外物品；英雄也會得到 8×時數 的經驗。</p>
+<div class="scroll"><table id="expTable"><tr><th>地點</th><th>解鎖</th><th>時數</th><th>每小時基礎</th><th>額外物品</th></tr></table></div>
+
+<h2 id="farm">8. 農田與料理</h2>
+<p>農田每級 1 塊田（農耕學 +2 塊、生長快 25%）。作物成熟後點一下收成。星莓需要種子（派遣、訪客、收成星莓時 50% 機率得到）。</p>
+<div class="scroll"><table id="cropTable"><tr><th>作物</th><th>時間</th><th>費用</th><th>收成</th></tr></table></div>
+<p>在廚房把作物做成料理。到「爬塔」頁選一道，<b>下次進入主塔或每日挑戰塔時會吃掉並生效</b>（主塔：回營地前有效；每日塔：整輪有效）。</p>
+<div class="scroll"><table id="dishTable"><tr><th>料理</th><th>材料</th><th>效果</th></tr></table></div>
+
+<h2 id="visitor">9. 營地訪客</h2>
+<p>篝火 Lv2 起，每 40～90 分鐘會有一位訪客來到營地（同時最多一位），在營地場景或設施頁點他就能互動。</p>
+<div class="scroll"><table id="visTable"><tr><th>訪客</th><th>選項</th></tr></table></div>
+
+<h2 id="heroes">10. 英雄與覺醒</h2>
+<div class="scroll"><table id="heroTable"><tr><th>英雄</th><th>屬性</th><th>被動（覺醒 1 後）</th><th>技能</th><th>覺醒 2 分支</th><th>招募</th></tr></table></div>
+<ul>
+<li>攻擊＝基礎 + (等級−1) + 武器×2 + 力量天賦 + 戰術學 2 + 戰神之光 3；防禦同理（護甲、守護、護甲學、守護之光）；初始生命＝基礎 + (等級−1)×50 + 活力×100。覺醒 3 再全部 ×1.1。</li>
+<li>升級經驗＝15×等級<sup>1.6</sup>；每升 1 級攻防 +1，主塔與每日塔生命各 +50。經驗加成：酒館每級 10%、智慧之光 30%、吟遊詩人 10%、怪物學 15%。</li>
+<li>武器、護甲每級 +2，上限＝鐵匠鋪等級×2。</li>
+<li><b>覺醒</b>（祭壇，消耗餘燼 3／6／10）：覺醒 1 強化被動；覺醒 2 從兩個分支選一個（之後不能改）；覺醒 3 全屬性 +10%。</li>
+<li>技能次數每到新的一層重置；專注天賦、時光卷軸、星莓派、分支 A 都會增加次數。</li>
+</ul>
+
+<h2 id="talents">11. 天賦樹（祭壇）</h2>
+<p>四條分支，每條由上到下依序解鎖（前一個至少 1 級）。等級上限＝祭壇等級；魂晶天賦每級 ×1.45。</p>
+<div id="treeList"></div>
+
+<h2 id="pray">12. 每日祈福</h2>
+<p>每天在祭壇從三個隨機祝福中選一個，效果到當天結束。</p>
+<table id="prayTable"><tr><th>祝福</th><th>效果</th></tr></table>
+
+<h2 id="memory">13. 寶物記憶</h2>
+<p>在塔裡拿過的寶物會被記錄。花魂晶「銘刻」（普通 20、稀有 45、傳說 90）後可以裝備，裝備的寶物會在每日挑戰塔開局時直接帶著。裝備格 1 格（銘刻術 +1）。</p>
+
+<h2 id="towers">14. 三種塔</h2>
+<table>
+<tr><th></th><th>主塔</th><th>每日挑戰塔</th><th>每週謎題塔</th></tr>
+<tr><td>地圖</td><td>固定 50 層，第 50 層是最終首領</td><td>每天一座新塔，無限往上</td><td>每週 3 層手工設計的謎題</td></tr>
+<tr><td>進度</td><td>永久保存</td><td>當天有效</td><td>當週有效，可重來</td></tr>
+<tr><td>屬性</td><td>英雄屬性 + 塔內成長</td><td>依進塔時的英雄屬性產生難度</td><td>固定數值，不能用技能與寶物</td></tr>
+<tr><td>帶入</td><td>倉庫鑰匙藥水、料理</td><td>料理、記憶寶物、鎖匠鑰匙</td><td>無</td></tr>
+<tr><td>獎勵</td><td>首次到達新樓層、精英、首領、星星</td><td>刷新今日紀錄（含詞綴加成）</td><td>本週第一次通關；比剩餘生命</td></tr>
+</table>
+<p><b>樓層傷害單位 U</b>：主塔 U＝20 + 8×(樓層−1)；每日塔依你的初始生命計算。藥水、怪物傷害都以 U 計算，所以越高層數字越大。</p>
+
+<h2 id="tiles">15. 地圖上的東西</h2>
+<table id="tileTable"><tr><th>東西</th><th>說明</th></tr></table>
+<p>寶石值：第 1–10 層 +1，第 11–20 層 +2…依此類推（再乘上詛咒、詞綴、英雄被動、共鳴水晶）。小藥水 4U、大藥水 10U、金幣袋 0.6U。</p>
+
+<h2 id="mech">16. 機關與地形</h2>
+<p>每個區域會帶入新機關（之後的區域也會繼續出現）：</p>
+<table id="mechTable"><tr><th>機關</th><th>說明</th><th>對策</th></tr></table>
+<p>每層的地圖從 7 種格局中隨機挑選並翻轉（九宮格、六房、大廳、直欄、混合、四分、迴廊），大房間會有柱子。產生後會模擬走一遍，確認一定能抵達上樓梯才會採用；藤蔓、暗牆、冰、岩漿、印記門擋住的都是額外獎勵房，不會擋住主要道路。</p>
+
+<h2 id="combat">17. 戰鬥規則</h2>
+<div class="card">
+<p>1. 你每下造成 <code>攻擊 − 怪物防禦</code>（≤ 0 就打不動）。</p>
+<p>2. <b>你先出手</b>，雙方輪流攻擊直到怪物倒下；怪物每下造成 <code>怪物攻擊 − 你的防禦</code>（最少 0）。</p>
+<p>3. 開打前就能精確算出損失；只有損失 &lt; 目前生命才能開打，<b>不會在戰鬥中死掉</b>。</p>
+<p>4. 首領生命低於一半時攻擊 ×1.3；首領層要先擊碎所有<b>封印水晶</b>（第 30、40、50 層）才能攻擊首領。</p>
+</div>
+<p>地圖上怪物腳下的數字＝預計損失；<span style="color:#ffd43b">黃色</span>＝超過目前生命 40%；✕＝打不過；「?」＝隱形；「封印」＝還有水晶。</p>
+<h3>怪物特性</h3>
+<table id="fxTable"><tr><th>特性</th><th>效果</th></tr></table>
+<h3>你這邊的修正</h3>
+<ul>
+<li>英雄被動、寶物（攻防百分比、家族加成、無視先攻／堅固／反傷、魔法抗性）、技能（不受傷、無視防禦、防禦減半、吸回損失、怪物攻擊降低）。</li>
+<li>天賦：獵手（精英首領 +5%/級）、戰意（每層第一場攻擊 +10%/級）、神盾（每層第一場損失 −50%）、抗毒（中毒、岩漿、反傷、爆裂 −25%/級）。</li>
+<li>工具：聖十字讓不死系只要打一次，且攻擊不死系 +20%。</li>
+</ul>
+
+<h2 id="monsters">18. 怪物、家族與區域</h2>
+<p>每 10 層一個區域，每區有 9 種一般怪（由弱到強）、1 種精英、1 位首領，並帶入新機關。怪物分屬四大家族：不死、野獸、元素、惡魔，可以用寶物或英雄被動剋制。</p>
+<div id="zoneList"></div>
+
+<h2 id="floors">19. 樓層規律</h2>
+<table>
+<tr><th>樓層</th><th>內容</th></tr>
+<tr><td>每層</td><td>約 2 顆紅寶石、2 顆藍寶石、2～3 瓶小藥水、1 袋金幣；50% 多一把黃鑰匙；12% 寶箱；研究過的道具有機率出現；1～2 條額外捷徑</td></tr>
+<tr><td>3 的倍數層</td><td>多 1 瓶大藥水</td></tr>
+<tr><td>個位數 2、7</td><td>祭壇修女</td></tr>
+<tr><td>個位數 4、9</td><td>鑰匙商人（研究過的道具也會賣）</td></tr>
+<tr><td>個位數 1（區域第一層）</td><td>星象學者（禮物、提示、區域任務）；鎖匠天賦送鑰匙；第一次進入會看到區域介紹</td></tr>
+<tr><td>個位數 2</td><td>本區的工具（例如第 2 層聖十字、第 12 層樵夫斧）</td></tr>
+<tr><td>個位數 5</td><td>精英守著寶箱</td></tr>
+<tr><td>10 的倍數</td><td>首領守在上樓房間門口（30 層起要先擊碎封印水晶），房內有寶箱；第 50 層沒有上樓梯，是最終決戰</td></tr>
+</table>
+
+<h2 id="items">20. 道具、工具、寶物</h2>
+<h3>道具（消耗品，研究後才會出現）</h3>
+<table id="itemTable"><tr><th>道具</th><th>效果</th><th>研究</th></tr></table>
+<h3>工具（撿到後在這座塔永久有效）</h3>
+<table id="toolTable"><tr><th>工具</th><th>效果</th></tr></table>
+<h3>寶物（寶箱、首領房）</h3>
+<p>開寶箱隨機給一件還沒有的寶物（普通 60%、稀有 30%、傳說 10% 權重）。主塔的寶物永久保留；每日塔只限當輪。</p>
+<div class="scroll"><table id="trTable"><tr><th>寶物</th><th>稀有度</th><th>效果</th></tr></table></div>
+
+<h2 id="stars">21. 星級與區域任務</h2>
+<p>主塔每層 3 顆星：<b>★ 抵達上樓</b>、<b>★ 收集本層全部寶石</b>、<b>★ 擊敗本層全部怪物</b>。可以之後用「傳送」回去補拿。星星累積到門檻可以在「爬塔」頁領獎勵：</p>
+<table id="starTable"><tr><th>星星</th><th>獎勵</th></tr></table>
+<p>每個區域第一層的星象學者會給任務：在該區 10 層拿到 <b id="zq"></b> 顆星，回去找他就能領魂晶與餘燼。</p>
+
+<h2 id="ending">22. 結局與新周目</h2>
+<p>在第 50 層擊敗深淵之主就會看到結局，並獲得餘燼與魂晶。之後可以選擇<b>開啟新周目</b>：主塔整座重新生成、詛咒等級 +1（最高 20），英雄、營地、星星紀錄全部保留。詛咒是累加的，獎勵（魂晶與首領餘燼）也會隨詛咒等級提高。</p>
+<table id="curseTable"><tr><th>等級</th><th>新增詛咒</th></tr></table>
+
+<h2 id="daily">23. 每日挑戰塔</h2>
+<ul>
+<li>每天一座新塔，依你進塔時的英雄屬性產生難度。每天有一條固定的<b>今日規則</b>：</li>
+</ul>
+<table id="ruleTable"><tr><th>規則</th><th>效果</th></tr></table>
+<p>開始前可以自選最多 3 個<b>詞綴</b>，難度提高、魂晶倍率也提高：</p>
+<table id="modTable"><tr><th>詞綴</th><th>效果</th><th>魂晶加成</th></tr></table>
+<ul>
+<li>每到達比今天最高紀錄更高的一層：魂晶 (2 + 樓層×0.5) × 倍率；每 10 層再 +1 餘燼。</li>
+<li>今天可以重來，但重打已經到過的樓層時，精英與首領不再給魂晶與餘燼。</li>
+</ul>
+
+<h2 id="weekly">24. 每週謎題塔與自訂關卡</h2>
+<p>每週從手工設計的謎題中挑 3 層。數值固定、不能用技能與寶物，鑰匙要選對門才走得到底，最後比剩下的生命。本週第一次通關給 30 魂晶與 1 餘燼。</p>
+<p>你也可以在 Google 試算表的 <code>levels</code> 工作表自己設計關卡（類型填 weekly），每週謎題塔會優先使用。地圖是 11 列、每列 11 個字元：</p>
+<table id="legendTable"><tr><th>字元</th><th>意思</th></tr></table>
+<p>範例（鑰匙的抉擇）：</p>
+<pre class="map" id="sampleMap"></pre>
+
+<h2 id="season">25. 季節活動</h2>
+<p>依手機日期自動開啟，活動期間每日挑戰塔第 5 層必出限定寶物，並有額外效果：</p>
+<table id="seasonTable"><tr><th>活動</th><th>日期</th><th>內容</th></tr></table>
+
+<h2 id="ach">26. 成就與稱號、圖鑑</h2>
+<p>達成後到「更多」領獎勵；部分成就給<b>稱號</b>，可以在「更多」選擇顯示。圖鑑記錄你打倒過的怪物種類與次數。</p>
+<div class="scroll"><table id="achTable"><tr><th>成就</th><th>條件</th><th>獎勵</th></tr></table></div>
+
+<h2 id="save">27. 存檔與同步</h2>
+<ul>
+<li>所有進度自動存在手機，離線也能玩；加入主畫面後可以像 App 一樣開啟。</li>
+<li>設定 GAS 網址後，有網路時自動上傳（每 30 秒、切到背景、恢復連線），以較新的存檔為準。</li>
+<li>換手機：「更多 → 設定 → 複製同步碼」，在新手機貼上還原。也可以匯出匯入 JSON。</li>
+</ul>
+
+<h2 id="tips">28. 攻略技巧</h2>
+<ol>
+<li>先撿寶石再打怪；防禦超過怪物攻擊時，打牠完全不扣血。</li>
+<li>鑰匙要省著用：先確定門後有寶石、藥水，或是通往上樓的路。</li>
+<li>金框守衛全倒才會開鐵門；找到壓力板踩下去才會開石門。</li>
+<li>冰面會一直滑到撞到東西；拿到冰爪靴就能正常走。</li>
+<li>不死怪會再站起來一次，拿到聖十字（第 2 層）後只要打一次。</li>
+<li>首領層先擊碎封印水晶，順路把寶石都拿齊再挑戰首領。</li>
+<li>星星可以之後回來補：等變強了再回頭清怪，拿第三顆星。</li>
+<li>每天祈福、收成、收派遣、接訪客，營地的資源會滾得更快。</li>
+<li>卡關就研究、學天賦、強化裝備、做料理，再帶著補給回去。</li>
+</ol>
+<p class="lead" style="margin-top:40px">美術素材出處請見 <a href="CREDITS.md">CREDITS.md</a>。</p>
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script>
+// 以遊戲資料產生表格，確保說明和遊戲一致
+const img = (k, cls = '') => `<img class="${cls}" src="assets/${k}.webp" alt="">`;
+const add = (id, rows) => document.getElementById(id).insertAdjacentHTML('beforeend', rows.join(''));
+const cost = c => Object.keys(c).map(k => `${RES[k].name} ${c[k]}`).join('、');
+const sw = c => `<span class="tile" style="background:${c}"></span>`;
+
+add('resTable', [
+  ['wood', '伐木場、派遣、訪客', '設施、護甲、研究、作物'],
+  ['ore', '礦坑、派遣', '設施、武器、護甲、研究'],
+  ['gold', '市集、派遣、訪客（營地金幣）', '設施、武器、招募、研究、作物'],
+  ['soul', '主塔首次抵達新樓層、精英、首領、每日紀錄、謎題塔、星星、任務、派遣、成就', '天賦、篝火、祭壇、招募、銘刻寶物'],
+  ['ember', '首領、每日塔第 10 倍數層、通關、星星、任務、成就', '高階天賦、覺醒、篝火 Lv5+'],
+].map(([k, src, use]) => `<tr><td>${img(RES[k].icon, 'sq')}${RES[k].name}</td><td>${src}</td><td>${use}</td></tr>`));
+
+add('bldTable', BUILDING_ORDER.map(id => {
+  const b = BUILDINGS[id];
+  const eff = (b.prod ? `每級每秒 +${Object.values(b.prod)[0]} ${RES[Object.keys(b.prod)[0]].name}。` : '') + b.desc;
+  return `<tr><td>${b.npc ? img(b.npc) : img('item/torch', 'sq')}${b.name}</td><td>${eff}</td><td>${b.req ? `篝火 Lv${b.req}` : '一開始'}</td><td>${b.max ? b.max : '篝火×5'}</td>
+    <td>${b.cost ? '見下方' : cost(b.base)}</td><td>${b.growth ? '×' + b.growth : '—'}</td></tr>`;
+}));
+
+add('resTable2', RESEARCH_ORDER.map(id => {
+  const r = RESEARCH[id];
+  return `<tr><td>${img(r.icon, 'sq')}${r.name}</td><td>${r.branch}</td><td>${r.desc}</td><td>研究院 Lv${r.study}${r.need ? `、${RESEARCH[r.need].name}` : ''}</td><td>${r.time} 分</td><td>${cost(r.cost)}</td></tr>`;
+}));
+
+const extraName = { potion: '藥水', keyY: '黃鑰匙', keyB: '藍鑰匙', seed: '星莓種子', ember: '餘燼' };
+add('expTable', Object.keys(EXPEDITIONS).map(id => {
+  const x = EXPEDITIONS[id];
+  return `<tr><td>${img(x.icon, 'sq')}${x.name}</td><td>主塔第 ${x.zone * 10 + 1} 層</td><td>${x.hours.join('／')} 小時</td><td>${cost(x.reward)}</td><td>${extraName[x.extra]}</td></tr>`;
+}));
+add('cropTable', Object.keys(CROPS).map(id => { const c = CROPS[id]; return `<tr><td>${img(c.icon, 'sq')}${c.name}</td><td>${c.mins} 分</td><td>${cost(c.cost)}${c.seed ? '、種子 1' : ''}</td><td>${c.yield}</td></tr>`; }));
+add('dishTable', Object.keys(DISHES).map(id => { const d = DISHES[id]; return `<tr><td>${img(d.icon, 'sq')}${d.name}${d.pro ? '<br><small>需烹飪學</small>' : ''}</td><td>${Object.keys(d.need).map(k => `${CROPS[k].name}×${d.need[k]}`).join('、')}</td><td>${d.desc}</td></tr>`; }));
+add('visTable', VISITORS.map(v => `<tr><td>${img(v.icon)}${v.name}<div style="font-size:12px;color:var(--dim)">${v.text}</div></td><td>${v.opts.map(o => o.t).join('<br>')}</td></tr>`));
+
+add('heroTable', HERO_ORDER.map(id => {
+  const h = HEROES[id];
+  return `<tr><td>${img(h.icon)}${h.name}<div style="font-size:12px;color:var(--dim)">${h.lore}</div></td><td>攻 ${h.atk}<br>防 ${h.def}<br>生命 ${h.hp}</td>
+    <td>${h.passive}<br><small style="color:var(--amber)">→ ${h.passive2}</small></td><td><b>${h.skill.name}</b>：${h.skill.desc}（每層 ${h.skill.uses} 次）</td>
+    <td>A：${h.branch.A}<br>B：${h.branch.B}</td><td>${h.cost ? `酒館 Lv${h.tavern}<br>${cost(h.cost)}` : '初始英雄'}</td></tr>`;
+}));
+
+document.getElementById('treeList').innerHTML = Object.keys(TALENT_TREE).map(b => {
+  const br = TALENT_TREE[b];
+  return `<h3 style="color:${br.color}">${br.name}</h3><table><tr><th>順序</th><th>天賦</th><th>效果（每級）</th><th>上限</th><th>首級費用</th><th>需求</th></tr>` +
+    br.nodes.map((id, i) => { const t = TALENTS[id]; return `<tr><td>${i + 1}</td><td>${img(t.icon, 'sq')}${t.name}</td><td>${t.desc}</td><td>${t.max}</td><td>${RES[t.cur].name} ${t.base}${t.cur === 'ember' ? '（固定）' : ''}</td><td>${t.altar ? `祭壇 Lv${t.altar}` : '—'}</td></tr>`; }).join('') + '</table>';
+}).join('');
+add('prayTable', PRAYERS.map(p => `<tr><td>${p.name}</td><td>${p.desc}</td></tr>`));
+
+const mechInfo = {
+  hidden: ['暗牆', '看起來是牆，撞上去就會打開。通往捷徑或藏寶房。', '斥候天賦、星象學徒能直接看出來（牆上有虛線）'],
+  iron: ['鐵門與守衛', '金框的怪物是守衛，本層守衛全倒，所有鐵門一起打開。', '先找到並打倒守衛'],
+  swamp: ['毒沼', '走上去會中毒，之後每走一步扣 0.15U。', '解毒指環免疫；自動找路會避開'],
+  vine: ['藤蔓', '擋路的藤蔓，後面是藏寶房。', '樵夫斧可以砍開；精靈法師分支 B 可以擊碎'],
+  patrol: ['巡邏怪', '你每走一步，牠也走一步；站到牠旁邊時牠會停下來。', '貼近後再打'],
+  ice: ['冰面', '踩上去會一直滑，直到撞到東西或滑到一般地板。', '冰爪靴可以正常走'],
+  plate: ['壓力板', '踩下去，本層所有紫色石門打開。', '找到壓力板'],
+  lava: ['岩漿', '每走一格損失 2U 生命。藏寶房常被岩漿包圍。', '冰霜護符免疫；抗毒天賦減少'],
+  teleport: ['傳送陣', '踩上去傳送到成對的另一個傳送陣。', '有時是唯一的路'],
+  dark: ['黑暗', '只看得到身邊（半徑 3）與走過的地方，看不到的格子不能點。', '星光提燈全亮；地圖學、星象學徒視野 +2'],
+};
+add('mechTable', Object.keys(mechInfo).map(k => `<tr><td>${mechInfo[k][0]}</td><td>${mechInfo[k][1]}</td><td>${mechInfo[k][2]}</td></tr>`));
+
+add('tileTable', [
+  [sw('linear-gradient(160deg,#6d65a0,#433c6e)'), '牆', '不能通過（法師穿牆術、破牆鎬可以打掉）'],
+  [img('mon/dragonkinknight'), '你', '金框是你；綠框代表中毒'],
+  [sw('linear-gradient(#ffe3a3,#e0a24a)'), '上樓 ▲', '走上去到下一層'],
+  [sw('rgba(255,255,255,.15)'), '下樓 ▼／出口', '回上一層；主塔第 1 層是出口（回營地）'],
+  [img('item/key_y', 'sq'), '黃／藍鑰匙', '開同色的門'],
+  [sw('linear-gradient(#ffd56e,#c98a22)'), '黃門／藍門', '消耗一把同色鑰匙'],
+  [img('item/gem_red', 'sq'), '紅寶石', '攻擊 + 寶石值'],
+  [img('item/gem_blue', 'sq'), '藍寶石', '防禦 + 寶石值'],
+  [img('item/potion_red', 'sq'), '小藥水', '生命 +4U，解除中毒'],
+  [img('item/potion_purple', 'sq'), '大藥水', '生命 +10U，解除中毒'],
+  [img('icon/goldcoins', 'sq'), '金幣袋', '塔內金幣 +0.6U'],
+  [img('icon/chest', 'sq'), '寶箱', '隨機一件寶物'],
+  [img('item/crystal', 'sq'), '封印水晶', '首領層才有；撞上去擊碎'],
+  [img('mon/skeleton'), '怪物', '腳下數字是預計損失；橘框精英、紅框首領、金框守衛；⇄ 是巡邏怪'],
+  [img('mon/cabalistnun'), 'NPC', '頭上有「!」，點一下對話'],
+  [sw('linear-gradient(#e8d8ff,#8a6ad0)'), '印記門', '門上有英雄頭像，只有那位英雄能打開，後面是寶物房'],
+].map(([i, n, d]) => `<tr><td>${i}${n}</td><td>${d}</td></tr>`));
+
+add('fxTable', Object.keys(MON_FX).map(k => `<tr><td>${MON_FX[k].name}</td><td>${MON_FX[k].desc}</td></tr>`));
+
+document.getElementById('zoneList').innerHTML = ZONES.map((z, i) => `<h3>${z.name}（第 ${i * 10 + 1}–${i * 10 + 10} 層）</h3><p>${z.story}</p>
+  <p style="color:var(--dim)">機關：${z.mech.map(m => mechInfo[m][0]).join('、')}・本區工具：${TOOLS[z.tool].name}${z.seals ? `・首領封印水晶 ${z.seals} 顆` : ''}</p><div class="grid">` +
+  z.mobs.map((k, j) => `<div class="mon">${img('mon/' + k)}<span>${MON_NAMES[k]}<br><small>${[z.fx[j] && MON_FX[z.fx[j]].name, MON_FAMILY[k] && FAMILY[MON_FAMILY[k]]].filter(Boolean).join('・')}</small></span></div>`).join('') +
+  `<div class="mon">${img('mon/' + z.elite)}<span><b style="color:#ffb057">精英</b> ${MON_NAMES[z.elite]}<br><small>${MON_FX[z.eliteFx].name}</small></span></div>` +
+  `<div class="mon">${img('mon/' + z.boss)}<span><b style="color:#ff6b8a">首領</b> ${MON_NAMES[z.boss]}<br><small>${MON_FX[z.bossFx].name}</small></span></div></div>`).join('');
+
+add('itemTable', Object.keys(ITEMS).map(k => `<tr><td>${img(ITEMS[k].icon, 'sq')}${ITEMS[k].name}</td><td>${ITEMS[k].desc}</td><td>${RESEARCH[ITEMS[k].research].name}</td></tr>`));
+add('toolTable', Object.keys(TOOLS).map(k => `<tr><td>${img(TOOLS[k].icon, 'sq')}${TOOLS[k].name}</td><td>${TOOLS[k].desc}（${ZONES.find(z => z.tool === k).name}第 2 層）</td></tr>`));
+add('trTable', Object.keys(TREASURES).map(id => { const t = TREASURES[id]; return `<tr><td>${img(t.icon, 'sq')}${t.name}</td><td style="color:${RARITY[t.r].color}">${RARITY[t.r].name}</td><td>${t.desc}</td></tr>`; }));
+add('starTable', STAR_REWARDS.map(r => `<tr><td>${r.stars}</td><td>${cost(r.reward)}</td></tr>`));
+document.getElementById('zq').textContent = ZONE_QUEST_STARS;
+add('curseTable', CURSES.map((c, i) => `<tr><td>${i + 1}</td><td>${c}</td></tr>`));
+add('ruleTable', DAILY_RULES.map(r => `<tr><td>${r.name}</td><td>${r.desc}</td></tr>`));
+add('modTable', Object.keys(MODIFIERS).map(k => `<tr><td>${MODIFIERS[k].name}</td><td>${MODIFIERS[k].desc}</td><td>+${Math.round(MODIFIERS[k].bonus * 100)}%</td></tr>`));
+const legend = [['#', '牆'], ['.', '地板'], ['S', '起點（一定要有）'], ['D', '下樓（出口）'], ['U', '上樓（一定要有）'], ['y / b', '黃門／藍門'], ['Y / B', '黃鑰匙／藍鑰匙'], ['a / d', '紅寶石／藍寶石'],
+  ['p / P', '小藥水／大藥水'], ['$', '金幣袋'], ['c', '寶箱'], ['0～8', '怪物（數字越大越強）'], ['E', '精英'], ['K', '首領'], ['g', '守衛'], ['I', '鐵門'], ['o', '壓力板'], ['L', '石門'],
+  ['h', '暗牆'], ['~', '毒沼'], ['v', '藤蔓'], ['^', '冰面'], ['x', '岩漿'], ['T', '傳送陣（依出現順序兩兩一組）'], ['X', '封印水晶'], ['n / m / s', '修女／商人／學者'],
+  ['A / C / Z / F / M', '樵夫斧／聖十字／冰爪靴／冰霜護符／星光提燈'], ['* / k / f', '炸彈／破牆鎬／飛行羽毛']];
+add('legendTable', legend.map(([a, b]) => `<tr><td><code>${a}</code></td><td>${b}</td></tr>`));
+document.getElementById('sampleMap').textContent = PUZZLES[0].map.join('\n');
+add('seasonTable', SEASONS.map(s => `<tr><td>${s.name}</td><td>${s.from.join('/')}～${s.to.join('/')}</td><td>${s.desc}（${TREASURES[s.treasure].name}：${TREASURES[s.treasure].desc.replace(/【.+?】/, '')}）</td></tr>`));
+add('achTable', ACHIEVEMENTS.map(a => `<tr><td>${a.name}${a.title ? `<br><small style="color:var(--amber)">稱號「${a.title}」</small>` : ''}</td><td>${a.desc}</td><td>${cost(a.reward)}</td></tr>`));
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "燼火營地",
+  "short_name": "燼火營地",
+  "description": "奇幻肉鴿遠征 × 營地經營 × 放置養成",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#15123a",
+  "theme_color": "#1b1840",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
