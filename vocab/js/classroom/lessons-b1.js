@@ -82,7 +82,7 @@ FR_COURSE.push(
         ["c", "Je veux que tu ___ la vérité.", ["dises", "dis", "diras"], 0, "我要你說實話。"],
         ["c", "Je pense qu'il ___ raison.", ["a", "ait", "aura"], 0, "我認為他是對的。"],
         ["c", "Je ne crois pas qu'il ___ venir.", ["puisse", "peut", "pourra"], 0, "我不相信他能來。"],
-        ["c", "Je veux ___ .", ["partir", "que je parte", "que je pars"], 0, "我想走。"],
+        ["c", "Je veux ___.", ["partir", "que je parte", "que je pars"], 0, "我想走。"],
         ["f", "Je suis content que vous ___ là. (être)", "soyez", "我很高興你們在這裡。"],
         ["f", "Bien qu'il ___ froid, nous sortons. (faire)", "fasse", "雖然很冷，我們還是出門。"],
         ["t", "我希望你幸福。（用 vouloir）", ["Je veux que tu sois heureux.", "Je veux que tu sois heureuse."]]
@@ -210,7 +210,7 @@ FR_COURSE.push(
     ex: [
         ["c", "« Je suis fatigué. » → Il a dit qu'il ___ fatigué.", ["était", "est", "sera"], 0, "他說他很累。"],
         ["c", "« Tu viens ? » → Elle demande ___ je viens.", ["si", "que", "ce que"], 0, "她問我來不來。"],
-        ["c", "« Je viendrai. » → Il a dit qu'il ___ .", ["viendrait", "viendra", "venait"], 0, "他說他會來。"],
+        ["c", "« Je viendrai. » → Il a dit qu'il ___.", ["viendrait", "viendra", "venait"], 0, "他說他會來。"],
         ["c", "« Qu'est-ce que tu fais ? » → Il demande ___ je fais.", ["ce que", "qu'est-ce que", "si"], 0, "他問我在做什麼。"],
         ["f", "« J'ai fini. » → Elle a dit qu'elle ___ fini.", "avait", "她說她做完了。"],
         ["f", "« Ferme la porte ! » → Il me dit ___ fermer la porte.", "de", "他叫我關門。"]
@@ -273,7 +273,7 @@ FR_COURSE.push(
         ["c", "___ il fasse froid, je sors.", ["Bien qu'", "Même s'", "Parce qu'"], 0, "雖然很冷，我還是出門。"],
         ["c", "___ la pluie, le match est annulé.", ["À cause de", "Grâce à", "Donc"], 0, "因為下雨，比賽取消了。"],
         ["f", "Même s'il ___ tard, je t'appellerai. (être，現在式)", "est", "即使很晚，我也會打給你。"],
-        ["f", "À mon ___ , c'est une bonne idée.", "avis", "依我看，這是個好主意。"],
+        ["f", "À mon ___, c'est une bonne idée.", "avis", "依我看，這是個好主意。"],
         ["t", "我同意你。", ["Je suis d'accord avec toi.", "Je suis d'accord avec vous."]]
     ]
 },
@@ -294,7 +294,7 @@ FR_COURSE.push(
         ["c", "Après ___ mangé, nous sommes sortis.", ["avoir", "être", "avant"], 0, "吃完飯後我們出門了。"],
         ["c", "Je vous appellerai dès que j'___ les résultats.", ["aurai", "ai", "avais"], 0, "我一拿到結果就打給您。"],
         ["f", "Attendez jusqu'à ce qu'il ___ là. (être)", "soit", "等到他來為止。"],
-        ["f", "Après être ___ , elle a téléphoné. (arriver，陰性)", "arrivée", "她到了之後打了電話。"],
+        ["f", "Après être ___, elle a téléphoné. (arriver，陰性)", "arrivée", "她到了之後打了電話。"],
         ["t", "越快越好。", ["Dès que possible.", "Le plus tôt possible.", "Aussitôt que possible."]],
         ["l", "Je reste à votre disposition pour tout renseignement complémentaire.", "如需任何進一步資訊，請隨時與我聯絡。"]
     ]

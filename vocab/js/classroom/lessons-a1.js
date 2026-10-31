@@ -18,7 +18,7 @@ FR_COURSE.push(
     ex: [
         ["c", "（對老師）Bonjour Madame, comment allez-___ ?", ["vous", "tu", "toi"], 0, "女士您好，您好嗎？"],
         ["c", "晚上見面要說：___ !", ["Bonsoir", "Bonne nuit", "Bonjour"], 0, "晚安！"],
-        ["f", "Merci ! — De ___ .", "rien", "謝謝！——不客氣。"],
+        ["f", "Merci ! — De ___.", "rien", "謝謝！——不客氣。"],
         ["o", "Ça / va / bien / , / merci", "我很好，謝謝。"],
         ["t", "明天見！", ["À demain !", "A demain"]],
         ["l", "Au revoir, à bientôt !", "再見，待會見！"]
@@ -40,7 +40,7 @@ FR_COURSE.push(
     dialog: [["Paul", "Bonjour ! Je m'appelle Paul. Et toi ?", "你好！我叫保羅。妳呢？"], ["Mei", "Je m'appelle Mei. Enchantée !", "我叫美。很高興認識你！"], ["Paul", "Enchanté ! Tu es japonaise ?", "很高興認識妳！妳是日本人嗎？"], ["Mei", "Non, je suis taïwanaise. Et toi, tu es français ?", "不，我是台灣人。你呢，你是法國人嗎？"], ["Paul", "Oui, je suis français. Je suis étudiant.", "對，我是法國人。我是學生。"], ["Mei", "Moi aussi, je suis étudiante !", "我也是學生！"]],
     ex: [
         ["c", "Nous ___ étudiants.", ["sommes", "êtes", "sont"], 0, "我們是學生。"],
-        ["c", "Elle est ___ .", ["taïwanaise", "taïwanais", "taïwanaises"], 0, "她是台灣人。"],
+        ["c", "Elle est ___.", ["taïwanaise", "taïwanais", "taïwanaises"], 0, "她是台灣人。"],
         ["f", "Vous ___ professeur ?", "êtes", "您是老師嗎？"],
         ["f", "Je m'___ Thomas.", "appelle", "我叫湯瑪士。"],
         ["o", "Tu / es / français / ?", "你是法國人嗎？"],
@@ -173,10 +173,10 @@ FR_COURSE.push(
     vocab: [["l'heure", "小時；時間", "n.f."], ["la minute", "分鐘", "n.f."], ["le matin", "早上", "n.m."], ["l'après-midi", "下午", "n.m."], ["le soir", "晚上", "n.m."], ["la nuit", "夜晚", "n.f."], ["midi", "中午", "n.m."], ["aujourd'hui", "今天", "adv."], ["demain", "明天", "adv."], ["hier", "昨天", "adv."], ["la semaine", "星期；週", "n.f."], ["le mois", "月", "n.m."], ["l'année", "年", "n.f."], ["le week-end", "週末", "n.m."], ["l'anniversaire", "生日", "n.m."], ["lundi", "星期一", "n.m."], ["samedi", "星期六", "n.m."]],
     dialog: [["Hugo", "Excuse-moi, quelle heure est-il ?", "不好意思，現在幾點？"], ["Zoé", "Il est six heures et demie.", "六點半。"], ["Hugo", "Ah, le cours commence à sept heures !", "啊，課七點開始！"], ["Zoé", "Tu as cours le jeudi aussi ?", "你星期四也有課嗎？"], ["Hugo", "Oui, le mardi et le jeudi soir.", "有，星期二和星期四晚上。"], ["Zoé", "Moi, j'ai un examen le vingt mars.", "我三月二十日有考試。"]],
     ex: [
-        ["c", "8:30 → Il est huit heures ___ .", ["et demie", "et quart", "moins le quart"], 0, "八點半。"],
-        ["c", "1:00 → Il est une ___ .", ["heure", "heures", "minute"], 0, "一點。"],
+        ["c", "8:30 → Il est huit heures ___.", ["et demie", "et quart", "moins le quart"], 0, "八點半。"],
+        ["c", "1:00 → Il est une ___.", ["heure", "heures", "minute"], 0, "一點。"],
         ["f", "Mon anniversaire, c'est le ___ janvier. (1 號)", "premier", "我的生日是一月一日。"],
-        ["c", "我每個星期天去游泳 → Je nage ___ .", ["le dimanche", "dimanche", "en dimanche"], 0, "我每個星期天游泳。"],
+        ["c", "我每個星期天去游泳 → Je nage ___.", ["le dimanche", "dimanche", "en dimanche"], 0, "我每個星期天游泳。"],
         ["o", "Le / train / part / à / dix / heures", "火車十點出發。"],
         ["t", "現在幾點？", ["Quelle heure est-il ?", "Il est quelle heure ?"]],
         ["l", "Il est neuf heures moins le quart.", "八點四十五分。"]
@@ -198,7 +198,7 @@ FR_COURSE.push(
     ex: [
         ["c", "une voiture ___", ["blanche", "blanc", "blancs"], 0, "一輛白色的汽車"],
         ["c", "un ___ ami", ["nouvel", "nouveau", "nouvelle"], 0, "一個新朋友"],
-        ["c", "Elle est très ___ .", ["sportive", "sportif", "sportifs"], 0, "她很愛運動。"],
+        ["c", "Elle est très ___.", ["sportive", "sportif", "sportifs"], 0, "她很愛運動。"],
         ["f", "des fleurs ___ (rouge)", "rouges", "紅色的花"],
         ["o", "C'est / une / petite / maison / bleue", "這是一間藍色的小房子。"],
         ["t", "她很高興。", ["Elle est contente."]]
@@ -291,7 +291,7 @@ FR_COURSE.push(
     ex: [
         ["c", "Je ___ lève à sept heures.", ["me", "se", "te"], 0, "我七點起床。"],
         ["c", "Nous ___ couchons tard.", ["nous", "se", "vous"], 0, "我們很晚睡。"],
-        ["f", "Elle ___ . (s'habiller)", "s'habille", "她穿衣服。"],
+        ["f", "Elle ___. (s'habiller)", "s'habille", "她穿衣服。"],
         ["c", "Il ___ le matin.", ["ne se rase pas", "se ne rase pas", "ne rase se pas"], 0, "他早上不刮鬍子。"],
         ["o", "Je / vais / me / coucher", "我要去睡了。"],
         ["t", "你幾點起床？", ["Tu te lèves à quelle heure ?", "À quelle heure tu te lèves ?", "À quelle heure est-ce que tu te lèves ?"]],
@@ -313,8 +313,8 @@ FR_COURSE.push(
     ex: [
         ["c", "Le livre est ___ la table.", ["sur", "dans", "entre"], 0, "書在桌上。"],
         ["c", "La banque est à côté ___ parc.", ["du", "de le", "de la"], 0, "銀行在公園旁邊。"],
-        ["c", "Allez tout ___ .", ["droit", "droite", "gauche"], 0, "直走。"],
-        ["f", "Tournez à ___ . (左)", "gauche", "左轉。"],
+        ["c", "Allez tout ___.", ["droit", "droite", "gauche"], 0, "直走。"],
+        ["f", "Tournez à ___. (左)", "gauche", "左轉。"],
         ["o", "La / gare / est / près / d' / ici", "火車站在這附近。"],
         ["t", "請問火車站在哪裡？", ["Où est la gare, s'il vous plaît ?", "Pardon, où est la gare ?"]],
         ["l", "Prenez la deuxième rue à droite.", "走右邊第二條街。"]

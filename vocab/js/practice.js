@@ -81,11 +81,35 @@ const Mistakes = {
     }
 };
 
+// 錯題分類（依來源）
+const MISTAKE_CATS = [["all", "全部"], ["lesson", "課程練習"], ["test", "測驗"], ["grammar", "文法"], ["verb", "動詞變化"], ["quiz", "單字快問"]];
+let mistakeFilter = "all";
+
+function mistakeCat(m) {
+    const src = m.src || "";
+    if (/測驗|考試/.test(src)) return "test";
+    if (src.startsWith("文法")) return "grammar";
+    if (src === "動詞變化") return "verb";
+    if (src === "單字快問") return "quiz";
+    return "lesson";
+}
+
+function filteredMistakes() {
+    return Mistakes.list().map((m, i) => ({ m, i })).filter(({ m }) => mistakeFilter === "all" || mistakeCat(m) === mistakeFilter);
+}
+
 function renderMistakes() {
-    const list = Mistakes.list();
-    $("mistakes-count").textContent = list.length ? `共 ${list.length} 題，重練時答對就會移出錯題本` : "";
-    show("btn-redo-mistakes", list.length > 0);
-    $("mistakes-list").innerHTML = list.length ? `<div class="list">${list.map((m, i) => `
+    const all = Mistakes.list();
+    const counts = {};
+    all.forEach(m => { const c = mistakeCat(m); counts[c] = (counts[c] || 0) + 1; });
+    if (mistakeFilter !== "all" && !counts[mistakeFilter]) mistakeFilter = "all";
+    $("mistakes-filter").innerHTML = MISTAKE_CATS.filter(([k]) => k === "all" || counts[k])
+        .map(([k, name]) => `<option value="${k}"${k === mistakeFilter ? " selected" : ""}>${name}（${k === "all" ? all.length : counts[k]}）</option>`).join("");
+    show("mistakes-filter", all.length > 0);
+    const rows = filteredMistakes();
+    $("mistakes-count").textContent = all.length ? "重練時答對就會移出錯題本" : "";
+    show("btn-redo-mistakes", rows.length > 0);
+    $("mistakes-list").innerHTML = rows.length ? `<div class="list">${rows.map(({ m, i }) => `
         <div class="list-row static mistake">
             <div class="grow">
                 <div class="small">${esc(exPrompt(m.x))}</div>
@@ -107,9 +131,11 @@ Actions.clearMistakes = async () => {
     Goals.render();
 };
 
-// 重練最近的 20 題
+$("mistakes-filter").addEventListener("change", (e) => { mistakeFilter = e.target.value; renderMistakes(); });
+
+// 重練目前分類裡最近的 20 題
 Actions.redoMistakes = () => {
-    const list = Mistakes.list().slice(0, 20);
+    const list = filteredMistakes().slice(0, 20).map(x => x.m);
     if (!list.length) { showToast("錯題本是空的"); App.go("sec-practice"); Actions.practiceTab("mistakes"); return; }
     openLessonPage({ id: "mistakes", kind: "mistakes", eyebrow: "錯題本", title: "錯題重練", goal: `最近答錯的 ${list.length} 題。答對的會移出錯題本。`, ex: shuffle(list.map(m => m.x)) });
 };
@@ -309,6 +335,28 @@ function renderPracticePage() {
     if (Chat.lang !== S.lang) resetChat();
 }
 
+// ===================== 目前使用的 AI（更多頁） =====================
+const AI_NAMES = { claude: "Claude", gemini: "Gemini" };
+let aiInfoCache = null;
+
+async function loadAiInfo(force) {
+    const box = $("ai-info");
+    if (aiInfoCache && !force) { box.innerHTML = aiInfoCache; return; }
+    box.innerHTML = '<span class="muted">檢查中…</span>';
+    try {
+        const r = await Api.call("aiInfo");
+        const name = AI_NAMES[r.provider] || r.provider;
+        aiInfoCache = r.ready
+            ? `<span class="verdict good">可以使用</span> ${esc(name)} · <span class="serif">${esc(r.model || "")}</span>`
+            : `<span class="verdict warn">尚未設定</span> 目前選用 ${esc(name)}，但 GAS 指令碼屬性裡沒有 ${r.provider === "claude" ? "ANTHROPIC_API_KEY" : "GEMINI_API_KEY"}。`;
+        box.innerHTML = aiInfoCache;
+    } catch (e) {
+        box.innerHTML = `<span class="muted">${e instanceof ServerError ? "後端還沒有這個功能，請部署最新的 GAS.gs" : "目前離線，無法檢查"}</span>`;
+    }
+}
+
+Actions.refreshAiInfo = () => loadAiInfo(true);
+
 // ===================== AI 情境對話 =====================
 const CHAT_SCENES = [
     ["咖啡廳點餐", "ordering drinks and pastries at a café; you are the barista"],
@@ -400,7 +448,10 @@ async function chatTurn(text, { hidden = false } = {}) {
     Chat.busy = true;
     renderChat();
     try {
-        const raw = await Svc.ai(Chat.messages.map(m => ({ role: m.role, content: m.content })), { system: chatSystem(), maxTokens: 4000 });
+        // 只送最近 24 則，且第一則必須是使用者的（API 規定）
+        const recent = Chat.messages.slice(-24);
+        while (recent.length && recent[0].role !== "user") recent.shift();
+        const raw = await Svc.ai(recent.map(m => ({ role: m.role, content: m.content })), { system: chatSystem(), maxTokens: 4000 });
         const view = parseChatReply(raw);
         Chat.messages.push({ role: "assistant", content: raw, view });
         Chat.busy = false;
@@ -516,7 +567,8 @@ let writeTopic = "";
 
 Actions.writeTopic = () => {
     const list = WRITE_TOPICS[$("write-level").value] || WRITE_TOPICS.A2;
-    writeTopic = list.filter(t => t !== writeTopic)[Math.floor(Math.random() * (list.length - 1))];
+    const pool = list.filter(t => t !== writeTopic);
+    writeTopic = pool[Math.floor(Math.random() * pool.length)];
     $("write-topic").innerHTML = `題目：<b>${esc(writeTopic)}</b> <button class="link small muted" data-action="writeClearTopic">不用題目</button>`;
     show("write-topic");
 };
@@ -552,7 +604,8 @@ List at most 12 issues, most important first; use [] if there are none.`, { maxT
             ${issues.length ? `<p class="eyebrow mt-16 mb-8">${issues.length} 個地方要注意</p>${issues.map(m => `<div class="issue"><div><span class="strike">${esc(m.wrong)}</span> → <span class="serif">${esc(m.right)}</span></div><div class="small muted">${esc(m.why)}</div></div>`).join("")}` : '<p class="small mt-16"><span class="verdict good">沒有錯誤</span></p>'}
             ${o.natural ? `<p class="eyebrow mt-16 mb-8">更自然的寫法</p><div class="ex">${speakBtn(o.natural)}<div class="grow"><div class="ex-fr">${makeClickable(o.natural)}</div></div></div>` : ""}
             <div class="row mt-16"><button class="btn sm" data-action="writeSave"><i class="icon-file-plus"></i> 存到我的文章</button></div>`;
-        Actions.writeSave = () => saveAsArticle(writeTopic || "寫作練習 " + dateKey(), [o.corrected], [o.zh || ""], "寫作");
+        const title = writeTopic || "寫作練習 " + dateKey();
+        Actions.writeSave = (arg, b) => saveAsArticle(title, [o.corrected], [o.zh || ""], "寫作", b);
         $("write-result").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) {
         showToast("批改失敗：" + e.message, "error", 5000);
@@ -561,8 +614,9 @@ List at most 12 issues, most important first; use [] if there are none.`, { maxT
     }
 };
 
-// 存成「我的文章」（閱讀頁）
-function saveAsArticle(title, paragraphs, translations, folder) {
+// 存成「我的文章」（閱讀頁）；存過後按鈕改成「已存」，避免重複存
+function saveAsArticle(title, paragraphs, translations, folder, btn) {
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="icon-check"></i> 已存'; }
     const minOrder = S.articles.reduce((m, a) => Math.min(m, a.order || 0), 0);
     const art = { id: uid(), lang: S.lang, title, content: paragraphs.join("\n\n"), parasPerBlock: 1, created: Date.now(), bookmarkIndex: 0, translations, folder, order: minOrder - 1 };
     S.articles = lsGet(articlesKey(), S.articles);
@@ -603,7 +657,7 @@ Return ONLY JSON: {"title": "...", "titleZh": "Traditional Chinese", "paragraphs
                 <div class="para-tools"><button data-say="${esc(p.text)}"><i class="icon-volume-2"></i> 朗讀</button><button data-shadow="${esc(p.text)}" data-zh="${esc(p.zh || "")}"><i class="icon-mic"></i> 跟讀</button></div></div>`).join("")}
             <div class="row mt-16"><button class="btn sm" data-action="storySave"><i class="icon-file-plus"></i> 存到我的文章</button><button class="btn sm" data-action="storyMake">再寫一篇</button></div>`;
         $("story-result").querySelectorAll(".cw").forEach(el => { if (targets.has(foldAccents(el.dataset.word))) el.classList.add("target"); });
-        Actions.storySave = () => saveAsArticle(o.title || "AI 小故事", paras.map(p => p.text), paras.map(p => p.zh || ""), "AI 故事");
+        Actions.storySave = (arg, b) => saveAsArticle(o.title || "AI 小故事", paras.map(p => p.text), paras.map(p => p.zh || ""), "AI 故事", b);
     } catch (e) {
         showToast("產生失敗：" + e.message, "error", 5000);
     } finally {

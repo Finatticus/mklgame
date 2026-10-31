@@ -12,9 +12,9 @@ const FR_GRAMMAR = [
           ex: [["Je bois du café.", "我喝咖啡。"], ["Nous habitons à Taipei.", "我們住在台北。"]] },
         { h: "句子裡的「零件」", p: "看文法說明時會一直出現這些名稱，先認識：",
           tb: [["名稱", "意思", "例子"], ["主詞 sujet", "做動作的人或東西", "**Marie** chante."], ["動詞 verbe", "動作或狀態", "Marie **chante**."], ["受詞 complément", "動作的對象", "Je lis **un livre**."], ["冠詞 article", "名詞前的小字", "**le** livre、**une** table"], ["形容詞 adjectif", "形容名詞", "un livre **intéressant**"], ["副詞 adverbe", "修飾動詞、形容詞", "Il parle **vite**."], ["介系詞 préposition", "表示地點、時間、關係", "**à** Paris、**avec** moi"]] },
-        { h: "形容詞和副詞的位置", p: "中文的形容詞放在名詞前（紅色的車），法文大多放在**後面**：une voiture **rouge**。只有少數短又常用的形容詞放前面（petit、grand、bon、beau…，第 10 章詳細說）。",
+        { h: "形容詞和副詞的位置", p: "中文的形容詞放在名詞前（紅色的車），法文大多放在**後面**：une voiture **rouge**。只有少數短又常用的形容詞放前面（petit、grand、bon、beau…，「形容詞的配合與位置」一章詳細說）。",
           ex: [["une voiture rouge", "一輛紅色的車"], ["un petit café", "一家小咖啡館"], ["Il parle très bien.", "他說得很好。"]] },
-        { h: "怎麼把句子變成否定、問句", p: "否定：把 **ne … pas** 夾住動詞：Je **ne** parle **pas** anglais.\n問句：口語最簡單，句尾語調上揚：Tu parles anglais ? ↗\n細節在第 8、9 章。",
+        { h: "怎麼把句子變成否定、問句", p: "否定：把 **ne … pas** 夾住動詞：Je **ne** parle **pas** anglais.\n問句：口語最簡單，句尾語調上揚：Tu parles anglais ? ↗\n細節在「否定句」和「問句」兩章。",
           ex: [["Je ne parle pas anglais.", "我不說英文。"], ["Tu parles anglais ?", "你說英文嗎？"]] }
     ],
     ex: [
@@ -82,7 +82,7 @@ const FR_GRAMMAR = [
         { h: "省音：遇到母音就省掉 e / a", p: "下列小字後面接**母音或不發音的 h** 時，要省掉最後的母音並加撇號：",
           tb: [["原本", "省音後", "例子"], ["je", "j'", "j'aime、j'habite"], ["le / la", "l'", "l'ami、l'école、l'hôtel"], ["ne", "n'", "je n'aime pas"], ["de", "d'", "un verre d'eau"], ["que", "qu'", "qu'est-ce que"], ["me / te / se", "m' / t' / s'", "je m'appelle"], ["si + il(s)", "s'il(s)", "s'il vous plaît（si + elle 不省）"]],
           tip: "這是**一定要做**的，不是可有可無：寫成 je aime 是錯的。", warn: true },
-        { h: "縮合", p: "à / de + le / les 要合併成一個字（見第 3 章）：**au、aux、du、des**。" },
+        { h: "縮合", p: "à / de + le / les 要合併成一個字（見「冠詞」一章）：**au、aux、du、des**。" },
         { h: "連音：字尾子音連到下一個字", p: "平常不唸的字尾子音，在母音開頭的字前面要唸出來，而且常常變音：s、x 唸成 **z**，d 唸成 **t**。\n**一定要連**：冠詞＋名詞（les‿amis）、代名詞＋動詞（nous‿avons、ils‿ont）、短形容詞＋名詞（un petit‿enfant）。\n**不可以連**：et 後面（et / un）、單數名詞＋形容詞。",
           ex: [["les amis", "朋友們（lé-za-mi）"], ["nous avons", "我們有（nou-za-von）"], ["ils ont", "他們有（il-zon，注意和 ils sont 分辨）"], ["un grand homme", "一位偉人（d 唸成 t）"]],
           tip: "**ils ont**（他們有，z 音）和 **ils sont**（他們是，s 音）只差一個音，聽的時候要特別注意。", warn: false }
@@ -177,13 +177,13 @@ const FR_GRAMMAR = [
           ex: [["Je n'ai pas mangé.", "我還沒吃。"], ["Je ne veux pas partir.", "我不想走。"], ["Il ne se lève pas tôt.", "他不早起。"]] },
         { h: "其他否定", tb: [["法文", "中文", "例句"], ["ne … jamais", "從不", "Je ne fume jamais."], ["ne … plus", "不再", "Il ne travaille plus ici."], ["ne … rien", "什麼都沒", "Je ne vois rien."], ["ne … personne", "沒有人", "Je ne connais personne."], ["ne … pas encore", "還沒", "Elle n'est pas encore arrivée."], ["ne … que", "只（不是否定）", "Je n'ai que dix euros."]] },
         { h: "口語常省略 ne", p: "日常口語常把 ne 省掉：**J'sais pas**（= Je ne sais pas）、**C'est pas grave**。聽得懂就好，寫作時要寫完整。",
-          tip: "否定句裡 un / une / du / des 要變成 **de**（見第 3 章）：Je n'ai pas **de** voiture。", warn: true }
+          tip: "否定句裡 un / une / du / des 要變成 **de**（見「冠詞」一章）：Je n'ai pas **de** voiture。", warn: true }
     ],
     ex: [
         ["o", "Je / ne / parle / pas / allemand", "我不說德文。"],
         ["c", "Il ___ aime pas le café.", ["n'", "ne", "pas"], 0, "他不喜歡咖啡。"],
         ["c", "Je n'ai ___ mangé.", ["pas", "ne", "rien pas"], 0, "我還沒吃。"],
-        ["c", "Je ne fume ___ .", ["jamais", "personne", "rien"], 0, "我從不抽菸。"],
+        ["c", "Je ne fume ___.", ["jamais", "personne", "rien"], 0, "我從不抽菸。"],
         ["f", "Il ne travaille ___ ici.", "plus", "他不再在這裡工作了。"],
         ["t", "我什麼都沒看到。", ["Je ne vois rien.", "Je n'ai rien vu."]]
     ]
@@ -228,9 +228,9 @@ const FR_GRAMMAR = [
     ],
     ex: [
         ["c", "une robe ___", ["blanche", "blanc", "blanches"], 0, "一件白色洋裝"],
-        ["c", "Elle est ___ .", ["heureuse", "heureux", "heureuxe"], 0, "她很幸福。"],
+        ["c", "Elle est ___.", ["heureuse", "heureux", "heureuxe"], 0, "她很幸福。"],
         ["c", "un ___ ami", ["nouvel", "nouveau", "nouvelle"], 0, "一位新朋友"],
-        ["c", "J'ai une voiture ___ .", ["japonaise", "japonais", "japonaises"], 0, "我有一輛日本車。"],
+        ["c", "J'ai une voiture ___.", ["japonaise", "japonais", "japonaises"], 0, "我有一輛日本車。"],
         ["o", "C'est / un / bon / restaurant", "這是一家好餐廳。"],
         ["f", "des chaussures ___（noir）", "noires", "黑色的鞋子"]
     ]
@@ -255,6 +255,50 @@ const FR_GRAMMAR = [
         ["c", "Ils aiment ___ enfants.", ["leurs", "leur", "ses"], 0, "他們愛他們的孩子。"],
         ["f", "___ chanson est belle.（這首）", "Cette", "這首歌很美。"],
         ["f", "Vous avez ___ passeport ?（您的）", "votre", "您有護照嗎？"]
+    ]
+},
+{
+    id: "fg-numbers", level: "A1", title: "數字、時間與日期", sub: "0 到一百萬、幾點、星期與日期",
+    lessons: ["a1-03", "a1-08"],
+    body: [
+        { h: "0–16：要直接背", p: "0 到 16 每個都是獨立的字，沒有規律，一定要背熟。17 以後就開始用組合的。",
+          tb: [["數字", "法文", "數字", "法文"], ["0", "zéro", "9", "neuf"], ["1", "un / une", "10", "dix"], ["2", "deux", "11", "onze"], ["3", "trois", "12", "douze"], ["4", "quatre", "13", "treize"], ["5", "cinq", "14", "quatorze"], ["6", "six", "15", "quinze"], ["7", "sept", "16", "seize"], ["8", "huit", "", ""]],
+          tip: "**un** 會配合名詞：un livre、**une** table。其他數字不分陰陽性。", warn: false },
+        { h: "17–69：組合起來", p: "17–19 是 **dix + 數字**，中間加連字號。20 以上：十位數 + 個位數，用連字號連起來；但個位數是 **1** 時用 **et un**（不加連字號）。",
+          tb: [["數字", "法文", "規則"], ["17", "dix-sept", "10 + 7"], ["20", "vingt", ""], ["21", "vingt et un", "個位是 1：et un"], ["22", "vingt-deux", "連字號"], ["30", "trente", ""], ["31", "trente et un", ""], ["40", "quarante", ""], ["50", "cinquante", ""], ["60", "soixante", ""], ["69", "soixante-neuf", ""]],
+          ex: [["J'ai vingt et un ans.", "我 21 歲。"], ["Il y a trente-cinq élèves.", "有 35 個學生。"]] },
+        { h: "70–99：用加法和乘法", p: "這是法文數字最特別的地方，把它想成算式：\n**70 = 60 + 10**（soixante-dix），71 = 60 + 11（soixante **et** onze）\n**80 = 4 × 20**（quatre-vingt**s**），81 = 4 × 20 + 1（quatre-vingt-un，**沒有 et**）\n**90 = 4 × 20 + 10**（quatre-vingt-dix），99 = 4 × 20 + 19（quatre-vingt-dix-neuf）",
+          tb: [["數字", "法文", "算式"], ["70", "soixante-dix", "60 + 10"], ["71", "soixante et onze", "60 + 11"], ["75", "soixante-quinze", "60 + 15"], ["80", "quatre-vingts", "4 × 20"], ["81", "quatre-vingt-un", "4 × 20 + 1"], ["90", "quatre-vingt-dix", "4 × 20 + 10"], ["91", "quatre-vingt-onze", "4 × 20 + 11"], ["99", "quatre-vingt-dix-neuf", "4 × 20 + 19"]],
+          tip: "quatre-vingt**s** 只有剛好 80 時加 s，後面還有數字就不加：quatre-vingt-trois。比利時和瑞士說 septante（70）、nonante（90），在法國聽到不要嚇到，但自己說法國的版本就好。", warn: false },
+        { h: "100 以上", p: "**cent**（100）、**mille**（1000）前面不加 un。cent 和 vingt 一樣：剛好是倍數時加 s（deux cent**s**），後面還有數字就不加（deux cent trois）。**mille 永遠不加 s**。**million** 是名詞，要加 s 並接 de：deux million**s de** personnes。",
+          tb: [["數字", "法文"], ["100", "cent"], ["101", "cent un"], ["200", "deux cents"], ["250", "deux cent cinquante"], ["1 000", "mille"], ["2 000", "deux mille"], ["2026", "deux mille vingt-six"], ["1 000 000", "un million"]],
+          tip: "法文寫數字的習慣和中文不同：千位用**空格**（1 000），小數點用**逗號**（3,5 = 三點五）。價格 2,50 € 唸 deux euros cinquante。", warn: false },
+        { h: "數字的發音要注意", p: "**six、dix**：單獨說時尾音唸 [s]；接子音開頭的字時不唸（six livres）；接母音時唸 [z]（six‿ans）。\n**huit**：單獨時 t 要唸；接子音時常不唸（huit jours）。\n**neuf**：在 ans、heures 前唸成 [v]：neuf‿ans、neuf‿heures。\n**vingt**：單獨時 t 不唸；21–29 的 t 要唸（vingt-deux）。",
+          ex: [["six", "六"], ["six livres", "六本書"], ["six ans", "六歲"], ["neuf heures", "九點"]] },
+        { h: "序數：第一、第二…", p: "大多是**數字 + -ième**。「第一」最特別：**premier / première**（要配合陰陽性）。拼字小變化：cinq → cinq**u**ième、neuf → neu**v**ième；以 e 結尾的先去掉 e：quatre → quatrième。",
+          tb: [["數字", "序數"], ["1", "premier / première"], ["2", "deuxième（或 second）"], ["3", "troisième"], ["4", "quatrième"], ["5", "cinquième"], ["9", "neuvième"], ["20", "vingtième"], ["21", "vingt et unième"]] },
+        { h: "幾點：Il est … heure(s)", p: "問時間：**Quelle heure est-il ?** 或口語 **Il est quelle heure ?**\n回答一律用 **Il est + 數字 + heure(s)**，一點用單數 **une heure**。\n**et quart**（一刻）、**et demie**（半）、**moins le quart**（差一刻）、**moins dix**（差十分）。**midi**（中午）、**minuit**（午夜）後面不加 heures。",
+          tb: [["時間", "日常說法", "24 小時制（車站、節目）"], ["8:00", "huit heures", "huit heures"], ["8:15", "huit heures et quart", "huit heures quinze"], ["8:30", "huit heures et demie", "huit heures trente"], ["8:45", "neuf heures moins le quart", "huit heures quarante-cinq"], ["8:50", "neuf heures moins dix", "huit heures cinquante"], ["12:30", "midi et demi", "douze heures trente"], ["20:10", "huit heures dix (du soir)", "vingt heures dix"]],
+          ex: [["Quelle heure est-il ? — Il est trois heures et demie.", "現在幾點？——三點半。"], ["Le train part à dix-huit heures quinze.", "火車 18:15 開。"]],
+          tip: "「在幾點」用 **à**：**À quelle heure** commence le film ? — **À** vingt heures.（電影幾點開始？——晚上八點。）", warn: false },
+        { h: "星期、月份與日期", p: "星期和月份都**小寫**、都是陽性。\n**lundi**：這個星期一（某一天）；**le lundi**：每個星期一（習慣）。\n日期：**le + 數字 + 月份**，一號說 **le premier**，其他直接用數字：le 2 mai（le deux mai）。\n月份前用 **en** 或 **au mois de**：en juillet。年份前用 **en**：en 2026。",
+          tb: [["星期", "", "月份", ""], ["lundi", "星期一", "janvier, février, mars", "1–3 月"], ["mardi", "星期二", "avril, mai, juin", "4–6 月"], ["mercredi", "星期三", "juillet, août, septembre", "7–9 月"], ["jeudi", "星期四", "octobre, novembre, décembre", "10–12 月"], ["vendredi", "星期五", "", ""], ["samedi, dimanche", "星期六、日", "", ""]],
+          ex: [["On est le combien aujourd'hui ? — On est le premier mai.", "今天幾號？——今天五月一日。"], ["Je travaille le samedi.", "我每個星期六上班。"], ["Je suis né en 1998.", "我 1998 年出生。"]],
+          tip: "日期的順序是**日 → 月 → 年**，和中文相反：le 14 juillet 2026。寫成數字是 14/07/2026。", warn: true }
+    ],
+    ex: [
+        ["c", "21 怎麼說？", ["vingt et un", "vingt-un", "vingt et une"], 0, ""],
+        ["c", "80 怎麼說？", ["quatre-vingts", "huitante", "quatre-vingt"], 0, ""],
+        ["c", "71 怎麼說？", ["soixante et onze", "soixante-onze", "septante-un"], 0, ""],
+        ["c", "92 怎麼說？", ["quatre-vingt-douze", "quatre-vingt-dix-deux", "nonante-deux"], 0, ""],
+        ["c", "300 怎麼說？", ["trois cents", "trois cent", "trois centes"], 0, ""],
+        ["c", "8:45 是？", ["neuf heures moins le quart", "huit heures et quart", "huit heures moins le quart"], 0, ""],
+        ["c", "「每個星期天」是？", ["le dimanche", "dimanche", "en dimanche"], 0, ""],
+        ["f", "J'ai ___ ans.（18）", "dix-huit", "我 18 歲。"],
+        ["f", "Il est sept heures et ___.（7:30）", "demie", "七點半。"],
+        ["f", "Aujourd'hui, c'est le ___ janvier.（1 號）", "premier", "今天是一月一日。"],
+        ["t", "現在幾點？", ["Quelle heure est-il ?", "Il est quelle heure ?"]],
+        ["t", "我的生日是五月三日。", ["Mon anniversaire, c'est le trois mai.", "Mon anniversaire est le trois mai.", "Mon anniversaire, c'est le 3 mai.", "Mon anniversaire est le 3 mai."]]
     ]
 },
 {
@@ -314,7 +358,7 @@ const FR_GRAMMAR = [
         { h: "常用反身動詞", tb: [["動詞", "中文"], ["se réveiller", "醒來"], ["se lever", "起床"], ["se doucher / se laver", "淋浴／洗澡"], ["s'habiller", "穿衣服"], ["se coucher", "上床睡覺"], ["se dépêcher", "趕快"], ["s'amuser", "玩得開心"], ["se reposer", "休息"], ["s'intéresser à", "對…有興趣"]] },
         { h: "否定與搭配其他動詞", p: "否定：ne 放在反身代名詞前：Je **ne** me lève **pas**.\n接在其他動詞後面時，反身代名詞要跟主詞一致：Je vais **me** coucher. Nous devons **nous** dépêcher.",
           ex: [["Je ne me lève pas tôt le dimanche.", "星期天我不早起。"], ["Je vais me coucher.", "我要去睡了。"]],
-          tip: "複合過去式用 **être**：Je **me suis** levé(e) à sept heures（見第 16 章）。" }
+          tip: "複合過去式用 **être**：Je **me suis** levé(e) à sept heures（見「複合過去式」一章）。" }
     ],
     ex: [
         ["c", "Je ___ lève à sept heures.", ["me", "se", "te"], 0, "我七點起床。"],
@@ -390,9 +434,9 @@ const FR_GRAMMAR = [
     ],
     ex: [
         ["c", "Quand j'étais petit, je ___ au foot.", ["jouais", "ai joué", "joue"], 0, "我小時候常踢足球。"],
-        ["c", "Soudain, le téléphone ___ .", ["a sonné", "sonnait", "sonne"], 0, "突然電話響了。"],
+        ["c", "Soudain, le téléphone ___.", ["a sonné", "sonnait", "sonne"], 0, "突然電話響了。"],
         ["c", "Il ___ beau hier.", ["faisait", "a fait", "fait"], 0, "昨天天氣很好。（描述）"],
-        ["c", "Je dormais quand tu ___ .", ["as appelé", "appelais", "appelles"], 0, "你打來的時候我正在睡覺。"],
+        ["c", "Je dormais quand tu ___.", ["as appelé", "appelais", "appelles"], 0, "你打來的時候我正在睡覺。"],
         ["f", "Nous ___ à Lyon à cette époque.（habiter）", "habitions", "那時我們住在里昂。"],
         ["f", "Elle ___ dix ans.（avoir，當時）", "avait", "她那時十歲。"],
         ["t", "那時在下雨。", ["Il pleuvait."]]
@@ -461,7 +505,7 @@ const FR_GRAMMAR = [
     ex: [
         ["c", "Demain, il ___ beau.", ["fera", "faira", "fait"], 0, "明天天氣會很好。"],
         ["c", "Nous ___ en France l'année prochaine.", ["irons", "allerons", "irez"], 0, "我們明年會去法國。"],
-        ["c", "Quand tu ___ , appelle-moi.", ["arriveras", "arrives", "arrivais"], 0, "你到的時候打給我。"],
+        ["c", "Quand tu ___, appelle-moi.", ["arriveras", "arrives", "arrivais"], 0, "你到的時候打給我。"],
         ["f", "Je ___ ce soir.（venir）", "viendrai", "我今晚會來。"],
         ["f", "Tu ___ le temps ?（avoir）", "auras", "你會有時間嗎？"],
         ["t", "我會打給你。", ["Je t'appellerai."]]
@@ -536,6 +580,117 @@ const FR_GRAMMAR = [
 },
 // ---------------- B1 ----------------
 {
+    id: "fg-devoir", level: "A2", title: "必須、應該與時間長短", sub: "il faut、devoir、avoir besoin de；depuis、il y a、pendant",
+    lessons: ["a2-12", "b1-03"],
+    body: [
+        { h: "il faut + 原形：一般來說「得…」", p: "**il faut** 是無人稱的說法（主詞永遠是 il，不代表任何人），意思是「必須、需要」，說的是**一般的規則或做法**，沒有特別指誰。\n後面可以接**原形動詞**，也可以接**名詞**（需要某樣東西）。",
+          ex: [["Il faut boire beaucoup d'eau.", "要多喝水。"], ["Il faut réserver à l'avance.", "得事先訂位。"], ["Il faut deux heures pour aller à Lyon.", "去里昂要兩個小時。"], ["Il faut du courage.", "需要勇氣。"]],
+          tip: "要指定「某人必須」，用 **devoir**（下一節），或 **il faut que + 虛擬式**（B1「虛擬式」一章）：Il faut que tu partes。", warn: false },
+        { h: "devoir：某人必須、應該、一定是", p: "**devoir** 是不規則動詞，後面接原形。它有三種意思：\n① **必須**：Je dois partir.（我得走了。）\n② **推測：一定是**：Il doit être fatigué.（他一定很累。）\n③ 條件式 **devrais** 表示「**應該**」，用來給建議，比較委婉：Tu devrais dormir.（你應該睡覺。）",
+          tb: [["主詞", "現在式", "條件式（應該）"], ["je", "dois", "devrais"], ["tu", "dois", "devrais"], ["il / elle / on", "doit", "devrait"], ["nous", "devons", "devrions"], ["vous", "devez", "devriez"], ["ils / elles", "doivent", "devraient"]],
+          ex: [["Je dois travailler ce soir.", "我今晚得工作。"], ["Vous devez montrer votre passeport.", "您必須出示護照。"], ["Elle doit être chez elle.", "她一定在家。"], ["Tu devrais voir un médecin.", "你應該去看醫生。"]] },
+        { h: "最容易錯：「不必」不是 il ne faut pas", p: "中文「不用、不必」和「不可以」差很多，法文也一樣：\n**il ne faut pas / tu ne dois pas** = **不可以、禁止**\n**ce n'est pas la peine de / tu n'as pas besoin de / il n'est pas nécessaire de** = **不必、不需要**",
+          tb: [["法文", "意思"], ["Il ne faut pas fumer ici.", "這裡**不可以**抽菸。"], ["Tu ne dois pas le dire.", "你**不可以**說出去。"], ["Ce n'est pas la peine de venir.", "你**不用**來。"], ["Tu n'as pas besoin de réserver.", "你**不需要**訂位。"]],
+          tip: "想說「你不用付錢」，說 Tu n'as pas besoin de payer。說成 Tu ne dois pas payer 會變成「你不准付錢」。", warn: true },
+        { h: "avoir besoin de：需要", p: "**avoir besoin de** + 名詞或原形：「需要…」。de 遇到母音變 d'；接名詞時，泛指的「需要一些」通常直接用 de（不用 du、des）。",
+          ex: [["J'ai besoin d'aide.", "我需要幫忙。"], ["J'ai besoin de dormir.", "我需要睡覺。"], ["Tu as besoin de quelque chose ?", "你需要什麼嗎？"]] },
+        { h: "avoir mal à：哪裡痛", p: "「…痛」= **avoir mal à** + 定冠詞 + 身體部位。à 會和冠詞合併：**au**（à + le）、**aux**（à + les）；la、l' 不變。",
+          tb: [["身體部位", "…痛"], ["la tête（頭）", "J'ai mal à la tête."], ["le ventre（肚子）", "J'ai mal au ventre."], ["les dents（牙齒）", "J'ai mal aux dents."], ["l'oreille（耳朵）", "J'ai mal à l'oreille."], ["le dos（背）", "J'ai mal au dos."]],
+          tip: "法文說身體部位時用**定冠詞**，不用所有格：J'ai mal **à la** tête，不說 à ma tête。", warn: true },
+        { h: "depuis：從…到現在還在持續", p: "事情**從過去開始、現在還在繼續**時，法文用 **現在式 + depuis**。中文說「我學法文三年了」，法文是「我學法文從三年」：J'apprends le français **depuis** trois ans。\n**depuis** 後面可以接一段時間（depuis deux ans），也可以接起點（depuis 2023、depuis lundi）。\n問：**Depuis quand… ?**（從什麼時候？）、**Depuis combien de temps… ?**（多久了？）\n口語也常說 **Ça fait + 時間 + que + 現在式**：Ça fait trois ans que j'habite ici.",
+          ex: [["J'habite à Paris depuis 2020.", "我從 2020 年起住在巴黎。"], ["Elle est malade depuis trois jours.", "她病了三天了（現在還病著）。"], ["Depuis combien de temps tu attends ?", "你等多久了？"]],
+          tip: "這裡**不能**用複合過去式：J'ai habité ici depuis deux ans 是錯的，要說 J'habite ici depuis deux ans。", warn: true },
+        { h: "il y a、pendant、en：其他時間長短", p: "**il y a** + 時間 =「…之前」，配**過去式**：Je suis arrivé il y a deux jours.（我兩天前到的。）\n**pendant** + 時間 =「（持續）…的期間」，事情已經結束或有明確長度：J'ai dormi pendant huit heures.（我睡了八個小時。）\n**en** + 時間 =「花多少時間完成」：J'ai fini en dix minutes.（我十分鐘就做完了。）",
+          tb: [["說法", "意思", "例句"], ["depuis + 時間", "持續到現在（現在式）", "Je travaille ici depuis un an."], ["il y a + 時間", "…之前（過去式）", "Je suis venu il y a un an."], ["pendant + 時間", "持續了多久", "J'ai travaillé là-bas pendant un an."], ["en + 時間", "花多少時間完成", "Il a appris à nager en un mois."]] }
+    ],
+    ex: [
+        ["c", "這裡不可以拍照：Il ___ prendre de photos ici.", ["ne faut pas", "n'a pas besoin de", "ne doit"], 0, ""],
+        ["c", "你不用來：Tu ___ venir.", ["n'as pas besoin de", "ne dois pas", "ne faut pas"], 0, ""],
+        ["c", "Tu ___ te reposer.（你應該休息）", ["devrais", "dois être", "faut"], 0, "給建議"],
+        ["c", "J'ai mal ___ dos.", ["au", "à la", "aux"], 0, "我背痛。"],
+        ["c", "J'ai mal ___ dents.", ["aux", "au", "à les"], 0, "我牙痛。"],
+        ["c", "J'apprends le français ___ deux ans.", ["depuis", "il y a", "pendant"], 0, "我學法文兩年了（還在學）。"],
+        ["c", "Je suis arrivé ___ une semaine.", ["il y a", "depuis", "en"], 0, "我一週前到的。"],
+        ["c", "Il a dormi ___ dix heures.", ["pendant", "depuis", "il y a"], 0, "他睡了十個小時。"],
+        ["f", "Nous ___ partir maintenant.（devoir）", "devons", "我們現在得走了。"],
+        ["f", "Ils ___ être en retard.（devoir：一定是）", "doivent", "他們一定是遲到了。"],
+        ["t", "我需要幫忙。", ["J'ai besoin d'aide.", "J'ai besoin d'aide !"]],
+        ["t", "我住在這裡三年了。", ["J'habite ici depuis trois ans.", "Ça fait trois ans que j'habite ici."]]
+    ]
+},
+{
+    id: "fg-adverbs", level: "A2", title: "副詞", sub: "-ment 怎麼變、bon 和 bien、放在哪裡",
+    lessons: ["a2-15", "a2-08"],
+    body: [
+        { h: "副詞是什麼", p: "副詞用來修飾**動詞、形容詞或其他副詞**，回答「怎麼做、多常、多少、什麼時候」。中文常用「…地」：慢慢**地**走。\n最重要的一點：**副詞不變化**，沒有陰陽性、單複數（和形容詞不一樣）。",
+          ex: [["Il parle lentement.", "他說得很慢。（修飾動詞）"], ["C'est très bon.", "非常好吃。（修飾形容詞）"], ["Elle chante vraiment bien.", "她唱得真的很好。（修飾副詞）"]] },
+        { h: "規則一：陰性形容詞 + -ment", p: "大部分 -ment 副詞的做法：先把形容詞變成**陰性**，再加 **-ment**（相當於英文的 -ly）。",
+          tb: [["形容詞（陽 → 陰）", "副詞", "意思"], ["lent → lente", "lentement", "慢慢地"], ["heureux → heureuse", "heureusement", "幸好"], ["doux → douce", "doucement", "輕輕地"], ["sérieux → sérieuse", "sérieusement", "認真地"], ["léger → légère", "légèrement", "稍微"], ["complet → complète", "complètement", "完全地"]] },
+        { h: "規則二：母音結尾直接加 -ment", p: "陽性形容詞以**母音**結尾時，直接用陽性加 -ment（不先變陰性）。",
+          tb: [["形容詞", "副詞", "意思"], ["vrai", "vraiment", "真的"], ["poli", "poliment", "有禮貌地"], ["absolu", "absolument", "絕對"], ["facile", "facilement", "容易地"], ["rapide", "rapidement", "快速地"]],
+          tip: "例外：**gai → gaiement**（快樂地）。", warn: false },
+        { h: "規則三：-ant → -amment、-ent → -emment", p: "以 **-ant** 結尾的變成 **-amment**，以 **-ent** 結尾的變成 **-emment**。兩種寫法**發音一樣**，都唸 [amɑ̃]。",
+          tb: [["形容詞", "副詞", "意思"], ["courant", "couramment", "流利地"], ["constant", "constamment", "不斷地"], ["évident", "évidemment", "當然"], ["récent", "récemment", "最近"], ["prudent", "prudemment", "小心地"]],
+          tip: "**lent → lentement**、**présent → présentement** 是例外，照規則一。", warn: true },
+        { h: "要另外記的特殊形", p: "有些副詞的變法不照規則，也有很多常用副詞根本不是 -ment 形，要直接背：",
+          tb: [["形容詞", "副詞", "意思"], ["gentil", "gentiment", "親切地"], ["bref", "brièvement", "簡短地"], ["précis", "précisément", "精確地"], ["énorme", "énormément", "非常多"], ["profond", "profondément", "深深地"], ["bon", "bien", "好地"], ["mauvais", "mal", "差地、不好地"], ["meilleur", "mieux", "更好地"]],
+          ex: [["Il parle vite.", "他說話很快。"], ["J'ai beaucoup mangé.", "我吃了很多。"], ["Elle arrive toujours en retard.", "她總是遲到。"]] },
+        { h: "最常搞混：bon / bien、mauvais / mal", p: "**bon**（好的）、**mauvais**（壞的）是**形容詞**，修飾名詞，要配合陰陽性。\n**bien**（好地）、**mal**（差地）是**副詞**，修飾動詞，不變化。\n比較級也一樣分開：**meilleur**（形容詞）／**mieux**（副詞）。",
+          tb: [["形容詞（修飾名詞）", "副詞（修飾動詞）"], ["C'est un bon cuisinier.（好廚師）", "Il cuisine bien.（煮得好）"], ["une mauvaise note（爛成績）", "J'ai mal dormi.（沒睡好）"], ["Ce gâteau est meilleur.（比較好吃）", "Elle chante mieux que moi.（唱得比我好）"]],
+          tip: "**C'est bien !**（很好！真棒！）是固定說法，評論一件事的時候用 bien；評論**味道**才用 C'est bon !（好吃）。", warn: false },
+        { h: "副詞放在哪裡", p: "① 一般放在**變化的動詞後面**：Il parle **bien** français.\n② **複合過去式**：短而常用的副詞（bien、mal、déjà、beaucoup、trop、assez、toujours、souvent、encore）放在**助動詞和過去分詞中間**：J'ai **bien** dormi。\n③ 較長的 -ment 副詞和時間、地點副詞（hier、aujourd'hui、ici、tard）多放在**過去分詞後**或句首：Il a parlé **lentement**、Je l'ai vu **hier**。\n④ 修飾形容詞或副詞時放在**前面**：**très** content、**trop** vite。",
+          tb: [["時態", "例句", "中文"], ["現在式", "Il mange souvent ici.", "他常在這裡吃飯。"], ["複合過去式（短副詞）", "J'ai déjà fini.", "我已經做完了。"], ["複合過去式（短副詞）", "Nous avons beaucoup ri.", "我們笑得很開心。"], ["複合過去式（時間）", "Elle est partie hier.", "她昨天走了。"], ["原形動詞", "Il faut bien manger.", "要好好吃飯。"]],
+          tip: "中文習慣把副詞放動詞前（我**常常**吃），法文要放在動詞**後面**：Je mange **souvent**，不說 Je souvent mange。", warn: true }
+    ],
+    ex: [
+        ["c", "lent 的副詞是？", ["lentement", "lentment", "lentamment"], 0, ""],
+        ["c", "heureux 的副詞是？", ["heureusement", "heureuxment", "heureusment"], 0, ""],
+        ["c", "évident 的副詞是？", ["évidemment", "évidentement", "évidamment"], 0, ""],
+        ["c", "Il chante très ___.", ["bien", "bon", "bonne"], 0, "他唱得很好。"],
+        ["c", "C'est une ___ idée.", ["bonne", "bien", "bon"], 0, "這是個好主意。"],
+        ["c", "Elle parle français ___ que moi.", ["mieux", "meilleur", "plus bien"], 0, "她法文說得比我好。"],
+        ["c", "哪一句正確？", ["J'ai bien dormi.", "J'ai dormi bien.", "Je bien ai dormi."], 0, "我睡得很好。"],
+        ["f", "Il parle ___.（courant → 副詞）", "couramment", "他說得很流利。"],
+        ["f", "Parlez plus ___, s'il vous plaît.（doux → 副詞）", "doucement", "請說小聲一點。"],
+        ["o", "Nous / avons / beaucoup / travaillé", "我們做了很多工作。"],
+        ["o", "Je / mange / souvent / au / restaurant", "我常在餐廳吃飯。"],
+        ["t", "我已經吃過了。", ["J'ai déjà mangé.", "J'ai déjà mangé !"]]
+    ]
+},
+{
+    id: "fg-stressed", level: "A2", title: "強調代名詞與所有格代名詞", sub: "moi、toi、lui；le mien、la tienne",
+    lessons: ["a2-16"],
+    body: [
+        { h: "為什麼需要另一組「我、你」", p: "je、tu、il 只能當**主詞**，而且一定要緊貼在動詞前。其他位置（介系詞後面、單獨回答、強調）要換成**強調代名詞**。中文沒有這個區別，所以剛開始常會說出 avec je 這種錯誤。",
+          tb: [["主詞代名詞", "強調代名詞", "中文"], ["je", "moi", "我"], ["tu", "toi", "你"], ["il", "lui", "他"], ["elle", "elle", "她"], ["on", "soi", "自己（一般人）"], ["nous", "nous", "我們"], ["vous", "vous", "您；你們"], ["ils", "eux", "他們"], ["elles", "elles", "她們"]] },
+        { h: "什麼時候用強調代名詞", p: "① **介系詞後面**：avec moi、chez toi、pour lui、sans eux、à côté d'elle\n② **c'est 後面**：C'est moi.（是我。）Ce sont eux.（是他們。）\n③ **強調或對比**，放句首再接一般主詞：Moi, je préfère le thé.（我呢，比較喜歡茶。）\n④ **單獨回答**、沒有動詞時：Qui veut du café ? — **Moi !**\n⑤ **moi aussi**（我也是）、**moi non plus**（我也不）\n⑥ **比較級的 que 後面**：Il est plus grand que **moi**.",
+          ex: [["Tu viens avec moi ?", "你要跟我來嗎？"], ["C'est lui qui a gagné.", "是他贏了。"], ["Moi, je reste ici.", "我呢，我留在這裡。"], ["J'aime le chocolat. — Moi aussi !", "我喜歡巧克力。——我也是！"], ["Je n'aime pas le café. — Moi non plus.", "我不喜歡咖啡。——我也不喜歡。"], ["Elle est plus jeune que toi.", "她比你年輕。"]],
+          tip: "說「我也不」要用 **moi non plus**，不能說 moi aussi（它只用在肯定句後）。", warn: true },
+        { h: "-même：自己", p: "強調代名詞 + **-même(s)** =「…自己」：moi-même（我自己）、toi-même、lui-même、elle-même、nous-mêmes、vous-même(s)、eux-mêmes、elles-mêmes。",
+          ex: [["Je l'ai fait moi-même.", "這是我自己做的。"], ["Fais-le toi-même !", "你自己做！"]] },
+        { h: "所有格代名詞：le mien、la tienne", p: "**所有格代名詞**取代「所有格形容詞 + 名詞」，避免重複：ma clé → **la mienne**（我的那把）。\n它要配合**被擁有的東西**的陰陽性和單複數（和 mon / ma / mes 一樣，不看擁有者是男是女）。",
+          tb: [["", "陽性單數", "陰性單數", "陽性複數", "陰性複數"], ["我的", "le mien", "la mienne", "les miens", "les miennes"], ["你的", "le tien", "la tienne", "les tiens", "les tiennes"], ["他的／她的", "le sien", "la sienne", "les siens", "les siennes"], ["我們的", "le nôtre", "la nôtre", "les nôtres", "les nôtres"], ["你們的；您的", "le vôtre", "la vôtre", "les vôtres", "les vôtres"], ["他們的", "le leur", "la leur", "les leurs", "les leurs"]],
+          ex: [["Ce n'est pas ma clé, c'est la tienne.", "這不是我的鑰匙，是你的。"], ["Mon vélo est rouge. Le sien est bleu.", "我的腳踏車是紅的，他的是藍的。"], ["Nos enfants jouent avec les leurs.", "我們的小孩和他們的小孩一起玩。"]] },
+        { h: "要注意的細節", p: "① **le / les 會和 à、de 合併**：Je pense **au** mien（à + le mien）、Il parle **des** siens（de + les siens）。\n② **le nôtre、le vôtre 有 ^**，而所有格形容詞 notre、votre **沒有**；發音也不同：nôtre 的 o 是閉口音，notre 是開口音。\n③ 只是說「這是誰的」，口語更常用 **c'est à + 強調代名詞**：C'est à moi.（這是我的。）À qui est ce sac ? — Il est à elle.",
+          ex: [["À qui est ce téléphone ? — C'est à moi.", "這支手機是誰的？——是我的。"], ["Votre voiture est plus grande que la nôtre.", "您的車比我們的大。"]],
+          tip: "le sien / la sienne 和 son / sa 一樣，**不分**「他的」或「她的」：sa valise 可以是他的或她的行李箱，所以 la sienne 也是。", warn: false }
+    ],
+    ex: [
+        ["c", "Tu viens avec ___ ?", ["moi", "je", "me"], 0, "你要跟我來嗎？"],
+        ["c", "C'est ___ qui a appelé.", ["lui", "il", "le"], 0, "是他打的電話。"],
+        ["c", "Ils dînent chez ___ ce soir.", ["eux", "ils", "leur"], 0, "他們今晚在自己家吃飯。"],
+        ["c", "Je n'aime pas le froid. — Moi ___.", ["non plus", "aussi", "pas"], 0, "我不喜歡冷。——我也不。"],
+        ["c", "Ce n'est pas mon sac, c'est ___.（你的）", ["le tien", "la tienne", "ton"], 0, "le sac 是陽性"],
+        ["c", "Ta maison est grande. ___ est petite.（我的）", ["La mienne", "Le mien", "Ma"], 0, "la maison 是陰性"],
+        ["c", "Nos parents et ___（他們的）se connaissent.", ["les leurs", "leurs", "le leur"], 0, ""],
+        ["f", "Il est plus grand que ___.（我）", "moi", "他比我高。"],
+        ["f", "Je l'ai fait ___.（我自己）", "moi-même", "我自己做的。"],
+        ["f", "À qui est ce livre ? — Il est à ___.（她）", "elle", "這本書是誰的？——是她的。"],
+        ["t", "我也是！", ["Moi aussi !", "Moi aussi."]],
+        ["t", "這是你的嗎？", ["C'est à toi ?", "C'est le tien ?", "C'est la tienne ?", "C'est à vous ?"]]
+    ]
+},
+{
     id: "fg-conditional", level: "B1", title: "條件式與假設句", sub: "je voudrais、si j'avais…",
     lessons: ["b1-01", "b1-02", "b1-06"],
     body: [
@@ -549,7 +704,7 @@ const FR_GRAMMAR = [
           ex: [["J'aurais dû partir plus tôt.", "我早該早點出門的。"], ["Tu aurais pu me prévenir !", "你本來可以先告訴我的！"]] }
     ],
     ex: [
-        ["c", "Si j'avais le temps, je ___ .", ["voyagerais", "voyagerai", "voyageais"], 0, "如果我有時間，我會去旅行。"],
+        ["c", "Si j'avais le temps, je ___.", ["voyagerais", "voyagerai", "voyageais"], 0, "如果我有時間，我會去旅行。"],
         ["c", "S'il pleut, nous ___ à la maison.", ["resterons", "resterions", "restions"], 0, "如果下雨，我們會待在家。"],
         ["c", "Si j'___ riche, j'achèterais une maison.", ["étais", "serais", "suis"], 0, "如果我有錢，我會買房子。"],
         ["c", "___ -vous m'aider ?", ["Pourriez", "Pouvriez", "Pourrez"], 0, "您能幫我嗎？（禮貌）"],
@@ -571,7 +726,7 @@ const FR_GRAMMAR = [
           tip: "**espérer que** 後面用直陳式（不是虛擬式）：J'espère que tu **vas** bien。", warn: true }
     ],
     ex: [
-        ["c", "Il faut que tu ___ .", ["viennes", "viens", "viendras"], 0, "你一定要來。"],
+        ["c", "Il faut que tu ___.", ["viennes", "viens", "viendras"], 0, "你一定要來。"],
         ["c", "Je veux que vous ___ heureux.", ["soyez", "êtes", "serez"], 0, "我希望你們幸福。"],
         ["c", "Je pense qu'il ___ raison.", ["a", "ait", "aie"], 0, "我認為他是對的。"],
         ["c", "Je ne pense pas qu'il ___ raison.", ["ait", "a", "aura"], 0, "我不認為他是對的。"],
@@ -634,8 +789,8 @@ const FR_GRAMMAR = [
     ex: [
         ["c", "Ce pont a été ___ en 1900.", ["construit", "construire", "construisant"], 0, "這座橋建於 1900 年。"],
         ["c", "La lettre est écrite ___ Marie.", ["par", "de", "pour"], 0, "這封信是瑪麗寫的。"],
-        ["c", "Il chante en ___ .", ["marchant", "marché", "marcher"], 0, "他邊走邊唱。"],
-        ["f", "En ___ , j'ai vu Paul.（arriver）", "arrivant", "我到的時候看到保羅。"],
+        ["c", "Il chante en ___.", ["marchant", "marché", "marcher"], 0, "他邊走邊唱。"],
+        ["f", "En ___, j'ai vu Paul.（arriver）", "arrivant", "我到的時候看到保羅。"],
         ["t", "這裡說法語。", ["On parle français ici.", "Ici, on parle français."]]
     ]
 }

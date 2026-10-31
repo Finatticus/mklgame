@@ -15,7 +15,7 @@ const EN_GRAMMAR = [
           tip: "台灣學生最常漏掉的：第三人稱單數現在式加 **-s**（she **likes**）、名詞複數 **-s**、可數名詞前的 **a / the**。", warn: true }
     ],
     ex: [
-        ["c", "She looks ___ .", ["tired", "tiredly", "tire"], 0, "她看起來很累。（look + 形容詞）"],
+        ["c", "She looks ___.", ["tired", "tiredly", "tire"], 0, "她看起來很累。（look + 形容詞）"],
         ["c", "___ is raining.", ["It", "There", "This"], 0, "下雨了。"],
         ["c", "He ___ coffee every morning.", ["drinks", "drink", "drinking"], 0, "他每天早上喝咖啡。"],
         ["o", "The / news / made / her / happy", "這個消息讓她很開心。"]
@@ -32,9 +32,9 @@ const EN_GRAMMAR = [
           tip: "中文「我吃了」可能是 I ate（過去）也可能是 I have eaten（完成），要看有沒有明確的過去時間。見「現在完成式」一章。" }
     ],
     ex: [
-        ["c", "Look! It ___ .", ["is snowing", "snows", "has snowed"], 0, "你看！在下雪。"],
+        ["c", "Look! It ___.", ["is snowing", "snows", "has snowed"], 0, "你看！在下雪。"],
         ["c", "I ___ here since 2020.", ["have lived", "live", "lived"], 0, "我從 2020 年就住在這裡。"],
-        ["c", "When I arrived, she ___ already ___ .", ["had / left", "has / left", "was / leaving"], 0, "我到的時候她已經走了。"]
+        ["c", "When I arrived, she ___ already ___.", ["had / left", "has / left", "was / leaving"], 0, "我到的時候她已經走了。"]
     ]
 },
 // ---------------- A2 ----------------
@@ -55,7 +55,7 @@ const EN_GRAMMAR = [
     ],
     ex: [
         ["c", "My brother ___ in Tokyo.", ["lives", "live", "is live"], 0, "我哥住在東京。"],
-        ["c", "Be quiet! The baby ___ .", ["is sleeping", "sleeps", "sleep"], 0, "安靜！寶寶在睡覺。"],
+        ["c", "Be quiet! The baby ___.", ["is sleeping", "sleeps", "sleep"], 0, "安靜！寶寶在睡覺。"],
         ["c", "I ___ what you mean.", ["understand", "am understanding", "understands"], 0, "我懂你的意思。"],
         ["c", "___ she speak French?", ["Does", "Do", "Is"], 0, "她會說法文嗎？"],
         ["f", "He ___ (not / like) coffee.", ["doesn't like", "does not like"], "他不喜歡咖啡。"],
@@ -107,7 +107,7 @@ const EN_GRAMMAR = [
         ["c", "I ___ him last night.", ["saw", "have seen", "see"], 0, "我昨晚見到他。"],
         ["c", "She has worked here ___ 2019.", ["since", "for", "from"], 0, "她從 2019 年就在這裡工作。"],
         ["c", "We've been married ___ ten years.", ["for", "since", "during"], 0, "我們結婚十年了。"],
-        ["c", "I haven't finished my homework ___ .", ["yet", "already", "just"], 0, "我還沒寫完作業。"],
+        ["c", "I haven't finished my homework ___.", ["yet", "already", "just"], 0, "我還沒寫完作業。"],
         ["f", "He ___ (lose) his wallet, so he can't pay.", ["has lost", "'s lost"], "他把錢包弄丟了，所以沒辦法付錢。"],
         ["t", "我去過巴黎兩次。", ["I've been to Paris twice.", "I have been to Paris twice."]]
     ]
@@ -126,7 +126,7 @@ const EN_GRAMMAR = [
     ex: [
         ["c", "The phone's ringing. — I ___ get it.", ["'ll", "'m going to", "am getting"], 0, "電話響了。——我來接。"],
         ["c", "I ___ visit my aunt next month. I've already booked the tickets.", ["am going to", "will", "visit"], 0, ""],
-        ["c", "I'll text you when I ___ .", ["arrive", "will arrive", "arriving"], 0, "我到了會傳訊息給你。"],
+        ["c", "I'll text you when I ___.", ["arrive", "will arrive", "arriving"], 0, "我到了會傳訊息給你。"],
         ["c", "Look at those clouds! It ___ rain.", ["is going to", "will", "rains"], 0, ""],
         ["f", "I ___ (meet) Tom at 6 tonight.", ["am meeting", "'m meeting"], "我今晚六點要和湯姆見面。"],
         ["t", "我來幫你。", ["I'll help you.", "I will help you."]]
@@ -145,7 +145,7 @@ const EN_GRAMMAR = [
     ex: [
         ["c", "She's ___ engineer.", ["an", "a", "the"], 0, "她是工程師。"],
         ["c", "It takes ___ hour.", ["an", "a", "the"], 0, "要花一小時。"],
-        ["c", "I love ___ .", ["cats", "cat", "the cat"], 0, "我喜歡貓。（泛指）"],
+        ["c", "I love ___.", ["cats", "cat", "the cat"], 0, "我喜歡貓。（泛指）"],
         ["c", "He plays ___ guitar.", ["the", "a", "—"], 0, "他彈吉他。"],
         ["c", "We had ___ lunch at noon.", ["—", "a", "the"], 0, "我們中午吃午餐。（不加冠詞）"],
         ["f", "___ sun rises in the east.", "The", "太陽從東邊升起。"]
@@ -310,7 +310,7 @@ const EN_GRAMMAR = [
     ex: [
         ["c", "She said she ___ tired.", ["was", "is being", "were"], 0, "她說她很累。"],
         ["c", "He ___ me that he would be late.", ["told", "said", "say"], 0, "他告訴我他會遲到。"],
-        ["c", "She asked me where I ___ .", ["lived", "did live", "do I live"], 0, "她問我住在哪裡。"],
+        ["c", "She asked me where I ___.", ["lived", "did live", "do I live"], 0, "她問我住在哪裡。"],
         ["c", "He asked me ___ I was OK.", ["if", "that", "what"], 0, "他問我還好嗎。"],
         ["f", "She told me ___ (not / be) late.", "not to be", "她叫我不要遲到。"],
         ["t", "他說他會打電話。", ["He said he would call.", "He said that he would call."]]
@@ -330,7 +330,7 @@ const EN_GRAMMAR = [
           ex: [["It was raining. I had been waiting for an hour when she finally arrived.", "那時在下雨。我已經等了一個小時她才終於出現。"]] }
     ],
     ex: [
-        ["c", "When I arrived, the movie ___ .", ["had started", "has started", "starts"], 0, "我到的時候電影已經開始了。"],
+        ["c", "When I arrived, the movie ___.", ["had started", "has started", "starts"], 0, "我到的時候電影已經開始了。"],
         ["c", "I ___ English for ten years.", ["have been learning", "am learning", "learned"], 0, "我學英文學了十年。"],
         ["c", "Your eyes are red. ___ you been crying?", ["Have", "Did", "Are"], 0, "你眼睛好紅，你剛剛在哭嗎？"],
         ["c", "She ___ three books this year.", ["has written", "has been writing", "wrote been"], 0, "她今年寫了三本書。"],

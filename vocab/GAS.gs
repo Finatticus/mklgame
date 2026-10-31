@@ -251,6 +251,8 @@ var HANDLERS = {
     var msgs = (ctx.data.messages || []).slice(-30).map(function (m) {
       return { role: m.role === "assistant" ? "assistant" : "user", content: String(m.content || "").slice(0, 8000) };
     });
+    // 截斷後第一則必須是使用者的
+    while (msgs.length && msgs[0].role !== "user") msgs.shift();
     if (!msgs.length || msgs[msgs.length - 1].role !== "user") throw new Error("最後一則訊息必須是使用者的");
     return callAI(String(ctx.data.system || ""), msgs, Math.min(Number(ctx.data.maxTokens) || 4000, 16000));
   },

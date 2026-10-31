@@ -207,6 +207,10 @@ function renderLesson(L) {
     show("lesson-dialog-block", (L.dialog || []).length > 0);
     $("lesson-culture").innerHTML = L.culture ? `<p class="eyebrow mb-8">小知識</p><p class="small">${Class.rich(L.culture)}</p>` : "";
     show("lesson-culture", !!L.culture);
+    // 本課重點（練習前複習一次）
+    const recap = special ? null : LESSON_RECAPS[L.id];
+    $("lesson-recap").innerHTML = recap ? `<div class="block-head"><h2>本課重點</h2></div><ol>${recap.map(t => `<li>${Class.rich(t)}</li>`).join("")}</ol>` : "";
+    show("lesson-recap", !!recap);
 
     renderExercises(L);
     $("lesson-done").innerHTML = p.done[L.id] ? '<i class="icon-check"></i> 已完成，再次標記' : "完成本課";
@@ -325,6 +329,12 @@ function normAnswer(s) {
     return foldAccents(String(s || "")).replace(/[’]/g, "'").replace(/[.,!?;:«»"]/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// 「allé(e)(s)」展開成 allé、allée、allés、allées（錯題本裡的動詞題用）
+function optionalForms(s) {
+    return String(s).split(/(\([es]\))/).reduce((acc, part) =>
+        /^\([es]\)$/.test(part) ? acc.flatMap(a => [a, a + part[1]]) : acc.map(a => a + part), [""]);
+}
+
 // 題目的正確答案（顯示用）
 function exAnswer(x) {
     if (x[0] === "c") {
@@ -418,7 +428,7 @@ Actions.checkExercises = () => {
             ok = normAnswer(typed) === normAnswer(x[1].split(" / ").join(" "));
         } else {
             typed = document.querySelector(`[data-ex-input="${i}"]`).value;
-            const accepted = x[0] === "l" ? [x[1]] : [].concat(x[2]);
+            const accepted = x[0] === "l" ? [x[1]] : [].concat(x[2]).flatMap(optionalForms);
             ok = accepted.some(a => normAnswer(a) === normAnswer(typed));
             // 只差重音也算對，但提醒
             accentSlip = ok && !accepted.some(a => plain(a) === plain(typed));
@@ -649,6 +659,8 @@ function verbQuestion(v, t, i) {
     const toRe = (s) => new RegExp("^" + s.split(/(\([es]\))/).map(part =>
         /^\([es]\)$/.test(part) ? part[1] + "?" : part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("") + "$");
     const patterns = [toRe(norm), toRe(verbOnly)];
+    // 錯題本用：把 (e)(s) 展開成所有寫法，連同只寫動詞的版本一起存（第一個是顯示用的答案）
+    const accepted = [answer, ...new Set([...optionalForms(answer), ...optionalForms(answer.replace(/^(qu'|que )?(j'|je |tu |il |elle |nous |vous |ils |elles )/, ""))])];
     const tense = FR_TENSES.find(x => x.id === t);
     const subject = pick || FR_PERSONS[i];
     return {
@@ -657,6 +669,7 @@ function verbQuestion(v, t, i) {
         prompt: `${tense.name}　${t === "subj" ? (/^(il|elle)/.test(v.impersonal ? "il" : subject) ? "qu'" : "que ") : ""}${v.impersonal ? "il" : subject} ＿＿`,
         sub: `${v.zh} · ${tense.fr}`,
         answer,
+        accepted,
         say: answer.replace(/\((e|s)\)/g, ""),
         check: (typed) => patterns.some(re => re.test(normAnswer(typed)))
     };
@@ -778,7 +791,7 @@ Actions.drillNext = () => {
         if (ok) Drill.score++;
         else Drill.missed.push(q);
         if (Drill.opts.stats) recordVerbStat(q.key, ok);
-        if (!ok) Mistakes.add(["t", `${q.title}：${q.prompt}`, [q.answer]], "動詞變化");
+        if (!ok) Mistakes.add(["t", `${q.title}：${q.prompt}`, q.accepted], "動詞變化");
         $("drill-input").disabled = true;
         $("drill-feedback").innerHTML = `<span class="verdict ${ok ? "good" : "bad"}">${ok ? "正確" : "答案"}</span> <span class="serif">${esc(q.answer)}</span>`;
         TTS.say(q.say, L().tts);

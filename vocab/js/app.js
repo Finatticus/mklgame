@@ -22,7 +22,7 @@ const App = {
         if (id === "sec-practice") renderPracticePage();
         if (id === "sec-books") renderBooksList();
         if (id === "sec-read") fetchCustomArticles();
-        if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); const g = Goals.conf(); $("goal-reviews").value = g.reviews; $("goal-words").value = g.words; $("goal-study").value = g.study; Notify.updateButton(); loadHighScores(); }
+        if (id === "sec-more") { updateStatistics(); $("new-per-day").value = SRS.newPerDay(); const g = Goals.conf(); $("goal-reviews").value = g.reviews; $("goal-words").value = g.words; $("goal-study").value = g.study; Notify.updateButton(); loadHighScores(); loadAiInfo(); }
         if (id === "sec-class") renderClassHome();
         if (!KEEP_TTS.includes(id)) { TTS.stop(); Speech.stop(); }
         window.scrollTo({ top: 0 });

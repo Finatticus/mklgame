@@ -3,7 +3,7 @@
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyKlqB0wUOJkBv6mNiv9qEuPENlNa434XTIZuwvXgl-ZEzN6K4MtV8UwFrgosnR7WA/exec";
 // 測試用：localStorage.setItem("vocab_api_override", "其他後端網址") 可改連其他後端
 const API_URL = (() => { try { return localStorage.getItem("vocab_api_override") || GAS_URL; } catch (e) { return GAS_URL; } })();
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.3.0";
 const MIN_API_VERSION = 1;
 
 const DEFAULT_BOOK = "我的單字";
@@ -11,6 +11,7 @@ const TRASH_BOOK = "垃圾桶";
 const UNSORTED = "未分類";
 const DEFAULT_NEW_PER_DAY = 20;
 const DAY_MS = 86400000;
+const MAX_INTERVAL = 365;   // 複習間隔上限（天）
 
 // ===================== 語言 =====================
 const LANGS = {

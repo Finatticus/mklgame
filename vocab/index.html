@@ -349,6 +349,12 @@
             </div>
 
             <div class="block">
+                <div class="block-head"><h2>AI</h2><button class="link small muted" data-action="refreshAiInfo">重新檢查</button></div>
+                <div id="ai-info" class="small"></div>
+                <p class="tiny muted mt-8">AI 對話、寫作批改、小故事、AI 校對、主題單字包都經過後端呼叫。要換 Claude / Gemini 或模型，請改 GAS 的指令碼屬性（見說明書「AI 設定」）。</p>
+            </div>
+
+            <div class="block">
                 <div class="block-head"><h2>資料</h2></div>
                 <div class="links">
                     <button class="link" data-action="exportCSV"><i class="icon-download"></i> 匯出 CSV</button>
@@ -445,6 +451,7 @@
                 <div id="lesson-dialog"></div>
             </div>
             <div class="block" id="lesson-culture" hidden></div>
+            <div class="block recap" id="lesson-recap" hidden></div>
             <div class="block" id="lesson-ex-block">
                 <div class="block-head"><h2 id="lesson-ex-title">練習</h2><button class="link small" id="lesson-quiz-btn" data-action="vocabQuiz">單字快問</button></div>
                 <div id="lesson-ex"></div>
@@ -572,6 +579,7 @@
 
             <div id="practice-mistakes" hidden>
                 <div class="row mb-8">
+                    <select id="mistakes-filter" style="width:auto;"></select>
                     <span class="small muted grow" id="mistakes-count"></span>
                     <button class="btn primary sm" id="btn-redo-mistakes" data-action="redoMistakes">重練</button>
                     <button class="link small muted" data-action="clearMistakes">清空</button>
@@ -833,6 +841,7 @@
     <script src="js/classroom/grammar-en.js"></script>
     <script src="js/classroom/wordbank-fr.js"></script>
     <script src="js/classroom/wordbank-en.js"></script>
+    <script src="js/classroom/recaps.js"></script>
     <script src="js/classroom/classroom.js"></script>
     <script src="js/practice.js"></script>
     <script src="js/io.js"></script>

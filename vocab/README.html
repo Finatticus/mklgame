@@ -45,7 +45,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <body>
 <div class="wrap">
 
-<p class="sub">說明書 · v1.2.0 · 2026-10-31</p>
+<p class="sub">說明書 · v1.3.0 · 2026-10-31</p>
 <h1>Vocab，<i>英文與法文</i>單字學習</h1>
 <p class="sub">一個帳號、兩種語言。英文和法文各自有自己的單字本、複習進度、設定、文章與遊戲紀錄，用右上角的 EN / FR 切換。</p>
 
@@ -73,7 +73,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td>詞性</td><td>n. v. adj. adv. prep. conj. phr.</td><td>n.m. n.f. n. v. adj. adv. prép. conj. pron. loc.</td></tr>
 <tr><td>音標</td><td>自動查詢並存回試算表</td><td>無（Wiktionary 沒有穩定的音標文字）</td></tr>
 <tr><td>新聞</td><td>The Conversation 全文（有 <code>GUARDIAN_API_KEY</code> 時改用 The Guardian），逐段對照</td><td>franceinfo 今日頭條與摘要，逐則對照</td></tr>
-<tr><td>教室</td><td>A2–B2 共 20 課、18 章文法、單字庫 458 字</td><td>A0–B1 共 50 課、28 章文法、動詞變化、單字庫 630 字</td></tr>
+<tr><td>教室</td><td>A2–B2 共 20 課、18 章文法、單字庫 458 字</td><td>A0–B1 共 50 課、32 章文法、動詞變化、單字庫 630 字</td></tr>
 <tr><td>輸入</td><td>—</td><td>重音字母小鍵盤（é è ê à ç œ…）；聽寫與拼字遊戲不強制重音，少打重音會提醒但算對</td></tr>
 <tr><td>文章斷字</td><td>一般斷字</td><td>自動拆開 l'、d'、qu' 等縮寫，點 <i>l'homme</i> 會查 <i>homme</i></td></tr>
 <tr><td>朗讀 / 拍照</td><td>en-US / 英文辨識</td><td>fr-FR / 法文辨識</td></tr>
@@ -92,8 +92,8 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td>B2</td><td>6</td><td>敘事時態、第三與混合條件句、推測（must have）、未來進行／完成式、正式寫作與分詞構句、倒裝與強調句</td></tr>
 </table></div>
 <ul>
-  <li><b>每一課</b>：本課目標、文法說明與表格、例句、單字、情境對話、小知識、練習（選擇、填空、重組、中翻外、聽寫）與單字快問。課程開頭會連到相關的文法章節。</li>
-  <li><b>文法講義</b>（文法分頁）：獨立的完整講解，從「句子怎麼組成」「陰陽性」「冠詞」「動詞變化是什麼」這些基礎觀念講起，每章都有表格、可以聽的例句、常見錯誤提醒，章末可以練習。法文 28 章、英文 18 章。</li>
+  <li><b>每一課</b>：本課目標、文法說明與表格、例句、單字、情境對話、小知識、練習前的「本課重點」（3–4 句回顧）、練習（選擇、填空、重組、中翻外、聽寫）與單字快問。課程開頭會連到相關的文法章節。</li>
+  <li><b>文法講義</b>（文法分頁）：獨立的完整講解，從「句子怎麼組成」「陰陽性」「冠詞」「動詞變化是什麼」這些基礎觀念講起，每章都有表格、可以聽的例句、常見錯誤提醒，章末可以練習。法文 32 章（含數字與時間、必須與時間長短、副詞、強調與所有格代名詞）、英文 18 章。</li>
   <li><b>單元測驗與級別考試</b>：每 4 課一次單元測驗，每個級別結束有級別考試，題目從課程練習與單字隨機抽，答對 70% 通過，每次重做都會換題。</li>
   <li><b>主題單字</b>：依主題與程度整理的常用字（法文 26 個主題 630 字、英文 20 個主題 458 字），可以聽、快問、一鍵加入「單字庫 A1」等單字本。</li>
   <li><b>動詞變化</b>（法文）：約 90 個動詞、8 種時態。<b>混合練習</b>可選時態與範圍，會記錄每個「動詞＋時態」的錯誤次數，「最常錯」可以專門練那些。</li>
@@ -109,7 +109,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li><b>AI 寫作批改</b>：自由寫或按「出題」，AI 逐一指出錯誤並解釋、給修正版與更自然的寫法、估計程度，可存到「我的文章」。</li>
   <li><b>AI 小故事</b>：用最近加入、今天要複習或最常忘記的字寫一篇短文，生字會標出來，可朗讀、跟讀、存成文章。</li>
   <li><b>跟讀</b>：先聽再唸，用手機的語音辨識比對，給分數並把沒被辨識出來的字標紅。iPhone 請用 Safari（iOS 14.5 以上）；不支援的瀏覽器會顯示說明。分數是辨識比對的結果，不等於專業的發音評分。</li>
-  <li><b>錯題本</b>：課程練習、測驗、動詞練習、單字快問答錯的題目自動收進來（每種語言最多 150 題），重練時答對就移出。</li>
+  <li><b>錯題本</b>：課程練習、測驗、動詞練習、單字快問答錯的題目自動收進來（每種語言最多 150 題），重練時答對就移出。可依來源篩選（課程練習、測驗、文法、動詞變化、單字快問），重練只出目前分類的題目。</li>
   <li><b>句子卡</b>：例句、對話、文章段落、翻譯結果、AI 回覆旁按 <i>存成句子卡</i>，存到「句子」單字本，詞性為「句子」，一樣進入每日複習。</li>
   <li><b>每日目標</b>：今日頁顯示複習、新字、學習次數的進度與連續天數；目標在「更多 → 學習設定」調整。完成一課、一次測驗、一段 AI 練習或一輪練習各算一次學習。</li>
   <li><b>閃卡例句</b>：有例句的字翻面後會顯示例句、朗讀鈕與中文翻譯。</li>
@@ -128,6 +128,15 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td><code>AI_PROVIDER</code></td><td>選填，<code>claude</code> 或 <code>gemini</code>。沒填時：有 <code>ANTHROPIC_API_KEY</code> 就用 Claude，否則用 Gemini。</td></tr>
 </table></div>
 <p class="note">Claude 請求有開啟伺服器端備援（fallbacks）：如果請求被安全分類器擋下，會自動改用其他模型重試，不需要另外處理。建議在 Anthropic Console 設定每月花費上限。</p>
+<p><b>申請 Claude API 金鑰：</b></p>
+<ol>
+  <li>到 <code>console.anthropic.com</code> 註冊或登入（和 claude.ai 是不同的帳戶系統，可以用同一個 Email）。</li>
+  <li>Settings → Billing：儲值（預付額度），並在 Limits 設定每月花費上限。</li>
+  <li>Settings → API Keys → Create Key，取個名字（例如 vocab），複製金鑰（以 <code>sk-ant-</code> 開頭，只會顯示一次）。</li>
+  <li>GAS 專案 → 專案設定 → 指令碼屬性 → 新增 <code>ANTHROPIC_API_KEY</code>，貼上金鑰後儲存。不用重新部署。</li>
+  <li>回到 App「更多 → AI」按「重新檢查」，顯示「可以使用 Claude」就完成了。</li>
+</ol>
+<p class="note">金鑰等同於付款權限，不要貼到聊天、程式碼或 GitHub；外洩時到 Console 刪除金鑰再建新的。</p>
 
 <h2 id="accuracy">單字判斷與 AI</h2>
 <ul>
@@ -152,7 +161,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 </div>
 <div>
 <h3>閱讀</h3>
-<p>新聞，以及「我的文章」：貼上文章後逐段翻譯（翻好會存起來，下次不用重翻）、朗讀、書籤、群組。</p>
+<p>新聞，以及「我的文章」：貼上文章後逐段翻譯（翻好會存起來，下次不用重翻）、朗讀、書籤、群組。段落以空行分隔，整篇沒有空行時改用換行分段；一篇最多 40,000 字元（試算表一格的上限是 50,000），太長請分成幾篇。</p>
 <h3>更多</h3>
 <p>學習紀錄（收錄、熟練、連續天數、30 天答對率與每日長條圖）、兩個遊戲、每日新字上限、預設單字本、匯出／匯入／備份、底色與字體、提醒、登出。</p>
 <h3>複習</h3>
@@ -168,7 +177,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td>記得</td><td>第一次 4 天，之後 × 難易係數</td><td>+0.15</td></tr>
 <tr><td>很熟</td><td>10–15 天，或原間隔 × 係數（取較長者）</td><td>+0.1（最高 3.0）</td></tr>
 </table></div>
-<p>「今日待複習」＝到期的字＋還沒學過的新字（每天上限預設 20，可在「更多」調整，兩種語言各自設定）。遊戲答錯的字會立刻排進複習。</p>
+<p>「今日待複習」＝到期的字＋還沒學過的新字（每天上限預設 20，可在「更多」調整，兩種語言各自設定）。遊戲答錯的字會立刻排進複習。複習間隔最長 365 天，很熟的字一年內至少會再出現一次。</p>
 
 <h2 id="design">設計原則</h2>
 <ul>
@@ -214,6 +223,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
 <tr><td><code>js/classroom/lessons-en.js</code></td><td>英文 20 課與英文發音</td></tr>
 <tr><td><code>js/classroom/grammar-fr.js</code> <code>grammar-en.js</code></td><td>文法講義</td></tr>
 <tr><td><code>js/classroom/wordbank-fr.js</code> <code>wordbank-en.js</code></td><td>主題單字庫</td></tr>
+<tr><td><code>js/classroom/recaps.js</code></td><td>每課的「本課重點」</td></tr>
 <tr><td><code>js/classroom/classroom.js</code></td><td>教室畫面、練習批改、測驗、動詞練習、進度</td></tr>
 <tr><td><code>js/practice.js</code></td><td>每日目標、錯題本、句子卡、跟讀、AI 對話／寫作／故事</td></tr>
 <tr><td><code>sw.js</code>、<code>manifest.json</code>、<code>icons/</code></td><td>PWA</td></tr>
@@ -238,7 +248,7 @@ footer{margin-top:56px;color:var(--muted);font-size:.85rem;border-top:1px solid 
   <li>Google 翻譯免費端點若失效，會改用 GAS 翻譯（較慢、有每日配額）。</li>
 </ul>
 
-<footer>Vocab v1.2.0。之後調整功能時請一併更新本文件。</footer>
+<footer>Vocab v1.3.0。之後調整功能時請一併更新本文件。</footer>
 </div>
 </body>
 </html>

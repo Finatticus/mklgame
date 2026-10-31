@@ -26,6 +26,8 @@ const SRS = {
         else if (rating === "hard") { interval = interval === 0 ? 1 : interval * 1.2; ease = Math.max(1.3, ease - 0.15); }
         else if (rating === "easy") { interval = interval === 0 ? 4 : interval * ease; ease += 0.15; }
         else if (rating === "familiar") { interval = Math.max(10 + Math.random() * 5, interval * ease); ease = Math.min(3.0, ease + 0.1); }
+        // 間隔最長一年，避免很熟的字好幾年都不出現
+        interval = Math.min(interval, MAX_INTERVAL);
         if (next === undefined) next = now + interval * DAY_MS;
         return { interval: Math.round(interval * 100) / 100, easeFactor: Math.round(ease * 100) / 100, nextReviewTime: next };
     },
@@ -34,7 +36,7 @@ const SRS = {
         if (rating === "forget") return "10 分鐘";
         if (rating === "familiar") {
             const base = (w.interval || 0) * (w.easeFactor || 2.5);
-            return base > 15 ? fmtInterval(base) : "10–15 天";
+            return base > 15 ? fmtInterval(Math.min(base, MAX_INTERVAL)) : "10–15 天";
         }
         return fmtInterval(SRS.schedule(w, rating).interval);
     },

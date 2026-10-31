@@ -121,6 +121,14 @@ Actions.closeNewsModal = () => { TTS.stop(); hide("news-modal"); Actions.closeQu
 
 // ===================== 自定義文章 =====================
 let currentArticleIndex = -1;
+const ARTICLE_MAX = 40000;
+
+// 段落以空行分隔；整篇沒有空行（從網頁複製常見）時改用換行分段
+function articleParagraphs(content) {
+    const split = (re) => String(content).split(re).map(p => p.trim()).filter(Boolean);
+    const paras = split(/\n\s*\n/);
+    return paras.length === 1 ? split(/\n/) : paras;
+}
 
 function articlesKey() { return Store.k("articles_" + S.lang); }
 function saveArticlesLocal() { lsSet(articlesKey(), S.articles); }
@@ -215,6 +223,8 @@ Actions.saveCustomArticle = () => {
         if (!folder) { showToast("請輸入群組名稱", "error"); return; }
     }
     if (!title || !content) { showToast("請輸入標題和內文", "error"); return; }
+    // 試算表一格最多 50,000 字元，超過會存不進雲端
+    if (content.length > ARTICLE_MAX) { showToast(`文章太長（${content.length} 字元，上限 ${ARTICLE_MAX}），請分成幾篇`, "error", 5000); return; }
     const idxStr = $("custom-edit-id").value;
     let art;
     if (idxStr !== "") {
@@ -325,9 +335,9 @@ async function openCustomReaderModal(index) {
     show("custom-reader-modal");
     $("custom-reader-modal").scrollTop = 0;
 
-    const paras = art.content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-    const blocks = splitBlocks(paras, art.parasPerBlock || 1);
-    const cached = Array.isArray(art.translations) ? art.translations : [];
+    const blocks = splitBlocks(articleParagraphs(art.content), art.parasPerBlock || 1);
+    // 分段方式改變過（翻譯數量對不上）時重新翻譯
+    const cached = Array.isArray(art.translations) && art.translations.length === blocks.length ? art.translations : [];
     const box = $("custom-reader-full");
     box.innerHTML = `<h1 class="reader-title">${esc(art.title)}</h1><div id="reader-body"></div>`;
     const done = renderBilingual($("reader-body"), blocks, {

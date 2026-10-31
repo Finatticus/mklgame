@@ -80,11 +80,11 @@ FR_COURSE.push(
     vocab: [["soudain", "突然", "adv."], ["tout à coup", "突然間", "loc."], ["un jour", "有一天", "loc."], ["pendant que", "在…的時候", "conj."], ["au moment où", "正當…的時候", "loc."], ["l'accident", "意外", "n.m."], ["la police", "警察", "n.f."], ["le voleur", "小偷", "n.m."], ["sonner", "（鈴）響", "v."], ["crier", "大叫", "v."], ["se passer", "發生", "v."], ["raconter", "講述", "v."], ["l'histoire", "故事；歷史", "n.f."], ["avoir peur", "害怕", "loc."]],
     dialog: [["Policier", "Racontez-moi ce qui s'est passé.", "請告訴我發生了什麼事。"], ["Témoin", "Il était huit heures. J'attendais le bus.", "那時是八點，我在等公車。"], ["Témoin", "Il faisait nuit et il y avait beaucoup de monde.", "天已經黑了，人很多。"], ["Témoin", "Tout à coup, un homme a pris le sac d'une dame.", "突然一個男人搶了一位女士的包包。"], ["Policier", "Comment était cet homme ?", "那個男人長什麼樣子？"], ["Témoin", "Il était grand et il portait une veste noire. Il est parti vers la gare.", "他很高，穿著黑色夾克。他往火車站跑了。"]],
     ex: [
-        ["c", "Je dormais quand tu ___ .", ["as téléphoné", "téléphonais", "téléphones"], 0, "你打電話來的時候我正在睡覺。"],
+        ["c", "Je dormais quand tu ___.", ["as téléphoné", "téléphonais", "téléphones"], 0, "你打電話來的時候我正在睡覺。"],
         ["c", "Quand j'étais enfant, je ___ souvent chez mes grands-parents.", ["allais", "suis allé", "vais"], 0, "我小時候常去祖父母家。"],
-        ["c", "Soudain, la lumière ___ .", ["s'est éteinte", "s'éteignait", "s'éteint"], 0, "突然燈熄了。"],
+        ["c", "Soudain, la lumière ___.", ["s'est éteinte", "s'éteignait", "s'éteint"], 0, "突然燈熄了。"],
         ["f", "Il ___ (faire) froid quand nous sommes arrivés.", "faisait", "我們到的時候天氣很冷。"],
-        ["f", "Pendant que je cuisinais, le téléphone a ___ . (sonner)", "sonné", "我在煮飯的時候電話響了。"],
+        ["f", "Pendant que je cuisinais, le téléphone a ___. (sonner)", "sonné", "我在煮飯的時候電話響了。"],
         ["t", "我出門的時候正在下雨。", ["Il pleuvait quand je suis sorti.", "Il pleuvait quand je suis sortie."]]
     ]
 },
@@ -344,9 +344,9 @@ FR_COURSE.push(
     ex: [
         ["c", "Tu viens avec ___ ? (我)", ["moi", "me", "je"], 0, "你跟我一起來嗎？"],
         ["c", "Je dîne chez ___ ce soir. (他們)", ["eux", "leur", "ils"], 0, "我今晚在他們家吃晚餐。"],
-        ["c", "Ce n'est pas ta clé, c'est ___ . (我的)", ["la mienne", "le mien", "ma"], 0, "這不是你的鑰匙，是我的。"],
+        ["c", "Ce n'est pas ta clé, c'est ___. (我的)", ["la mienne", "le mien", "ma"], 0, "這不是你的鑰匙，是我的。"],
         ["f", "J'aime le chocolat. — Moi ___ !", "aussi", "我喜歡巧克力。——我也是！"],
-        ["f", "Je n'aime pas le froid. — Moi non ___ .", "plus", "我不喜歡冷。——我也不喜歡。"],
+        ["f", "Je n'aime pas le froid. — Moi non ___.", "plus", "我不喜歡冷。——我也不喜歡。"],
         ["t", "這是我的。", ["C'est à moi.", "C'est le mien.", "C'est la mienne."]]
     ]
 }
