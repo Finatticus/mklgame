@@ -1,8 +1,11 @@
-// 挑戰模式全部 500 關（v109 重新設計）：用固定種子產生，每次載入都一樣
-//   以前的光環、金球、滯空、彈跳、星門這類任務太抽象（玩家沒辦法控制球在空中經過哪裡），全部拿掉，球洞上也不再放空中的機關。
-//   現在的條件都是真正打球會在意的事：桿數、不落水 / 不掉落 / 不 OB、不進沙坑、不進長草、開球上球道 / 上果嶺 / 靠近旗桿、
-//   標準桿上果嶺、推桿次數、開球距離。難度靠球洞本身：越後面球道越窄、果嶺越小越快、水和沙坑越多、狗腿越急、風越大、桿數上限越緊。
+// 挑戰模式全部 500 關（v110 難度重新設計）：用固定種子產生，每次載入都一樣
+//   條件都是真正打球會在意的事：桿數、不落水 / 不掉落 / 不 OB、不進沙坑、不進長草、開球上球道 / 上果嶺 / 靠近旗桿、
+//   標準桿上果嶺、推桿次數、開球距離。光環、金球這類空中任務已經拿掉，球洞上也沒有空中的機關。
+//   難度靠球洞本身，而且前段就加快（v109 是線性的，第 70 關還很簡單）：
+//     球道越來越窄、果嶺越小越快、雙層 / 龜背果嶺、高低差、狗腿越來越急（轉角種高樹、外側界外，要打曲球或放短）、
+//     開球要飛越荒地、橫排沙坑、密林、五桿洞中段切斷的荒地、水和沙坑越來越多、風越來越大、桿數上限越來越緊。
 //   章節：前 100 關每 10 關一章，101 關以後每 20 關一章；每一章最後一關是頭目關（更長、障礙更多、條件更嚴）。
+//   每關另外附 feat（簡短的障礙標籤）與 diff（難度 1~10），給挑戰關卡總覽（challenge-levels.html）用。
 
 export const CHAPTERS_ALL = [
   { name: '新手花園', themes: ['tulip', 'lavender', 'candy'] },
@@ -66,9 +69,9 @@ const CHASM = t => t === 'mars' || t === 'crystal';
 const WORD = {
   front: ['湖畔', '水岸', '臨水', '渡口'], island: ['孤島', '浮島', '小島', '島嶼'], lateral: ['長河', '水道', '河岸', '緞帶'], cross: ['溪谷', '斷崖', '天險', '飛越'],
   gaps: ['裂縫', '斷橋', '跳島', '天梯'], sand: ['沙丘', '砂陣', '沙海', '沙堡'], bend: ['彎道', '轉角', '迴廊', '曲徑'], narrow: ['窄道', '針眼', '一線天', '細徑'],
-  ob: ['懸崖', '邊界', '界線', '險路'], long: ['長征', '大道', '遠路', '長廊'], wind: ['狂風', '逆風', '風口', '側風'], boss: ['王座', '試煉', '守護者', '終章'],
+  ob: ['懸崖', '邊界', '界線', '險路'], carry: ['荒原', '飛越', '長跳', '險渡'], trees: ['密林', '樹海', '林道', '森徑'], long: ['長征', '大道', '遠路', '長廊'], wind: ['狂風', '逆風', '風口', '側風'], boss: ['王座', '試煉', '守護者', '終章'],
 };
-const EN = { front: 'Shore', island: 'Isle', lateral: 'Channel', cross: 'Crossing', gaps: 'Gaps', sand: 'Dunes', bend: 'Bend', narrow: 'Needle', ob: 'Edge', long: 'Long Road', wind: 'Gale', boss: 'Throne' };
+const EN = { front: 'Shore', island: 'Isle', lateral: 'Channel', cross: 'Crossing', gaps: 'Gaps', sand: 'Dunes', bend: 'Bend', narrow: 'Needle', ob: 'Edge', long: 'Long Road', wind: 'Gale', boss: 'Throne', carry: 'Carry', trees: 'Woods' };
 const SIDE = { L: '左', R: '右' };
 const WIND_ZH = { L: '左側風', R: '右側風', H: '逆風', T: '順風' };
 
@@ -88,77 +91,166 @@ export function designLevels() {
 }
 
 function design(n, t, boss, r, pick, used) {
-  const d = (n - 1) / 499, lerp = (a, b) => a + (b - a) * d, rnd = (a, b) => Math.round(a + (b - a) * r());
+  // 難度曲線：d0 是線性的關卡進度，d = d0^0.45 讓前段加快（第 10 關 ≈ 0.16、第 30 關 ≈ 0.28、第 70 關 ≈ 0.41、第 200 關 ≈ 0.66、第 300 關 ≈ 0.79）
+  const d0 = (n - 1) / 499, d = Math.pow(d0, 0.45), lerp = (a, b) => a + (b - a) * d, rnd = (a, b) => Math.round(a + (b - a) * r());
   const vo = VOIDISH(t), W = WATER[t] || '水';
   // ---- 標準桿與距離 ----
   const par = boss ? (r() < 0.55 ? 5 : 4) : (x => (x < 0.3 ? 3 : x < 0.75 ? 4 : 5))(r());
-  let yards = par === 3 ? rnd(lerp(120, 160), lerp(150, 225)) : par === 4 ? rnd(lerp(310, 360), lerp(350, 455)) : rnd(lerp(470, 520), lerp(520, 610));
+  // 距離照遊戲裡的實際球速：素質 70 左右開球約 270 碼，五桿洞短於 540 碼兩桿就上得去
+  let yards = par === 3 ? rnd(lerp(140, 175), lerp(170, 230)) : par === 4 ? rnd(lerp(350, 405), lerp(395, 475)) : rnd(lerp(535, 575), lerp(580, 640));
   if (boss) yards = Math.round(yards * 1.05);
-  // ---- 球場環境：球道越來越窄、果嶺越來越快 ----
-  const c = { fairwayW: Math.max(18, Math.round(lerp(40, 22) + (r() - 0.5) * 4)), roughW: Math.round(lerp(16, 8)), stimp: Math.round(lerp(8, 12) * 10) / 10, trees: Math.round(lerp(0.6, 1.1) * 100) / 100 };
-  const gW = Math.round(lerp(30, 18) + (r() - 0.5) * 3), gL = gW + rnd(2, 5);
-  const spec = { green: { size: [gW, gL] }, bunkers: [] }, F = new Set(), say = [], tags = [];
+  // ---- 球場環境：球道越來越窄、長草越來越少（球道外很快就是樹或障礙）、果嶺越來越快 ----
+  const c = { fairwayW: Math.max(17, Math.round(lerp(36, 19) + (r() - 0.5) * 4)), roughW: Math.round(lerp(14, 7)), stimp: Math.round(lerp(8.5, 11.8) * 10) / 10, trees: Math.round(lerp(0.7, 1.3) * 100) / 100 };
+  const gW = Math.max(16, Math.round(lerp(27, 16) + (r() - 0.5) * 3)), gL = gW + rnd(2, 6);
+  const spec = { green: { size: [gW, gL] }, bunkers: [] }, F = new Set(), say = [], tags = [], feat = [];
   let bend = 0, wet = false, narrow = false, bothSides = false;
+  // ---- 果嶺起伏：前低後高的坡、左右坡越來越陡；中段以後常有雙層果嶺、龜背果嶺 ----
+  const sg = spec.green;
+  sg.slope = Math.round((lerp(0.008, 0.02) + r() * lerp(0.004, 0.012)) * 1000) / 1000;
+  sg.side = Math.round((r() < 0.5 ? -1 : 1) * (0.003 + r() * lerp(0.006, 0.016)) * 1000) / 1000;
+  // 雙層果嶺本身已經有一道坡：前後坡、左右坡放緩（太陡的話快果嶺上推不停）
+  if (d > 0.15 && r() < d * 0.75) { sg.tier = true; sg.tierAt = pick([-0.25, 0, 0.25]); sg.slope = Math.min(sg.slope, 0.014); sg.side = Math.max(-0.01, Math.min(0.01, sg.side)); feat.push('雙層果嶺'); say.push('果嶺分成前後兩層，打錯層要推過一道坡'); }
+  else if (d > 0.4 && r() < 0.35) { sg.crown = Math.round(lerp(0.12, 0.2) * 100) / 100; sg.slope = Math.min(sg.slope, 0.016); feat.push('龜背果嶺'); say.push('果嶺中間高、四周往外掉，太用力的球會滾下果嶺'); }
+  // ---- 高低差：果嶺墊高（要多拿一點桿）、果嶺在下面、或開球往下打第二桿往上 ----
+  //   （碼數之後可能被縮短，所以先記下來，最後才算 spec.elev）
+  let elevPlan = null;
+  if (d > 0.08 && r() < 0.25 + 0.45 * d) {
+    const h = Math.max(3, Math.round(lerp(4, 12) * (0.6 + r() * 0.4))), up = r() < 0.55;
+    if (par === 3 || r() < 0.5) {
+      elevPlan = { h: up ? h : -h };
+      feat.push(up ? `果嶺墊高 ${h}m` : `果嶺低 ${h}m`); say.push(up ? `果嶺比發球台高 ${h} 公尺，要多拿一點桿` : `果嶺比發球台低 ${h} 公尺，球會飛得比較遠`);
+    } else {
+      elevPlan = { h, valley: true };
+      feat.push(`谷地 ${h}m`); say.push(`開球往下打到 ${h} 公尺深的谷地，第二桿要往上打`);
+    }
+  }
   // ---- 障礙：數量隨關卡增加（頭目關多一個）----
-  let pts = 1 + Math.floor(d * 4.5 + r() * 1.5) + (boss ? 1 : 0);
+  let pts = 1 + Math.floor(d * 4.4 + r() * 1.6) + (boss ? 1 : 0);
   const green = () => spec.bunkers.filter(b => b.g).reduce((a, b) => a + (b.n || 1), 0);
+  const sideWater = () => (spec.water || []).some(w => w.from);
+  const pools = () => (spec.water || []).length;      // 三桿洞果嶺邊最多兩片水（三面都是水的小果嶺連機器人都上不去）
+  const land = Math.round(Math.min(yards * 0.6, 228 + d * 25));      // 開球落點（距白梯碼數）
   const OPS = par === 3 ? {
-    front: () => { if (vo || F.has('IG')) return false; spec.water = (spec.water || []).concat({ g: 'F', size: [rnd(lerp(30, 40), lerp(36, 48)), rnd(lerp(10, 14), lerp(14, 22))] }); wet = true; say.push(`果嶺前面是一片${W}`); return true; },
-    // 孤島果嶺：四周已經是水，不再另外加前水 / 側水
-    island: () => { if (d < 0.25 || F.has('IG') || spec.water) return false; F.add('IG'); spec.green.size = [Math.max(22, gW), Math.max(25, gL)]; wet = true; say.push(vo ? `果嶺是一座浮島，四周都是${W}，打短打偏都會掉下去` : `果嶺被${W}整圈包圍，只能直接飛上去`); return true; },
-    sand: () => { const k = Math.min(4, 2 + Math.floor(d * 2.5)); for (const g of ['FL', 'FR', 'BL', 'BR'].slice(0, k)) spec.bunkers.push({ g, big: d > 0.5 }); say.push(`果嶺周圍有 ${k} 個沙坑`); return true; },
-    side: () => { if (vo || F.has('IG')) return false; const s = pick(['L', 'R']); spec.water = (spec.water || []).concat({ g: s, size: [rnd(18, 26), rnd(28, 40)] }); wet = true; say.push(`果嶺${SIDE[s]}邊緊貼著${W}`); return true; },
-    waste: () => { const s = pick(['L', 'R']); spec.waste = [{ g: s }]; say.push(`果嶺${SIDE[s]}邊是很難切的荒地`); return true; },
+    front: () => { if (vo || F.has('IG') || pools() >= 2) return false; spec.water = (spec.water || []).concat({ g: 'F', size: [rnd(lerp(30, 40), lerp(36, 50)), rnd(lerp(10, 14), lerp(14, 22))] }); wet = true; feat.push('果嶺前水'); say.push(`果嶺前面是一片${W}`); return true; },
+    // 孤島果嶺：四周已經是水，不再另外加前水 / 側水 / 後水
+    island: () => { if (d < 0.2 || F.has('IG') || spec.water) return false; F.add('IG'); spec.green.size = [Math.max(21, gW), Math.max(24, gL)]; wet = true; feat.push('孤島果嶺'); say.push(vo ? `果嶺是一座浮島，四周都是${W}，打短打偏都會掉下去` : `果嶺被${W}整圈包圍，只能直接飛上去`); return true; },
+    sand: () => { const k = Math.min(5, 2 + Math.floor(d * 3.2)); for (const g of ['FL', 'FR', 'BL', 'BR', 'B'].slice(0, k)) spec.bunkers.push({ g, big: d > 0.4 }); feat.push(`沙坑 ${k}`); say.push(`果嶺周圍有 ${k} 個沙坑`); return true; },
+    side: () => { if (vo || F.has('IG') || pools() >= 2) return false; const s = pick(['L', 'R']); if (spec.waste && spec.waste[0].g === s) return false; spec.water = (spec.water || []).concat({ g: s, size: [rnd(18, 26), rnd(28, 40)] }); wet = true; feat.push(`果嶺${SIDE[s]}水`); say.push(`果嶺${SIDE[s]}邊緊貼著${W}`); return true; },
+    back: () => { if (vo || F.has('IG') || d < 0.3 || pools() >= 2) return false; spec.water = (spec.water || []).concat({ g: 'B', size: [rnd(34, 44), rnd(12, 18)] }); wet = true; feat.push('果嶺後水'); say.push(`果嶺後面也是${W}，打太長一樣會掉下去`); return true; },
+    waste: () => { const s = pick(['L', 'R']); if ((spec.water || []).some(w => w.g === s)) return false; spec.waste = [{ g: s }]; feat.push(`${SIDE[s]}側荒地`); say.push(`果嶺${SIDE[s]}邊是很難切的荒地`); return true; },
   } : {
     bend: () => {
       if (bend || bothSides || (spec.gaps && spec.gaps.length >= 3)) return false;      // 狗腿彎不和兩側水 / 三道裂縫一起出現
-      bend = (r() < 0.5 ? -1 : 1) * rnd(lerp(15, 25), lerp(25, 45)); spec.bendAt = Math.round(yards * (par === 5 ? 0.45 : 0.55));
-      const inside = bend > 0 ? 'R' : 'L';
+      const ang = rnd(lerp(15, 28), lerp(28, 50));
+      bend = (r() < 0.5 ? -1 : 1) * ang; spec.bendAt = Math.round(yards * (par === 5 ? 0.45 : 0.55));
+      const inside = bend > 0 ? 'R' : 'L', outside = bend > 0 ? 'L' : 'R';
       spec.bunkers.push({ at: spec.bendAt - 10, side: inside });
       for (const w of spec.water || []) if (w.from) w.from = Math.max(w.from, spec.bendAt + 25);      // 先放的側水也移到轉角之後
-      const trees = d > 0.35 && !(spec.water || []).some(w => w.from);
-      if (trees) spec.trees = [{ at: spec.bendAt, side: inside, n: 10 }];
-      if (par === 5 && d > 0.5 && r() < 0.6 && !F.has('xc') && !(spec.water || []).some(w => w.from)) { spec.bend2At = Math.round(yards * 0.75); spec.bend2 = -bend; }      // 第二個彎轉回原本的方向
-      say.push(`球道在 ${spec.bendAt} 碼${bend > 0 ? '往右' : '往左'}轉${trees ? `，轉角種了一排高樹` : ''}${spec.bend2At ? '，之後又轉回來' : ''}`);
+      // 轉角的高樹：越後面越長、越貼近球道（切不過去，只能打曲球繞過去或放短）
+      const trees = !vo && d > 0.18 && !sideWater();
+      if (trees) spec.trees = (spec.trees || []).concat({ at: spec.bendAt, side: inside, n: Math.round(lerp(10, 16)), len: Math.round(lerp(45, 80)), gap: d > 0.5 ? 1 : 3 });
+      // 後段：轉角外側是界外（直直打穿過轉角就出界）
+      const obOut = d > 0.4 && !spec.ob && r() < 0.6;
+      if (obOut) spec.ob = outside;
+      if (par === 5 && d > 0.35 && r() < 0.6 && !F.has('xc') && spec.fwGap == null && !sideWater()) { spec.bend2At = Math.round(yards * 0.75); spec.bend2 = -bend; }      // 第二個彎轉回原本的方向
+      const curve = bend > 0 ? '右曲球' : '左曲球';
+      feat.push(`狗腿${bend > 0 ? '右' : '左'} ${ang}°${spec.bend2At ? '再轉回' : ''}`);
+      if (trees) feat.push('轉角樹林');
+      if (obOut) feat.push('外側界外');
+      say.push(`球道在 ${spec.bendAt} 碼${bend > 0 ? '往右' : '往左'}轉 ${ang} 度${trees ? `，轉角是一排高樹，要打${curve}繞過去或先放短` : ''}${obOut ? '，直直打穿過轉角就是界外' : ''}${spec.bend2At ? '，之後又轉回來' : ''}`);
       return true;
     },
     lateral: () => {
       if (vo) {
         if (spec.gaps) return false;
         const k = Math.min(bend ? 2 : 3, 1 + Math.floor(d * 3)); spec.gaps = Array.from({ length: k }, (_, j) => ({ at: Math.round(yards * (j + 1) / (k + 1)), half: rnd(9, 12) }));
-        wet = true; say.push(`球道被 ${k} 道裂縫切開，掉下去就是${W}`); tags.push('gaps'); return true;
+        wet = true; feat.push(`裂縫 ${k}`); say.push(`球道被 ${k} 道裂縫切開，掉下去就是${W}`); tags.push('gaps'); return true;
       }
-      if ((spec.water || []).some(w => w.from) || spec.bend2At) return false;      // 彎兩次的五桿洞不再加側水
+      if (sideWater() || spec.bend2At || (spec.wash || []).some(w => w.side)) return false;      // 彎兩次的五桿洞、已經有側邊荒地時不再加側水
       // 兩側都是水時不再把球道變窄；水離球道邊至少 6 碼（太窄機器人都打不過）
-      const s = pick(['L', 'R']), both = !narrow && !bend && c.fairwayW >= 26 && d > 0.55 && r() < 0.45;
+      const s = pick(['L', 'R']), both = !narrow && !bend && c.fairwayW >= 24 && d > 0.5 && r() < 0.45;
       if (both) bothSides = true;
       // 有狗腿彎時水只放在轉角之後（開球落點安全，第二桿才要面對水）
       const w = { from: bend ? spec.bendAt + 25 : Math.round(yards * 0.3), to: Math.round(yards * 0.85), w: 30, gap: Math.round(lerp(10, 6)) };
       spec.water = (spec.water || []).concat(both ? [{ ...w, side: 'L' }, { ...w, side: 'R' }] : [{ ...w, side: s }]);
-      wet = true; say.push(both ? `球道兩側都是${W}，一路延伸到果嶺` : `球道${SIDE[s]}側是一整條${W}`); return true;
+      wet = true; feat.push(both ? '兩側水' : `${SIDE[s]}側水`); say.push(both ? `球道兩側都是${W}，一路延伸到果嶺` : `球道${SIDE[s]}側是一整條${W}`); return true;
     },
-    cross: () => { if (F.has('xc') || vo || spec.bend2At) return false; F.add('xc'); wet = true; say.push(CHASM(t) ? `球道中間橫著一道斷崖，要飛過去` : `球道中間橫著一條${W}`); return true; },
-    fwSand: () => { const k = d > 0.5 ? 2 : 1, at = Math.round(Math.min(yards * 0.62, 235 + d * 30)); for (const s of k > 1 ? ['L', 'R'] : [pick(['L', 'R'])]) spec.bunkers.push({ at, side: s }); say.push(k > 1 ? `開球落點左右各有一個球道沙坑` : `開球落點旁有球道沙坑`); return true; },
-    gSand: () => { const k = Math.min(4, 2 + Math.floor(d * 2.5)); for (const g of ['FL', 'FR', 'B', 'L'].slice(0, k)) spec.bunkers.push({ g, big: d > 0.5 }); say.push(`果嶺被 ${k} 個沙坑圍住`); return true; },
-    front: () => { if (vo || (spec.water || []).some(w => w.g)) return false; spec.water = (spec.water || []).concat({ g: 'F', size: [rnd(34, 46), rnd(lerp(10, 14), lerp(14, 20))] }); wet = true; say.push(`果嶺前面是一片${W}`); return true; },
-    ob: () => { if (spec.ob) return false; spec.ob = pick(['L', 'R']); say.push(`球道${SIDE[spec.ob]}邊不遠就是界外`); return true; },
+    cross: () => { if (F.has('xc') || vo || spec.bend2At || spec.fwStart || spec.fwGap != null) return false; F.add('xc'); wet = true; feat.push(CHASM(t) ? '橫越斷崖' : '橫越水道'); say.push(CHASM(t) ? '球道中間橫著一道斷崖，要飛過去' : `球道中間橫著一條${W}`); return true; },
+    // 開球落點橫著一排沙坑（要放短、或打很遠飛過去）
+    crossSand: () => { if (spec.bunkers.some(b => b.at === land)) return false; const k = d > 0.6 ? 3 : 2; spec.bunkers.push({ at: land, side: 'C', n: k }); feat.push('橫排沙坑'); say.push(`開球落點（${land} 碼）橫著一排 ${k} 個沙坑`); return true; },
+    fwSand: () => { if (spec.bunkers.some(b => b.at === land)) return false; const k = d > 0.45 ? 2 : 1; for (const s of k > 1 ? ['L', 'R'] : [pick(['L', 'R'])]) spec.bunkers.push({ at: land, side: s }); feat.push('球道沙坑'); say.push(k > 1 ? '開球落點左右各有一個球道沙坑' : '開球落點旁有球道沙坑'); return true; },
+    gSand: () => { const k = Math.min(5, 2 + Math.floor(d * 3.2)); for (const g of ['FL', 'FR', 'B', 'L', 'R'].slice(0, k)) spec.bunkers.push({ g, big: d > 0.4 }); feat.push(`果嶺沙坑 ${k}`); say.push(`果嶺被 ${k} 個沙坑圍住`); return true; },
+    front: () => { if (vo || (spec.water || []).some(w => w.g) || spec.bunkers.some(b => b.pot)) return false; spec.water = (spec.water || []).concat({ g: 'F', size: [rnd(34, 46), rnd(lerp(10, 14), lerp(14, 20))] }); wet = true; feat.push('果嶺前水'); say.push(`果嶺前面是一片${W}`); return true; },
+    ob: () => { if (spec.ob) return false; spec.ob = pick(['L', 'R']); feat.push(`${SIDE[spec.ob]}側界外`); say.push(`球道${SIDE[spec.ob]}邊不遠就是界外`); return true; },
     // 球道本來就窄、或兩側都是水時不再變窄
-    narrow: () => { if (narrow || d < 0.3 || bothSides || c.fairwayW < 27) return false; narrow = true; F.add('nw'); say.push('球道比平常窄很多'); return true; },
+    narrow: () => { if (narrow || d < 0.25 || bothSides || c.fairwayW < 24) return false; narrow = true; F.add('nw'); feat.push('窄球道'); say.push('球道比平常窄很多'); return true; },
+    // 開球要先飛過一片荒地才到球道
+    carry: () => {
+      if (vo || d < 0.2 || F.has('xc') || spec.fwStart) return false;
+      spec.fwStart = rnd(lerp(150, 170), lerp(170, 205));
+      spec.wash = (spec.wash || []).concat({ at: spec.fwStart - 22, w: Math.round(lerp(16, 26)) });
+      feat.push(`飛越荒地 ${spec.fwStart} 碼`); say.push(`開球要先飛過 ${spec.fwStart} 碼的荒地才到球道`); tags.push('carry'); return true;
+    },
+    // 一側是密林（球道外很快就是一整排樹）
+    woods: () => {
+      if (vo || (spec.trees || []).some(x => x.line)) return false;
+      const s = bend ? (bend > 0 ? 'L' : 'R') : pick(['L', 'R']);
+      spec.trees = (spec.trees || []).concat({ at: Math.round(yards * 0.5), side: s, n: 18, len: Math.round(yards * 0.6), gap: 2, line: true });
+      if (!narrow) F.add('tr');
+      feat.push(`${SIDE[s]}側密林`); say.push(`球道${SIDE[s]}邊是一整片密林，打進去很難救`); return true;
+    },
+    // 側邊的乾河床荒地
+    sideWash: () => {
+      if (vo || sideWater() || (spec.wash || []).some(w => w.side)) return false;
+      const s = pick(['L', 'R']);
+      spec.wash = (spec.wash || []).concat({ from: Math.round(yards * 0.35), to: Math.round(yards * 0.85), side: s, w: 14 });
+      feat.push(`${SIDE[s]}側荒地`); say.push(`球道${SIDE[s]}側是一條乾河床荒地`); return true;
+    },
+    // 五桿洞：第二桿落點前一道荒地切斷球道（放短還是飛過去）
+    split: () => {
+      if (par !== 5 || vo || d < 0.3 || F.has('xc') || spec.fwGap != null) return false;
+      spec.fwGap = Math.round(yards * 0.62);
+      spec.wash = (spec.wash || []).concat({ at: spec.fwGap, w: 16 });
+      feat.push(`球道中斷 ${spec.fwGap} 碼`); say.push(`${spec.fwGap} 碼的地方有一道荒地把球道切斷，第二桿要決定放短還是飛過去`); tags.push('carry'); return true;
+    },
+    // 果嶺前 35 碼、球道正中間的壺形沙坑
+    pot: () => {
+      if (d < 0.35 || spec.bunkers.some(b => b.pot) || (spec.water || []).some(w => w.g === 'F')) return false;
+      spec.bunkers.push({ at: yards - 35, side: 'C', n: 1, pot: true });
+      feat.push('果嶺前壺坑'); say.push('果嶺前 35 碼的球道正中間有一個壺形沙坑'); return true;
+    },
   };
   const keys = Object.keys(OPS), order = [];
-  for (let guard = 0; pts > 0 && guard < 40; guard++) { const k = pick(keys); if (!order.includes(k) && OPS[k]()) { order.push(k); pts--; } }      // 同一種障礙只放一次
+  for (let guard = 0; pts > 0 && guard < 50; guard++) { const k = pick(keys); if (!order.includes(k) && OPS[k]()) { order.push(k); pts--; } }      // 同一種障礙只放一次
   if (!green()) spec.bunkers.push({ g: pick(['FL', 'FR', 'BL', 'BR']) });      // 果嶺邊至少一個沙坑
   const sandN = spec.bunkers.reduce((a, b) => a + (b.n || 1), 0);
-  if (narrow || c.fairwayW <= 26) narrow = true;
+  if (narrow || c.fairwayW <= 24) narrow = true;
   // ---- 風：越後面越常有固定的強風 ----
-  // 孤島果嶺最長 190 碼、風最大 10 mph（太長太強連機器人都上不了果嶺）
-  if (F.has('IG')) yards = Math.min(yards, 190);
-  const wind = r() < lerp(0.15, 0.7) || boss ? { mph: Math.min(F.has('IG') ? 10 : 99, rnd(lerp(4, 8), lerp(8, 16))), from: pick(['L', 'R', 'H', 'T']) } : null;
-  // ---- 桿數上限：前面標準桿 +3，中段 +2，221 關以後 +1（五桿洞與頭目關 +2）----
-  const slack = n <= 60 ? 3 : n <= 220 || par === 5 || boss ? 2 : 1, max = par + slack;      // 221 關以後五桿洞與頭目關保留 +2
+  // 孤島果嶺最長 185 碼、風最大 11 mph（太長太強連機器人都上不了果嶺）；浮島（天空類主題）更難停：最長 165 碼、果嶺至少 24×28、不墊高也不做龜背
+  if (F.has('IG')) yards = Math.min(yards, vo ? 165 : 185);
+  if (F.has('IG') && vo) {
+    sg.size = [Math.max(24, sg.size[0]), Math.max(28, sg.size[1])];
+    const drop = (arr, f) => { const k = arr.findIndex(f); if (k >= 0) arr.splice(k, 1); };
+    if (sg.crown) { delete sg.crown; drop(feat, x => x === '龜背果嶺'); drop(say, x => x.includes('中間高')); }
+    if (elevPlan) { elevPlan = null; drop(feat, x => x.startsWith('果嶺墊高') || x.startsWith('果嶺低')); drop(say, x => x.includes('公尺')); }
+  }
+  // 三桿洞果嶺前面是水：最長 200 碼；前後都是水：最長 180 碼、前面的水最深 12 碼、果嶺至少 19 碼寬
+  if (par === 3 && (spec.water || []).some(w => w.g === 'F')) yards = Math.min(yards, 200);
+  if ((spec.water || []).some(w => w.g === 'F') && (spec.water || []).some(w => w.g === 'B')) {
+    yards = Math.min(yards, 180);
+    for (const w of spec.water) if (w.g === 'F') w.size[1] = Math.min(12, w.size[1]);
+    sg.size[0] = Math.max(19, sg.size[0]); sg.size[1] = Math.max(sg.size[0] + 2, sg.size[1]);
+  }
+  if (elevPlan && elevPlan.valley) { const lz = Math.round(Math.min(yards * 0.55, 240)), h = elevPlan.h; spec.elev = [[0, 0], [lz, -h], [Math.max(lz + 40, yards - 25), Math.round(h * 0.4)], [yards + 30, Math.round(h * 0.4)]]; }
+  else if (elevPlan) spec.elev = [[0, 0], [Math.max(40, yards - 25), elevPlan.h], [yards + 30, elevPlan.h]];
+  const wind = r() < lerp(0.2, 0.8) || boss ? { mph: Math.min(F.has('IG') ? 11 : 99, rnd(lerp(4, 8), lerp(9, 19))), from: pick(['L', 'R', 'H', 'T']) } : null;
+  if (wind && wind.mph >= 8) feat.push(`${WIND_ZH[wind.from]} ${wind.mph}`);
+  // ---- 桿數上限：前 20 關標準桿 +3，之後 +2；251 關以後障礙 4 個以內的四桿洞 +1（第 1 顆星是過關，難的是第 2、3 顆星）----
+  const slack = n <= 20 ? 3 : n <= 250 || par !== 4 || boss || order.length >= 5 ? 2 : 1, max = par + slack;
   // ---- 條件：第 2、3 顆星 ----
-  const sg = v => ({ t: 'strokes', v, text: v === par ? '標準桿以內進洞' : v === par - 1 ? `博蒂：${v} 桿以內進洞` : `${v} 桿以內進洞` });
-  const nearV = Math.max(3, Math.round(lerp(12, 4)));
+  const sgo = v => ({ t: 'strokes', v, text: v === par ? '標準桿以內進洞' : v === par - 1 ? `博蒂：${v} 桿以內進洞` : `${v} 桿以內進洞` });
+  const nearV = Math.max(3, Math.round(lerp(10, 3)));
+  const forced = (spec.trees || []).some(x => !x.line) || spec.fwStart;
   const G = {
     noHazard: () => ({ t: 'noHazard', text: vo ? '一次都沒掉下去（也沒出界）' : spec.ob && !wet ? '一次都沒出界' : `一次都沒掉進${W}（也沒出界）` }),
     noSand: () => ({ t: 'noSand', text: '一次都沒進沙坑' }),
@@ -168,42 +260,44 @@ function design(n, t, boss, r, pick, used) {
     teeNear: () => ({ t: 'teeNear', v: nearV, text: `開球停在旗桿 ${nearV} 碼內` }),
     teeFairway: () => ({ t: 'teeFairway', text: '開球停在球道上' }),
     greenIn: () => ({ t: 'greenIn', v: par - 2, text: `${par - 2} 桿內上果嶺（標準桿上果嶺）` }),
-    putts: () => { const v = d > 0.55 && r() < 0.45 ? 1 : 2; return { t: 'putts', v, text: v === 1 ? '只推一桿就進洞' : '推桿 2 次以內' }; },
+    putts: () => { const v = d > 0.3 && r() < 0.6 ? 1 : 2; return { t: 'putts', v, text: v === 1 ? '只推一桿就進洞' : '推桿 2 次以內' }; },
     drive: () => { const v = Math.round(lerp(210, 260) / 5) * 5; return { t: 'drive', v, text: `開球 ${v} 碼以上` }; },
   };
   const pool = [];
   const add = (k, w) => pool.push([k, w]);
   if (wet || spec.ob) add('noHazard', 5);
   if (sandN >= 2) add('noSand', 3);
-  if (par === 3) { add('teeGreen', d < 0.5 ? 3 : 1); add('teeNear', 1.5 + 2 * d); }
-  else { add('teeFairway', narrow ? 3 : 1.5); add('greenIn', 3); if (par === 5 && !narrow) add('drive', 1); }
+  if (par === 3) { add('teeGreen', d < 0.4 ? 3 : 1); add('teeNear', 1.5 + 2.5 * d); }
+  else { add('teeFairway', forced ? 4 : narrow ? 3 : 1.5); add('greenIn', 3); if (par === 5 && !narrow && !forced) add('drive', 1); }
   add('putts', 1 + d); add('noRough', 1.2);
-  if (d > 0.35) add('fairwayAll', 2 * d);
+  if (d > 0.3) add('fairwayAll', 2 * d);
   const and = x => (/^\d/.test(x) ? ' ' : '') + x.replace(/^一次都沒/, '沒有');
   const draw = (skip = []) => { const p = pool.filter(([k]) => !skip.includes(k)), tot = p.reduce((a, [, w]) => a + w, 0); let x = r() * tot; for (const [k, w] of p) { x -= w; if (x <= 0) return k; } return p[p.length - 1][0]; };
   const k1 = draw();
   let g1 = G[k1](), g2;
   // 第 3 顆星：越後面越常是桿數（標準桿 → 博蒂）
-  const birdie = d > 0.35 && r() < (d - 0.3) * 0.9;
+  const birdie = d > 0.1 && r() < (d - 0.04) * 1.3;
   if (boss) {
     const k2 = draw([k1]);
-    g2 = { t: 'all', text: `${birdie ? `${par - 1} 桿` : '標準桿'}以內進洞，而且${and(G[k2]().text)}`, sub: [sg(birdie ? par - 1 : par), G[k2]()] };
-  } else if (r() < 0.35 + 0.5 * d) g2 = sg(birdie ? par - 1 : par);
+    g2 = { t: 'all', text: `${birdie ? `${par - 1} 桿` : '標準桿'}以內進洞，而且${and(G[k2]().text)}`, sub: [sgo(birdie ? par - 1 : par), G[k2]()] };
+  } else if (r() < 0.4 + 0.5 * d) g2 = sgo(birdie ? par - 1 : par);
   else g2 = G[draw([k1])]();
-  // 後段偶爾把第 2 顆星也變成組合條件（例如「不落水而且不進沙坑」）
-  if (!boss && d > 0.6 && r() < 0.3 && pool.length > 2) {
+  // 中段以後常把第 2 顆星也變成組合條件（例如「不落水而且不進沙坑」）
+  if (!boss && d > 0.25 && r() < 0.5 && pool.length > 2) {
     const k3 = draw([k1, g2.t]);
     const a = G[k3]();
-    if (a.t !== g2.t) g1 = { t: 'all', text: `${g1.text}，而且${and(a.text)}`, sub: [g1, a] };
+    if (a.t !== g2.t && a.t !== g1.t) g1 = { t: 'all', text: `${g1.text}，而且${and(a.text)}`, sub: [g1, a] };
   }
   // ---- 名稱、介紹 ----
-  const main = boss ? 'boss' : tags[0] || (order[0] === 'island' ? 'island' : order[0] === 'front' || order[0] === 'side' ? 'front' : order[0] === 'lateral' ? 'lateral' : order[0] === 'cross' ? 'cross'
-    : order[0] === 'sand' || order[0] === 'gSand' || order[0] === 'fwSand' ? 'sand' : order[0] === 'bend' ? 'bend' : order[0] === 'narrow' ? 'narrow' : order[0] === 'ob' ? 'ob'
-    : wind && wind.mph >= 10 ? 'wind' : par === 5 ? 'long' : 'sand');
+  const M = { island: 'island', front: 'front', side: 'front', back: 'front', lateral: 'lateral', cross: 'cross', sand: 'sand', gSand: 'sand', fwSand: 'sand', crossSand: 'sand', pot: 'sand',
+    bend: 'bend', narrow: 'narrow', ob: 'ob', carry: 'carry', split: 'carry', woods: 'trees', sideWash: 'sand', waste: 'sand' };
+  const main = boss ? 'boss' : tags[0] || M[order[0]] || (wind && wind.mph >= 10 ? 'wind' : par === 5 ? 'long' : 'sand');
   let title;
   for (let k = 0; k < 20; k++) { title = pick(PLACE[t]) + pick(WORD[main]); if (!used.has(title)) break; }
   if (used.has(title)) title += '・' + n;
   used.add(title);
-  const intro = `${MOOD[t]}。${par} 桿洞，${yards} 碼。${say.join('；')}${say.length ? '。' : ''}${spec.green.size[0] <= 21 ? '果嶺很小、很快。' : ''}${wind ? `固定吹著 ${wind.mph} mph 的${WIND_ZH[wind.from]}。` : ''}${boss ? '這一章的頭目關。' : ''}`;
-  return { t, title, en: `${cap(t)} ${EN[main]} ${n}`, intro, c, hole: [par, yards, bend, [...F].join(' '), spec], max, wind, goals: [g1, g2] };
+  const intro = `${MOOD[t]}。${par} 桿洞，${yards} 碼。${say.join('；')}${say.length ? '。' : ''}${spec.green.size[0] <= 20 ? '果嶺很小、很快。' : ''}${wind ? `固定吹著 ${wind.mph} mph 的${WIND_ZH[wind.from]}。` : ''}${boss ? '這一章的頭目關。' : ''}`;
+  // 難度 1~10（給關卡總覽看）：關卡進度 + 障礙數 + 果嶺 / 高低差 / 風 + 桿數上限
+  const diff = Math.max(1, Math.min(10, Math.round(1 + d * 5 + order.length * 0.45 + (sg.tier || sg.crown ? 0.5 : 0) + (spec.elev ? 0.4 : 0) + (wind ? wind.mph / 14 : 0) + (slack === 1 ? 0.8 : 0) + (boss ? 0.6 : 0))));
+  return { t, title, en: `${cap(t)} ${EN[main]} ${n}`, intro, c, hole: [par, yards, bend, [...F].join(' '), spec], max, wind, goals: [g1, g2], feat, diff };
 }
