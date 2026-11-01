@@ -54,6 +54,17 @@
   </div>
 </header>
 <main id="list">載入中…</main>
+<script>
+  // 載入失敗時不要一直停在「載入中…」：直接雙擊本機檔案（file://）瀏覽器不准載入程式模組；其他錯誤把訊息秀出來
+  (function () {
+    var list = document.getElementById('list');
+    var fail = function (msg) { if (list.dataset.ok) return; list.innerHTML = '<p style="color:#b5452f">' + msg + '</p>'; };
+    if (location.protocol === 'file:') { fail('這個頁面要從遊戲網址打開（例如 https://finatticus.github.io/mklgame/golfgame/challenge-levels.html），直接雙擊電腦裡的檔案瀏覽器不會載入。'); return; }
+    window.addEventListener('error', function (e) { fail('載入失敗：' + (e.message || '程式錯誤') + '。請重新整理頁面（電腦按 Ctrl + F5，手機下拉重新整理）。'); });
+    window.addEventListener('unhandledrejection', function (e) { fail('載入失敗：' + ((e.reason && e.reason.message) || e.reason) + '。請重新整理頁面。'); });
+    setTimeout(function () { fail('載入太久沒有完成。請重新整理頁面（電腦按 Ctrl + F5，手機下拉重新整理）。'); }, 15000);
+  })();
+</script>
 <script type="module">
 import { LEVELS, CHAPTERS } from './js/challenge.js';
 import { designLevels } from './js/challenge-design.js';
@@ -66,7 +77,8 @@ const sel = document.getElementById('ch'), list = document.getElementById('list'
 CHAPTERS.forEach((c, i) => sel.insertAdjacentHTML('beforeend', `<option value="${i}">${c.from}~${c.to}　${esc(c.name)}</option>`));
 
 function card(L) {
-  const d = D[L.n - 1], boss = CHAPTERS.some(c => c.to === L.n);
+  // 瀏覽器還拿著舊版的 challenge-design.js（沒有 feat / diff）時也照樣顯示
+  const d = { feat: [], diff: 0, ...(D[L.n - 1] || {}) }, boss = CHAPTERS.some(c => c.to === L.n);
   const bars = Array.from({ length: 10 }, (_, i) => `<i class="${i < d.diff ? 'on' : ''}"></i>`).join('');
   const chips = d.feat.map(f => `<span>${esc(f)}</span>`).join('');
   const goals = L.goals.map((g, i) => `<li><b>${'★'.repeat(i + 1)}</b><span>${esc(g.text)}</span></li>`).join('');
@@ -82,6 +94,7 @@ function render() {
   const chs = k === '' ? CHAPTERS : [CHAPTERS[+k]];
   list.innerHTML = chs.map(c => `<h2>${esc(c.name)}<small>第 ${c.from}~${c.to} 關</small></h2><div class="grid">${LEVELS.slice(c.from - 1, c.to).map(card).join('')}</div>`).join('');
   list.querySelectorAll('canvas').forEach(cv => io.observe(cv));
+  list.dataset.ok = '1';
 }
 
 // ---- 俯視小圖：沿「發球台 → 果嶺」方向取樣地形 ----

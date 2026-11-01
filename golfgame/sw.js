@@ -41,9 +41,10 @@ self.addEventListener('fetch', e => {
     })));
     return;
   }
-  // 自己的程式：網路優先（拿到新版），離線時用快取
+  // 自己的程式：網路優先（拿到新版），離線時用快取；no-cache = 每次都跟伺服器確認有沒有新版（沒變只回 304，很快），
+  //   不然瀏覽器會拿 GitHub Pages 快取 10 分鐘的舊檔，剛更新完新舊檔混在一起
   if (url.origin === location.origin) {
-    e.respondWith(fetch(e.request).then(r => {
+    e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(r => {
       const copy = r.clone();
       caches.open(VERSION).then(c => c.put(e.request, copy));
       return r;
