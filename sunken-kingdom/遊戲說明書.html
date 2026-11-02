@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>沉沒王國 遊戲說明書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+	--bg: #141117; --bg2: #1d1820; --card: #241d1c; --card2: #2e2520;
+	--rim: #8a6a3a; --rim-hi: #e8c27a; --gold: #f0c068; --text: #eadfca; --dim: #a99c88;
+	--good: #78d47c; --bad: #ef6f5c; --blue: #79a8ff;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.75 "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+h1, h2, h3, h4 { font-family: "Noto Serif TC", serif; color: var(--gold); margin: 0 0 .5em; line-height: 1.35; }
+h2 { font-size: 30px; border-bottom: 2px solid var(--rim); padding-bottom: 8px; margin-top: 8px; }
+h3 { font-size: 21px; margin-top: 1.4em; }
+a { color: var(--rim-hi); }
+img { max-width: 100%; }
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+nav { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: #0e0c10; border-right: 1px solid #3a2e22; padding: 18px 12px; }
+nav .brand { font: 900 24px "Noto Serif TC", serif; color: var(--gold); margin-bottom: 2px; }
+nav .sub { color: var(--dim); font-size: 13px; margin-bottom: 14px; }
+nav a { display: block; color: var(--text); text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 15px; }
+nav a:hover { background: #2a2119; color: var(--gold); }
+main { padding: 28px 40px 80px; max-width: 1280px; }
+section { margin-bottom: 64px; scroll-margin-top: 16px; }
+.hero { position: relative; border: 2px solid var(--rim); border-radius: 12px; overflow: hidden; margin-bottom: 40px; }
+.hero img { display: block; width: 100%; }
+.hero .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 30px; background: linear-gradient(transparent, rgba(10,8,12,.92)); }
+.hero h1 { font-size: 44px; margin: 0; }
+.card { background: linear-gradient(var(--card2), var(--card)); border: 1px solid var(--rim); border-radius: 10px; padding: 16px 18px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.4); }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.shot { border: 2px solid var(--rim); border-radius: 8px; display: block; width: 100%; cursor: zoom-in; }
+.figcap { color: var(--dim); font-size: 14px; margin-top: 6px; }
+.dim { color: var(--dim); }
+.gold { color: var(--gold); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.tag { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 13px; border: 1px solid var(--rim); color: var(--rim-hi); margin: 2px 4px 2px 0; background: #1a1512; }
+.portrait { background: radial-gradient(circle at 50% 60%, #3a2c24, #17131a 70%); border-radius: 8px; display: flex; justify-content: center; }
+.portrait img { height: 220px; }
+.boss .portrait img { height: 300px; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; color: var(--dim); }
+.stat-row b { color: var(--text); font-weight: 500; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { padding: 7px 10px; border-bottom: 1px solid #3a2e22; text-align: left; vertical-align: top; }
+th { color: var(--gold); font-weight: 500; background: #1d1714; position: sticky; top: 0; }
+tr:hover td { background: #1f1916; }
+.ic { display: inline-block; width: 32px; height: 32px; background-image: url(img/icons.png); image-rendering: pixelated; vertical-align: middle; margin-right: 6px; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.flow .step { flex: 1 1 160px; text-align: center; padding: 14px 10px; }
+.flow .step b { display: block; font: 700 18px "Noto Serif TC", serif; color: var(--gold); }
+.flow .arr { color: var(--rim-hi); font-size: 26px; }
+.quote { border-left: 3px solid var(--rim-hi); padding: 6px 14px; color: #d9c9a8; background: #1b1613; border-radius: 0 8px 8px 0; font-family: "Noto Serif TC", serif; }
+details { margin: 10px 0; }
+summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", serif; padding: 6px 0; }
+.piece svg { display: block; margin: 0 auto 6px; }
+.gem { display: inline-block; width: 22px; height: 22px; clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); vertical-align: middle; margin-right: 6px; }
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none; align-items: center; justify-content: center; z-index: 9; cursor: zoom-out; }
+.lightbox img { max-width: 95vw; max-height: 95vh; border: 2px solid var(--rim); }
+.count { font: 900 34px "Noto Serif TC", serif; color: var(--gold); }
+@media (max-width: 900px) {
+	.layout { grid-template-columns: 1fr; }
+	nav { position: static; height: auto; }
+	main { padding: 16px; }
+	.g2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav id="nav">
+	<div class="brand">沉沒王國</div>
+	<div class="sub">瑟蘭迷宮遠征記・遊戲說明書</div>
+</nav>
+<main id="main">
+	<div class="hero"><img src="img/ui_title.png" alt="標題畫面"><div class="cap"><h1>沉沒王國</h1><div class="dim">瑟蘭迷宮遠征記・完整遊戲說明書（內容由遊戲自動匯出，永遠與遊戲同步）</div></div></div>
+
+	<section id="story" data-nav="故事與世界觀">
+		<h2>故事與世界觀</h2>
+		<p>三百年前，繁盛的<b class="gold">瑟蘭王國</b>在一夜之間沉入地底。國王<b class="gold">瓦爾克</b>陷入永恆的沉睡，他最忠誠的三位騎士團長發誓守護封印，直到有人能讓王真正安息。</p>
+		<p>如今，冒險者公會在廢墟入口搭起了<b>冒險者營地</b>。由老嚮導 <b class="gold" id="narrator"></b> 帶路，你將一塊一塊打通崩塌的迷宮，深入王國的核心。</p>
+		<div class="quote" id="chapter-goal"></div>
+	</section>
+
+	<section id="loop" data-nav="遊戲流程">
+		<h2>遊戲流程</h2>
+		<p>這是一款「蓋迷宮 × 自動冒險」遊戲：<b>你負責規劃道路，冒險者自己去闖</b>。每一輪都會變強一點，一路從營地打到王座。</p>
+		<div class="flow">
+			<div class="card step"><b>① 打通廢墟</b>花金幣抽區塊，接到現有的門口上</div><div class="arr">➜</div>
+			<div class="card step"><b>② 出發遠征</b>冒險者自動探索、戰鬥、撿寶</div><div class="arr">➜</div>
+			<div class="card step"><b>③ 帶回收穫</b>撤退或倒下，帶回金幣、經驗、裝備</div><div class="arr">➜</div>
+			<div class="card step"><b>④ 變強</b>學技能、換裝備、鑲符文、升級營地</div>
+		</div>
+		<div class="grid g3" style="margin-top:18px">
+			<div><img class="shot" src="img/ui_hub.png"><div class="figcap">營地畫面：左邊是功能列，右上是小地圖（點一下展開）</div></div>
+			<div><img class="shot" src="img/ui_draft.png"><div class="figcap">挖掘新區塊：從隨機的幾塊裡挑一塊</div></div>
+			<div><img class="shot" src="img/ui_run.png"><div class="figcap">遠征中：提燈照亮周圍，其他地方昏暗</div></div>
+		</div>
+	</section>
+
+	<section id="controls" data-nav="操作方式">
+		<h2>操作方式</h2>
+		<table>
+			<tr><th>動作</th><th>操作</th></tr>
+			<tr><td>收起打通廢墟視窗</td><td>視窗上的「收起 ✕」，再點左邊「打通廢墟」打開</td></tr>
+			<tr><td>移動鏡頭</td><td>WASD／方向鍵，或按住左鍵拖曳（遠征中鏡頭鎖定冒險者）</td></tr>
+			<tr><td>縮放／旋轉視角</td><td>滑鼠滾輪／Q、E</td></tr>
+			<tr><td>放置區塊</td><td>左鍵放下，右鍵或 R 旋轉，Esc 取消（退款）</td></tr>
+			<tr><td>關閉視窗</td><td>點「關閉」、按 Esc，或點視窗外面</td></tr>
+			<tr><td>確認對話框</td><td>Enter 或點「是」</td></tr>
+			<tr><td>裝備</td><td>滑鼠停留立即比較；雙擊或拖到身上裝備；右鍵賣出；拖到儲藏箱保存；「批量賣出」一次勾選多件</td></tr>
+			<tr><td>符文</td><td>點符文看能力；拖到裝備上鑲嵌；花金幣可取下</td></tr>
+			<tr><td>主動技能</td><td>「角色 → 技能」分頁，把學會的主動技能放進技能欄（最多 3 個），戰鬥中自動施放</td></tr>
+			<tr><td>遠征速度</td><td>HUD 的「速度」按鈕 1x → 2x → 3x（會記住）</td></tr>
+			<tr><td>藥水與技能</td><td>遠征畫面下方有 3 格藥水欄（點紅藥水可以立刻喝）和 3 格技能欄（顯示冷卻秒數）</td></tr>
+			<tr><td>地圖</td><td>右上角小地圖，點一下展開成完整的平面圖（第二章開放後有三層）</td></tr>
+			<tr><td>無盡秘境</td><td>打倒沉睡之王後，左邊功能列多一個「秘境」，或點營地東南角的傳送門</td></tr>
+			<tr><td>存檔</td><td>4 個欄位，自動存檔；每個職業可以各開一個</td></tr>
+		</table>
+	</section>
+
+	<section id="classes" data-nav="四種職業">
+		<h2>四種職業</h2>
+		<div class="grid g4" id="class-list"></div>
+	</section>
+
+	<section id="build" data-nav="打通廢墟">
+		<h2>打通廢墟：區塊</h2>
+		<p>每次挖掘會隨機抽出區塊（技能「勘查」可以一次看到更多塊再挑），價格會越來越貴。區塊有不同的形狀與門口，<b>至少要有一個門口對上現有通道</b>才能放。黃色箭頭代表「這裡還能往外接」。</p>
+		<p class="dim">區塊大小從 1 格到 4 格都有：直走廊、轉角、丁字、十字、L 形、閃電形、方形大廳……房間（大格）會有敵人與寶箱，走廊（細格）通常比較安全。</p>
+		<div class="grid g4" id="piece-list"></div>
+		<h3>區塊能力</h3>
+		<p>一般區塊有機會附帶特殊能力（地圖上用顏色標示）：</p>
+		<div class="grid g3" id="mod-list"></div>
+		<h3>特殊區塊</h3>
+		<p class="dim">擊敗第一位騎士團長後才會出現在抽選池裡。</p>
+		<div class="grid g3" id="special-list"></div>
+		<h3>地標</h3>
+		<p>地標一開始就藏在地圖上，打通到附近時會顯示「？」。騎士團長和沉睡之王的<b>大致位置</b>一開始就會用發光的範圍標出來（實際位置會偏移 0～2 格）；通往地下二樓的<b>階梯</b>要等你打通到附近（4 格內）才會出現藍色範圍（階梯在第 11 環，比較遠）。範圍只會鋪在還沒打通的空地上，不會蓋到已經建好的區塊。</p>
+		<div class="grid g3" id="landmark-list"></div>
+		<div style="margin-top:16px"><img class="shot" src="img/ui_map.png"><div class="figcap">完整地圖：紅色範圍＝騎士團長的氣息、金色＝沉睡之王、藍色＝通往地下二樓的階梯（右上角的小地圖點一下就會展開成這個畫面）</div></div>
+	</section>
+
+	<section id="run" data-nav="遠征規則">
+		<h2>遠征規則</h2>
+		<div class="grid g2">
+			<div class="card"><h4>冒險者怎麼走？</h4><p>冒險者會<b>由內環往外慢慢探索</b>：先把靠近營地的簡單房間打完，再逐步往外拓展；同一環裡會隨機挑選、近的優先，所以每次路線都不一樣。插了<b>旗幟</b>的地方會優先前往；騎士團長、鑰匙、寶庫這類目標會稍微優先。</p></div>
+			<div class="card"><h4>燈油與提燈</h4><p>出發時點亮提燈，冒險者周圍有一圈暖光，其他地方昏暗。燈油每秒消耗（1 倍速下，1 秒燈油＝現實 1 秒），越少光圈越小。剛創角色只有 45 秒燈油，靠技能、營地充電座、裝備詞綴慢慢加長；燒完時可以選擇撤退或<b>摸黑前進</b>（命中、傷害下降，提燈只剩微光）。</p></div>
+			<div class="card"><h4>撤退與倒下</h4><p>可以隨時「清完這間就撤退」或「立刻撤退」，收穫全數帶回。倒下的話<b>金幣和經驗減半</b>，但這趟撿到的<b>裝備、符文、遺物都會帶回來</b>。</p></div>
+			<div class="card"><h4>難度環</h4><p>離營地越遠（環數越大）敵人越強、報酬越高。地下二樓第 1 環＝地下一樓第 11 環的強度，越往外越強，沉睡之王大約在第 10 環；地下三樓從第 22 環起跳，共 16 環。</p></div>
+		</div>
+		<h3>難度曲線：前期輕鬆、中後期拉長</h3>
+		<div class="grid g2">
+			<div class="card"><h4>前期（第 0～5 環）：手動摸索</h4><p>靠近營地的敵人比較弱（第 0 環只有 70% 強度），報酬也有加成。大約 15～25 次遠征就能打到第 5 環，熟悉建造、技能、裝備。</p><p class="dim">前期加成看的是「你目前打到的最深環數」：深入之後，內圈就沒有加成了，所以越外圈報酬越多，不會出現回頭刷內圈最划算的情況。</p></div>
+			<div class="card"><h4>中後期（第 5 環之後）：自動遠征</h4><p>學會「持續遠征」後可以讓遊戲自己跑。這時敵人每環成長得更快、報酬成長變慢，打倒三位騎士團長是主要的挑戰，不會掛機一下就通關。</p><p class="dim">以 3 倍速遊玩，第一章大約 2.4 小時（1 倍速約 7 小時）；第二章大約再 3.4 小時（約第一章的 1.5 倍）。</p></div>
+			<div class="card"><h4>不屈之志（防卡關）</h4><p>每連續倒下一次，下次遠征的攻擊、生命 +4%（最多 10 層、+40%）。打倒騎士團長或沉睡之王會清空，平安歸來每次消退 2 層。卡關越久越容易突破，不會無限輪迴。</p></div>
+			<div class="card"><h4>出師不利（第二章防卡關）</h4><p>第二章如果連續兩趟一出發就倒下（頭目房，或只打倒 0～2 隻怪），接下來 4 趟冒險者會<b>從營地出發、避開頭目房</b>，先在好打的房間練功，畫面會顯示提示。另外，會替同伴回血的敵人只要戰鬥拖過 60 秒就補不動了，不會出現永遠打不完的戰鬥。</p></div>
+			<div class="card"><h4>數值上限</h4><p><b>閃避最多 50%</b>、<b>魔法抵抗最多 35%</b>（對騎士團長、國王、祭司只算一半）。到了上限再加也沒有效果，這時候改堆生命、攻擊，或「受到的魔法傷害 −%」這類減傷更划算。魔法攻擊不吃護甲。</p></div>
+			<div class="card"><h4>頭目的特性</h4><p>騎士團長每 4 次攻擊、沉睡之王每 3 次攻擊有一次<b>重擊</b>，無法閃避。兩者都是不死的騎士，流血、中毒、燃燒對他們只有 60% 效果。</p></div>
+		</div>
+		<h3>異變</h3>
+		<p class="dim">有時候遠征會遇到異變的敵人，更強，但會掉落特定的符文。</p>
+		<div class="grid g4" id="mutation-list"></div>
+	</section>
+
+	<section id="wardens" data-nav="騎士團長與沉睡之王">
+		<h2>三位騎士團長與沉睡之王</h2>
+		<p>擊敗三位騎士團長，解開封印後，才能挑戰王座廳的<b class="gold">沉睡之王</b>。擊敗騎士團長的數量也會解鎖更強的技能。</p>
+		<div class="quote">沉睡之王的傷不會完全癒合：每次挑戰失敗，你造成的傷害有 60% 會保留到下一次，他的生命最多可以降到 25%。所以國王戰是一場越打越近的最終決戰，通常 10～20 次挑戰內就能拿下。</div>
+		<p class="dim">三位騎士團長分別守在第 6、8、10 環。</p>
+		<div class="grid g3" id="warden-list"></div>
+		<div class="card boss" id="boss-card" style="margin-top:18px"></div>
+	</section>
+
+	<section id="ch2" data-nav="第二章：王座之下">
+		<h2>第二章：王座之下</h2>
+		<p>瓦爾克倒下的那一刻，王座底下傳來更深的回響。原來國王不是詛咒的元凶，而是<b class="gold">封印</b>：三百年前，地底醒來的是一條古龍，瓦爾克用自己的長眠把牠封在王座之下，並讓四位<b>元素祭司</b>看守。如今國王安息了，封印正在崩塌。</p>
+		<div class="grid g2">
+			<div class="card"><h4>地下三樓</h4><p>王座廳出現往下的階梯，通往更大的地下三樓（16 環，比前兩層都大）。這裡有 16 種全新的怪物，難度從第 22 環開始。</p><p><b>王座升降梯</b>：第二章開始後，遠征直接從地下三樓的階梯口出發，不用再走過前兩層；地下三樓都探索完了，冒險者會自動往上層繼續探索。不想要的話可以在打通廢墟視窗關掉。</p><p class="dim">新機制：死後分裂的史萊姆、死亡時爆炸的骷髏頭、會替同伴回血的古樹、留下毒霧的蘑菇、會召喚浮空骷顱的深淵古神……另有 3 間封印寶庫與 2 把鑰匙。</p></div>
+			<div class="card"><h4>四元素祭司 → 古龍</h4><p>風、水、地、火四位祭司分別守在第 8、10、12、14 環。四位都倒下後，<b class="gold">古龍 伊格尼斯</b>會在第 13 環以外隨機一處還沒探險過的地方降臨（如果都打通了，就挑一間已打通的房間）。</p><p class="dim">第二章的通關長度大約是第一章的 1.5 倍（不含秘境）。</p></div>
+		</div>
+		<h3>四元素祭司</h3>
+		<div class="grid g4" id="priest-list"></div>
+		<div class="card boss" id="dragon-card" style="margin-top:18px"></div>
+		<h3>第二章的新內容</h3>
+		<div class="grid g3">
+			<div class="card"><h4>新裝備</h4><p>武器新增星隕、古龍品階；護甲新增星辰、龍鱗品階。盜賊有專屬的幸運系裝備與傳說。</p></div>
+			<div class="card"><h4>職業套裝</h4><p>鐵壁聖騎（力量）、疾風遊俠（敏捷）、星辰法師（智力）只會在第二章出現。</p></div>
+			<div class="card"><h4>新符文之語與技能</h4><p>6 種新符文之語；每棵技能樹都有打倒祭司才能學的新技能（400 經驗起跳）。各職業的第二章技能：劍士「聖盾守護」、弓箭手「鷹擊」、法師「星辰之力」、盜賊「幻影步」，其中法師和盜賊的技能附帶<b>魔法減傷</b>，專門對付地下三樓後段的魔法怪。</p></div>
+		</div>
+	</section>
+
+	<section id="realm" data-nav="無盡秘境">
+		<h2>無盡秘境</h2>
+		<p>打倒沉睡之王後，營地的東南角會出現一道<b class="gold">秘境傳送門</b>。門後是另一個不斷變化的空間，和主線分開，拿來刷裝備、挑戰極限。</p>
+		<div class="grid g2">
+			<div class="card"><h4>規則</h4><p>每次進入要消耗 1 顆<b>秘境石</b>（主線打倒騎士團長、祭司、開大寶箱有機會掉；打通第一章送 3 顆、打倒古龍再送 3 顆）。共 <b id="realm-layers"></b> 層，第 1 層＝第一章最外圈的強度，每層再強一點；通過一層才能挑戰下一層。</p><p>地圖是 10×10 的預先設計地形，每次會隨機旋轉、翻轉並稍微變化。地圖上有 <b>5 隻秘境守衛</b>，全部打倒後<b>秘境之王</b>會在隨機一間房間降臨，其他怪物全部消失。打倒秘境之王就通過這一層。</p></div>
+			<div class="card"><h4>獎勵</h4><p>守衛必掉稀有以上裝備；秘境之王掉 2 件高品質裝備、高階符文，常常再掉一顆秘境石，還有機會掉落只在秘境出現的傳說裝備。</p><p class="dim">倒下或燈油燒完就失敗，秘境石照樣用掉。</p></div>
+		</div>
+		<h3>地形</h3>
+		<div class="grid g3" id="realm-maps"></div>
+		<h3>秘境之王</h3>
+		<div class="grid g3" id="realm-kings"></div>
+		<h3>秘境限定傳說</h3>
+		<div class="grid g2" id="realm-uniques"></div>
+	</section>
+
+	<section id="enemies" data-nav="敵人圖鑑">
+		<h2>敵人圖鑑</h2>
+		<p class="dim">數值是基礎值，實際強度會依難度環放大。「出沒」＝最早出現的環數。</p>
+		<div class="grid g4" id="enemy-list"></div>
+	</section>
+
+	<section id="skills" data-nav="技能樹">
+		<h2>技能樹</h2>
+		<p>花經驗學技能。每個分頁由上往下展開，上一個技能達到等級才能學下一個。部分高階技能需要<b>擊敗騎士團長</b>才能解鎖；每棵樹最底下的<b>第二章技能</b>要打倒第一位元素祭司才能學（「龍心」「深淵探索」要打倒兩位），400 經驗起跳（後兩者 550），每升一級價格 ×1.4。</p>
+		<div class="grid g2" style="margin:12px 0">
+			<div class="card"><h4>四棵屬性樹（所有職業都能點）</h4><p><b>力量</b>（劍士）、<b>敏捷</b>（弓箭手）、<b>智力</b>（法師）、<b>幸運</b>（盜賊）。每棵樹都有自己的被動加成，以及 <b>5 個主動技能</b>。</p><p class="dim">自己職業主屬性的技能是全額效果；學別的屬性的主動技能也可以裝備，但<b class="bad">效果 −25%</b>（傷害、治療、持續時間、召喚物強度都會打折）。</p></div>
+			<div class="card"><h4>共通被動樹與職業樹</h4><p><b>體質</b>（生命、藥水、回復）和<b>冒險</b>（金幣、背包、建造、燈油）是共通的被動樹。每個職業另有一棵<b>專屬職業樹</b>，只有該職業能點。</p><p class="dim">招牌技能：屬性樹裡標註某職業招牌的被動技能，其他職業學要多付 30% 經驗。</p></div>
+		</div>
+		<p class="dim">顏色：<span class="tag">灰框＝還不能學</span><span class="tag" style="border-color:#e05a3a">紅底＝現在可以學</span><span class="tag">金框＝學過</span><span class="tag" style="border-color:#ffe08a;color:#ffe08a;box-shadow:0 0 8px #e8b75a">★ 金色發光框＝已經點滿</span></p>
+		<div id="skill-tabs"></div>
+	</section>
+
+	<section id="spells" data-nav="主動技能">
+		<h2>主動技能（20 個）</h2>
+		<p>四棵屬性樹各 5 個。學會的主動技能可以放進技能欄（最多 3 個），戰鬥中法力足夠、冷卻結束就會自動施放。在「角色 → 技能」分頁管理。</p>
+		<div id="spell-list"></div>
+		<div style="margin-top:16px"><img class="shot" src="img/char_spells.png"></div>
+	</section>
+
+	<section id="gear" data-nav="裝備">
+		<h2>裝備</h2>
+		<p>六個部位：<span id="slot-names"></span>。稀有度越高，詞綴越多、符文孔越多。滑鼠停在裝備上會立即顯示和身上裝備的比較。</p>
+		<div id="rarity-list" style="margin:10px 0"></div>
+		<div class="grid g2">
+			<div><img class="shot" src="img/char_gear.png"><div class="figcap">裝備頁：拖曳裝備到身上或儲藏箱，右鍵賣出</div></div>
+			<div><img class="shot" src="img/char_stats.png"><div class="figcap">詳細數值：攻擊／防禦／續航／收益四大類</div></div>
+		</div>
+		<h3>武器</h3>
+		<p class="dim">品階：<span id="weapon-tiers"></span></p>
+		<table id="weapon-table"></table>
+		<h3>護具與飾品</h3>
+		<table id="armor-table"></table>
+		<h3>傳說裝備</h3>
+		<div class="grid g3" id="unique-list"></div>
+		<h3>套裝</h3>
+		<p class="dim">稀有以上的裝備有機會是套裝。同一套穿越多件效果越強。</p>
+		<div id="set-list"></div>
+	</section>
+
+	<section id="runes" data-nav="符文">
+		<h2>符文</h2>
+		<p>符文分六系、五個品階。同系同階 3 顆可以合成高一階。嵌在不同部位，效果不同。把符文拖到裝備上就能鑲嵌，花金幣可以取下。</p>
+		<div class="grid g2"><div><img class="shot" src="img/char_runes.png"></div><div><table id="rune-table"></table><p class="dim" id="rune-caps"></p></div></div>
+		<h3>符文之語</h3>
+		<p class="dim">同一件裝備嵌滿 3 顆特定組合時觸發。</p>
+		<table id="combo-table"></table>
+	</section>
+
+	<section id="relics" data-nav="遺物與成就">
+		<h2>遺物</h2>
+		<div class="grid g2" id="relic-list"></div>
+		<h2 style="margin-top:40px">成就</h2>
+		<table id="ach-table"></table>
+	</section>
+
+	<section id="camp" data-nav="營地設施">
+		<h2>營地強化設施</h2>
+		<p>在流浪商人那裡購買。每項設施最高 <b id="reno-max"></b> 級，升到 <b>Lv1、Lv4、Lv8</b> 時，營地裡的擺設會跟著升級，從簡陋的帳篷慢慢變成氣派的據點。</p>
+		<table id="reno-table"></table>
+		<div class="grid g3" style="margin-top:16px">
+			<div><img class="shot" src="img/camp_0.png"><div class="figcap">剛開始：簡陋的營地</div></div>
+			<div><img class="shot" src="img/camp_4.png"><div class="figcap">全部 Lv4</div></div>
+			<div><img class="shot" src="img/camp_8.png"><div class="figcap">全部 Lv8：黃金寶箱、宴席、長明燈柱</div></div>
+		</div>
+		<div style="margin-top:16px"><img class="shot" src="img/ui_shop.png"><div class="figcap">流浪商人：冒險用品、營地設施、今日貨架</div></div>
+	</section>
+
+	<section id="char" data-nav="角色介面">
+		<h2>角色介面</h2>
+		<p>角色視窗分成五個分頁：裝備、符文、技能、藥水與道具、詳細數值。穿不上的裝備會蓋上一層紅色，點開會寫出還差哪一項屬性多少點。</p>
+		<h3>藥水</h3>
+		<p>紅藥水一開始就有。其他藥水要在營地建造<b>煉金台</b>（打倒沉睡之王後開放）來解鎖，煉金台等級越高每趟帶越多瓶。解鎖後在「藥水與道具」分頁選 2 種放進遠征畫面的藥水欄第 2、3 格，會自動喝，也可以點一下立刻喝。</p>
+		<table id="potion-table"></table>
+		<div class="grid g2">
+			<div><img class="shot" src="img/char_potions.png"><div class="figcap">藥水與道具</div></div>
+			<div><img class="shot" src="img/ui_classes.png"><div class="figcap">選擇職業（4 個存檔欄位）</div></div>
+		</div>
+	</section>
+
+	<section id="tips" data-nav="小技巧">
+		<h2>葛倫的小技巧</h2>
+		<div class="grid g2" id="tip-list"></div>
+	</section>
+
+	<section id="numbers" data-nav="內容一覽">
+		<h2>內容一覽與章節</h2>
+		<div class="grid g4" id="count-list"></div>
+		<h3>章節</h3>
+		<div id="chapter-list"></div>
+		<p class="dim">目前完成第一章與第二章，以及通關第一章後開放的無盡秘境（30 層）。之後的章節、樓層與功能會從這裡往後擴充。</p>
+	</section>
+	<section id="future" data-nav="備註：未來擴充">
+		<h2>備註：未來擴充規劃</h2>
+		<p class="dim">這一節是開發備忘錄：記錄遊戲裡已經預留好的擴充空間，以及之後想加的內容。想到新點子就加在這裡。</p>
+		<h3>已經預留好的擴充點（加資料就能用）</h3>
+		<table>
+			<tr><th>想新增</th><th>改哪裡</th><th>說明</th></tr>
+			<tr><td>新章節／新劇情</td><td><code>data.gd</code> 的 <code>CHAPTERS</code>、<code>LINES</code>；<code>game_state.gd</code> 的 <code>start_chapter2</code></td><td>第二章的做法可以照抄：新樓層加在 <code>dungeon.gd</code> 的 <code>FLOOR_X／FLOOR_SIZE／FLOOR_RING_BONUS</code>，頭目寫在 <code>PRIESTS</code> 這類字典並合併進 <code>WARDENS</code>。</td></tr>
+			<tr><td>第二章以後的難度</td><td><code>data.gd</code> 的 <code>CH2_*</code> 常數</td><td>第 22 環以後（地下三樓與秘境）敵人與報酬改用自己的成長率。</td></tr>
+			<tr><td>秘境地形／秘境之王</td><td><code>content_data.gd</code> 的 <code>REALM_TEMPLATES</code>、<code>REALM_KINGS</code>、<code>REALM_UNIQUES</code></td><td>地形是 10 行字串（# 房間、+ 走廊、S 入口、. 空地）。</td></tr>
+			<tr><td>新的主動技能</td><td><code>data.gd</code> 的 <code>SPELLS</code>＋<code>skills_data.gd</code> 加節點＋<code>run_sim.gd</code> 的 <code>_do_spell</code></td><td>指定 <code>attr</code> 就會自動套用「非本職業 −25%」規則，也會出現在角色的技能分頁和說明書。</td></tr>
+			<tr><td>新的被動技能</td><td><code>skills_data.gd</code></td><td>有 <code>fx</code> 的節點不用寫程式（例如 <code>["atk_pct", 5.0]</code>）。</td></tr>
+			<tr><td>新的技能分頁</td><td><code>skills_data.gd</code> 的 <code>GROUPS</code></td><td>例如之後新增「神聖」「暗黑」等屬性樹。</td></tr>
+			<tr><td>技能樹大改版</td><td><code>game_state.gd</code> 的 <code>SKILL_VER</code> 加 1</td><td>讀到舊存檔會自動退還全部經驗，並跳出說明視窗。</td></tr>
+			<tr><td>新職業</td><td><code>data.gd</code> 的 <code>CLASSES</code>＋<code>skills_data.gd</code> 的職業樹</td><td>需要選一個主屬性（或新增屬性）和角色模型。存檔欄位是 4 格，可以再加。</td></tr>
+			<tr><td>新敵人</td><td><code>content_data.gd</code> 的 <code>MORE_ENEMIES</code></td><td>設定出沒環數、能力（開戰、命中、低血量、召喚……）。</td></tr>
+			<tr><td>新區塊形狀</td><td><code>data.gd</code> 的 <code>PIECES</code></td><td>每格寫種類、位置、門的方向；相鄰格的門要互相對上。</td></tr>
+			<tr><td>新區塊能力／特殊房間</td><td><code>ROOM_MODS</code>／<code>MORE_SPECIAL_PIECES</code></td><td>能力的效果寫在 <code>run_sim.gd</code>。</td></tr>
+			<tr><td>新營地設施</td><td><code>data.gd</code> 的 <code>RENOS</code></td><td>加成寫在 <code>hero_stats</code>，外觀寫在 <code>world.gd</code> 的 <code>_decorate_camp</code>。</td></tr>
+			<tr><td>新裝備／傳說／套裝</td><td><code>content_data.gd</code></td><td><code>WEAPON_BASES</code>、<code>ARMOR_BASES</code>、<code>UNIQUES</code>、<code>SET_PIECES</code>。</td></tr>
+			<tr><td>新符文／符文之語</td><td><code>STICKERS</code>／<code>COMBOS</code></td><td>符文圖示會依顏色自動畫出來。</td></tr>
+			<tr><td>新藥水</td><td><code>data.gd</code> 的 <code>POTIONS</code>＋<code>run_sim.gd</code> 的 <code>use_potion</code>、<code>_auto_potions</code></td><td>設定煉金台解鎖等級，角色視窗與遠征藥水欄會自動出現。</td></tr>
+			<tr><td>新遺物、成就</td><td><code>RELICS</code>／<code>ACHIEVEMENTS</code></td><td>遺物可以帶劇情文字（lore）。</td></tr>
+			<tr><td>難度曲線、遊戲長度</td><td><code>data.gd</code> 的「難度曲線」常數</td><td><code>EARLY_*</code>（前期）、<code>LATE_*</code>（中後期成長）、<code>REWARD_MULT</code>（整體報酬，越低遊戲越長）、<code>ENEMY_HP_MULT</code>、<code>CELL_TIME</code>、<code>BASE_BATTERY</code>。改完跑 <code>tests/balance_report.sh</code>（四職業 × 九張地圖，約 3 小時）確認通關時間與職業差距。</td></tr>
+			<tr><td>國王戰、防卡關</td><td><code>run_sim.gd</code> 的 <code>BOSS_WEAR_*</code>、<code>game_state.gd</code> 的 <code>GRIT_*</code></td><td>國王傷勢保留比例與上限；不屈之志的層數與每層加成。</td></tr>
+			<tr><td>技能欄格數</td><td><code>data.gd</code> 的 <code>LOADOUT_MAX</code></td><td>目前 3 格，之後可以做成技能或設施解鎖第 4 格。</td></tr>
+		</table>
+		<h3>之後可以加的內容（點子清單）</h3>
+		<h4 style="margin-top:10px">主線劇情規劃</h4>
+		<div class="grid g2">
+			<div class="card"><h4>第三章：沉沒的港都（構想）</h4><p>古龍倒下後，地底的水位開始上升，瑟蘭的港都從水裡浮現。新樓層「地下四樓」以水淹、潮汐為主題：每隔一段時間潮水退去，才能通過某些走廊。頭目構想：深海女王與她的三位潮汐將軍。</p></div>
+			<div class="card"><h4>第四章：天空之井（構想）</h4><p>一路往下挖，卻在最深處看到天空──原來瑟蘭是被「翻轉」到地底的。最後一章揭開葛倫的真實身分（他是三百年前倖存的王國嚮導）。</p></div>
+			<div class="card"><h4>章節間的小劇情</h4><p>救出的冒險者在營地留下對話、委託；遺物收集滿一套解鎖一段過去的故事。</p></div>
+		</div>
+		<h4 style="margin-top:14px">讓遊戲不只是「跑」的玩法點子</h4>
+		<div class="grid g2">
+			<div class="card"><h4>遠征中的抉擇事件</h4><p>走到特定房間跳出小事件：要不要喝下可疑的藥水、要不要救被困的冒險者、跟商人賭一把。選擇會影響這趟的收穫或風險。</p></div>
+			<div class="card"><h4>佈置陷阱與防守</h4><p>反過來的玩法：怪物會從深處往營地進攻，玩家用打通的區塊排出防線、放陷阱和衛兵，守住營地拿獎勵。</p></div>
+			<div class="card"><h4>同伴與寵物</h4><p>救出的冒險者可以留在營地成為同伴，一起遠征；也可以收服小怪當寵物（每種有被動能力）。</p></div>
+			<div class="card"><h4>每週挑戰與排行</h4><p>每週固定一張地圖和異變，比誰用最少次遠征打倒頭目；秘境最高層數排行。</p></div>
+			<div class="card"><h4>手動技能時機</h4><p>技能欄可以切換成手動施放：在頭目重擊前放護盾、在怪物聚集時放範圍技，讓會操作的人打得更快。</p></div>
+			<div class="card"><h4>區塊拼圖獎勵</h4><p>特定形狀的區塊排成圖案（例如十字、環形）會觸發獎勵房，讓建造不只是鋪路。</p></div>
+			<div class="card"><h4>新職業</h4><p>聖騎士（新屬性「信仰」：治療與護盾）、死靈術士（召喚骷髏大軍）。KayKit 角色包還有 Barbarian 模型可用。</p></div>
+			<div class="card"><h4>技能欄第 4 格</h4><p>做成第三章頭目的獎勵或秘境第 30 層的成就獎勵。</p></div>
+			<div class="card"><h4>秘境詞綴</h4><p>每層秘境隨機附加 1～2 個詞綴（敵人加速、燈油減半、寶箱加倍……），越難的組合獎勵越好。</p></div>
+		</div>
+		<p class="dim" style="margin-top:14px">更新說明書：改完遊戲後執行遊戲資料夾裡的 <code>更新說明書.bat</code>，圖片與資料會重新匯出，這份說明書自動同步（這一節是手寫的，請直接編輯 <code>docs/遊戲說明書.html</code>）。</p>
+	</section>
+</main>
+</div>
+<div class="lightbox" id="lb"><img alt=""></div>
+<script src="data.js"></script>
+<script>
+const G = window.GAME;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+const icon = (a) => a ? `<span class="ic" style="background-position:-${a[1] * 32}px -${a[0] * 32}px"></span>` : "";
+const STATUS = {bleed: "流血", burn: "燃燒", poison: "中毒", stun: "暈眩", slow: "緩速", weaken: "虛弱", vulnerable: "脆弱", fortified: "堅固", haste: "加速", sunder: "破甲", frozen: "冰凍"};
+const TYPE = {melee: "近戰", magic: "魔法", ranged: "遠程"};
+
+function abil(list) {
+	return (list || []).map((a) => {
+		const st = STATUS[a.status] || a.status || "";
+		switch (a.on) {
+			case "start": return `開戰時${a.self ? "自身" : "讓你"}${st}${a.stacks ? " ×" + a.stacks : ""}${a.dur ? `（${a.dur} 秒）` : ""}`;
+			case "hit": return `攻擊有 ${a.chance}% 機率造成${st}${a.stacks ? " ×" + a.stacks : ""}`;
+			case "low": return a.heal ? `生命低於 40% 時突然回復 ${Math.round(a.heal * 100)}% 生命` : `生命低於 40% 時${a.self ? "進入" : "施加"}${st}`;
+			case "death":
+				if (a.split) return `死亡時分裂成 ${a.n || 2} 隻「${G.enemies[a.split]?.name || a.split}」`;
+				if (a.explode) return `死亡時爆炸，造成你最大生命 ${Math.round(a.explode * 100)}% 的傷害`;
+				return `死亡時讓你${st}${a.stacks ? " ×" + a.stacks : ""}`;
+			case "heal": return `每 ${a.every} 秒替房間裡傷最重的同伴回復 ${Math.round(a.pct * 100)}% 生命（戰鬥越久越弱，60 秒後失效）`;
+			case "phase": return `生命降到 ${(a.at || []).map((x) => Math.round(x * 100) + "%").join("、")} 時進入新階段`;
+			case "summon": return `每 ${a.every} 秒召喚手下「${G.enemies[a.enemy]?.name || a.enemy}」`;
+		}
+		return "";
+	}).filter(Boolean);
+}
+
+// 側邊導覽
+for (const s of document.querySelectorAll("section[data-nav]")) {
+	const a = document.createElement("a");
+	a.href = "#" + s.id;
+	a.textContent = s.dataset.nav;
+	$("nav").appendChild(a);
+}
+
+$("narrator").textContent = G.narrator;
+$("chapter-goal").textContent = "目前的目標（" + G.chapters[0].name + "）：" + G.chapters[0].goal;
+
+// 職業
+$("class-list").innerHTML = Object.entries(G.classes).map(([id, c]) => `
+	<div class="card"><div class="portrait"><img src="img/class_${id}.png" alt="${esc(c.name)}"></div>
+	<h3 style="margin-top:10px">${icon(c.icon)}${esc(c.name)}</h3><p>${esc(c.tag)}</p>
+	<div>${c.points.map((p) => `<div>・${esc(p)}</div>`).join("")}</div>
+	<div class="dim" style="margin-top:6px">主屬性：${esc(G.attr[c.attr])}${c.ranged ? "．遠程" : "．近戰"}</div></div>`).join("");
+
+// 區塊縮圖
+function pieceSvg(p) {
+	const xs = p.cells.map((c) => c[1]), ys = p.cells.map((c) => c[2]);
+	const w = Math.max(...xs) + 1, h = Math.max(...ys) + 1, cs = 40, pad = 14;
+	let s = `<svg width="${w * cs + pad * 2}" height="${h * cs + pad * 2}">`;
+	for (const c of p.cells) {
+		const x = pad + c[1] * cs, y = pad + c[2] * cs, room = c[0] === "room", ins = room ? 4 : 12;
+		s += `<rect x="${x + ins}" y="${y + ins}" width="${cs - ins * 2}" height="${cs - ins * 2}" fill="${room ? "#8f7556" : "#5b5047"}" stroke="#d9b56a" stroke-width="1.5" rx="3"/>`;
+		const cx = x + cs / 2, cy = y + cs / 2;
+		for (const ch of c[3]) {
+			const d = {N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0]}[ch];
+			s += `<line x1="${cx + d[0] * 6}" y1="${cy + d[1] * 6}" x2="${cx + d[0] * (cs / 2 + 8)}" y2="${cy + d[1] * (cs / 2 + 8)}" stroke="#ffd36a" stroke-width="5" stroke-linecap="round"/>`;
+		}
+	}
+	return s + "</svg>";
+}
+$("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");
+$("mod-list").innerHTML = Object.entries(G.room_mods).filter(([k]) => k).map(([k, m]) => `<div class="card"><b style="color:${m.color}">◆ ${esc(m.name)}</b><div>${esc(m.desc)}</div></div>`).join("");
+$("special-list").innerHTML = G.special_pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim">${esc(G.special_info[p.special] || "")}</div></div>`).join("");
+const LM_DESC = {start: "你的家。所有遠征從這裡出發。", shop: "找到後開放商店：補給、營地設施、裝備。", key: "取得古銀鑰匙，用來打開封印寶庫。", locked: "需要鑰匙，裡面有豐富的寶藏。", warden: "三位騎士團長各據一方，擊敗他們解開封印。", boss: "沉睡之王的所在。只在地下二樓。", stairs: "通往地下二樓的古老階梯。"};
+$("landmark-list").innerHTML = Object.entries(G.landmarks).map(([k, n]) => `<div class="card"><b class="gold">${esc(n)}</b><div>${esc(LM_DESC[k] || "")}</div></div>`).join("");
+$("mutation-list").innerHTML = Object.values(G.mutations).map((m) => `<div class="card"><b style="color:${m.tint}">${esc(m.prefix)}（${esc(m.name)}）</b><div>${esc(m.desc)}</div></div>`).join("");
+
+// 騎士團長與國王
+const wardenCard = ([id, w]) => `
+	<div class="card"><div class="portrait"><img src="img/warden_${id}.png" alt="${esc(w.name)}"></div>
+	<h3 style="margin-top:10px;color:${w.tint}">${esc(w.name)}</h3>
+	<div class="quote">${esc(w.intro)}</div>
+	<div class="stat-row" style="margin:10px 0">類型 <b>${TYPE[w.type] || w.type}</b> 生命 <b>×${w.hp}</b> 攻擊 <b>×${w.atk}</b> 間隔 <b>${w.cd}s</b> 護甲 <b>${w.armor}</b> 閃避 <b>${w.dodge}</b></div>
+	<div>${abil(w.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+	<div class="dim" style="margin-top:8px">倒下時：「${esc(w.defeat)}」</div></div>`;
+$("warden-list").innerHTML = Object.entries(G.wardens).filter(([, w]) => !w.ch).map(wardenCard).join("");
+$("priest-list").innerHTML = Object.entries(G.wardens).filter(([, w]) => w.ch === 2).map(wardenCard).join("");
+const DR = G.dragon;
+$("dragon-card").innerHTML = `<div class="grid" style="grid-template-columns:320px 1fr;align-items:center">
+	<div class="portrait"><img src="img/dragon.png" alt="${esc(DR.name)}"></div>
+	<div><h3 style="color:${DR.tint};font-size:28px">第二章頭目：${esc(DR.name)}</h3>
+	<p>三百年前讓瑟蘭沉入地底的災厄。四位祭司倒下後，牠會在地下三樓深處隨機降臨。和瓦爾克一樣，每次挑戰造成的傷害會部分保留。</p>
+	<div class="stat-row" style="margin:10px 0">類型 <b>${TYPE[DR.type] || DR.type}</b> 生命 <b>×${DR.hp}</b> 攻擊 <b>×${DR.atk}</b> 間隔 <b>${DR.cd}s</b> 護甲 <b>${DR.armor}</b> 閃避 <b>${DR.dodge}</b></div>
+	<div>${abil(DR.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+	<p class="dim" style="margin-top:10px">${esc(G.chapters[1].end)}</p></div></div>`;
+$("realm-layers").textContent = G.realm_layers;
+function realmSvg(map) {
+	const cs = 16; let s = `<svg width="${cs * 10 + 8}" height="${cs * 10 + 8}">`;
+	map.forEach((row, y) => [...row].forEach((ch, x) => {
+		if (ch === ".") return;
+		const col = ch === "S" ? "#b48cff" : ch === "#" ? "#8f7556" : "#5b5047", ins = ch === "+" ? 4 : 1;
+		s += `<rect x="${4 + x * cs + ins}" y="${4 + y * cs + ins}" width="${cs - ins * 2}" height="${cs - ins * 2}" fill="${col}" rx="2"/>`;
+	}));
+	return s + "</svg>";
+}
+$("realm-maps").innerHTML = G.realm_templates.map((m) => `<div class="card" style="text-align:center">${realmSvg(m.map)}<div><b>${esc(m.name)}</b></div></div>`).join("");
+$("realm-kings").innerHTML = G.realm_kings.map((k, i) => `<div class="card"><div class="portrait"><img src="img/realm_king_${i}.png" alt="${esc(k.name)}" style="height:170px"></div><h4 style="margin:8px 0 0;color:#c9a6ff">${esc(k.name)}</h4><div class="dim">第 ${i + 1}、${i + 7}、${i + 13}…層</div></div>`).join("");
+$("realm-uniques").innerHTML = G.realm_uniques.map((u) => `<div class="card"><h4>${icon(u.icon)}<span style="color:#e8b75a">${esc(u.name)}</span></h4><div>${esc(G.slots[u.slot] || u.slot)}．${esc(u.text)}</div></div>`).join("");
+$("potion-table").innerHTML = `<tr><th>藥水</th><th>效果</th><th>解鎖</th></tr>` + Object.values(G.potions).map((p) => `<tr><td>${icon(p.icon)}<b>${esc(p.name)}</b></td><td>${esc(p.desc)}</td><td class="dim">${p.unlock ? "煉金台 Lv" + p.unlock : "一開始就有"}</td></tr>`).join("");
+const B = G.boss;
+$("boss-card").innerHTML = `<div class="grid" style="grid-template-columns:320px 1fr;align-items:center">
+	<div class="portrait"><img src="img/boss.png" alt="${esc(B.name)}"></div>
+	<div><h3 style="color:${B.tint};font-size:28px">最終頭目：${esc(B.name)}</h3>
+	<p>沉睡了三百年的瑟蘭之王。三位騎士團長倒下後封印解開，他會在地下二樓的王座廳醒來。</p>
+	<div class="stat-row" style="margin:10px 0">類型 <b>${TYPE[B.type] || B.type}</b> 生命 <b>×${B.hp}</b> 攻擊 <b>×${B.atk}</b> 間隔 <b>${B.cd}s</b> 護甲 <b>${B.armor}</b> 閃避 <b>${B.dodge}</b></div>
+	<div>${abil(B.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+	<p class="dim" style="margin-top:10px">${esc(G.chapters[0].end)}</p></div></div>`;
+
+// 敵人
+$("enemy-list").innerHTML = Object.entries(G.enemies).sort((a, b) => a[1].ring - b[1].ring).map(([id, e]) => `
+	<div class="card"><div class="portrait"><img src="img/enemy_${id}.png" alt="${esc(e.name)}" style="height:170px"></div>
+	<h4 style="margin:8px 0 4px">${esc(e.name)}</h4>
+	<div class="stat-row">出沒 <b>第 ${e.ring} 環</b> ${TYPE[e.type] || e.type} 生命 <b>${e.hp}</b> 攻擊 <b>${e.atk}</b> 護甲 <b>${e.armor}</b> 閃避 <b>${e.dodge}</b></div>
+	<div style="margin-top:6px">${abil(e.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div></div>`).join("");
+
+// 技能
+const preText = (p) => p[0] === "seal" ? `擊敗 ${p[1]} 位騎士團長` : `${G.skills.find((s) => s.id === p[0])?.name || G.attr[p[0]] || p[0]} Lv${p[1]}`;
+$("skill-tabs").innerHTML = G.groups.map((g) => {
+	const list = G.skills.filter((s) => s.grp === g[0]);
+	const cls = G.classes[g[0]];
+	return `<details ${g[0] === "str" ? "open" : ""}><summary>${icon(g[2])}${esc(g[1])}${cls ? "（職業專屬）" : ""}　<span class="dim" style="font-size:14px">${list.length} 個技能</span></summary>
+	<img class="shot" src="img/skills_${g[0]}.png" style="margin:8px 0">
+	<table><tr><th>技能</th><th>效果</th><th>最高</th><th>前置條件</th></tr>
+	${list.map((s) => `<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.desc)}</td><td>${s.max}</td><td class="dim">${s.pre.map((p) => `<span class="${p[0] === "seal" ? "bad" : ""}">${esc(preText(p))}</span>`).join("、") || "—"}</td></tr>`).join("")}
+	</table></details>`;
+}).join("");
+
+// 法術
+const clsOfAttr = {};
+for (const c of Object.values(G.classes)) clsOfAttr[c.attr] = c.name;
+$("spell-list").innerHTML = ["str", "dex", "int", "luk"].map((a) => `<h3>${esc(G.attr[a])}　<span class="dim" style="font-size:15px">${esc(clsOfAttr[a] || "")}的主屬性，其他職業使用效果 −25%</span></h3><div class="grid g3">` +
+	Object.entries(G.spells).filter(([, sp]) => sp.attr === a).map(([id, sp]) => {
+		const sk = G.skills.find((s) => s.id === id) || {};
+		const pre = (sk.pre || []).map((p) => preText(p)).join("、");
+		return `<div class="card"><h4>${icon(sp.icon)}${esc(sp.name)}</h4><div>${esc((sk.desc || "").replace(/^主動：/, ""))}</div><div class="stat-row" style="margin-top:6px">法力 <b>${sp.mana}</b> 冷卻 <b>${sp.cd} 秒</b> 最高 <b>Lv${sk.max || 1}</b></div><div class="dim" style="font-size:13px">前置：${esc(pre || "—")}</div></div>`;
+	}).join("") + `</div>`).join("");
+
+// 裝備
+$("slot-names").textContent = Object.values(G.slots).join("、");
+$("rarity-list").innerHTML = G.rarity.map((r, i) => `<span class="tag" style="color:${G.rarity_colors[i]};border-color:${G.rarity_colors[i]}">${r}</span>`).join("");
+$("weapon-tiers").textContent = G.weapon_tiers.map((t) => `${t[0]}（×${t[1]}，Lv${t[2]}起）`).join("、");
+$("weapon-table").innerHTML = `<tr><th>武器</th><th>類型</th><th>攻擊</th><th>間隔</th><th>需求</th></tr>` + G.weapon_bases.map((w) => `<tr><td>${icon(w.icon)}${esc(w.name)}</td><td>${esc(G.weapon_types[w.type] || w.type)}</td><td>${w.atk}</td><td>${w.cd}s</td><td>${esc(G.attr[w.req] || w.req)}</td></tr>`).join("");
+const affName = (k) => G.affixes[k]?.name || {gold: "金幣", hp: "生命", armor: "護甲", crit: "暴擊", res_magic: "魔法抵抗", weight: "重量", dodge: "閃避", regen: "回復", hit: "命中", mp: "法力", atk: "攻擊", cd: "間隔"}[k] || k;
+const statsText = (o, skip) => Object.entries(o).filter(([k]) => !skip.includes(k)).map(([k, v]) => `${affName(k)} ${typeof v === "number" && v < 1 && v > 0 ? "+" + Math.round(v * 100) + "%" : v}`).join("、");
+$("armor-table").innerHTML = `<tr><th>部位</th><th>名稱</th><th>基礎屬性</th><th>需求</th></tr>` + Object.entries(G.armor_bases).flatMap(([slot, list]) => list.map((a) => `<tr><td>${esc(G.slots[slot])}</td><td>${icon(a.icon)}${esc(a.name)}</td><td>${esc(statsText(a, ["name", "icon", "req"]))}</td><td>${esc(G.attr[a.req] || a.req || "—")}</td></tr>`)).join("");
+$("unique-list").innerHTML = G.uniques.map((u) => `<div class="card"><h4 style="color:${G.rarity_colors[4]}">${icon(u.icon)}${esc(u.name)}</h4><div class="dim">${esc(G.slots[u.slot])}${u.atk ? `．攻擊 ${u.atk}．間隔 ${u.cd}s` : ""}</div><div>${esc(u.text)}</div></div>`).join("");
+$("set-list").innerHTML = Object.values(G.sets).map((st) => `<h4 style="margin-top:14px">${esc(st.name)}${st.req ? `　<span class="dim" style="font-size:14px">需要${esc(G.attr[st.req])}</span>` : ""}</h4>
+	<div class="grid g2"><div class="card">${Object.entries(st.pieces).map(([slot, p]) => `<div>${icon(p.icon)}<b>${esc(p.name)}</b> <span class="dim">${esc(G.slots[slot])}．${esc(statsText(p, ["name", "icon", "type", "weight"]))}</span></div>`).join("")}</div>
+	<div class="card"><h4>套裝效果</h4>${st.bonus.map((b) => `<div><span class="tag">${b[0]} 件</span>${esc(b[1])}</div>`).join("")}</div></div>`).join("");
+
+// 符文
+const slotGroup = {weapon: "武器", armor: "副手／頭盔／護甲", trinket: "戒指／護符"};
+$("rune-table").innerHTML = `<tr><th>符文</th>${Object.values(slotGroup).map((s) => `<th>${s}</th>`).join("")}</tr>` + Object.values(G.runes).map((r) => `<tr><td><span class="gem" style="background:${r.color}"></span><b style="color:${r.color}">${esc(r.name)}</b></td>${Object.keys(slotGroup).map((g) => `<td>${esc(affName(r[g][0]))}<div class="dim" style="font-size:13px">${r[g][1].join(" / ")}</div></td>`).join("")}</tr>`).join("");
+$("rune-caps").textContent = "品階：" + G.rune_grades.join(" → ") + "（表格數字依品階排列）。符文孔上限：" + Object.entries(G.rune_caps).map(([k, v]) => `${G.slots[k]} ${v}`).join("、");
+$("combo-table").innerHTML = `<tr><th>符文之語</th><th>部位</th><th>組合</th><th>效果</th></tr>` + Object.entries(G.combos).map(([key, c]) => {
+	const [grp, cols] = key.split(":");
+	return `<tr><td><b class="gold">${esc(c.name)}</b></td><td>${slotGroup[grp]}</td><td>${cols.split(",").map((k) => `<span class="gem" style="background:${G.runes[k].color}" title="${G.runes[k].name}"></span>`).join("")}</td><td>${esc(c.desc)}</td></tr>`;
+}).join("");
+
+// 遺物、成就
+$("relic-list").innerHTML = G.relics.map((r) => `<div class="card"><h4>${esc(r.name)}${r.story ? ' <span class="tag">劇情</span>' : ""}</h4><div class="dim">${esc(r.lore || r.desc || "")}</div>${r.desc && r.lore ? `<div>${esc(r.desc)}</div>` : ""}</div>`).join("");
+$("ach-table").innerHTML = `<tr><th>成就</th><th>條件</th></tr>` + G.achievements.map((a) => `<tr><td><b>${esc(a[1])}</b></td><td class="dim">${esc(a[2])}</td></tr>`).join("");
+
+// 營地
+$("reno-max").textContent = G.reno_max;
+$("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>Lv1</th><th>Lv4</th><th>Lv8</th></tr>` + G.renos.map((r) => `<tr><td>${icon(r.icon)}<b>${esc(r.name)}</b></td><td>${esc(r.desc)}</td>${r.tiers.map((t) => `<td class="dim">${esc(t)}</td>`).join("")}</tr>`).join("");
+
+// 小技巧、數量
+$("tip-list").innerHTML = G.tips.map((t) => `<div class="card">${esc(t)}</div>`).join("");
+const counts = [["技能", G.stats.skills], ["敵人", G.stats.enemies], ["法術", Object.keys(G.spells).length], ["區塊形狀", G.stats.pieces], ["傳說裝備", G.stats.uniques], ["符文之語", G.stats.combos], ["遺物", G.stats.relics], ["成就", G.stats.achievements]];
+$("count-list").innerHTML = counts.map(([n, c]) => `<div class="card" style="text-align:center"><div class="count">${c}</div><div class="dim">${n}</div></div>`).join("");
+$("chapter-list").innerHTML = G.chapters.map((c) => `<div class="card"><h4>${esc(c.name)}</h4><div>目標：${esc(c.goal)}</div><div class="dim">${esc(c.end)}</div></div>`).join("");
+
+// 點圖放大
+const lb = $("lb");
+document.addEventListener("click", (e) => {
+	if (e.target.classList.contains("shot")) { lb.querySelector("img").src = e.target.src; lb.style.display = "flex"; }
+	else if (e.target.closest("#lb")) lb.style.display = "none";
+});
+</script>
+</body>
+</html>
