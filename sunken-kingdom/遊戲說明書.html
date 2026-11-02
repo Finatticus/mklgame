@@ -153,8 +153,9 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 	<section id="run" data-nav="遠征規則">
 		<h2>遠征規則</h2>
 		<div class="grid g2">
+			<div class="card"><h4>遠征樓層</h4><p>每一層樓都有自己的營地（地下一樓是冒險者營地，其他樓層是樓梯口旁的營地）。出發前在右下角的<b>「遠征樓層」</b>選單選一層，冒險者就從那層的營地出發，<b>只在那一層探索</b>，清完就平安回營，不會跑到別層。一開始只有地下一樓；冒險者走到通往下一層的樓梯時，那一層才會開放（下次遠征就能選）。打倒沉睡之王後會開放地下三樓。</p></div>
 			<div class="card"><h4>冒險者怎麼走？</h4><p>出發後直接走出營地，<b>只去還有事可做的房間</b>：有怪物、寶箱、聖泉、營火、燈台、鑰匙或還沒找到的商人。已經清空的房間只會路過，不會特地繞過去。選路時<b>近的優先、稍微偏向內環</b>，所以會由內往外一路推進，不會來回亂跑。插了<b>旗幟</b>的地方最優先；鑰匙、寶庫會稍微優先。<b>頭目房排在附近的房間後面</b>：先把路上的怪清掉、東西撿完再去挑戰，而且生命低於 60% 時不會去挑戰頭目（插旗指定的除外）。全部清完就自己平安回營。</p><p>畫面下方的<b>探索進度條</b>顯示這趟還剩幾處要去，燈油條顯示還能撐幾秒。</p></div>
-			<div class="card"><h4>燈油與提燈</h4><p>出發時點亮提燈，冒險者周圍有一圈暖光，其他地方昏暗。燈油每秒消耗（1 倍速下，1 秒燈油＝現實 1 秒），越少光圈越小。剛創角色只有 45 秒燈油，靠技能、營地充電座、裝備詞綴慢慢加長；燒完時<b>不用選擇，冒險者會直接摸黑繼續探索</b>：命中和傷害 −35%（技能「夜行者」「夜明燈」可以減輕），提燈只剩微光。摸黑時不會去挑戰頭目，也不會再往更深的環走；生命低於 70% 時會自動帶著戰利品撤退。有燈油的時候，如果生命低於 30% 又沒有紅藥水了，也會先撤退，不硬撐到倒下。</p></div>
+			<div class="card"><h4>燈油與提燈</h4><p>出發時點亮提燈，冒險者周圍有一圈暖光，其他地方昏暗。燈油每秒消耗（1 倍速下，1 秒燈油＝現實 1 秒），越少光圈越小。剛創角色只有 45 秒燈油，靠技能、營地充電座、裝備詞綴慢慢加長；燒完時<b>不用選擇，冒險者會直接摸黑繼續探索</b>：命中和傷害 −35%（技能「夜行者」「夜明燈」可以減輕），提燈只剩微光。摸黑時不會去挑戰頭目，也不會再往更深的環走；生命低於 70% 時會自動帶著戰利品撤退。有燈油的時候，如果生命低於 30% 又沒有紅藥水了，也會先撤退，不硬撐到倒下。如果打了 30 秒，敵人的血幾乎沒減少（打不動），也會撤退；頭目戰打很久沒關係，只要還在穩定扣血就會繼續打（打在召喚小兵身上的傷害不算）。頭目召喚出來的小兵不給金幣和經驗。</p></div>
 			<div class="card"><h4>時間與戰鬥節奏</h4><p>怪物平常散在房間各處，冒險者闖進來後，近戰的怪會圍上來、會法術的怪保持幾步距離，頭目站在原地等冒險者過去；近戰職業會走到最近的怪旁邊打，遠程職業留在門口附近射擊。<b>1 倍速＝現實時間</b>：燈油 45 秒就是現實 45 秒，攻擊間隔 1.0 秒就是一秒打一下（攻擊速度越高打得越快）。生命回復、流血、中毒、燃燒都是<b>每秒結算一次</b>，血條不會一直跳動；每秒回的血會在冒險者頭上跳出綠色的「+數字」，跳出來的紅色傷害就是實際扣掉的生命。冒險者身上的狀態（流血、急速、虛弱、摸黑…）會排在畫面下方角色資訊框的正上方，寫著層數和剩幾秒，滑鼠移上去可以看說明。一般怪物大約十下以內就能打倒。</p></div>
 			<div class="card"><h4>撤退與倒下</h4><p>可以隨時「清完這間就撤退」或「立刻撤退」，收穫全數帶回。倒下的話<b>金幣和經驗減半</b>，但這趟撿到的<b>裝備、符文、遺物都會帶回來</b>。</p></div>
 			<div class="card"><h4>難度環</h4><p>離營地越遠（環數越大）敵人越強、報酬越高。地下二樓第 1 環＝地下一樓第 11 環的強度，越往外越強，沉睡之王大約在第 10 環；地下三樓從第 22 環起跳，共 16 環。</p></div>
@@ -186,7 +187,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<h2>第二章：王座之下</h2>
 		<p>瓦爾克倒下的那一刻，王座底下傳來更深的回響。原來國王不是詛咒的元凶，而是<b class="gold">封印</b>：三百年前，地底醒來的是一條古龍，瓦爾克用自己的長眠把牠封在王座之下，並讓四位<b>元素祭司</b>看守。如今國王安息了，封印正在崩塌。</p>
 		<div class="grid g2">
-			<div class="card"><h4>地下三樓</h4><p>王座廳出現往下的階梯，通往更大的地下三樓（16 環，比前兩層都大）。這裡有 16 種全新的怪物，難度從第 22 環開始。</p><p><b>王座升降梯</b>：第二章開始後，遠征直接從地下三樓的階梯口出發，不用再走過前兩層；地下三樓都探索完了，冒險者會自動往上層繼續探索。不想要的話可以在打通廢墟視窗關掉。</p><p class="dim">新機制：死後分裂的史萊姆、死亡時爆炸的骷髏頭、會替同伴回血的古樹、留下毒霧的蘑菇、會召喚浮空骷顱的深淵古神……另有 3 間封印寶庫與 2 把鑰匙。</p></div>
+			<div class="card"><h4>地下三樓</h4><p>王座廳出現往下的階梯，通往更大的地下三樓（16 環，比前兩層都大）。這裡有 16 種全新的怪物，難度從第 22 環開始。</p><p><b>地下三樓營地</b>：打倒沉睡之王後，王座底下的階梯打開，公會在地下三樓的樓梯口搭好營地。出發前在「遠征樓層」選地下三樓就從那裡出發。</p><p class="dim">新機制：死後分裂的史萊姆、死亡時爆炸的骷髏頭、會替同伴回血的古樹、留下毒霧的蘑菇、會召喚浮空骷顱的深淵古神……另有 3 間封印寶庫與 2 把鑰匙。</p></div>
 			<div class="card"><h4>四元素祭司 → 古龍</h4><p>風、水、地、火四位祭司分別守在第 8、10、12、14 環。四位都倒下後，<b class="gold">古龍 伊格尼斯</b>會在第 13 環以外隨機一處還沒探險過的地方降臨（如果都打通了，就挑一間已打通的房間）。</p><p class="dim">第二章的通關長度大約是第一章的 1.5 倍（不含秘境）。</p></div>
 		</div>
 		<h3>四元素祭司</h3>
@@ -261,11 +262,84 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="runes" data-nav="符文">
 		<h2>符文</h2>
-		<p>符文分六系、五個品階。同系同階 3 顆可以合成高一階。嵌在不同部位，效果不同。把符文拖到裝備上就能鑲嵌，花金幣可以取下。</p>
+		<p>符文分六系、五個品階。同系同階 3 顆可以合成高一階（符文頁的「一鍵合成」）。嵌在不同部位，效果不同。把符文拖到裝備上就能鑲嵌，花金幣可以取下。裝備圖示下緣的小圓點就是符文孔：灰色是空的，嵌了符文會變成符文的顏色。符文不再是商店商品，只能靠遠征取得（機率見「機率」）。</p>
 		<div class="grid g2"><div><img class="shot" src="img/char_runes.png"></div><div><table id="rune-table"></table><p class="dim" id="rune-caps"></p></div></div>
 		<h3>符文之語</h3>
-		<p class="dim">同一件裝備嵌滿 3 顆特定組合時觸發。</p>
+		<p>符文之語很難湊：①<b>三孔</b>的武器或護甲　②三顆<b>完美的</b>（最高階）符文　③顏色組合正確，三個條件都達成才會生效。符文頁的<b>配方書</b>記錄你學會的配方；配方靠打怪、開寶箱、打倒頭目低機率撿到，越強的配方越難掉。如果自己湊出正確組合，配方也會自動記進配方書。</p>
+		<p class="dim">下表列出全部配方（強弱：常見／少見／稀有）。</p>
 		<table id="combo-table"></table>
+	</section>
+
+	<section id="odds" data-nav="機率">
+		<h2>機率</h2>
+		<p>遊戲裡所有跟運氣有關的數字都整理在這裡。「每級」的加成來自技能，括號裡寫技能名稱。</p>
+		<h3>裝備掉落</h3>
+		<table>
+			<tr><th>來源</th><th>會不會掉</th><th>稀有度（普通／精良／稀有／史詩／傳說）</th></tr>
+			<tr><td>一般敵人</td><td>6%（每級搜刮 +2%，裝備詞綴「掉寶」、財富符文另外加；巢穴房 +10%）</td><td>70%／22%／6%／1.6%／0.4%</td></tr>
+			<tr><td>寶箱</td><td>必掉 1 件（法師開 2 次）</td><td>30%／35%／22%／10%／3%</td></tr>
+			<tr><td>封印寶庫的大寶箱</td><td>必掉 1 件（法師 2 件）</td><td>0／0／50%／35%／15%</td></tr>
+			<tr><td>騎士團長、元素祭司</td><td>必掉 1 件</td><td>必定史詩</td></tr>
+			<tr><td>沉睡之王</td><td>必掉 1 件</td><td>必定傳說</td></tr>
+			<tr><td>古龍</td><td>必掉 2 件</td><td>必定傳說</td></tr>
+			<tr><td>秘境守衛</td><td>必掉 1 件</td><td>0／30%／45%／20%／5%</td></tr>
+			<tr><td>秘境之王</td><td>必掉 2 件；另有 15%＋每層 1%（每級秘境嚮導 +10%）掉秘境限定傳說</td><td>0／0／40%／40%／20%</td></tr>
+			<tr><td>商人的貨架</td><td>每次補貨 4 件</td><td>40%／35%／18%／6%／1%</td></tr>
+		</table>
+		<p class="dim">傳說裝備有 35% 是獨特傳說（有特殊能力）；史詩以上有 12% 是套裝。符文孔數＝稀有度（普通 0、精良 1、稀有 2、史詩以上 3），但不超過部位上限：武器、護甲 3，副手、頭盔 2，戒指、護符 1。所以<b>三孔裝備只有史詩、傳說、套裝的武器和護甲</b>。</p>
+		<h3>符文</h3>
+		<table>
+			<tr><th>來源</th><th>機率</th><th>品階</th></tr>
+			<tr><td>一般寶箱</td><td>5%</td><td>碎裂的</td></tr>
+			<tr><td>封印寶庫的大寶箱</td><td>必掉</td><td>粗糙的</td></tr>
+			<tr><td>異變敵人</td><td>6%（技能「淨化之光」×2）</td><td>碎裂或粗糙（該異變對應的顏色）</td></tr>
+			<tr><td>戰利品分成觸發時（符文收藏家）</td><td>每級 1.5%</td><td>碎裂的</td></tr>
+			<tr><td>騎士團長／元素祭司</td><td>必掉</td><td>粗糙的／完整的</td></tr>
+			<tr><td>沉睡之王／古龍</td><td>必掉</td><td>完整的／精緻的</td></tr>
+			<tr><td>秘境之王</td><td>必掉</td><td>粗糙的起跳，每 8 層高一階（最高完美的）</td></tr>
+		</table>
+		<p class="dim">合成：同系同階 3 顆（學會「符文鍛造」後 2 顆）→ 高一階。符文工坊每級有 4% 機率直接升兩階。從碎裂的合成到完美的需要 81 顆碎裂的符文（學會符文鍛造後 16 顆）。</p>
+		<h3>符文之語配方</h3>
+		<table id="recipe-odds"></table>
+		<p class="dim" id="recipe-tiers"></p>
+		<h3>秘境石（打倒沉睡之王之後才會掉）</h3>
+		<table>
+			<tr><th>來源</th><th>機率</th></tr>
+			<tr><td>一般寶箱</td><td>2%</td></tr>
+			<tr><td>封印寶庫的大寶箱</td><td>10%</td></tr>
+			<tr><td>騎士團長／元素祭司</td><td>50%</td></tr>
+			<tr><td>秘境之王</td><td>60%（每級秘境嚮導 +10%）</td></tr>
+			<tr><td>古龍</td><td>必給 3 顆</td></tr>
+			<tr><td>打通第一章</td><td>送 3 顆</td></tr>
+		</table>
+		<p class="dim">秘境嚮導每級也讓前四項的機率再乘 1.1 倍。</p>
+		<h3>遺物</h3>
+		<p>封印寶庫的大寶箱、騎士團長、元素祭司、沉睡之王、古龍<b>必定</b>給一件還沒找到的遺物（全部找齊就不再掉）。倒下時有機會遺失，之後還會再出現。</p>
+		<h3>戰鬥</h3>
+		<table>
+			<tr><th>項目</th><th>算法</th></tr>
+			<tr><td>命中率</td><td>攻擊方命中 − 對方閃避，最低 15%、最高 97%；摸黑時冒險者的命中再 −35%（技能可減輕）</td></tr>
+			<tr><td>重擊</td><td>沉睡之王每 3 次、騎士團長／祭司每 4 次攻擊有 1 次無法閃避</td></tr>
+			<tr><td>魔法抵抗</td><td>每點 1% 機率讓一次魔法攻擊完全無效（上限 35%，對頭目只算一半）</td></tr>
+			<tr><td>暴擊</td><td>暴擊率（上限 90%）；暴擊時傷害 × 暴擊傷害</td></tr>
+			<tr><td>敵人命中附加狀態</td><td>每種敵人不同，寫在「敵人圖鑑」（例如骷髏盜賊 25% 流血）</td></tr>
+			<tr><td>連擊</td><td>技能「連刺」每級 8% 機率多打一下</td></tr>
+			<tr><td>命中暈眩</td><td>技能「盾擊」每級 6%</td></tr>
+			<tr><td>淬毒箭頭、火焰箭（弓箭手）</td><td>每級 10% 機率施加中毒／燃燒</td></tr>
+			<tr><td>碎甲（鈍器）</td><td>20% 機率破甲 1 層</td></tr>
+			<tr><td>雙重詠唱、星辰迴響</td><td>25%／依符文之語</td></tr>
+		</table>
+		<h3>地圖與遠征</h3>
+		<table id="mod-odds"></table>
+		<table>
+			<tr><th>項目</th><th>機率</th></tr>
+			<tr><td>石室有敵人</td><td>75%（1 隻起跳，每 3 環多 1 隻，最多 4 隻）</td></tr>
+			<tr><td>石室有寶箱／聖泉／陷阱</td><td>12%／8%／12%（陷阱從第 2 環起，陷阱房不會有怪）</td></tr>
+			<tr><td>走廊有敵人／陷阱</td><td>25%（第 1 環起）／約 7.5%（第 2 環起）</td></tr>
+			<tr><td>出現哪種敵人</td><td>從這一環能出現的敵人裡挑：70% 挑最新的 5 種之一，30% 任選</td></tr>
+			<tr><td>異變遠征</td><td>第 5 次遠征起，每趟 30% 會有異變；有異變時每隻敵人 35% 是異變敵人</td></tr>
+			<tr><td>秘境房間</td><td>石室 1～3 隻敵人，走廊 30% 有 1 隻；石室 25% 帶能力（豐饒、巢穴、試煉、寶藏各 1/4）</td></tr>
+		</table>
 	</section>
 
 	<section id="relics" data-nav="遺物與成就">
@@ -538,10 +612,19 @@ $("set-list").innerHTML = Object.values(G.sets).map((st) => `<h4 style="margin-t
 const slotGroup = {weapon: "武器", armor: "副手／頭盔／護甲", trinket: "戒指／護符"};
 $("rune-table").innerHTML = `<tr><th>符文</th>${Object.values(slotGroup).map((s) => `<th>${s}</th>`).join("")}</tr>` + Object.values(G.runes).map((r) => `<tr><td><span class="gem" style="background:${r.color}"></span><b style="color:${r.color}">${esc(r.name)}</b></td>${Object.keys(slotGroup).map((g) => `<td>${esc(affName(r[g][0]))}<div class="dim" style="font-size:13px">${r[g][1].join(" / ")}</div></td>`).join("")}</tr>`).join("");
 $("rune-caps").textContent = "品階：" + G.rune_grades.join(" → ") + "（表格數字依品階排列）。符文孔上限：" + Object.entries(G.rune_caps).map(([k, v]) => `${G.slots[k]} ${v}`).join("、");
-$("combo-table").innerHTML = `<tr><th>符文之語</th><th>部位</th><th>組合</th><th>效果</th></tr>` + Object.entries(G.combos).map(([key, c]) => {
+const tierName = {1: "常見", 2: "少見", 3: "稀有"};
+$("combo-table").innerHTML = `<tr><th>符文之語</th><th>強弱</th><th>部位</th><th>組合（三顆完美的）</th><th>效果</th></tr>` + Object.entries(G.combos).sort((a, b) => (b[1].tier || 1) - (a[1].tier || 1)).map(([key, c]) => {
 	const [grp, cols] = key.split(":");
-	return `<tr><td><b class="gold">${esc(c.name)}</b></td><td>${slotGroup[grp]}</td><td>${cols.split(",").map((k) => `<span class="gem" style="background:${G.runes[k].color}" title="${G.runes[k].name}"></span>`).join("")}</td><td>${esc(c.desc)}</td></tr>`;
+	return `<tr><td><b class="gold">${esc(c.name)}</b></td><td>${tierName[c.tier || 1]}</td><td>${slotGroup[grp]}</td><td>${cols.split(",").map((k) => `<span class="gem" style="background:${G.runes[k].color}" title="${G.runes[k].name}"></span>`).join("")}</td><td>${esc(c.desc)}${c.ch >= 2 ? '<span class="dim">（第二章）</span>' : ""}</td></tr>`;
 }).join("");
+// 機率：配方
+const rc = G.recipe_chance, pct = (v) => (v * 100).toFixed(v < 0.01 ? 2 : (v < 0.1 ? 1 : 0)) + "%";
+$("recipe-odds").innerHTML = `<tr><th>來源</th><th>掉一張配方的機率</th></tr>` + [["每打倒一隻一般敵人", rc.kill], ["一般寶箱", rc.chest], ["封印寶庫的大寶箱", rc.big_chest], ["騎士團長／元素祭司", rc.warden], ["沉睡之王／古龍", rc.boss], ["秘境之王", rc.realm_king]].map(([n, v]) => `<tr><td>${n}</td><td>${pct(v)}</td></tr>`).join("");
+const tw = G.recipe_tier_w, twt = Object.values(tw).reduce((a, b) => a + b, 0);
+$("recipe-tiers").textContent = `掉落時先抽強弱：常見 ${Math.round(tw[1] / twt * 100)}%、少見 ${Math.round(tw[2] / twt * 100)}%、稀有 ${Math.round(tw[3] / twt * 100)}%（某個強弱的配方都學會了，就從其他強弱裡抽），再從還沒學會的配方裡隨機挑一張。第二章的配方要打倒沉睡之王後才會掉。`;
+// 機率：區塊能力
+const mods = Object.entries(G.room_mods), mw = mods.reduce((a, [, m]) => a + m.w, 0);
+$("mod-odds").innerHTML = `<tr><th>挖到的區塊帶能力</th><th>機率</th></tr>` + mods.map(([k, m]) => `<tr><td>${k === "" ? "沒有能力" : esc(m.name) + "：" + esc(m.desc)}</td><td>${Math.round(m.w / mw * 100)}%</td></tr>`).join("");
 
 // 遺物、成就
 $("relic-list").innerHTML = G.relics.map((r) => `<div class="card"><h4>${esc(r.name)}${r.story ? ' <span class="tag">劇情</span>' : ""}</h4><div class="dim">${esc(r.lore || r.desc || "")}</div>${r.desc && r.lore ? `<div>${esc(r.desc)}</div>` : ""}</div>`).join("");

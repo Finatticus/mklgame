@@ -751,7 +751,8 @@ window.GAME = {
 			"fx": {
 				"thorns": 25.0
 			},
-			"name": "荊棘之牆"
+			"name": "荊棘之牆",
+			"tier": 1
 		},
 		"armor:black,black,blue": {
 			"desc": "魔法抵抗 +12%、護甲 +15%",
@@ -759,14 +760,16 @@ window.GAME = {
 				"armor_pct": 15.0,
 				"res_magic": 12.0
 			},
-			"name": "石膚"
+			"name": "石膚",
+			"tier": 1
 		},
 		"armor:black,gold,gold": {
 			"desc": "金幣 +40%",
 			"fx": {
 				"gold_pct": 40.0
 			},
-			"name": "富商"
+			"name": "富商",
+			"tier": 1
 		},
 		"armor:black,green,red": {
 			"ch": 2,
@@ -775,14 +778,16 @@ window.GAME = {
 				"armor_pct": 30.0,
 				"hp_pct": 10.0
 			},
-			"name": "不朽"
+			"name": "不朽",
+			"tier": 3
 		},
 		"armor:black,purple,red": {
 			"desc": "攻擊時吸取 24% 傷害的生命",
 			"fx": {
 				"lifesteal": 24.0
 			},
-			"name": "吸血鬼"
+			"name": "吸血鬼",
+			"tier": 2
 		},
 		"armor:blue,blue,purple": {
 			"desc": "閃避 +8、暴擊傷害 +30%",
@@ -790,7 +795,8 @@ window.GAME = {
 				"critx_pct": 30.0,
 				"dodge": 8.0
 			},
-			"name": "幻影"
+			"name": "幻影",
+			"tier": 2
 		},
 		"armor:blue,gold,purple": {
 			"ch": 2,
@@ -799,7 +805,8 @@ window.GAME = {
 				"move_pct": 15.0,
 				"spell_cdr": 0.12
 			},
-			"name": "時光"
+			"name": "時光",
+			"tier": 2
 		},
 		"armor:blue,green,red": {
 			"desc": "攻擊、生命、暴擊率各 +10%",
@@ -808,7 +815,8 @@ window.GAME = {
 				"crit": 10.0,
 				"hp_pct": 10.0
 			},
-			"name": "三元素"
+			"name": "三元素",
+			"tier": 3
 		},
 		"armor:gold,green,purple": {
 			"desc": "法術傷害 +25%、法力回復 +3",
@@ -816,14 +824,16 @@ window.GAME = {
 				"mp_regen": 3.0,
 				"spell_pct": 25.0
 			},
-			"name": "秘法"
+			"name": "秘法",
+			"tier": 1
 		},
 		"armor:green,green,green": {
 			"desc": "每秒生命回復 +8",
 			"fx": {
 				"regen": 8.0
 			},
-			"name": "再生"
+			"name": "再生",
+			"tier": 1
 		},
 		"armor:green,red,red": {
 			"ch": 2,
@@ -832,7 +842,8 @@ window.GAME = {
 				"hp_pct": 25.0,
 				"regen": 12.0
 			},
-			"name": "龍血"
+			"name": "龍血",
+			"tier": 3
 		},
 		"weapon:black,black,red": {
 			"ch": 2,
@@ -841,14 +852,16 @@ window.GAME = {
 				"atk_pct": 10.0,
 				"sunder_on_hit": 30.0
 			},
-			"name": "破城"
+			"name": "破城",
+			"tier": 2
 		},
 		"weapon:blue,blue,red": {
 			"desc": "命中時 40% 機率冰凍 1 秒",
 			"fx": {
 				"freeze_on_hit": 40.0
 			},
-			"name": "冰火交融"
+			"name": "冰火交融",
+			"tier": 2
 		},
 		"weapon:blue,purple,purple": {
 			"ch": 2,
@@ -857,7 +870,8 @@ window.GAME = {
 				"crit": 6.0,
 				"spell_pct": 30.0
 			},
-			"name": "星辰之刃"
+			"name": "星辰之刃",
+			"tier": 3
 		},
 		"weapon:gold,gold,purple": {
 			"ch": 2,
@@ -866,28 +880,32 @@ window.GAME = {
 				"gold_pct": 30.0,
 				"loot": 8.0
 			},
-			"name": "貪婪之刃"
+			"name": "貪婪之刃",
+			"tier": 2
 		},
 		"weapon:gold,red,red": {
 			"desc": "每擊倒一名敵人，本次遠征金幣 +2%（最多 +50%）",
 			"fx": {
 				"flip": 1.0
 			},
-			"name": "戰利之怒"
+			"name": "戰利之怒",
+			"tier": 1
 		},
 		"weapon:green,purple,purple": {
 			"desc": "每次命中讓目標中毒",
 			"fx": {
 				"poison_on_hit": 100.0
 			},
-			"name": "瘟疫"
+			"name": "瘟疫",
+			"tier": 1
 		},
 		"weapon:red,red,red": {
 			"desc": "攻擊 +25%",
 			"fx": {
 				"atk_pct": 25.0
 			},
-			"name": "焚天"
+			"name": "焚天",
+			"tier": 3
 		}
 	},
 	"dragon": {
@@ -2065,7 +2083,7 @@ window.GAME = {
 			"王座底下……有階梯？",
 			"瓦爾克不是詛咒的元凶，隊長。他是封印。三百年前，地底醒來的是一條古龍，國王用他的長眠把牠封在王座之下，四位元素祭司負責看守。",
 			"現在國王安息了，封印正在崩塌。下去吧，我們得在牠完全醒來之前趕到。",
-			"對了，公會在王座廳架了一座升降梯。之後的遠征會直接從地下三樓的階梯口出發，不用再走過前兩層。"
+			"公會已經在地下三樓的樓梯口搭好營地。出發前在「遠征樓層」選地下三樓，冒險者就會從那裡出發。"
 		],
 		"dragon_intro": [
 			"那就是讓瑟蘭沉沒的災厄……古龍 伊格尼斯。"
@@ -2865,50 +2883,95 @@ window.GAME = {
 			"text": "掉寶 +12%，暴擊率 +8%"
 		}
 	],
+	"recipe_chance": {
+		"big_chest": 0.03,
+		"boss": 0.3,
+		"chest": 0.005,
+		"kill": 0.0002,
+		"realm_king": 0.05,
+		"warden": 0.1
+	},
+	"recipe_tier_w": {
+		"1": 75.0,
+		"2": 21.0,
+		"3": 4.0
+	},
 	"relics": [
 		{
+			"icon": [
+				13,
+				10
+			],
 			"id": "r_waiver",
 			"lore": "詔書上只有一行字：「若王沉睡，三騎士守之，直到有人能讓他安息。」蓋著已經褪色的瑟蘭王印。",
 			"name": "最後的王室詔書",
 			"story": true
 		},
 		{
+			"icon": [
+				13,
+				11
+			],
 			"id": "r_permit",
 			"lore": "伊格納、摩爾德、希爾娃三人的簽名並列。他們發誓守住封印——不是為了保護國王，而是為了關住他。",
 			"name": "騎士團長的誓約書",
 			"story": true
 		},
 		{
+			"icon": [
+				13,
+				4
+			],
 			"id": "r_badge",
 			"lore": "「國王從地底帶回了一顆會跳動的石頭。今晚他說，整座城都會跟他一起睡去。」日記到此為止。",
 			"name": "沉沒前夜的日記",
 			"story": true
 		},
 		{
+			"icon": [
+				12,
+				15
+			],
 			"id": "r_blueprint",
 			"lore": "一顆溫熱的黑色寶石，還在微微跳動。王國的詛咒就是從這裡開始的，也將在這裡結束。",
 			"name": "沉睡之王的心石",
 			"story": true
 		},
 		{
+			"icon": [
+				10,
+				9
+			],
 			"id": "r_clock",
 			"lore": "燈芯早就燒光了，握著它卻覺得四周亮了一點。也許礦工們從沒真正離開。",
 			"name": "古代礦工的提燈",
 			"story": false
 		},
 		{
+			"icon": [
+				13,
+				12
+			],
 			"id": "r_will",
 			"lore": "地圖上畫的不是地面，而是一層又一層往下延伸的迷宮。角落寫著：「總有一天會有人走完它。」",
 			"name": "公會創始人的地圖",
 			"story": false
 		},
 		{
+			"icon": [
+				17,
+				1
+			],
 			"id": "r_seal",
 			"lore": "三片碎石拼起來，正好是一頂王冠的形狀。碰到它時，耳邊會響起遙遠的鐘聲。",
 			"name": "封印石碎片",
 			"story": false
 		},
 		{
+			"icon": [
+				17,
+				3
+			],
 			"id": "r_anchor",
 			"lore": "曾經鑲滿寶石的王冠，只剩下一角。上面刻著：「榮耀屬於地上的人民。」",
 			"name": "瑟蘭王冠的碎片",
@@ -4607,7 +4670,7 @@ window.GAME = {
 				18,
 				1.45
 			],
-			"desc": "每級 3% 機率讓一次魔法攻擊完全無效（上限 35%，對騎士團長和國王只算一半）",
+			"desc": "每級 3% 機率讓一次魔法攻擊完全無效（上限 35%，對頭目只算一半）",
 			"grp": "int",
 			"id": "res_magic",
 			"max": 10,
@@ -6028,7 +6091,7 @@ window.GAME = {
 				800,
 				1.5
 			],
-			"desc": "對騎士團長與沉睡之王傷害 +10%（每級）",
+			"desc": "對所有頭目傷害 +10%（騎士團長、祭司、王、古龍、秘境守衛與秘境之王；每級）",
 			"fx": [
 				[
 					"boss_dmg",
@@ -6456,7 +6519,7 @@ window.GAME = {
 				250,
 				1.0
 			],
-			"desc": "對騎士團長與沉睡之王傷害 +15%",
+			"desc": "對所有頭目傷害 +15%（騎士團長、祭司、王、古龍、秘境守衛與秘境之王）",
 			"fx": [
 				[
 					"boss_dmg",
