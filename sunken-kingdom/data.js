@@ -34,7 +34,7 @@ window.GAME = {
 		[
 			"fold",
 			"見好就收",
-			"燈油燒完時選擇撤退"
+			"摸黑時傷得太重，帶著戰利品自己撤退"
 		],
 		[
 			"dark",
@@ -289,7 +289,7 @@ window.GAME = {
 			"name": "物理減傷"
 		},
 		"regen": {
-			"base": 0.5,
+			"base": 1.0,
 			"fmt": "+%.1f/秒",
 			"name": "生命回復"
 		},
@@ -363,7 +363,7 @@ window.GAME = {
 					13
 				],
 				"name": "法袍",
-				"regen": 0.5,
+				"regen": 1.0,
 				"req": "int",
 				"weight": "light"
 			},
@@ -460,7 +460,7 @@ window.GAME = {
 					0
 				],
 				"name": "遊俠兜帽",
-				"regen": 0.3,
+				"regen": 0.6,
 				"req": "int"
 			},
 			{
@@ -562,7 +562,7 @@ window.GAME = {
 					4
 				],
 				"name": "符文戒指",
-				"regen": 0.5,
+				"regen": 1.0,
 				"req": "int"
 			},
 			{
@@ -632,7 +632,7 @@ window.GAME = {
 			},
 			{
 				"enemy": "debt",
-				"every": 10.0,
+				"every": 6.0,
 				"on": "summon"
 			},
 			{
@@ -778,9 +778,9 @@ window.GAME = {
 			"name": "不朽"
 		},
 		"armor:black,purple,red": {
-			"desc": "攻擊時吸取 8% 傷害的生命",
+			"desc": "攻擊時吸取 24% 傷害的生命",
 			"fx": {
-				"lifesteal": 8.0
+				"lifesteal": 24.0
 			},
 			"name": "吸血鬼"
 		},
@@ -819,18 +819,18 @@ window.GAME = {
 			"name": "秘法"
 		},
 		"armor:green,green,green": {
-			"desc": "每秒生命回復 +4",
+			"desc": "每秒生命回復 +8",
 			"fx": {
-				"regen": 4.0
+				"regen": 8.0
 			},
 			"name": "再生"
 		},
 		"armor:green,red,red": {
 			"ch": 2,
-			"desc": "生命 +25%、每秒生命回復 +6",
+			"desc": "生命 +25%、每秒生命回復 +12",
 			"fx": {
 				"hp_pct": 25.0,
-				"regen": 6.0
+				"regen": 12.0
 			},
 			"name": "龍血"
 		},
@@ -912,7 +912,7 @@ window.GAME = {
 			},
 			{
 				"enemy": "c2_ydragon",
-				"every": 12.0,
+				"every": 7.0,
 				"on": "summon"
 			},
 			{
@@ -1109,7 +1109,7 @@ window.GAME = {
 			"abil": [
 				{
 					"enemy": "c2_skull",
-					"every": 9.0,
+					"every": 5.0,
 					"on": "summon"
 				},
 				{
@@ -1319,7 +1319,7 @@ window.GAME = {
 		"c2_tree": {
 			"abil": [
 				{
-					"every": 6.0,
+					"every": 4.0,
 					"on": "heal",
 					"pct": 0.05
 				}
@@ -1893,7 +1893,7 @@ window.GAME = {
 				},
 				{
 					"enemy": "intern_sk",
-					"every": 12.0,
+					"every": 7.0,
 					"on": "summon"
 				}
 			],
@@ -2084,7 +2084,7 @@ window.GAME = {
 			"不錯的開始。每打通一塊廢墟，冒險者就能走得更遠。記得看門口的方向。"
 		],
 		"first_dark": [
-			"燈油燒乾了還往前走？勇氣可嘉，但眼睛看不見，劍也揮不準。"
+			"燈油燒乾了，冒險者會摸黑繼續走。眼睛看不見，劍也揮不準，傷得太重他會自己摸回營地。"
 		],
 		"first_death": [
 			"倒下了……沒關係，公會的醫師會把他拖回來。只是帶回來的金幣和經驗會少一半，撿到的裝備倒是都還在。"
@@ -2167,7 +2167,7 @@ window.GAME = {
 		"vamp": {
 			"abil": [],
 			"desc": "造成傷害時回血",
-			"lifesteal": 0.3,
+			"lifesteal": 0.08,
 			"name": "嗜血",
 			"prefix": "嗜血的",
 			"sticker": "red",
@@ -2807,7 +2807,7 @@ window.GAME = {
 			"cd": 0.9,
 			"fx": {
 				"atk_pct": 20.0,
-				"lifesteal": 5.0
+				"lifesteal": 15.0
 			},
 			"icon": [
 				5,
@@ -2816,7 +2816,7 @@ window.GAME = {
 			"id": "u_rift_blade",
 			"name": "裂隙之刃",
 			"slot": "weapon",
-			"text": "攻擊 +20%，攻擊吸取 5% 傷害的生命",
+			"text": "攻擊 +20%，攻擊吸取 15% 傷害的生命",
 			"type": "slash"
 		},
 		{
@@ -2960,7 +2960,7 @@ window.GAME = {
 			]
 		},
 		{
-			"desc": "生命回復 +0.6／秒",
+			"desc": "生命回復 +1.2／秒",
 			"icon": [
 				9,
 				0
@@ -3237,21 +3237,21 @@ window.GAME = {
 			"trinket": [
 				"regen",
 				[
-					0.5,
 					1,
 					2,
-					3.5,
-					5
+					4,
+					7,
+					10
 				]
 			],
 			"weapon": [
 				"regen",
 				[
-					0.5,
 					1,
 					2,
-					3.5,
-					5
+					4,
+					7,
+					10
 				]
 			]
 		},
@@ -4860,7 +4860,7 @@ window.GAME = {
 				30,
 				1.5
 			],
-			"desc": "主動：10 秒內每秒回復 3 生命（每級 +1.5）",
+			"desc": "主動：10 秒內每秒回復 9 生命（每級 +4.5）",
 			"grp": "int",
 			"id": "s_tonic",
 			"max": 10,
@@ -5015,7 +5015,7 @@ window.GAME = {
 				50,
 				1.7
 			],
-			"desc": "每次暴擊回復 1% 生命（每級）",
+			"desc": "每次暴擊回復 3% 生命（每級）",
 			"grp": "luk",
 			"id": "b_ruthless",
 			"max": 3,
@@ -5348,7 +5348,7 @@ window.GAME = {
 				14,
 				1.45
 			],
-			"desc": "每秒生命回復 +1",
+			"desc": "每秒生命回復 +2",
 			"grp": "vit",
 			"id": "regen",
 			"max": 10,
@@ -5405,7 +5405,7 @@ window.GAME = {
 				40,
 				1.7
 			],
-			"desc": "每 12 次攻擊回復 5% 生命（每級 +2%）",
+			"desc": "每 12 次攻擊回復 15% 生命（每級 +6%）",
 			"grp": "vit",
 			"id": "p_overtime",
 			"max": 5,
@@ -5597,11 +5597,11 @@ window.GAME = {
 				500,
 				1.5
 			],
-			"desc": "每秒生命回復 +3（每級）",
+			"desc": "每秒生命回復 +6（每級）",
 			"fx": [
 				[
 					"regen",
-					3.0
+					6.0
 				]
 			],
 			"grp": "vit",
@@ -5847,6 +5847,23 @@ window.GAME = {
 			"pre": [
 				[
 					"draft",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				20,
+				3.0
+			],
+			"desc": "遠征時可以切換到 2 倍速（2 級：3 倍速）",
+			"grp": "exp",
+			"id": "e_speed",
+			"max": 2,
+			"name": "急行軍",
+			"pre": [
+				[
+					"battery",
 					1
 				]
 			]
@@ -6829,7 +6846,7 @@ window.GAME = {
 				400,
 				1.4
 			],
-			"desc": "攻擊 +4%、暴擊傷害 +8%（每級）",
+			"desc": "攻擊 +4%、暴擊傷害 +8%、受到的魔法傷害 −5%（每級）",
 			"fx": [
 				[
 					"atk_pct",
@@ -6838,6 +6855,10 @@ window.GAME = {
 				[
 					"critx_pct",
 					8.0
+				],
+				[
+					"magic_red",
+					5.0
 				]
 			],
 			"grp": "archer",
@@ -7165,7 +7186,7 @@ window.GAME = {
 				400,
 				1.4
 			],
-			"desc": "法術傷害 +35%、生命 +8%、受到的魔法傷害 −9%（每級）",
+			"desc": "法術傷害 +35%、生命 +12%、受到的魔法傷害 −10%（每級）",
 			"fx": [
 				[
 					"spell_pct",
@@ -7173,11 +7194,11 @@ window.GAME = {
 				],
 				[
 					"hp_pct",
-					8.0
+					12.0
 				],
 				[
 					"magic_red",
-					9.0
+					10.0
 				]
 			],
 			"grp": "mage",
@@ -7934,7 +7955,7 @@ window.GAME = {
 		"enemies": 41,
 		"pieces": 21,
 		"relics": 8,
-		"skills": 190,
+		"skills": 191,
 		"uniques": 14
 	},
 	"subtitle": "瑟蘭迷宮遠征記",
@@ -8032,7 +8053,7 @@ window.GAME = {
 		},
 		{
 			"fx": {
-				"regen_pct": 0.015
+				"regen_pct": 0.03
 			},
 			"icon": [
 				9,
@@ -8041,7 +8062,7 @@ window.GAME = {
 			"id": "u_tonic",
 			"name": "不老泉之瓶",
 			"slot": "badge",
-			"text": "每秒回復 1.5% 生命"
+			"text": "每秒回復 3% 生命"
 		},
 		{
 			"fx": {
@@ -8229,7 +8250,7 @@ window.GAME = {
 				},
 				{
 					"enemy": "dingzi",
-					"every": 8.0,
+					"every": 5.0,
 					"on": "summon"
 				}
 			],
