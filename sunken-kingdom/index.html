@@ -116,20 +116,23 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<tr><td>放置區塊</td><td>左鍵放下，右鍵或 R 旋轉，Esc 取消（退款）</td></tr>
 			<tr><td>關閉視窗</td><td>點「關閉」、按 Esc，或點視窗外面</td></tr>
 			<tr><td>確認對話框</td><td>Enter 或點「是」</td></tr>
-			<tr><td>裝備</td><td>滑鼠停留立即比較；雙擊或拖到身上裝備；右鍵賣出；拖到儲藏箱保存；「批量賣出」一次勾選多件</td></tr>
-			<tr><td>符文</td><td>點符文看能力；拖到裝備上鑲嵌；花金幣可取下</td></tr>
+			<tr><td>裝備</td><td>滑鼠停留立即比較；雙擊或拖到身上裝備；右鍵賣出；拖到<b>共通儲藏箱</b>保存（所有存檔共用）；「批量賣出」一次勾選多件</td></tr>
+			<tr><td>符文</td><td>符文袋依 1～30 號排好；點符文看能力、合成；拖到裝備上鑲嵌；花金幣可取下</td></tr>
+			<tr><td>遠征地點</td><td>右下角的「遠征地點」按鈕（或「選單 → 世界地圖」）打開世界地圖，點亮著的地點，再選從哪一層出發</td></tr>
+			<tr><td>滑鼠滾輪</td><td>滑鼠在任何視窗或面板上時，滾輪只捲動那個視窗，背景的大廳不會跟著動</td></tr>
 			<tr><td>主動技能</td><td>「角色 → 技能」分頁，把學會的主動技能放進技能欄（最多 3 個），戰鬥中自動施放</td></tr>
-			<tr><td>遠征速度</td><td>一開始只有 1 倍速（＝現實時間）。在技能樹「冒險」學會<b>急行軍</b>後，HUD 的「速度」按鈕可以切到 2x（2 級：3x），會記住上次的設定；還沒學會時按鈕是灰色的</td></tr>
+			<tr><td>遠征速度</td><td>一開始只有 1 倍速（＝現實時間）。在技能樹「冒險」學會<b>急行軍</b>後，HUD 的「速度」按鈕可以加速：1 級 1.5x（200 經驗）、2 級 2x（500）、3 級 2.5x（1500）、4 級 3x（3000），會記住上次的設定；還沒學會時按鈕是灰色的</td></tr>
 			<tr><td>藥水與技能</td><td>遠征畫面下方有 3 格藥水欄（點紅藥水可以立刻喝）和 3 格技能欄（顯示冷卻秒數）</td></tr>
 			<tr><td>地圖</td><td>右上角小地圖，點一下展開成完整的平面圖（第二章開放後有三層）</td></tr>
 			<tr><td>無盡秘境</td><td>打倒沉睡之王後，左邊功能列多一個「秘境」，或點營地東南角的傳送門</td></tr>
-			<tr><td>存檔</td><td>4 個欄位，自動存檔；每個職業可以各開一個</td></tr>
+			<tr><td>存檔</td><td>4 個欄位，自動存檔；每個職業可以各開一個。前 3 個欄位共用一個<b>共通儲藏箱</b></td></tr>
 			<tr><td>音樂與音效</td><td>營地、地城探索、摸黑、頭目戰各有一首很輕的背景音樂；攻擊、受傷、怪物倒下、寶箱、藥水、陷阱、蓋區塊、學技能都有音效。「選單 → 設定」可以分別調背景音樂和音效的音量</td></tr>
 		</table>
 	</section>
 
-	<section id="classes" data-nav="四種職業">
-		<h2>四種職業</h2>
+	<section id="classes" data-nav="職業">
+		<h2>職業</h2>
+		<p>目前有劍士、弓箭手、法師三個職業，盜賊即將登場。<b>所有職業共用同一套技能樹</b>，差別只在起始數值與能穿的裝備：每件裝備會標示「通用」或「某職業專用」，任何職業都打得到所有裝備，撿到別的職業的裝備會顯示<b class="bad">職業不符</b>，可以放進共通儲藏箱給其他存檔用。</p>
 		<div class="grid g4" id="class-list"></div>
 	</section>
 
@@ -153,17 +156,19 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 	<section id="run" data-nav="遠征規則">
 		<h2>遠征規則</h2>
 		<div class="grid g2">
-			<div class="card"><h4>遠征樓層</h4><p>每一層樓都有自己的營地（地下一樓是冒險者營地，其他樓層是樓梯口旁的營地）。出發前在右下角的<b>「遠征樓層」</b>選單選一層，冒險者就從那層的營地出發，<b>只在那一層探索</b>，清完就平安回營，不會跑到別層。一開始只有地下一樓；冒險者走到通往下一層的樓梯時，那一層才會開放（下次遠征就能選）。打倒沉睡之王後會開放地下三樓。</p></div>
-			<div class="card"><h4>冒險者怎麼走？</h4><p>出發後直接走出營地，<b>只去還有事可做的房間</b>：有怪物、寶箱、聖泉、營火、燈台、鑰匙或還沒找到的商人。已經清空的房間只會路過，不會特地繞過去。選路時<b>近的優先、稍微偏向內環</b>，所以會由內往外一路推進，不會來回亂跑。插了<b>旗幟</b>的地方最優先；鑰匙、寶庫會稍微優先。<b>頭目房排在附近的房間後面</b>：先把路上的怪清掉、東西撿完再去挑戰，而且生命低於 60% 時不會去挑戰頭目（插旗指定的除外）。全部清完就自己平安回營。</p><p>畫面下方的<b>探索進度條</b>顯示這趟還剩幾處要去，燈油條顯示還能撐幾秒。</p></div>
-			<div class="card"><h4>燈油與提燈</h4><p>出發時點亮提燈，冒險者周圍有一圈暖光，其他地方昏暗。燈油每秒消耗（1 倍速下，1 秒燈油＝現實 1 秒），越少光圈越小。剛創角色只有 45 秒燈油，靠技能、營地充電座、裝備詞綴慢慢加長；燒完時<b>不用選擇，冒險者會直接摸黑繼續探索</b>：命中和傷害 −35%（技能「夜行者」「夜明燈」可以減輕），提燈只剩微光。摸黑時不會去挑戰頭目，也不會再往更深的環走；生命低於 70% 時會自動帶著戰利品撤退。有燈油的時候，如果生命低於 30% 又沒有紅藥水了，也會先撤退，不硬撐到倒下。如果打了 30 秒，敵人的血幾乎沒減少（打不動），也會撤退；頭目戰打很久沒關係，只要還在穩定扣血就會繼續打（打在召喚小兵身上的傷害不算）。頭目召喚出來的小兵不給金幣和經驗。</p></div>
-			<div class="card"><h4>時間與戰鬥節奏</h4><p>怪物平常散在房間各處，冒險者闖進來後，近戰的怪會圍上來、會法術的怪保持幾步距離，頭目站在原地等冒險者過去；近戰職業會走到最近的怪旁邊打，遠程職業留在門口附近射擊。<b>1 倍速＝現實時間</b>：燈油 45 秒就是現實 45 秒，攻擊間隔 1.0 秒就是一秒打一下（攻擊速度越高打得越快）。生命回復、流血、中毒、燃燒都是<b>每秒結算一次</b>，血條不會一直跳動；每秒回的血會在冒險者頭上跳出綠色的「+數字」，跳出來的紅色傷害就是實際扣掉的生命。冒險者身上的狀態（流血、急速、虛弱、摸黑…）會排在畫面下方角色資訊框的正上方，寫著層數和剩幾秒，滑鼠移上去可以看說明。一般怪物大約十下以內就能打倒。</p></div>
-			<div class="card"><h4>撤退與倒下</h4><p>可以隨時「清完這間就撤退」或「立刻撤退」，收穫全數帶回。倒下的話<b>金幣和經驗減半</b>，但這趟撿到的<b>裝備、符文、遺物都會帶回來</b>。</p></div>
+			<div class="card"><h4>遠征地點</h4><p>每一層樓都有自己的營地（地下一樓是冒險者營地，其他樓層是樓梯口旁的營地）。出發前點右下角的<b>「遠征地點」</b>打開世界地圖選一層，冒險者就從那層的營地出發，<b>只在那一層探索</b>，清完就平安回營，不會跑到別層。一開始只有地下一樓；冒險者走到通往下一層的樓梯時，那一層才會開放（下次遠征就能選）。打倒沉睡之王後會開放地下三樓。</p></div>
+			<div class="card"><h4>走進房間：先停下來看一眼</h4><p>參考 Dungeon Buster 的節奏：冒險者<b>走進房間之後</b>才會看到裡面的怪物，怪物也是這時才發現冒險者（頭上會冒出紅色的「！」），雙方停頓一下才開打；第一次走進沒有怪的房間也會稍微停一下觀察四周。所以就算開到高倍速，也不會邊走邊打、隔著牆射擊。停下來觀察的時候不消耗燈油。</p></div>
+			<div class="card"><h4>冒險者怎麼走？</h4><p>出發後直接走出營地，<b>只去還有事可做的房間</b>：有怪物、寶箱、聖泉、營火、燈台、鑰匙或還沒帶回營地的流浪商人（商人最優先）。已經清空的房間只會路過，不會特地繞過去。選路時<b>近的優先、稍微偏向內環</b>，所以會由內往外一路推進，不會來回亂跑。插了<b>旗幟</b>的地方最優先；鑰匙、寶庫會稍微優先。<b>頭目房排在附近的房間後面</b>：先把路上的怪清掉、東西撿完再去挑戰，而且生命低於 60% 時不會去挑戰頭目（插旗指定的除外）。全部清完就自己平安回營。</p><p>畫面下方的<b>探索進度條</b>顯示這趟還剩幾處要去，燈油條顯示還能撐幾秒。</p></div>
+			<div class="card"><h4>燈油與提燈</h4><p>出發時點亮提燈，冒險者周圍有一圈暖光，其他地方昏暗。燈油每秒消耗（1 倍速下，1 秒燈油＝現實 1 秒），越少光圈越小。剛創角色有 60 秒燈油，靠技能、營地充電座、裝備詞綴慢慢加長；燒完時<b>不用選擇，冒險者會直接摸黑繼續探索</b>：命中和傷害 −35%（技能「夜行者」「夜明燈」可以減輕），提燈只剩微光。摸黑時不會去挑戰頭目，也不會再往更深的環走；生命低於 70% 時會自動帶著戰利品撤退。有燈油的時候，如果生命低於 30% 又沒有紅藥水了，也會先撤退，不硬撐到倒下。如果打了 30 秒，敵人的血幾乎沒減少（打不動），也會撤退；頭目戰打很久沒關係，只要還在穩定扣血就會繼續打（打在召喚小兵身上的傷害不算）。頭目召喚出來的小兵不給金幣和經驗。</p></div>
+			<div class="card"><h4>時間與戰鬥節奏</h4><p>怪物平常散在房間各處，冒險者闖進來後，近戰的怪會圍上來、會法術的怪保持幾步距離，頭目站在原地等冒險者過去；近戰職業會走到最近的怪旁邊打，遠程職業留在門口附近射擊。<b>1 倍速＝現實時間</b>：燈油 60 秒就是現實 60 秒，攻擊間隔 1.0 秒就是一秒打一下（攻擊速度越高打得越快）。生命回復、流血、中毒、燃燒都是<b>每秒結算一次</b>，血條不會一直跳動；每秒回的血會在冒險者頭上跳出綠色的「+數字」，跳出來的紅色傷害就是實際扣掉的生命。冒險者身上的狀態（流血、急速、虛弱、摸黑…）會排在畫面下方角色資訊框的正上方，寫著層數和剩幾秒，滑鼠移上去可以看說明。一般怪物大約十下以內就能打倒。</p></div>
+			<div class="card"><h4>撤退與倒下</h4><p>可以隨時「清完這間就撤退」或「立刻撤退」，收穫全數帶回。倒下的話<b>金幣和經驗少一半</b>（冒險技能「保命符咒」每級少損失 3%，點滿只損失 20%），但這趟撿到的<b>裝備、符文、配方、收藏品、遺物都會帶回來</b>。</p></div>
+			<div class="card"><h4>流浪商人</h4><p>流浪商人在地下一樓第 5 環擺攤。冒險者遇到他之後會聊幾句，商人就<b>跟著冒險者回營地</b>，在營地東邊擺攤，營地多出「商人」分頁。他原本的攤位變成普通房間，之後會有怪物住進去。</p></div>
 			<div class="card"><h4>難度環</h4><p>離營地越遠（環數越大）敵人越強、報酬越高。地下二樓第 1 環＝地下一樓第 11 環的強度，越往外越強，沉睡之王大約在第 10 環；地下三樓從第 22 環起跳，共 16 環。</p></div>
 		</div>
 		<h3>難度曲線：前期輕鬆、中後期拉長</h3>
 		<div class="grid g2">
 			<div class="card"><h4>前期（第 0～5 環）：手動摸索</h4><p>靠近營地的敵人比較弱（第 0 環只有 70% 強度），報酬也有加成。大約 15～25 次遠征就能打到第 5 環，熟悉建造、技能、裝備。</p><p class="dim">前期加成看的是「你目前打到的最深環數」：深入之後，內圈就沒有加成了，所以越外圈報酬越多，不會出現回頭刷內圈最划算的情況。</p></div>
-			<div class="card"><h4>中後期（第 5 環之後）：自動遠征</h4><p>學會「持續遠征」後可以讓遊戲自己跑。這時敵人每環成長得更快、報酬成長變慢，打倒三位騎士團長是主要的挑戰，不會掛機一下就通關。</p><p class="dim">以 3 倍速遊玩，第一章大約 2.4 小時（1 倍速約 7 小時）；第二章大約再 3.4 小時（約第一章的 1.5 倍）。</p></div>
+			<div class="card"><h4>中後期（第 5 環之後）：自動遠征</h4><p>學會「持續遠征」後可以讓遊戲自己跑。這時敵人每環成長得更快、報酬成長變慢，打倒三位騎士團長是主要的挑戰，不會掛機一下就通關。</p><p class="dim">平衡機器人（每個職業 16 張地圖）的中位數：第一章 1 倍速約 15 小時、第二章約 17～25 小時，兩章合計約 33～39 小時（3 倍速約 11～13 小時）。卡關時多農幾趟經驗、金幣，或刷新商人的貨架找裝備，都能慢慢突破。</p></div>
 			<div class="card"><h4>不屈之志（防卡關）</h4><p>每連續倒下一次，下次遠征的攻擊、生命 +4%（最多 10 層、+40%）。打倒騎士團長或沉睡之王會清空，平安歸來每次消退 2 層。卡關越久越容易突破，不會無限輪迴。</p></div>
 			<div class="card"><h4>出師不利（防卡關）</h4><p>如果連續兩趟都倒在頭目房，接下來 3 趟冒險者會<b>避開頭目房</b>，先在好打的房間練功、存錢變強，畫面會顯示提示。第二章還有另一條規則：連續兩趟一出發就倒下（只打倒 0～6 隻怪）也算，避開 4 趟，而且<b>從營地出發</b>。另外，會替同伴回血的敵人只要戰鬥拖過 20 秒就補不動了，不會出現永遠打不完的戰鬥。</p></div>
 			<div class="card"><h4>數值上限</h4><p><b>閃避最多 50%</b>、<b>魔法抵抗最多 35%</b>（對騎士團長、國王、祭司只算一半）。到了上限再加也沒有效果，這時候改堆生命、攻擊，或「受到的魔法傷害 −%」這類減傷更划算。魔法攻擊不吃護甲。</p></div>
@@ -188,16 +193,16 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<p>瓦爾克倒下的那一刻，王座底下傳來更深的回響。原來國王不是詛咒的元凶，而是<b class="gold">封印</b>：三百年前，地底醒來的是一條古龍，瓦爾克用自己的長眠把牠封在王座之下，並讓四位<b>元素祭司</b>看守。如今國王安息了，封印正在崩塌。</p>
 		<div class="grid g2">
 			<div class="card"><h4>地下三樓</h4><p>王座廳出現往下的階梯，通往更大的地下三樓（16 環，比前兩層都大）。這裡有 16 種全新的怪物，難度從第 22 環開始。</p><p><b>地下三樓營地</b>：打倒沉睡之王後，王座底下的階梯打開，公會在地下三樓的樓梯口搭好營地。出發前在「遠征樓層」選地下三樓就從那裡出發。</p><p class="dim">新機制：死後分裂的史萊姆、死亡時爆炸的骷髏頭、會替同伴回血的古樹、留下毒霧的蘑菇、會召喚浮空骷顱的深淵古神……另有 3 間封印寶庫與 2 把鑰匙。</p></div>
-			<div class="card"><h4>四元素祭司 → 古龍</h4><p>風、水、地、火四位祭司分別守在第 8、10、12、14 環。四位都倒下後，<b class="gold">古龍 伊格尼斯</b>會在第 13 環以外隨機一處還沒探險過的地方降臨（如果都打通了，就挑一間已打通的房間）。</p><p class="dim">第二章的通關長度大約是第一章的 1.5 倍（不含秘境）。</p></div>
+			<div class="card"><h4>四元素祭司 → 古龍</h4><p>風、水、地、火四位祭司分別守在第 8、10、12、14 環。四位都倒下後，<b class="gold">古龍 伊格尼斯</b>會在第 13 環以外隨機一處還沒探險過的地方降臨（如果都打通了，就挑一間已打通的房間）。</p><p class="dim">第二章的通關長度大約是第一章的 1.1～1.8 倍（不含秘境）。後段有不少魔法怪：弓箭手靠閃避、法師靠魔法屏障，劍士靠舉盾（護甲也能擋一半效果的魔法）和聖盾守護。</p></div>
 		</div>
 		<h3>四元素祭司</h3>
 		<div class="grid g4" id="priest-list"></div>
 		<div class="card boss" id="dragon-card" style="margin-top:18px"></div>
 		<h3>第二章的新內容</h3>
 		<div class="grid g3">
-			<div class="card"><h4>新裝備</h4><p>武器新增星隕、古龍品階；護甲新增星辰、龍鱗品階。盜賊有專屬的幸運系裝備與傳說。</p></div>
+			<div class="card"><h4>新裝備</h4><p>武器新增星隕、古龍品階；護甲新增星辰、龍鱗品階。</p></div>
 			<div class="card"><h4>職業套裝</h4><p>鐵壁聖騎（力量）、疾風遊俠（敏捷）、星辰法師（智力）只會在第二章出現。</p></div>
-			<div class="card"><h4>新符文之語與技能</h4><p>6 種新符文之語；每棵技能樹都有打倒祭司才能學的新技能（400 經驗起跳）。各職業的第二章技能：劍士「聖盾守護」、弓箭手「鷹擊」、法師「星辰之力」、盜賊「幻影步」，其中弓箭手、法師和盜賊的技能附帶<b>魔法減傷</b>，專門對付地下三樓後段的魔法怪。</p></div>
+			<div class="card"><h4>新技能與隱藏地點</h4><p>每棵技能樹都有打倒祭司才能學的技能（700 經驗起跳）：力量「聖盾守護」「屠龍之力」、敏捷「鷹擊」「颶風之眼」「命運編織」、智力「星辰之力」「元素共鳴」，其中鷹擊和星辰之力附帶<b>魔法減傷</b>。地下三樓也藏著更多隱藏地點與收藏品。</p></div>
 		</div>
 	</section>
 
@@ -206,7 +211,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<p>打倒沉睡之王後，營地的東南角會出現一道<b class="gold">秘境傳送門</b>。門後是另一個不斷變化的空間，和主線分開，拿來刷裝備、挑戰極限。</p>
 		<div class="grid g2">
 			<div class="card"><h4>規則</h4><p>每次進入要消耗 1 顆<b>秘境石</b>（主線打倒騎士團長、祭司、開大寶箱有機會掉；打通第一章送 3 顆、打倒古龍再送 3 顆）。共 <b id="realm-layers"></b> 層，第 1 層＝第一章最外圈的強度，每層再強一點；通過一層才能挑戰下一層。</p><p>地圖是 10×10 的預先設計地形，每次會隨機旋轉、翻轉並稍微變化。地圖上有 <b>5 隻秘境守衛</b>，全部打倒後<b>秘境之王</b>會在隨機一間房間降臨，其他怪物全部消失。打倒秘境之王就通過這一層。</p></div>
-			<div class="card"><h4>獎勵</h4><p>守衛必掉稀有以上裝備；秘境之王掉 2 件高品質裝備、高階符文，常常再掉一顆秘境石，還有機會掉落只在秘境出現的傳說裝備。</p><p class="dim">倒下或燈油燒完就失敗，秘境石照樣用掉。</p></div>
+			<div class="card"><h4>獎勵</h4><p>守衛有一半機會掉裝備；秘境之王擲兩次高品質的掉落表，有機會掉高號符文、配方，常常再掉一顆秘境石，還有機會掉落只在秘境出現的傳說裝備。沒有必掉。</p><p class="dim">倒下或燈油燒完就失敗，秘境石照樣用掉。</p></div>
 		</div>
 		<h3>地形</h3>
 		<div class="grid g3" id="realm-maps"></div>
@@ -224,10 +229,10 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="skills" data-nav="技能樹">
 		<h2>技能樹</h2>
-		<p>花經驗學技能。每個分頁由上往下展開，上一個技能達到等級才能學下一個。部分高階技能需要<b>擊敗騎士團長</b>才能解鎖；每棵樹最底下的<b>第二章技能</b>要打倒第一位元素祭司才能學（「龍心」「深淵探索」要打倒兩位），400 經驗起跳（後兩者 550），每升一級價格 ×1.4。</p>
+		<p>花經驗學技能。每個分頁由上往下展開，上一個技能達到等級才能學下一個。部分高階技能需要<b>擊敗騎士團長</b>才能解鎖；每棵樹最底下的<b>第二章技能</b>要打倒元素祭司才能學（700 經驗起跳）。整棵樹會縮放塞進視窗，不用捲動。</p>
 		<div class="grid g2" style="margin:12px 0">
-			<div class="card"><h4>四棵屬性樹（所有職業都能點）</h4><p><b>力量</b>（劍士）、<b>敏捷</b>（弓箭手）、<b>智力</b>（法師）、<b>幸運</b>（盜賊）。每棵樹都有自己的被動加成，以及 <b>5 個主動技能</b>。</p><p class="dim">自己職業主屬性的技能是全額效果；學別的屬性的主動技能也可以裝備，但<b class="bad">效果 −25%</b>（傷害、治療、持續時間、召喚物強度都會打折）。</p></div>
-			<div class="card"><h4>共通被動樹與職業樹</h4><p><b>體質</b>（生命、藥水、回復）和<b>冒險</b>（金幣、背包、建造、燈油）是共通的被動樹。每個職業另有一棵<b>專屬職業樹</b>，只有該職業能點。</p><p class="dim">招牌技能：屬性樹裡標註某職業招牌的被動技能，其他職業學要多付 30% 經驗。</p></div>
+			<div class="card"><h4>五棵樹，所有職業共用</h4><p><b>力量</b>（劍士的主屬性）、<b>敏捷</b>（弓箭手）、<b>智力</b>（法師）、<b>體質</b>（生命、藥水、回復）、<b>冒險</b>（燈油、金幣、建造、急行軍、保命符咒、共通倉庫）。沒有職業專屬樹，也沒有職業懲罰：任何職業都能學任何技能、裝任何主動技能，點錯了就再賺經驗。</p></div>
+			<div class="card"><h4>慢慢變強</h4><p>大部分數值技能可以點 10～20 級，每級只加一點點；<b>越外圍（前置越深）的技能越貴，同一個技能越往上點也越貴</b>。少數機制型技能（例如蓄力一擊、見招拆招）只有 3～5 級。「共通倉庫」是唯一跨存檔共用的技能：任何一個存檔學到的等級，所有存檔的儲藏箱都算。</p></div>
 		</div>
 		<p class="dim">顏色：<span class="tag">灰框＝還不能學</span><span class="tag" style="border-color:#e05a3a">紅底＝現在可以學</span><span class="tag">金框＝學過</span><span class="tag" style="border-color:#ffe08a;color:#ffe08a;box-shadow:0 0 8px #e8b75a">★ 金色發光框＝已經點滿</span></p>
 		<div id="skill-tabs"></div>
@@ -235,17 +240,17 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="spells" data-nav="主動技能">
 		<h2>主動技能（20 個）</h2>
-		<p>四棵屬性樹各 5 個。學會的主動技能可以放進技能欄（最多 3 個），戰鬥中法力足夠、冷卻結束就會自動施放。在「角色 → 技能」分頁管理。</p>
+		<p>分散在力量、敏捷、智力、冒險四棵樹裡。學會的主動技能可以放進技能欄（最多 3 個），戰鬥中法力足夠、冷卻結束就會自動施放。在「角色 → 技能」分頁管理。</p>
 		<div id="spell-list"></div>
 		<div style="margin-top:16px"><img class="shot" src="img/char_spells.png"></div>
 	</section>
 
 	<section id="gear" data-nav="裝備">
 		<h2>裝備</h2>
-		<p>六個部位：<span id="slot-names"></span>。稀有度越高，詞綴越多、符文孔越多。滑鼠停在裝備上會立即顯示和身上裝備的比較。</p>
+		<p>六個部位：<span id="slot-names"></span>。稀有度越高，詞綴越多、符文孔越多。滑鼠停在裝備上會立即顯示和身上裝備的比較。裝備分<b>通用</b>與<b>職業專用</b>（下表「職業」欄），所有裝備每個職業都打得到，但專用裝備只有該職業穿得上。</p>
 		<div id="rarity-list" style="margin:10px 0"></div>
 		<div class="grid g2">
-			<div><img class="shot" src="img/char_gear.png"><div class="figcap">裝備頁：拖曳裝備到身上或儲藏箱，右鍵賣出</div></div>
+			<div><img class="shot" src="img/char_gear.png"><div class="figcap">裝備頁：拖曳裝備到身上或共通儲藏箱，右鍵賣出</div></div>
 			<div><img class="shot" src="img/char_stats.png"><div class="figcap">詳細數值：攻擊／防禦／續航／收益四大類</div></div>
 		</div>
 		<h3>武器</h3>
@@ -262,46 +267,45 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="runes" data-nav="符文">
 		<h2>符文</h2>
-		<p>符文分六系、五個品階。同系同階 3 顆可以合成高一階（符文頁的「一鍵合成」）。嵌在不同部位，效果不同。把符文拖到裝備上就能鑲嵌，花金幣可以取下。裝備圖示下緣的小圓點就是符文孔：灰色是空的，嵌了符文會變成符文的顏色。符文不再是商店商品，只能靠遠征取得（機率見「機率」）。</p>
-		<div class="grid g2"><div><img class="shot" src="img/char_runes.png"></div><div><table id="rune-table"></table><p class="dim" id="rune-caps"></p></div></div>
+		<p>參考暗黑破壞神 2 的符文系統：符文共 <b>30 種，編號 1～30</b>，號碼越大越強，也越難取得。每顆符文是一塊刻著發光符印的石板，1～10 號是灰石、11～20 號是藍色板岩、21～30 號是帶金邊的黑曜石；符印顏色代表 6 個系別。嵌在不同部位，效果不同。把符文拖到裝備上就能鑲嵌，花金幣可以取下。裝備圖示下緣的小圓點就是符文孔。</p>
+		<div class="grid g2"><div><img class="shot" src="img/char_runes.png"></div><div class="card"><h4>掉落與合成</h4><p>目前最高只會掉到 <b id="rune-cap"></b> 號，更高號的符文<b>只能合成</b>（之後的章節會一路開放到 30 號）。越外圈掉的號碼越高，但機率越低：例如地下三樓最外圈，掉到 10 號大約只有 1%。</p><p>合成：<b>1～20 號 3 顆合成高一號，21 號起 2 顆</b>；10 號起要另外付金幣。符文頁的「一鍵合成」只合成 1～9 號。</p><p class="dim">舊版的六系五階符文已經全部清空（舊存檔裡的符文、配方都移除了）。</p></div></div>
+		<table id="rune-table"></table>
+		<p class="dim" id="rune-caps"></p>
 		<h3>符文之語</h3>
-		<p>符文之語很難湊：①<b>三孔</b>的武器或護甲　②三顆<b>完美的</b>（最高階）符文　③顏色組合正確，三個條件都達成才會生效。符文頁的<b>配方書</b>記錄你學會的配方；配方靠打怪、開寶箱、打倒頭目低機率撿到，越強的配方越難掉。如果自己湊出正確組合，配方也會自動記進配方書。</p>
-		<p class="dim">下表列出全部配方（強弱：常見／少見／稀有）。</p>
+		<p>符文之語要把配方裡的符文<b>照順序</b>嵌進<b>孔數剛好相同</b>的裝備：2 顆的配方要 2 孔、3 顆要 3 孔、4 顆要 4 孔（只有傳說品質的武器、護甲才有 4 孔）。用到的符文號碼越高，符文之語越強，配方也越難掉。配方分常見、少見、稀有、傳說四級，靠打怪、開寶箱、打倒頭目低機率撿到；自己湊出正確組合也會自動學會。<b>重複撿到的配方</b>可以在配方書裡賣給商人。</p>
 		<table id="combo-table"></table>
+	</section>
+
+	<section id="secrets" data-nav="隱藏地點與收藏品">
+		<h2>隱藏地點與收藏品</h2>
+		<p>地圖上還沒打通的地方藏著公會地圖上沒有的東西。每一層都預先藏好幾處<b>隱藏地點</b>，地圖上完全看不到；把那一格打通、冒險者第一次走進去才會發現（地圖上會留下一顆金色星星）。其他新蓋的房間也有小機率出現隨機的隱藏地點（冒險技能「尋寶直覺」提高機率）。想全部找齊，就得把每一層都打通。</p>
+		<div class="grid g3" id="secret-list"></div>
+		<h3>收藏品</h3>
+		<p>「塵封的角落」裡藏著收藏品。每組 5 件，收齊一整組有<b>永久獎勵</b>和一段故事：瑟蘭的五位國王、礦工挖出心石的經過、葛倫年輕時的搭檔艾菈，以及一個史書沒有記載的騎士團……「選單 → 收藏品與隱藏地點」可以查看。</p>
+		<div class="grid g2" id="collection-list"></div>
+	</section>
+
+	<section id="world" data-nav="世界地圖">
+		<h2>世界地圖</h2>
+		<p>右下角的「遠征地點」或「選單 → 世界地圖」會打開一張世界剖面圖：上面是天空、中間是地表、下面是一層層的地底。可以去的地方亮著，點一下再選從哪一層出發；還沒開放的章節是背景，點了可以看介紹。故事路線先往下走到最深的熔火之心，再從另一側一路爬回地表，最後登上天空。</p>
+		<div><img class="shot" src="img/ui_world.png"></div>
+		<div class="grid g2" id="world-list" style="margin-top:14px"></div>
 	</section>
 
 	<section id="odds" data-nav="機率">
 		<h2>機率</h2>
-		<p>遊戲裡所有跟運氣有關的數字都整理在這裡。「每級」的加成來自技能，括號裡寫技能名稱。</p>
+		<p>遊戲裡所有跟運氣有關的數字都整理在這裡。<b>沒有任何必掉的設定</b>：就算是頭目、寶箱，也是擲機率；最好的來源也只有 20% 傳說、30% 史詩。</p>
 		<h3>裝備掉落</h3>
-		<table>
-			<tr><th>來源</th><th>會不會掉</th><th>稀有度（普通／精良／稀有／史詩／傳說）</th></tr>
-			<tr><td>一般敵人</td><td>6%（每級搜刮 +2%，裝備詞綴「掉寶」、財富符文另外加；巢穴房 +10%）</td><td>70%／22%／6%／1.6%／0.4%</td></tr>
-			<tr><td>寶箱</td><td>必掉 1 件（法師開 2 次）</td><td>30%／35%／22%／10%／3%</td></tr>
-			<tr><td>封印寶庫的大寶箱</td><td>必掉 1 件（法師 2 件）</td><td>0／0／50%／35%／15%</td></tr>
-			<tr><td>騎士團長、元素祭司</td><td>必掉 1 件</td><td>必定史詩</td></tr>
-			<tr><td>沉睡之王</td><td>必掉 1 件</td><td>必定傳說</td></tr>
-			<tr><td>古龍</td><td>必掉 2 件</td><td>必定傳說</td></tr>
-			<tr><td>秘境守衛</td><td>必掉 1 件</td><td>0／30%／45%／20%／5%</td></tr>
-			<tr><td>秘境之王</td><td>必掉 2 件；另有 15%＋每層 1%（每級秘境嚮導 +10%）掉秘境限定傳說</td><td>0／0／40%／40%／20%</td></tr>
-			<tr><td>商人的貨架</td><td>每次補貨 4 件</td><td>40%／35%／18%／6%／1%</td></tr>
-		</table>
-		<p class="dim">傳說裝備有 35% 是獨特傳說（有特殊能力）；史詩以上有 12% 是套裝。符文孔數＝稀有度（普通 0、精良 1、稀有 2、史詩以上 3），但不超過部位上限：武器、護甲 3，副手、頭盔 2，戒指、護符 1。所以<b>三孔裝備只有史詩、傳說、套裝的武器和護甲</b>。</p>
+		<table id="loot-odds"></table>
+		<p class="dim" id="loot-note"></p>
 		<h3>符文</h3>
-		<table>
-			<tr><th>來源</th><th>機率</th><th>品階</th></tr>
-			<tr><td>一般寶箱</td><td>5%</td><td>碎裂的</td></tr>
-			<tr><td>封印寶庫的大寶箱</td><td>必掉</td><td>粗糙的</td></tr>
-			<tr><td>異變敵人</td><td>6%（技能「淨化之光」×2）</td><td>碎裂或粗糙（該異變對應的顏色）</td></tr>
-			<tr><td>戰利品分成觸發時（符文收藏家）</td><td>每級 1.5%</td><td>碎裂的</td></tr>
-			<tr><td>騎士團長／元素祭司</td><td>必掉</td><td>粗糙的／完整的</td></tr>
-			<tr><td>沉睡之王／古龍</td><td>必掉</td><td>完整的／精緻的</td></tr>
-			<tr><td>秘境之王</td><td>必掉</td><td>粗糙的起跳，每 8 層高一階（最高完美的）</td></tr>
-		</table>
-		<p class="dim">合成：同系同階 3 顆（學會「符文鍛造」後 2 顆）→ 高一階。符文工坊每級有 4% 機率直接升兩階。從碎裂的合成到完美的需要 81 顆碎裂的符文（學會符文鍛造後 16 顆）。</p>
+		<table id="rune-odds"></table>
+		<p class="dim" id="rune-odds-note"></p>
 		<h3>符文之語配方</h3>
 		<table id="recipe-odds"></table>
 		<p class="dim" id="recipe-tiers"></p>
+		<h3>隱藏地點</h3>
+		<p class="dim" id="secret-odds"></p>
 		<h3>秘境石（打倒沉睡之王之後才會掉）</h3>
 		<table>
 			<tr><th>來源</th><th>機率</th></tr>
@@ -309,12 +313,12 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<tr><td>封印寶庫的大寶箱</td><td>10%</td></tr>
 			<tr><td>騎士團長／元素祭司</td><td>50%</td></tr>
 			<tr><td>秘境之王</td><td>60%（每級秘境嚮導 +10%）</td></tr>
-			<tr><td>古龍</td><td>必給 3 顆</td></tr>
+			<tr><td>古龍</td><td>給 3 顆</td></tr>
 			<tr><td>打通第一章</td><td>送 3 顆</td></tr>
 		</table>
-		<p class="dim">秘境嚮導每級也讓前四項的機率再乘 1.1 倍。</p>
+		<p class="dim">秘境嚮導每級也讓前四項的機率再乘 1.1 倍。秘境之王掉秘境限定傳說：5%＋每層 0.5%（每級秘境嚮導 +3%）。</p>
 		<h3>遺物</h3>
-		<p>封印寶庫的大寶箱、騎士團長、元素祭司、沉睡之王、古龍<b>必定</b>給一件還沒找到的遺物（全部找齊就不再掉）。倒下時有機會遺失，之後還會再出現。</p>
+		<p>封印寶庫的大寶箱、騎士團長、元素祭司、沉睡之王、古龍會給一件還沒找到的遺物（遺物是劇情物品，全部找齊就不再掉）。</p>
 		<h3>戰鬥</h3>
 		<table>
 			<tr><th>項目</th><th>算法</th></tr>
@@ -323,11 +327,11 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<tr><td>魔法抵抗</td><td>每點 1% 機率讓一次魔法攻擊完全無效（上限 35%，對頭目只算一半）</td></tr>
 			<tr><td>暴擊</td><td>暴擊率（上限 90%）；暴擊時傷害 × 暴擊傷害</td></tr>
 			<tr><td>敵人命中附加狀態</td><td>每種敵人不同，寫在「敵人圖鑑」（例如骷髏盜賊 25% 流血）</td></tr>
-			<tr><td>連擊</td><td>技能「連刺」每級 8% 機率多打一下</td></tr>
-			<tr><td>命中暈眩</td><td>技能「盾擊」每級 6%</td></tr>
-			<tr><td>淬毒箭頭、火焰箭（弓箭手）</td><td>每級 10% 機率施加中毒／燃燒</td></tr>
+			<tr><td>連擊</td><td>技能「連刺」每級 1.5% 機率多打一下</td></tr>
+			<tr><td>命中暈眩</td><td>技能「盾擊」每級 2%</td></tr>
+			<tr><td>淬毒箭頭、火焰箭</td><td>每級 10% 機率施加中毒／燃燒</td></tr>
 			<tr><td>碎甲（鈍器）</td><td>20% 機率破甲 1 層</td></tr>
-			<tr><td>雙重詠唱、星辰迴響</td><td>25%／依符文之語</td></tr>
+			<tr><td>雙重詠唱、天罰、星辰迴響</td><td>25%／15%／30%</td></tr>
 		</table>
 		<h3>地圖與遠征</h3>
 		<table id="mod-odds"></table>
@@ -351,7 +355,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="camp" data-nav="營地設施">
 		<h2>營地強化設施</h2>
-		<p>在流浪商人那裡購買。每項設施最高 <b id="reno-max"></b> 級，升到 <b>Lv1、Lv4、Lv8</b> 時，營地裡的擺設會跟著升級，從簡陋的帳篷慢慢變成氣派的據點。營地名牌上的 <b>Lv</b> 是所有設施等級的總和。第二章之前，營地東南角是<b>擴建預定地</b>，第二章的新設施（煉金台、圖書館、馬廄、秘境傳送門）會蓋在那裡。</p>
+		<p>在流浪商人那裡購買（要先在第 5 環遇到商人，把他帶回營地）。每項設施最高 <b id="reno-max"></b> 級，升到 <b>Lv1、Lv4、Lv8</b> 時，營地裡的擺設會跟著升級，從簡陋的帳篷慢慢變成氣派的據點。營地名牌上的 <b>Lv</b> 是所有設施等級的總和。第二章之前，營地東南角是<b>擴建預定地</b>，第二章的新設施（煉金台、圖書館、馬廄、秘境傳送門）會蓋在那裡。</p>
 		<table id="reno-table"></table>
 		<div class="grid g3" style="margin-top:16px">
 			<div><img class="shot" src="img/camp_0.png"><div class="figcap">剛開始：簡陋的營地</div></div>
@@ -363,13 +367,13 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="char" data-nav="角色介面">
 		<h2>角色介面</h2>
-		<p>角色視窗分成五個分頁：裝備、符文、技能、藥水與道具、詳細數值。穿不上的裝備會蓋上一層紅色，點開會寫出還差哪一項屬性多少點。</p>
+		<p>角色視窗分成五個分頁：裝備、符文、技能、藥水與道具、詳細數值，每個分頁的視窗大小都一樣。穿不上的裝備會蓋上一層紅色（職業不符的還會標出職業名稱），點開會寫出原因。頂部資訊列除了金幣、經驗，也會顯示冒險者目前的<b>生命、法力、攻擊</b>。</p>
 		<h3>藥水</h3>
 		<p>紅藥水一開始就有。其他藥水要在營地建造<b>煉金台</b>（打倒沉睡之王後開放）來解鎖，煉金台等級越高每趟帶越多瓶。解鎖後在「藥水與道具」分頁選 2 種放進遠征畫面的藥水欄第 2、3 格，會自動喝，也可以點一下立刻喝。</p>
 		<table id="potion-table"></table>
 		<div class="grid g2">
 			<div><img class="shot" src="img/char_potions.png"><div class="figcap">藥水與道具</div></div>
-			<div><img class="shot" src="img/ui_classes.png"><div class="figcap">選擇職業（4 個存檔欄位）</div></div>
+			<div><img class="shot" src="img/ui_classes.png"><div class="figcap">選擇職業：盜賊即將登場</div></div>
 		</div>
 	</section>
 
@@ -383,7 +387,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<div class="grid g4" id="count-list"></div>
 		<h3>章節</h3>
 		<div id="chapter-list"></div>
-		<p class="dim">目前完成第一章與第二章，以及通關第一章後開放的無盡秘境（30 層）。之後的章節、樓層與功能會從這裡往後擴充。</p>
+		<p class="dim">目前完成第一章與第二章，以及通關第一章後開放的無盡秘境（30 層）。世界地圖上已經畫好第 3～10 章的地點，之後的章節會一路往下、再往上擴充。</p>
 	</section>
 	<section id="future" data-nav="備註：未來擴充">
 		<h2>備註：未來擴充規劃</h2>
@@ -496,7 +500,9 @@ $("narrator").textContent = G.narrator;
 $("chapter-goal").textContent = "目前的目標（" + G.chapters[0].name + "）：" + G.chapters[0].goal;
 
 // 職業
-$("class-list").innerHTML = Object.entries(G.classes).map(([id, c]) => `
+$("class-list").innerHTML = Object.entries(G.classes).map(([id, c]) => c.soon ? `
+	<div class="card" style="opacity:.55"><div class="portrait"><img src="img/class_${id}.png" alt="${esc(c.name)}" style="filter:grayscale(1)"></div>
+	<h3 style="margin-top:10px">${icon(c.icon)}${esc(c.name)}</h3><p>${esc(c.tag)}</p><div class="gold"><b>TO BE SOON．即將登場</b></div></div>` : `
 	<div class="card"><div class="portrait"><img src="img/class_${id}.png" alt="${esc(c.name)}"></div>
 	<h3 style="margin-top:10px">${icon(c.icon)}${esc(c.name)}</h3><p>${esc(c.tag)}</p>
 	<div>${c.points.map((p) => `<div>・${esc(p)}</div>`).join("")}</div>
@@ -521,7 +527,7 @@ function pieceSvg(p) {
 $("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");
 $("mod-list").innerHTML = Object.entries(G.room_mods).filter(([k]) => k).map(([k, m]) => `<div class="card"><b style="color:${m.color}">◆ ${esc(m.name)}</b><div>${esc(m.desc)}</div></div>`).join("");
 $("special-list").innerHTML = G.special_pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim">${esc(G.special_info[p.special] || "")}</div></div>`).join("");
-const LM_DESC = {start: "你的家。所有遠征從這裡出發。", shop: "找到後開放商店：補給、營地設施、裝備。", key: "取得古銀鑰匙，用來打開封印寶庫。", locked: "需要鑰匙，裡面有豐富的寶藏。", warden: "三位騎士團長各據一方，擊敗他們解開封印。", boss: "沉睡之王的所在。只在地下二樓。", stairs: "通往地下二樓的古老階梯。"};
+const LM_DESC = {start: "你的家。所有遠征從這裡出發。", shop: "第 5 環。遇到後商人會跟著冒險者回營地，開放商店：補給、營地設施、裝備。", key: "取得古銀鑰匙，用來打開封印寶庫。", locked: "需要鑰匙，裡面有豐富的寶藏。", warden: "三位騎士團長各據一方，擊敗他們解開封印。", boss: "沉睡之王的所在。只在地下二樓。", stairs: "通往地下二樓的古老階梯。"};
 $("landmark-list").innerHTML = Object.entries(G.landmarks).map(([k, n]) => `<div class="card"><b class="gold">${esc(n)}</b><div>${esc(LM_DESC[k] || "")}</div></div>`).join("");
 $("mutation-list").innerHTML = Object.values(G.mutations).map((m) => `<div class="card"><b style="color:${m.tint}">${esc(m.prefix)}（${esc(m.name)}）</b><div>${esc(m.desc)}</div></div>`).join("");
 
@@ -574,21 +580,20 @@ $("enemy-list").innerHTML = Object.entries(G.enemies).sort((a, b) => a[1].ring -
 	<div style="margin-top:6px">${abil(e.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div></div>`).join("");
 
 // 技能
-const preText = (p) => p[0] === "seal" ? `擊敗 ${p[1]} 位騎士團長` : `${G.skills.find((s) => s.id === p[0])?.name || G.attr[p[0]] || p[0]} Lv${p[1]}`;
+const preText = (p) => p[0] === "seal" ? `擊敗 ${p[1]} 位騎士團長` : (p[0] === "priest" ? `擊敗 ${p[1]} 位元素祭司` : `${G.skills.find((s) => s.id === p[0])?.name || G.attr[p[0]] || p[0]} Lv${p[1]}`);
+const costText = (s) => s.costs ? s.costs.join("／") : `${s.cost[0]}（每級 ×${s.cost[1]}）`;
 $("skill-tabs").innerHTML = G.groups.map((g) => {
 	const list = G.skills.filter((s) => s.grp === g[0]);
-	const cls = G.classes[g[0]];
-	return `<details ${g[0] === "str" ? "open" : ""}><summary>${icon(g[2])}${esc(g[1])}${cls ? "（職業專屬）" : ""}　<span class="dim" style="font-size:14px">${list.length} 個技能</span></summary>
+	return `<details ${g[0] === "str" ? "open" : ""}><summary>${icon(g[2])}${esc(g[1])}　<span class="dim" style="font-size:14px">${list.length} 個技能</span></summary>
 	<img class="shot" src="img/skills_${g[0]}.png" style="margin:8px 0">
-	<table><tr><th>技能</th><th>效果</th><th>最高</th><th>前置條件</th></tr>
-	${list.map((s) => `<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.desc)}</td><td>${s.max}</td><td class="dim">${s.pre.map((p) => `<span class="${p[0] === "seal" ? "bad" : ""}">${esc(preText(p))}</span>`).join("、") || "—"}</td></tr>`).join("")}
+	<table><tr><th>技能</th><th>效果</th><th>最高</th><th>經驗</th><th>前置條件</th></tr>
+	${list.map((s) => `<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.desc)}</td><td>${s.max}</td><td class="dim">${costText(s)}</td><td class="dim">${s.pre.map((p) => `<span class="${p[0] === "seal" || p[0] === "priest" ? "bad" : ""}">${esc(preText(p))}</span>`).join("、") || "—"}</td></tr>`).join("")}
 	</table></details>`;
 }).join("");
 
 // 法術
-const clsOfAttr = {};
-for (const c of Object.values(G.classes)) clsOfAttr[c.attr] = c.name;
-$("spell-list").innerHTML = ["str", "dex", "int", "luk"].map((a) => `<h3>${esc(G.attr[a])}　<span class="dim" style="font-size:15px">${esc(clsOfAttr[a] || "")}的主屬性，其他職業使用效果 −25%</span></h3><div class="grid g3">` +
+const treeName = {str: "力量", dex: "敏捷", int: "智力", exp: "冒險"};
+$("spell-list").innerHTML = ["str", "dex", "int", "exp"].map((a) => `<h3>${esc(treeName[a])}</h3><div class="grid g3">` +
 	Object.entries(G.spells).filter(([, sp]) => sp.attr === a).map(([id, sp]) => {
 		const sk = G.skills.find((s) => s.id === id) || {};
 		const pre = (sk.pre || []).map((p) => preText(p)).join("、");
@@ -599,29 +604,54 @@ $("spell-list").innerHTML = ["str", "dex", "int", "luk"].map((a) => `<h3>${esc(G
 $("slot-names").textContent = Object.values(G.slots).join("、");
 $("rarity-list").innerHTML = G.rarity.map((r, i) => `<span class="tag" style="color:${G.rarity_colors[i]};border-color:${G.rarity_colors[i]}">${r}</span>`).join("");
 $("weapon-tiers").textContent = G.weapon_tiers.map((t) => `${t[0]}（×${t[1]}，Lv${t[2]}起）`).join("、");
-$("weapon-table").innerHTML = `<tr><th>武器</th><th>類型</th><th>攻擊</th><th>間隔</th><th>需求</th></tr>` + G.weapon_bases.map((w) => `<tr><td>${icon(w.icon)}${esc(w.name)}</td><td>${esc(G.weapon_types[w.type] || w.type)}</td><td>${w.atk}</td><td>${w.cd}s</td><td>${esc(G.attr[w.req] || w.req)}</td></tr>`).join("");
+const clsName = (c) => c ? G.classes[c].name + "專用" : "通用";
+$("weapon-table").innerHTML = `<tr><th>武器</th><th>類型</th><th>攻擊</th><th>間隔</th><th>需求</th><th>職業</th></tr>` + G.weapon_bases.map((w) => `<tr><td>${icon(w.icon)}${esc(w.name)}</td><td>${esc(G.weapon_types[w.type] || w.type)}</td><td>${w.atk}</td><td>${w.cd}s</td><td>${esc(G.attr[w.req] || w.req)}</td><td class="dim">${clsName(w.cls)}</td></tr>`).join("");
 const affName = (k) => G.affixes[k]?.name || {gold: "金幣", hp: "生命", armor: "護甲", crit: "暴擊", res_magic: "魔法抵抗", weight: "重量", dodge: "閃避", regen: "回復", hit: "命中", mp: "法力", atk: "攻擊", cd: "間隔"}[k] || k;
 const statsText = (o, skip) => Object.entries(o).filter(([k]) => !skip.includes(k)).map(([k, v]) => `${affName(k)} ${typeof v === "number" && v < 1 && v > 0 ? "+" + Math.round(v * 100) + "%" : v}`).join("、");
-$("armor-table").innerHTML = `<tr><th>部位</th><th>名稱</th><th>基礎屬性</th><th>需求</th></tr>` + Object.entries(G.armor_bases).flatMap(([slot, list]) => list.map((a) => `<tr><td>${esc(G.slots[slot])}</td><td>${icon(a.icon)}${esc(a.name)}</td><td>${esc(statsText(a, ["name", "icon", "req"]))}</td><td>${esc(G.attr[a.req] || a.req || "—")}</td></tr>`)).join("");
-$("unique-list").innerHTML = G.uniques.map((u) => `<div class="card"><h4 style="color:${G.rarity_colors[4]}">${icon(u.icon)}${esc(u.name)}</h4><div class="dim">${esc(G.slots[u.slot])}${u.atk ? `．攻擊 ${u.atk}．間隔 ${u.cd}s` : ""}</div><div>${esc(u.text)}</div></div>`).join("");
-$("set-list").innerHTML = Object.values(G.sets).map((st) => `<h4 style="margin-top:14px">${esc(st.name)}${st.req ? `　<span class="dim" style="font-size:14px">需要${esc(G.attr[st.req])}</span>` : ""}</h4>
+$("armor-table").innerHTML = `<tr><th>部位</th><th>名稱</th><th>基礎屬性</th><th>需求</th><th>職業</th></tr>` + Object.entries(G.armor_bases).flatMap(([slot, list]) => list.map((a) => `<tr><td>${esc(G.slots[slot])}</td><td>${icon(a.icon)}${esc(a.name)}</td><td>${esc(statsText(a, ["name", "icon", "req", "cls"]))}</td><td>${esc(G.attr[a.req] || a.req || "—")}</td><td class="dim">${clsName(a.cls || "")}</td></tr>`)).join("");
+$("unique-list").innerHTML = G.uniques.map((u) => `<div class="card"><h4 style="color:${G.rarity_colors[4]}">${icon(u.icon)}${esc(u.name)}</h4><div class="dim">${esc(G.slots[u.slot])}${u.atk ? `．攻擊 ${u.atk}．間隔 ${u.cd}s` : ""}．${clsName(u.cls || "")}</div><div>${esc(u.text)}</div></div>`).join("");
+$("set-list").innerHTML = Object.values(G.sets).map((st) => `<h4 style="margin-top:14px">${esc(st.name)}　<span class="dim" style="font-size:14px">${clsName(st.cls || "")}${st.req ? `．需要${esc(G.attr[st.req])}` : ""}</span></h4>
 	<div class="grid g2"><div class="card">${Object.entries(st.pieces).map(([slot, p]) => `<div>${icon(p.icon)}<b>${esc(p.name)}</b> <span class="dim">${esc(G.slots[slot])}．${esc(statsText(p, ["name", "icon", "type", "weight"]))}</span></div>`).join("")}</div>
 	<div class="card"><h4>套裝效果</h4>${st.bonus.map((b) => `<div><span class="tag">${b[0]} 件</span>${esc(b[1])}</div>`).join("")}</div></div>`).join("");
 
 // 符文
 const slotGroup = {weapon: "武器", armor: "副手／頭盔／護甲", trinket: "戒指／護符"};
-$("rune-table").innerHTML = `<tr><th>符文</th>${Object.values(slotGroup).map((s) => `<th>${s}</th>`).join("")}</tr>` + Object.values(G.runes).map((r) => `<tr><td><span class="gem" style="background:${r.color}"></span><b style="color:${r.color}">${esc(r.name)}</b></td>${Object.keys(slotGroup).map((g) => `<td>${esc(affName(r[g][0]))}<div class="dim" style="font-size:13px">${r[g][1].join(" / ")}</div></td>`).join("")}</tr>`).join("");
-$("rune-caps").textContent = "品階：" + G.rune_grades.join(" → ") + "（表格數字依品階排列）。符文孔上限：" + Object.entries(G.rune_caps).map(([k, v]) => `${G.slots[k]} ${v}`).join("、");
-const tierName = {1: "常見", 2: "少見", 3: "稀有"};
-$("combo-table").innerHTML = `<tr><th>符文之語</th><th>強弱</th><th>部位</th><th>組合（三顆完美的）</th><th>效果</th></tr>` + Object.entries(G.combos).sort((a, b) => (b[1].tier || 1) - (a[1].tier || 1)).map(([key, c]) => {
-	const [grp, cols] = key.split(":");
-	return `<tr><td><b class="gold">${esc(c.name)}</b></td><td>${tierName[c.tier || 1]}</td><td>${slotGroup[grp]}</td><td>${cols.split(",").map((k) => `<span class="gem" style="background:${G.runes[k].color}" title="${G.runes[k].name}"></span>`).join("")}</td><td>${esc(c.desc)}${c.ch >= 2 ? '<span class="dim">（第二章）</span>' : ""}</td></tr>`;
-}).join("");
+const runeIcon = (n) => { const r = G.runes[n - 1]; const stone = n <= 10 ? "#6d665f" : (n <= 20 ? "#454f66" : "#1d1822"); const rim = n <= 10 ? "#3a312a" : (n <= 20 ? "#9aa8c6" : "#ffd166");
+	return `<span class="rune" title="${n} 號．${esc(r.name)}" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:32px;border-radius:7px;background:${stone};border:2px solid ${rim};color:${r.color};font-weight:bold;font-size:13px;margin-right:3px;box-shadow:0 0 6px ${r.color}55">${n}</span>`; };
+$("rune-cap").textContent = G.rune_drop_cap;
+$("rune-table").innerHTML = `<tr><th>符文</th><th>系別</th>${Object.values(slotGroup).map((s) => `<th>${s}</th>`).join("")}<th>合成下一號</th></tr>` + G.runes.map((r) => `<tr><td>${runeIcon(r.n)}<b style="color:${r.color}">${esc(r.name)}</b>${r.n > G.rune_drop_cap ? ' <span class="dim">（只能合成）</span>' : ""}</td><td>${esc(G.rune_families[r.fam].name)}</td><td>${esc(r.weapon)}</td><td>${esc(r.armor)}</td><td>${esc(r.trinket)}</td><td class="dim">${r.n < 30 ? `${r.need} 顆${r.gold ? "＋" + r.gold + " 金幣" : ""}` : "—"}</td></tr>`).join("");
+$("rune-caps").textContent = "符文孔上限：" + Object.entries(G.rune_caps).map(([k, v]) => `${G.slots[k]} ${v}`).join("、") + "。孔數＝稀有度（精良 1、稀有 2、史詩 3、傳說 4）。";
+$("combo-table").innerHTML = `<tr><th>符文之語</th><th>強弱</th><th>部位</th><th>符文（照順序）</th><th>效果</th></tr>` + Object.entries(G.runewords).sort((a, b) => b[1].tier - a[1].tier).map(([key, c]) =>
+	`<tr><td><b style="color:${["", "#73e073", "#6badff", "#c780ff", "#ffb838"][c.tier]}">${esc(c.name)}</b></td><td>${G.recipe_tier_names[c.tier]}</td><td>${c.grp === "weapon" ? "武器" : (c.runes.length >= 4 ? "護甲" : "副手／頭盔／護甲")}．${c.runes.length} 孔</td><td>${c.runes.map(runeIcon).join("")}</td><td>${esc(c.desc)}</td></tr>`).join("");
+// 隱藏地點、收藏品、世界地圖
+$("secret-list").innerHTML = Object.entries(G.secret_info).filter(([k]) => k !== "cat").map(([k, s]) => `<div class="card"><h4>${icon(s.icon)}${esc(s.name)}</h4><div>${esc(s.desc)}</div></div>`).join("") + `<div class="card"><h4>？？？</h4><div class="dim">地下一樓的某個角落，好像有什麼東西在看著你……</div></div>`;
+$("collection-list").innerHTML = Object.values(G.collections).map((c) => `<div class="card"><h4>${icon(c.icon)}${esc(c.name)}</h4><div>收齊獎勵：<b class="gold">${esc(c.bonus)}</b></div><div class="dim">${c.items.length} 件：${c.items.map((it) => esc(it.name)).join("、")}</div></div>`).join("");
+$("world-list").innerHTML = G.world.map((w) => `<div class="card"><h4 style="color:${w.color}">第 ${w.ch} 章．${esc(w.name)}${w.floors.length ? "" : ' <span class="dim">（尚未開放）</span>'}</h4><div>${esc(w.desc)}</div></div>`).join("");
+// 機率：裝備
+const L = G.loot, P = (v) => (v * 100).toFixed(v < 0.01 ? 2 : (v < 0.1 ? 1 : 0)).replace(/\.0+$/, "") + "%";
+const wtxt = (w) => { const t = w.reduce((a, b) => a + b, 0); return w.map((x) => x ? (x / t * 100).toFixed(x / t < 0.01 ? 2 : 1).replace(/\.0+$/, "") + "%" : "0").join("／"); };
+$("loot-odds").innerHTML = `<tr><th>來源</th><th>掉一件的機率</th><th>稀有度（普通／精良／稀有／史詩／傳說）</th></tr>` + [
+	["一般敵人", `${G.base_loot}%（每級搜刮 +0.15%；巢穴房 +3%）`, L.kill.w],
+	["寶箱", P(L.chest.chance) + "（法師開兩次）", L.chest.w], ["封印寶庫的大寶箱", P(L.big_chest.chance) + "（法師開兩次）", L.big_chest.w],
+	["古代戰場的勇士（隱藏地點）", P(L.big_chest.chance), L.big_chest.w], ["騎士團長、元素祭司", P(L.warden.chance), L.warden.w],
+	["沉睡之王", P(L.boss.chance), L.boss.w], ["古龍", `${P(L.dragon.chance)} × ${L.dragon.rolls} 次`, L.dragon.w],
+	["秘境守衛", P(L.guard.chance), L.guard.w], ["秘境之王", `${P(L.realm_king.chance)} × ${L.realm_king.rolls} 次`, L.realm_king.w], ["商人的貨架（每次補貨 4 件）", "—", L.shop.w],
+].map(([n, c, w]) => `<tr><td>${n}</td><td>${c}</td><td>${wtxt(w)}</td></tr>`).join("");
+$("loot-note").textContent = `傳說裝備有 ${Math.round(G.unique_share * 100)}% 是獨特傳說（有特殊能力）；史詩以上有 ${Math.round(G.set_share * 100)}% 是套裝。符文孔數＝稀有度（普通 0、精良 1、稀有 2、史詩 3、傳說 4），但不超過部位上限：武器、護甲 4，副手、頭盔 3，戒指、護符 1。`;
+// 機率：符文
+const RC = G.rune_chance;
+$("rune-odds").innerHTML = `<tr><th>來源</th><th>掉一顆符文的機率</th></tr>` + [["每打倒一隻一般敵人", RC.kill], ["異變敵人（淨化之光 ×2）", RC.mutant], ["一般寶箱", RC.chest], ["封印寶庫的大寶箱、古代戰場", RC.big_chest], ["秘境守衛", RC.guard], ["騎士團長／元素祭司", RC.warden], ["沉睡之王／古龍", RC.boss], ["秘境之王", RC.realm_king]].map(([n, v]) => `<tr><td>${n}</td><td>${P(v)}</td></tr>`).join("");
+const dec = G.rune_decay;
+let wsum = 0; for (let n = 1; n <= 10; n++) wsum += Math.pow(dec, n - 1);
+$("rune-odds-note").textContent = `掉到符文時先決定號碼上限：2＋難度環數÷4（最高 ${G.rune_drop_cap} 號；頭目、寶庫、古代戰場 +2）。再從 1 號到上限之間抽，每高一號權重 ×${dec}。上限 10 號時：1 號 ${P(1 / wsum)}、5 號 ${P(Math.pow(dec, 4) / wsum)}、10 號 ${P(Math.pow(dec, 9) / wsum)}。戰利品分成觸發時（符文收藏家）每級 1.5% 附贈一顆。`;
 // 機率：配方
-const rc = G.recipe_chance, pct = (v) => (v * 100).toFixed(v < 0.01 ? 2 : (v < 0.1 ? 1 : 0)) + "%";
-$("recipe-odds").innerHTML = `<tr><th>來源</th><th>掉一張配方的機率</th></tr>` + [["每打倒一隻一般敵人", rc.kill], ["一般寶箱", rc.chest], ["封印寶庫的大寶箱", rc.big_chest], ["騎士團長／元素祭司", rc.warden], ["沉睡之王／古龍", rc.boss], ["秘境之王", rc.realm_king]].map(([n, v]) => `<tr><td>${n}</td><td>${pct(v)}</td></tr>`).join("");
+const rc = G.recipe_chance;
+$("recipe-odds").innerHTML = `<tr><th>來源</th><th>掉一張配方的機率</th></tr>` + [["每打倒一隻一般敵人", rc.kill], ["一般寶箱", rc.chest], ["封印寶庫的大寶箱、古代戰場", rc.big_chest], ["秘境守衛", rc.guard], ["騎士團長／元素祭司", rc.warden], ["沉睡之王／古龍", rc.boss], ["秘境之王", rc.realm_king], ["迷途冒險者的遺骸（隱藏地點）", 0.1]].map(([n, v]) => `<tr><td>${n}</td><td>${P(v)}</td></tr>`).join("");
 const tw = G.recipe_tier_w, twt = Object.values(tw).reduce((a, b) => a + b, 0);
-$("recipe-tiers").textContent = `掉落時先抽強弱：常見 ${Math.round(tw[1] / twt * 100)}%、少見 ${Math.round(tw[2] / twt * 100)}%、稀有 ${Math.round(tw[3] / twt * 100)}%（某個強弱的配方都學會了，就從其他強弱裡抽），再從還沒學會的配方裡隨機挑一張。第二章的配方要打倒沉睡之王後才會掉。`;
+$("recipe-tiers").textContent = `掉落時先抽強弱：常見 ${P(tw[1] / twt)}、少見 ${P(tw[2] / twt)}、稀有 ${P(tw[3] / twt)}、傳說 ${P(tw[4] / twt)}，再從那個強弱的配方裡隨機挑一張（學過的也會掉，帶回營地變成重複的配方，可以賣：常見 ${G.recipe_sell[1]}、少見 ${G.recipe_sell[2]}、稀有 ${G.recipe_sell[3]}、傳說 ${G.recipe_sell[4]} 金幣）。所以每打倒一隻頭目，掉傳說配方的機率只有 ${P(rc.boss * tw[4] / twt)}。`;
+// 機率：隱藏地點
+const sw = G.secret_random_w, swt = Object.values(sw).reduce((a, b) => a + b, 0);
+$("secret-odds").textContent = `每層預先藏好的隱藏地點：地下一樓 ${G.floor_secrets[0].length} 處、地下二樓 ${G.floor_secrets[1].length} 處、地下三樓 ${G.floor_secrets[2].length} 處（第 2 環以外）。另外每間新蓋的石室有 4% 機率（尋寶直覺每級 ×1.06）出現隨機的隱藏地點：` + Object.entries(sw).map(([k, v]) => `${G.secret_info[k].name} ${P(v / swt)}`).join("、") + "。";
 // 機率：區塊能力
 const mods = Object.entries(G.room_mods), mw = mods.reduce((a, [, m]) => a + m.w, 0);
 $("mod-odds").innerHTML = `<tr><th>挖到的區塊帶能力</th><th>機率</th></tr>` + mods.map(([k, m]) => `<tr><td>${k === "" ? "沒有能力" : esc(m.name) + "：" + esc(m.desc)}</td><td>${Math.round(m.w / mw * 100)}%</td></tr>`).join("");
@@ -636,7 +666,7 @@ $("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>Lv1</th
 
 // 小技巧、數量
 $("tip-list").innerHTML = G.tips.map((t) => `<div class="card">${esc(t)}</div>`).join("");
-const counts = [["技能", G.stats.skills], ["敵人", G.stats.enemies], ["法術", Object.keys(G.spells).length], ["區塊形狀", G.stats.pieces], ["傳說裝備", G.stats.uniques], ["符文之語", G.stats.combos], ["遺物", G.stats.relics], ["成就", G.stats.achievements]];
+const counts = [["技能", G.stats.skills], ["敵人", G.stats.enemies], ["主動技能", Object.keys(G.spells).length], ["區塊形狀", G.stats.pieces], ["傳說裝備", G.stats.uniques], ["符文", G.runes.length], ["符文之語", G.stats.combos], ["收藏品", Object.values(G.collections).reduce((a, c) => a + c.items.length, 0)], ["遺物", G.stats.relics], ["成就", G.stats.achievements]];
 $("count-list").innerHTML = counts.map(([n, c]) => `<div class="card" style="text-align:center"><div class="count">${c}</div><div class="dim">${n}</div></div>`).join("");
 $("chapter-list").innerHTML = G.chapters.map((c) => `<div class="card"><h4>${esc(c.name)}</h4><div>目標：${esc(c.goal)}</div><div class="dim">${esc(c.end)}</div></div>`).join("");
 

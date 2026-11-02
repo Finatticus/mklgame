@@ -114,7 +114,7 @@ window.GAME = {
 		[
 			"set_shadow",
 			"暗影大師",
-			"穿上完整的暗影盜賊套裝"
+			"穿上完整的暗影獵手套裝"
 		],
 		[
 			"set_guardian",
@@ -220,6 +220,31 @@ window.GAME = {
 			"combo",
 			"符文大師",
 			"發現一種符文之語"
+		],
+		[
+			"rune10",
+			"符文收藏家",
+			"取得 10 號以上的符文"
+		],
+		[
+			"recipe_legend",
+			"傳說的配方",
+			"取得一張傳說配方"
+		],
+		[
+			"secret5",
+			"廢墟探索家",
+			"找到 5 處隱藏地點"
+		],
+		[
+			"collect_all",
+			"瑟蘭史官",
+			"收齊一整組收藏品"
+		],
+		[
+			"merchant_home",
+			"安身之所",
+			"護送流浪商人回到營地"
 		]
 	],
 	"affixes": {
@@ -279,8 +304,8 @@ window.GAME = {
 			"name": "生命"
 		},
 		"loot": {
-			"base": 1.5,
-			"fmt": "+%d%%",
+			"base": 0.3,
+			"fmt": "+%.1f%%",
 			"name": "掉寶"
 		},
 		"phys_red_pct": {
@@ -341,12 +366,13 @@ window.GAME = {
 					10
 				],
 				"name": "幸運金幣",
-				"req": "luk"
+				"req": "dex"
 			}
 		],
 		"body": [
 			{
 				"armor": 2.0,
+				"cls": "",
 				"dodge": 3.0,
 				"icon": [
 					7,
@@ -358,6 +384,7 @@ window.GAME = {
 			},
 			{
 				"armor": 1.0,
+				"cls": "mage",
 				"icon": [
 					7,
 					13
@@ -369,6 +396,7 @@ window.GAME = {
 			},
 			{
 				"armor": 2.0,
+				"cls": "archer",
 				"crit": 1.0,
 				"dodge": 4.0,
 				"icon": [
@@ -376,11 +404,12 @@ window.GAME = {
 					8
 				],
 				"name": "夜行皮衣",
-				"req": "luk",
+				"req": "dex",
 				"weight": "light"
 			},
 			{
 				"armor": 4.0,
+				"cls": "",
 				"hp": 0.05,
 				"icon": [
 					7,
@@ -392,6 +421,7 @@ window.GAME = {
 			},
 			{
 				"armor": 3.0,
+				"cls": "",
 				"hp": 0.06,
 				"icon": [
 					7,
@@ -403,6 +433,7 @@ window.GAME = {
 			},
 			{
 				"armor": 7.0,
+				"cls": "swordsman",
 				"icon": [
 					7,
 					7
@@ -413,6 +444,7 @@ window.GAME = {
 			},
 			{
 				"armor": 6.0,
+				"cls": "swordsman",
 				"icon": [
 					7,
 					5
@@ -426,6 +458,7 @@ window.GAME = {
 		"helmet": [
 			{
 				"armor": 2.0,
+				"cls": "",
 				"dodge": 1.0,
 				"icon": [
 					7,
@@ -436,6 +469,7 @@ window.GAME = {
 			},
 			{
 				"armor": 3.0,
+				"cls": "",
 				"hp": 0.04,
 				"icon": [
 					7,
@@ -446,6 +480,7 @@ window.GAME = {
 			},
 			{
 				"armor": 4.0,
+				"cls": "swordsman",
 				"icon": [
 					7,
 					3
@@ -454,6 +489,7 @@ window.GAME = {
 				"req": "str"
 			},
 			{
+				"cls": "archer",
 				"dodge": 2.0,
 				"icon": [
 					7,
@@ -461,23 +497,37 @@ window.GAME = {
 				],
 				"name": "遊俠兜帽",
 				"regen": 0.6,
-				"req": "int"
+				"req": "dex"
+			},
+			{
+				"armor": 1.0,
+				"cls": "mage",
+				"icon": [
+					7,
+					0
+				],
+				"name": "學者尖帽",
+				"regen": 0.4,
+				"req": "int",
+				"spell": 0.06
 			},
 			{
 				"armor": 1.5,
+				"cls": "",
 				"crit": 1.0,
 				"dodge": 2.0,
 				"icon": [
 					7,
 					2
 				],
-				"name": "盜賊兜帽",
-				"req": "luk"
+				"name": "獵人兜帽",
+				"req": "dex"
 			}
 		],
 		"offhand": [
 			{
 				"armor": 3.0,
+				"cls": "",
 				"icon": [
 					6,
 					0
@@ -487,6 +537,7 @@ window.GAME = {
 			},
 			{
 				"armor": 5.0,
+				"cls": "swordsman",
 				"hp": 0.05,
 				"icon": [
 					6,
@@ -497,6 +548,7 @@ window.GAME = {
 			},
 			{
 				"armor": 1.0,
+				"cls": "mage",
 				"icon": [
 					13,
 					1
@@ -507,6 +559,7 @@ window.GAME = {
 			},
 			{
 				"armor": 1.0,
+				"cls": "archer",
 				"crit": 2.0,
 				"icon": [
 					8,
@@ -517,6 +570,7 @@ window.GAME = {
 			},
 			{
 				"armor": 1.0,
+				"cls": "",
 				"crit": 2.0,
 				"dodge": 1.0,
 				"icon": [
@@ -524,17 +578,18 @@ window.GAME = {
 					15
 				],
 				"name": "飛刀腰帶",
-				"req": "luk"
+				"req": "dex"
 			},
 			{
 				"armor": 1.5,
+				"cls": "",
 				"dodge": 2.0,
 				"icon": [
 					10,
 					12
 				],
 				"name": "煙霧彈袋",
-				"req": "luk"
+				"req": "dex"
 			}
 		],
 		"ring": [
@@ -545,7 +600,7 @@ window.GAME = {
 					4
 				],
 				"name": "銀戒指",
-				"req": "luk"
+				"req": "dex"
 			},
 			{
 				"hit": 4.0,
@@ -573,7 +628,7 @@ window.GAME = {
 					13
 				],
 				"name": "四葉草戒指",
-				"req": "luk"
+				"req": "vit"
 			}
 		]
 	},
@@ -607,10 +662,10 @@ window.GAME = {
 	"attr": {
 		"dex": "敏捷",
 		"int": "智力",
-		"luk": "幸運",
 		"str": "力量",
 		"vit": "體質"
 	},
+	"base_loot": 4.0,
 	"boss": {
 		"abil": [
 			{
@@ -686,7 +741,7 @@ window.GAME = {
 				"遠程攻擊：站在後排，受到的近戰傷害 −10%",
 				"暴擊率 +3%、攻擊 +18%、生命 +15%",
 				"燈油消耗 −15%",
-				"招牌：弩術、齊射系技能"
+				"專用裝備：十字弓、箭袋、遊俠護具"
 			],
 			"ranged": true,
 			"tag": "在後排用十字弓精準射擊的遊俠。"
@@ -701,16 +756,17 @@ window.GAME = {
 			"name": "法師",
 			"points": [
 				"智力 +3 起步（開局就能學法術）",
-				"法力 +20%、法術傷害 +30%",
-				"生命 +10%、經驗 +10%",
+				"法力 +20%、法術傷害 +50%",
+				"法杖的普通攻擊也吃 75% 的法術傷害加成",
+				"生命 +15%、經驗 +10%",
 				"寶箱多開一次",
-				"招牌：法術系技能"
+				"專用裝備：法杖、魔法書、法袍"
 			],
 			"ranged": true,
 			"tag": "操縱元素與奧術的學者，法術威力驚人。"
 		},
 		"rogue": {
-			"attr": "luk",
+			"attr": "dex",
 			"icon": [
 				5,
 				9
@@ -718,13 +774,9 @@ window.GAME = {
 			"model": "Rogue",
 			"name": "盜賊",
 			"points": [
-				"幸運 +3 起步",
-				"閃避 +3",
-				"攻擊 +10%",
-				"金幣 +12%",
-				"商店裝備打 9 折",
-				"招牌：幸運系技能（暴擊、偷襲、煙霧）"
+				"敬請期待"
 			],
+			"soon": true,
 			"tag": "雙持匕首、來無影去無蹤的獵寶人。"
 		},
 		"swordsman": {
@@ -737,175 +789,185 @@ window.GAME = {
 			"name": "劍士",
 			"points": [
 				"力量 +3 起步",
-				"生命 +30%、攻擊 +10%",
+				"生命 +45%、攻擊 +20%",
+				"舉盾：護甲也能擋魔法（效果是物理的一半）",
 				"每場戰鬥開始時舉盾，堅固 3 秒",
 				"爆破符可多帶 1 個",
-				"招牌：近戰、護甲系技能"
+				"專用裝備：劍斧、鈍器、鳶盾、板甲"
 			],
 			"tag": "持劍與盾站在最前線，攻守兼備的戰士。"
 		}
 	},
-	"combos": {
-		"armor:black,black,black": {
-			"desc": "反彈 25% 受到的近戰傷害",
+	"collections": {
+		"badges": {
+			"bonus": "攻擊、生命 +5%",
+			"done_lines": [
+				"五枚徽章……可是瑟蘭只有三個騎士團。",
+				"那枚畫著翅膀的徽章，我在公會最古老的檔案裡也沒見過。天空……？也許答案不在地底。"
+			],
 			"fx": {
-				"thorns": 25.0
+				"atk_pct": 5.0,
+				"hp_pct": 5.0
 			},
-			"name": "荊棘之牆",
-			"tier": 1
+			"icon": [
+				8,
+				6
+			],
+			"items": [
+				{
+					"id": "badge1",
+					"lore": "伊格納的團員都在胸口紋一道火焰。他們說，只要火還在燒，封印就不會破。",
+					"name": "烈焰騎士團徽章"
+				},
+				{
+					"id": "badge2",
+					"lore": "摩爾德的騎士從不後退一步。徽章背面刻著：「盾在人在」。",
+					"name": "深淵騎士團徽章"
+				},
+				{
+					"id": "badge3",
+					"lore": "希爾娃的部下來去如風，據說沒有人看清楚過他們的臉。",
+					"name": "疾風騎士團徽章"
+				},
+				{
+					"id": "badge4",
+					"lore": "近衛隊在王國沉沒那夜守在王座前。他們沒有逃，也沒有活下來。",
+					"name": "王室近衛徽章"
+				},
+				{
+					"id": "badge5",
+					"lore": "瑟蘭的史書只記載了三個騎士團。這枚徽章上沒有名字，只有一對翅膀，和一片雲。",
+					"name": "無名的第四騎士團徽章"
+				}
+			],
+			"name": "騎士團徽章"
 		},
-		"armor:black,black,blue": {
-			"desc": "魔法抵抗 +12%、護甲 +15%",
+		"coins": {
+			"bonus": "金幣 +8%",
+			"done_lines": [
+				"五位國王的金幣都到齊了。從鋤頭到黑石……瑟蘭三百年的故事，就握在你手心。",
+				"公會的財務官看到這些金幣，眼睛都直了。往後經手的金幣，好像也多了一些。"
+			],
 			"fx": {
-				"armor_pct": 15.0,
-				"res_magic": 12.0
+				"gold_pct": 8.0
 			},
-			"name": "石膚",
-			"tier": 1
+			"icon": [
+				12,
+				10
+			],
+			"items": [
+				{
+					"id": "coin1",
+					"lore": "正面是一把鋤頭。艾德蒙是礦工出身，他說王冠只是頂比較重的安全帽。",
+					"name": "開國王 艾德蒙的銅幣"
+				},
+				{
+					"id": "coin2",
+					"lore": "她在位四十年，瑟蘭沒有一個冬天挨過餓。背面刻著麥穗與一句「先分給孩子」。",
+					"name": "豐收女王 莉薇雅的銀幣"
+				},
+				{
+					"id": "coin3",
+					"lore": "沉得不像錢。霍斯特把金庫拿去鑄劍，打退了三次北方的入侵。",
+					"name": "鐵腕王 霍斯特的鐵幣"
+				},
+				{
+					"id": "coin4",
+					"lore": "邊緣刻滿了小字，是一首關於星星的詩。西奧建了圖書館，也第一個往地底派出了探勘隊。",
+					"name": "學者王 西奧的金幣"
+				},
+				{
+					"id": "coin5",
+					"lore": "金子裡混著一點黑色的石粉，摸起來是溫的。鑄造日期，正好是王國沉沒的前一個月。",
+					"name": "末代王 瓦爾克的黑金幣"
+				}
+			],
+			"name": "瑟蘭王朝金幣"
 		},
-		"armor:black,gold,gold": {
-			"desc": "金幣 +40%",
+		"letters": {
+			"bonus": "經驗 +6%",
+			"done_lines": [
+				"……這些信，你都找到了啊。",
+				"四十年了，隊長。我一直以為她沒能留下任何東西。原來她往更深的地方去了……深到看得見火光。",
+				"謝謝你。往後的路，我會更仔細地教你。"
+			],
 			"fx": {
-				"gold_pct": 40.0
+				"xp_pct": 6.0
 			},
-			"name": "富商",
-			"tier": 1
+			"icon": [
+				13,
+				10
+			],
+			"items": [
+				{
+					"id": "letter1",
+					"lore": "「艾菈：公會終於批准我們下去了！你負責地圖，我負責背燈油。這次別再笑我膽小。——葛倫」",
+					"name": "第一封信"
+				},
+				{
+					"id": "letter2",
+					"lore": "「艾菈：你說牆裡有歌聲，我什麼都沒聽到。你要我留在第二層等你，我答應了。別走太遠。」",
+					"name": "第二封信"
+				},
+				{
+					"id": "letter3",
+					"lore": "「艾菈：已經十天了。燈油剩一瓶。我在牆上刻了記號，你回來一定看得到。」",
+					"name": "第三封信"
+				},
+				{
+					"id": "letter4",
+					"lore": "「公會說要撤了。我說再等一天。他們把我拖上去的時候，我好像聽見了——那首歌。」",
+					"name": "第四封信（沒寄出）"
+				},
+				{
+					"id": "letter5",
+					"lore": "字跡不是葛倫的：「葛倫，我找到了更深的路，深到看得見火光。別等我，往上走，替我看看太陽。——艾菈」",
+					"name": "艾菈的回信"
+				}
+			],
+			"name": "葛倫的舊信"
 		},
-		"armor:black,green,red": {
-			"ch": 2,
-			"desc": "護甲 +30%、生命 +10%",
+		"miner": {
+			"bonus": "燈油 +10 秒",
+			"done_lines": [
+				"博恩的日誌拼完整了……原來那顆心石，是礦工們挖出來的。",
+				"「別讓那顆石頭見到天空。」這句話我會記住，隊長。也許總有一天，我們會知道為什麼。"
+			],
 			"fx": {
-				"armor_pct": 30.0,
-				"hp_pct": 10.0
+				"battery": 10.0
 			},
-			"name": "不朽",
-			"tier": 3
-		},
-		"armor:black,purple,red": {
-			"desc": "攻擊時吸取 24% 傷害的生命",
-			"fx": {
-				"lifesteal": 24.0
-			},
-			"name": "吸血鬼",
-			"tier": 2
-		},
-		"armor:blue,blue,purple": {
-			"desc": "閃避 +8、暴擊傷害 +30%",
-			"fx": {
-				"critx_pct": 30.0,
-				"dodge": 8.0
-			},
-			"name": "幻影",
-			"tier": 2
-		},
-		"armor:blue,gold,purple": {
-			"ch": 2,
-			"desc": "法術冷卻 −12%、移動速度 +15%",
-			"fx": {
-				"move_pct": 15.0,
-				"spell_cdr": 0.12
-			},
-			"name": "時光",
-			"tier": 2
-		},
-		"armor:blue,green,red": {
-			"desc": "攻擊、生命、暴擊率各 +10%",
-			"fx": {
-				"atk_pct": 10.0,
-				"crit": 10.0,
-				"hp_pct": 10.0
-			},
-			"name": "三元素",
-			"tier": 3
-		},
-		"armor:gold,green,purple": {
-			"desc": "法術傷害 +25%、法力回復 +3",
-			"fx": {
-				"mp_regen": 3.0,
-				"spell_pct": 25.0
-			},
-			"name": "秘法",
-			"tier": 1
-		},
-		"armor:green,green,green": {
-			"desc": "每秒生命回復 +8",
-			"fx": {
-				"regen": 8.0
-			},
-			"name": "再生",
-			"tier": 1
-		},
-		"armor:green,red,red": {
-			"ch": 2,
-			"desc": "生命 +25%、每秒生命回復 +12",
-			"fx": {
-				"hp_pct": 25.0,
-				"regen": 12.0
-			},
-			"name": "龍血",
-			"tier": 3
-		},
-		"weapon:black,black,red": {
-			"ch": 2,
-			"desc": "命中時 30% 機率破甲 2 層、攻擊 +10%",
-			"fx": {
-				"atk_pct": 10.0,
-				"sunder_on_hit": 30.0
-			},
-			"name": "破城",
-			"tier": 2
-		},
-		"weapon:blue,blue,red": {
-			"desc": "命中時 40% 機率冰凍 1 秒",
-			"fx": {
-				"freeze_on_hit": 40.0
-			},
-			"name": "冰火交融",
-			"tier": 2
-		},
-		"weapon:blue,purple,purple": {
-			"ch": 2,
-			"desc": "法術傷害 +30%、暴擊率 +6%",
-			"fx": {
-				"crit": 6.0,
-				"spell_pct": 30.0
-			},
-			"name": "星辰之刃",
-			"tier": 3
-		},
-		"weapon:gold,gold,purple": {
-			"ch": 2,
-			"desc": "金幣 +30%、掉寶 +8%",
-			"fx": {
-				"gold_pct": 30.0,
-				"loot": 8.0
-			},
-			"name": "貪婪之刃",
-			"tier": 2
-		},
-		"weapon:gold,red,red": {
-			"desc": "每擊倒一名敵人，本次遠征金幣 +2%（最多 +50%）",
-			"fx": {
-				"flip": 1.0
-			},
-			"name": "戰利之怒",
-			"tier": 1
-		},
-		"weapon:green,purple,purple": {
-			"desc": "每次命中讓目標中毒",
-			"fx": {
-				"poison_on_hit": 100.0
-			},
-			"name": "瘟疫",
-			"tier": 1
-		},
-		"weapon:red,red,red": {
-			"desc": "攻擊 +25%",
-			"fx": {
-				"atk_pct": 25.0
-			},
-			"name": "焚天",
-			"tier": 3
+			"icon": [
+				13,
+				2
+			],
+			"items": [
+				{
+					"id": "miner1",
+					"lore": "「學者王的命令：往下挖，找出地底的熱是從哪來的。工錢加倍。孩子的學費有著落了。」",
+					"name": "日誌．第一頁"
+				},
+				{
+					"id": "miner2",
+					"lore": "「第七十三天。岩壁在發光，不是礦脈的光。大家開始說夢話，夢裡都是同一首歌。」",
+					"name": "日誌．第二頁"
+				},
+				{
+					"id": "miner3",
+					"lore": "「我們挖到一顆石頭，黑的，會跳，像心臟。監工說要獻給國王。我說應該埋回去。沒人聽。」",
+					"name": "日誌．第三頁"
+				},
+				{
+					"id": "miner4",
+					"lore": "「國王親自下來了。他抱著那顆石頭，眼睛亮得嚇人。他說：瑟蘭會永遠不朽。」",
+					"name": "日誌．第四頁"
+				},
+				{
+					"id": "miner5",
+					"lore": "「他們封了礦坑，我們還在裡面。燈快熄了。如果有人看到這本日誌——別讓那顆石頭見到天空。」",
+					"name": "日誌．最後一頁"
+				}
+			],
+			"name": "礦工博恩的日誌"
 		}
 	},
 	"dragon": {
@@ -1127,7 +1189,7 @@ window.GAME = {
 			"abil": [
 				{
 					"enemy": "c2_skull",
-					"every": 5.0,
+					"every": 8.0,
 					"on": "summon"
 				},
 				{
@@ -1138,7 +1200,7 @@ window.GAME = {
 				}
 			],
 			"armor": 4.0,
-			"atk": 7.0,
+			"atk": 6.0,
 			"cd": 1.4,
 			"ch": 2,
 			"dodge": 4.0,
@@ -1274,12 +1336,12 @@ window.GAME = {
 		"c2_skull": {
 			"abil": [
 				{
-					"explode": 0.08,
+					"explode": 0.06,
 					"on": "death"
 				}
 			],
 			"armor": 0.0,
-			"atk": 4.5,
+			"atk": 4.0,
 			"cd": 1.0,
 			"ch": 2,
 			"dodge": 10.0,
@@ -1981,6 +2043,38 @@ window.GAME = {
 			"xp": 3.0
 		}
 	},
+	"floor_secrets": [
+		[
+			"page",
+			"page",
+			"page",
+			"shrine",
+			"cache",
+			"bones",
+			"cat"
+		],
+		[
+			"page",
+			"page",
+			"page",
+			"shrine",
+			"cache",
+			"elite",
+			"bones"
+		],
+		[
+			"page",
+			"page",
+			"page",
+			"page",
+			"shrine",
+			"shrine",
+			"cache",
+			"elite",
+			"elite",
+			"bones"
+		]
+	],
 	"groups": [
 		[
 			"str",
@@ -2007,14 +2101,6 @@ window.GAME = {
 			]
 		],
 		[
-			"luk",
-			"幸運",
-			[
-				13,
-				14
-			]
-		],
-		[
 			"vit",
 			"體質",
 			[
@@ -2028,38 +2114,6 @@ window.GAME = {
 			[
 				12,
 				3
-			]
-		],
-		[
-			"swordsman",
-			"劍士",
-			[
-				5,
-				1
-			]
-		],
-		[
-			"archer",
-			"弓箭手",
-			[
-				6,
-				4
-			]
-		],
-		[
-			"mage",
-			"法師",
-			[
-				6,
-				9
-			]
-		],
-		[
-			"rogue",
-			"盜賊",
-			[
-				5,
-				9
 			]
 		]
 	],
@@ -2079,6 +2133,10 @@ window.GAME = {
 		"boss_skip": [
 			"你沒擊敗任何一位騎士團長，就直接闖進王座廳？國王的力量完全沒被削弱……祝你好運。"
 		],
+		"cat": [
+			"一隻黑貓從瓦礫堆裡鑽出來，盯著冒險者看了很久，然後……跟著回營地了。",
+			"（營地多了一位新成員。牠好像特別喜歡營火旁邊的位置。）"
+		],
 		"ch2_start": [
 			"王座底下……有階梯？",
 			"瓦爾克不是詛咒的元凶，隊長。他是封印。三百年前，地底醒來的是一條古龍，國王用他的長眠把牠封在王座之下，四位元素祭司負責看守。",
@@ -2096,7 +2154,10 @@ window.GAME = {
 			"聽說廢墟最深處還留著王室的寶藏。不過那是傳說，傳說通常都會要人命。",
 			"冒險者回來時說，牆壁裡有歌聲。我寧願相信那是風。",
 			"燈油是冒險者的命。商人那邊有賣，別省這點錢。",
-			"越往外圍的廢墟越危險，但也越值錢。這是公會的第一條守則。"
+			"越往外圍的廢墟越危險，但也越值錢。這是公會的第一條守則。",
+			"我年輕的時候也下去過，跟一個叫艾菈的搭檔。她畫的地圖，比公會的還準。",
+			"公會的老傢伙們說，瑟蘭的地底不只三層。我以前不信，現在不敢不信。",
+			"整層打通的廢墟會告訴你很多事——牆角、神龕、別人留下的東西。地圖上空著的地方，往往藏著最多故事。"
 		],
 		"first_build": [
 			"不錯的開始。每打通一塊廢墟，冒險者就能走得更遠。記得看門口的方向。"
@@ -2112,6 +2173,15 @@ window.GAME = {
 		],
 		"key": [
 			"鑰匙祭壇上的古銀鑰匙，能打開王室的封印寶庫。好好保管。"
+		],
+		"merchant_home": [
+			"流浪商人在營地支起了攤位：「好啦，以後缺什麼就來找我。燈油、鑰匙、裝備，還有營地的設施，我都弄得到。」",
+			"營地多了「商人」分頁。他原本的攤位空出來了，過一陣子大概又會有怪物住進去。"
+		],
+		"merchant_meet": [
+			"流浪商人：「喲，活人！在這種地方遇到客人可不容易。」",
+			"流浪商人：「我的貨架快被骷髏翻爛了……你們營地缺個商人吧？帶我回去，我給你們公道價。」",
+			"冒險者點點頭。商人揹起貨物，跟在後面。"
 		],
 		"opening": [
 			"歡迎來到瑟蘭，隊長。三百年前，這座王國一夜之間沉進了地底。",
@@ -2129,6 +2199,10 @@ window.GAME = {
 		"priest_4": [
 			"四位祭司都安息了……地底在震動！",
 			"古龍 伊格尼斯掙脫了封印，牠會從地下三樓最深的某處現身。快找到牠，在牠飛上地面之前！"
+		],
+		"secret_first": [
+			"等等……這面牆後面是空的？",
+			"廢墟裡還藏著很多公會地圖上沒有的地方，隊長。打通越多廢墟，就越有機會找到它們。"
 		],
 		"shop": [
 			"那是流浪商人！聽說他在廢墟裡做生意已經好幾代了，從沒人知道他怎麼下來的。"
@@ -2149,6 +2223,98 @@ window.GAME = {
 		"warden_3": [
 			"三位騎士團長都安息了。沉睡之王的力量被削弱了，現在正是時候。"
 		]
+	},
+	"loot": {
+		"big_chest": {
+			"chance": 0.75,
+			"w": [
+				0.0,
+				35.0,
+				50.0,
+				13.0,
+				2.0
+			]
+		},
+		"boss": {
+			"chance": 0.8,
+			"w": [
+				0.0,
+				20.0,
+				50.0,
+				25.0,
+				5.0
+			]
+		},
+		"chest": {
+			"chance": 0.55,
+			"w": [
+				42.0,
+				36.0,
+				17.0,
+				4.4,
+				0.6
+			]
+		},
+		"dragon": {
+			"chance": 0.85,
+			"rolls": 2,
+			"w": [
+				0.0,
+				0.0,
+				50.0,
+				30.0,
+				20.0
+			]
+		},
+		"guard": {
+			"chance": 0.5,
+			"w": [
+				12.0,
+				40.0,
+				38.0,
+				9.0,
+				1.0
+			]
+		},
+		"kill": {
+			"w": [
+				74.0,
+				21.0,
+				4.4,
+				0.55,
+				0.05
+			]
+		},
+		"realm_king": {
+			"chance": 0.75,
+			"rolls": 2,
+			"w": [
+				0.0,
+				10.0,
+				50.0,
+				30.0,
+				10.0
+			]
+		},
+		"shop": {
+			"w": [
+				50.0,
+				34.0,
+				13.4,
+				2.4,
+				0.2
+			]
+		},
+		"warden": {
+			"chance": 0.65,
+			"w": [
+				0.0,
+				30.0,
+				50.0,
+				17.0,
+				3.0
+			]
+		}
 	},
 	"mutations": {
 		"fire": {
@@ -2871,7 +3037,7 @@ window.GAME = {
 		{
 			"fx": {
 				"crit": 8.0,
-				"loot": 12.0
+				"loot": 1.5
 			},
 			"icon": [
 				12,
@@ -2880,21 +3046,36 @@ window.GAME = {
 			"id": "u_rift_eye",
 			"name": "秘境之眼",
 			"slot": "badge",
-			"text": "掉寶 +12%，暴擊率 +8%"
+			"text": "掉寶 +1.5%，暴擊率 +8%"
 		}
 	],
 	"recipe_chance": {
-		"big_chest": 0.03,
-		"boss": 0.3,
-		"chest": 0.005,
+		"big_chest": 0.02,
+		"boss": 0.1,
+		"chest": 0.004,
+		"guard": 0.01,
 		"kill": 0.0002,
 		"realm_king": 0.05,
-		"warden": 0.1
+		"warden": 0.06
 	},
+	"recipe_sell": {
+		"1": 150,
+		"2": 600,
+		"3": 2500,
+		"4": 12000
+	},
+	"recipe_tier_names": [
+		"",
+		"常見",
+		"少見",
+		"稀有",
+		"傳說"
+	],
 	"recipe_tier_w": {
-		"1": 75.0,
-		"2": 21.0,
-		"3": 4.0
+		"1": 64.0,
+		"2": 28.0,
+		"3": 7.5,
+		"4": 0.5
 	},
 	"relics": [
 		{
@@ -3168,225 +3349,996 @@ window.GAME = {
 	},
 	"rune_caps": {
 		"badge": 1,
-		"body": 3,
-		"helmet": 2,
-		"offhand": 2,
+		"body": 4,
+		"helmet": 3,
+		"offhand": 3,
 		"ring": 1,
-		"weapon": 3
+		"weapon": 4
 	},
-	"rune_grades": [
-		"碎裂的",
-		"粗糙的",
-		"完整的",
-		"精緻的",
-		"完美的"
-	],
-	"runes": {
+	"rune_chance": {
+		"big_chest": 0.15,
+		"boss": 0.4,
+		"chest": 0.04,
+		"guard": 0.06,
+		"kill": 0.004,
+		"mutant": 0.03,
+		"realm_king": 0.3,
+		"warden": 0.25
+	},
+	"rune_decay": 0.68,
+	"rune_drop_cap": 10,
+	"rune_families": {
 		"black": {
 			"armor": [
 				"armor_pct",
-				[
-					3,
-					6,
-					10,
-					15,
-					22
-				]
+				2.0
 			],
-			"color": "#9999a8",
+			"color": "#b3b8c7",
 			"name": "磐石",
 			"trinket": [
 				"phys_red_pct",
-				[
-					1,
-					2,
-					3,
-					5,
-					7
-				]
+				0.5
 			],
 			"weapon": [
 				"hit",
-				[
-					2,
-					4,
-					7,
-					11,
-					16
-				]
+				1.2
 			]
 		},
 		"blue": {
 			"armor": [
 				"dodge",
-				[
-					1,
-					2,
-					4,
-					6,
-					9
-				]
+				0.6
 			],
 			"color": "#61a6ff",
 			"name": "寒霜",
 			"trinket": [
 				"critx_pct",
-				[
-					5,
-					10,
-					18,
-					28,
-					40
-				]
+				3.0
 			],
 			"weapon": [
 				"crit",
-				[
-					2,
-					4,
-					6,
-					9,
-					13
-				]
+				1.0
 			]
 		},
 		"gold": {
 			"armor": [
 				"gold_pct",
-				[
-					4,
-					8,
-					14,
-					22,
-					34
-				]
+				3.0
 			],
 			"color": "#ffcc4d",
 			"name": "財富",
 			"trinket": [
-				"gold_pct",
-				[
-					5,
-					10,
-					18,
-					28,
-					40
-				]
+				"xp_pct",
+				1.5
 			],
 			"weapon": [
-				"loot",
-				[
-					1,
-					2,
-					4,
-					6,
-					9
-				]
+				"gold_pct",
+				3.0
 			]
 		},
 		"green": {
 			"armor": [
 				"hp_pct",
-				[
-					5,
-					10,
-					17,
-					26,
-					38
-				]
+				3.0
 			],
 			"color": "#6be07a",
 			"name": "生命",
 			"trinket": [
 				"regen",
-				[
-					1,
-					2,
-					4,
-					7,
-					10
-				]
+				0.6
 			],
 			"weapon": [
 				"regen",
-				[
-					1,
-					2,
-					4,
-					7,
-					10
-				]
+				0.6
 			]
 		},
 		"purple": {
 			"armor": [
 				"res_magic",
-				[
-					1,
-					2,
-					4,
-					6,
-					9
-				]
+				0.6
 			],
 			"color": "#b873ff",
 			"name": "暗影",
 			"trinket": [
 				"spell_pct",
-				[
-					4,
-					8,
-					14,
-					22,
-					34
-				]
+				2.5
 			],
 			"weapon": [
 				"aspd_pct",
-				[
-					2,
-					4,
-					7,
-					11,
-					16
-				]
+				1.2
 			]
 		},
 		"red": {
 			"armor": [
 				"hp_pct",
-				[
-					4,
-					8,
-					14,
-					22,
-					34
-				]
+				2.0
 			],
 			"color": "#f26147",
 			"name": "烈焰",
 			"trinket": [
 				"crit",
-				[
-					1,
-					2,
-					4,
-					6,
-					9
-				]
+				0.5
 			],
 			"weapon": [
 				"atk_pct",
-				[
-					4,
-					8,
-					14,
-					22,
-					34
-				]
+				2.0
 			]
 		}
 	},
+	"runes": [
+		{
+			"armor": "生命 +2.0%",
+			"color": "#f26147",
+			"fam": "red",
+			"gold": 0,
+			"n": 1,
+			"name": "歐恩",
+			"need": 3,
+			"trinket": "暴擊率 +0.5%",
+			"weapon": "攻擊 +2.0%"
+		},
+		{
+			"armor": "閃避 +0.8",
+			"color": "#61a6ff",
+			"fam": "blue",
+			"gold": 0,
+			"n": 2,
+			"name": "莉絲",
+			"need": 3,
+			"trinket": "暴擊傷害 +4.0%",
+			"weapon": "暴擊率 +1.3%"
+		},
+		{
+			"armor": "生命 +4.9%",
+			"color": "#6be07a",
+			"fam": "green",
+			"gold": 0,
+			"n": 3,
+			"name": "塔爾",
+			"need": 3,
+			"trinket": "生命回復 +1.0",
+			"weapon": "生命回復 +1.0"
+		},
+		{
+			"armor": "金幣 +5.9%",
+			"color": "#ffcc4d",
+			"fam": "gold",
+			"gold": 0,
+			"n": 4,
+			"name": "維恩",
+			"need": 3,
+			"trinket": "經驗 +2.9%",
+			"weapon": "金幣 +5.9%"
+		},
+		{
+			"armor": "魔法抵抗 +1.4%",
+			"color": "#b873ff",
+			"fam": "purple",
+			"gold": 0,
+			"n": 5,
+			"name": "卡莫",
+			"need": 3,
+			"trinket": "法術傷害 +5.7%",
+			"weapon": "攻擊速度 +2.7%"
+		},
+		{
+			"armor": "護甲 +5.2%",
+			"color": "#b3b8c7",
+			"fam": "black",
+			"gold": 0,
+			"n": 6,
+			"name": "席拉",
+			"need": 3,
+			"trinket": "物理減傷 +1.3%",
+			"weapon": "命中 +3.1"
+		},
+		{
+			"armor": "生命 +5.8%",
+			"color": "#f26147",
+			"fam": "red",
+			"gold": 0,
+			"n": 7,
+			"name": "杜蘭",
+			"need": 3,
+			"trinket": "暴擊率 +1.5%",
+			"weapon": "攻擊 +5.8%"
+		},
+		{
+			"armor": "閃避 +1.9",
+			"color": "#61a6ff",
+			"fam": "blue",
+			"gold": 0,
+			"n": 8,
+			"name": "菲歐",
+			"need": 3,
+			"trinket": "暴擊傷害 +9.7%",
+			"weapon": "暴擊率 +3.2%"
+		},
+		{
+			"armor": "生命 +10.7%",
+			"color": "#6be07a",
+			"fam": "green",
+			"gold": 0,
+			"n": 9,
+			"name": "洛克",
+			"need": 3,
+			"trinket": "生命回復 +2.1",
+			"weapon": "生命回復 +2.1"
+		},
+		{
+			"armor": "金幣 +11.6%",
+			"color": "#ffcc4d",
+			"fam": "gold",
+			"gold": 120,
+			"n": 10,
+			"name": "賽恩",
+			"need": 3,
+			"trinket": "經驗 +5.8%",
+			"weapon": "金幣 +11.6%"
+		},
+		{
+			"armor": "魔法抵抗 +2.5%",
+			"color": "#b873ff",
+			"fam": "purple",
+			"gold": 168,
+			"n": 11,
+			"name": "奧米",
+			"need": 3,
+			"trinket": "法術傷害 +10.5%",
+			"weapon": "攻擊速度 +5.0%"
+		},
+		{
+			"armor": "護甲 +9.0%",
+			"color": "#b3b8c7",
+			"fam": "black",
+			"gold": 235,
+			"n": 12,
+			"name": "布雷",
+			"need": 3,
+			"trinket": "物理減傷 +2.3%",
+			"weapon": "命中 +5.4"
+		},
+		{
+			"armor": "生命 +9.7%",
+			"color": "#f26147",
+			"fam": "red",
+			"gold": 329,
+			"n": 13,
+			"name": "伊達",
+			"need": 3,
+			"trinket": "暴擊率 +2.4%",
+			"weapon": "攻擊 +9.7%"
+		},
+		{
+			"armor": "閃避 +3.1",
+			"color": "#61a6ff",
+			"fam": "blue",
+			"gold": 460,
+			"n": 14,
+			"name": "葛林",
+			"need": 3,
+			"trinket": "暴擊傷害 +15.5%",
+			"weapon": "暴擊率 +5.2%"
+		},
+		{
+			"armor": "生命 +16.4%",
+			"color": "#6be07a",
+			"fam": "green",
+			"gold": 645,
+			"n": 15,
+			"name": "莫爾",
+			"need": 3,
+			"trinket": "生命回復 +3.3",
+			"weapon": "生命回復 +3.3"
+		},
+		{
+			"armor": "金幣 +17.4%",
+			"color": "#ffcc4d",
+			"fam": "gold",
+			"gold": 903,
+			"n": 16,
+			"name": "艾希",
+			"need": 3,
+			"trinket": "經驗 +8.7%",
+			"weapon": "金幣 +17.4%"
+		},
+		{
+			"armor": "魔法抵抗 +3.7%",
+			"color": "#b873ff",
+			"fam": "purple",
+			"gold": 1264,
+			"n": 17,
+			"name": "拉薩",
+			"need": 3,
+			"trinket": "法術傷害 +15.3%",
+			"weapon": "攻擊速度 +7.3%"
+		},
+		{
+			"armor": "護甲 +12.9%",
+			"color": "#b3b8c7",
+			"fam": "black",
+			"gold": 1770,
+			"n": 18,
+			"name": "尼可",
+			"need": 3,
+			"trinket": "物理減傷 +3.2%",
+			"weapon": "命中 +7.7"
+		},
+		{
+			"armor": "生命 +13.5%",
+			"color": "#f26147",
+			"fam": "red",
+			"gold": 2479,
+			"n": 19,
+			"name": "托倫",
+			"need": 3,
+			"trinket": "暴擊率 +3.4%",
+			"weapon": "攻擊 +13.5%"
+		},
+		{
+			"armor": "閃避 +4.2",
+			"color": "#61a6ff",
+			"fam": "blue",
+			"gold": 3471,
+			"n": 20,
+			"name": "薇格",
+			"need": 3,
+			"trinket": "暴擊傷害 +21.2%",
+			"weapon": "暴擊率 +7.1%"
+		},
+		{
+			"armor": "生命 +22.2%",
+			"color": "#6be07a",
+			"fam": "green",
+			"gold": 4859,
+			"n": 21,
+			"name": "卡索",
+			"need": 2,
+			"trinket": "生命回復 +4.4",
+			"weapon": "生命回復 +4.4"
+		},
+		{
+			"armor": "金幣 +23.2%",
+			"color": "#ffcc4d",
+			"fam": "gold",
+			"gold": 6803,
+			"n": 22,
+			"name": "魯恩",
+			"need": 2,
+			"trinket": "經驗 +11.6%",
+			"weapon": "金幣 +23.2%"
+		},
+		{
+			"armor": "魔法抵抗 +4.8%",
+			"color": "#b873ff",
+			"fam": "purple",
+			"gold": 9524,
+			"n": 23,
+			"name": "瑟芙",
+			"need": 2,
+			"trinket": "法術傷害 +20.1%",
+			"weapon": "攻擊速度 +9.6%"
+		},
+		{
+			"armor": "護甲 +16.7%",
+			"color": "#b3b8c7",
+			"fam": "black",
+			"gold": 13334,
+			"n": 24,
+			"name": "達克",
+			"need": 2,
+			"trinket": "物理減傷 +4.2%",
+			"weapon": "命中 +10.0"
+		},
+		{
+			"armor": "生命 +17.4%",
+			"color": "#f26147",
+			"fam": "red",
+			"gold": 18668,
+			"n": 25,
+			"name": "伊歐",
+			"need": 2,
+			"trinket": "暴擊率 +4.3%",
+			"weapon": "攻擊 +17.4%"
+		},
+		{
+			"armor": "閃避 +5.4",
+			"color": "#61a6ff",
+			"fam": "blue",
+			"gold": 26135,
+			"n": 26,
+			"name": "梵恩",
+			"need": 2,
+			"trinket": "暴擊傷害 +27.0%",
+			"weapon": "暴擊率 +9.0%"
+		},
+		{
+			"armor": "生命 +28.0%",
+			"color": "#6be07a",
+			"fam": "green",
+			"gold": 36589,
+			"n": 27,
+			"name": "希恩",
+			"need": 2,
+			"trinket": "生命回復 +5.6",
+			"weapon": "生命回復 +5.6"
+		},
+		{
+			"armor": "金幣 +28.9%",
+			"color": "#ffcc4d",
+			"fam": "gold",
+			"gold": 51225,
+			"n": 28,
+			"name": "索拉",
+			"need": 2,
+			"trinket": "經驗 +14.5%",
+			"weapon": "金幣 +28.9%"
+		},
+		{
+			"armor": "魔法抵抗 +6.0%",
+			"color": "#b873ff",
+			"fam": "purple",
+			"gold": 71715,
+			"n": 29,
+			"name": "澤斐",
+			"need": 2,
+			"trinket": "法術傷害 +24.9%",
+			"weapon": "攻擊速度 +12.0%"
+		},
+		{
+			"armor": "護甲 +20.6%",
+			"color": "#b3b8c7",
+			"fam": "black",
+			"gold": 100401,
+			"n": 30,
+			"name": "艾瑟",
+			"need": 2,
+			"trinket": "物理減傷 +5.1%",
+			"weapon": "命中 +12.3"
+		}
+	],
+	"runewords": {
+		"rw_arcana": {
+			"desc": "法術傷害 +15%、法力回復 +2",
+			"fx": {
+				"mp_regen": 2.0,
+				"spell_pct": 15.0
+			},
+			"grp": "armor",
+			"name": "秘法",
+			"runes": [
+				11,
+				5,
+				4
+			],
+			"tier": 2
+		},
+		"rw_beacon": {
+			"desc": "攻擊 +8%、命中 +4",
+			"fx": {
+				"atk_pct": 8.0,
+				"hit": 4.0
+			},
+			"grp": "weapon",
+			"name": "烽火",
+			"runes": [
+				1,
+				3
+			],
+			"tier": 1
+		},
+		"rw_blight": {
+			"desc": "命中時 50% 機率讓目標中毒",
+			"fx": {
+				"poison_on_hit": 50.0
+			},
+			"grp": "weapon",
+			"name": "腐毒",
+			"runes": [
+				3,
+				5
+			],
+			"tier": 1
+		},
+		"rw_bloodpact": {
+			"desc": "攻擊 +8%，攻擊吸取 8% 傷害的生命",
+			"fx": {
+				"atk_pct": 8.0,
+				"lifesteal": 8.0
+			},
+			"grp": "weapon",
+			"name": "血契",
+			"runes": [
+				7,
+				12,
+				3
+			],
+			"tier": 2
+		},
+		"rw_dragonblood": {
+			"desc": "生命 +30%、每秒生命回復 +15、吸取 8% 傷害的生命",
+			"fx": {
+				"hp_pct": 30.0,
+				"lifesteal": 8.0,
+				"regen": 15.0
+			},
+			"grp": "armor",
+			"name": "龍血",
+			"runes": [
+				25,
+				21,
+				28,
+				23
+			],
+			"tier": 4
+		},
+		"rw_dragonbreath": {
+			"desc": "攻擊 +25%、吸取 12% 傷害的生命，命中時 30% 機率破甲 2 層",
+			"fx": {
+				"atk_pct": 25.0,
+				"lifesteal": 12.0,
+				"sunder_on_hit": 30.0
+			},
+			"grp": "weapon",
+			"name": "龍息",
+			"runes": [
+				26,
+				23,
+				29,
+				20
+			],
+			"tier": 4
+		},
+		"rw_eternity": {
+			"desc": "攻擊 +30%、12% 機率連擊兩次、對頭目傷害 +15%",
+			"fx": {
+				"atk_pct": 30.0,
+				"boss_dmg": 15.0,
+				"double": 12.0
+			},
+			"grp": "weapon",
+			"name": "永恆",
+			"runes": [
+				30,
+				28,
+				25,
+				27
+			],
+			"tier": 4
+		},
+		"rw_fang": {
+			"desc": "暴擊率 +4%，命中時 8% 機率冰凍 1 秒",
+			"fx": {
+				"crit": 4.0,
+				"freeze_on_hit": 8.0
+			},
+			"grp": "weapon",
+			"name": "冰牙",
+			"runes": [
+				2,
+				4
+			],
+			"tier": 1
+		},
+		"rw_gust": {
+			"desc": "攻擊速度 +12%、移動速度 +10%",
+			"fx": {
+				"aspd_pct": 12.0,
+				"move_pct": 10.0
+			},
+			"grp": "weapon",
+			"name": "疾風",
+			"runes": [
+				8,
+				2,
+				11
+			],
+			"tier": 2
+		},
+		"rw_immortal": {
+			"desc": "護甲 +40%、生命 +25%、魔法抵抗 +10%",
+			"fx": {
+				"armor_pct": 40.0,
+				"hp_pct": 25.0,
+				"res_magic": 10.0
+			},
+			"grp": "armor",
+			"name": "不朽",
+			"runes": [
+				27,
+				22,
+				24,
+				30
+			],
+			"tier": 4
+		},
+		"rw_judgment": {
+			"desc": "法術傷害 +60%、法術冷卻 −15%，主動技能有 15% 機率免費再施放一次",
+			"fx": {
+				"echo_cast": 0.15,
+				"spell_cdr": 0.15,
+				"spell_pct": 60.0
+			},
+			"grp": "weapon",
+			"name": "天罰",
+			"runes": [
+				24,
+				19,
+				27,
+				22
+			],
+			"tier": 4
+		},
+		"rw_kingheart": {
+			"desc": "攻擊、生命 +20%，金幣 +30%，經驗 +15%",
+			"fx": {
+				"atk_pct": 20.0,
+				"gold_pct": 30.0,
+				"hp_pct": 20.0,
+				"xp_pct": 15.0
+			},
+			"grp": "armor",
+			"name": "王者之心",
+			"runes": [
+				30,
+				24,
+				26,
+				28
+			],
+			"tier": 4
+		},
+		"rw_lament": {
+			"desc": "暴擊率 +8%，命中時 30% 機率冰凍 1 秒",
+			"fx": {
+				"crit": 8.0,
+				"freeze_on_hit": 30.0
+			},
+			"grp": "weapon",
+			"name": "霜之哀嘆",
+			"runes": [
+				14,
+				11,
+				16
+			],
+			"tier": 3
+		},
+		"rw_merchant": {
+			"desc": "金幣 +20%",
+			"fx": {
+				"gold_pct": 20.0
+			},
+			"grp": "armor",
+			"name": "富商",
+			"runes": [
+				4,
+				10
+			],
+			"tier": 2
+		},
+		"rw_phantom": {
+			"desc": "閃避 +5、暴擊傷害 +15%",
+			"fx": {
+				"critx_pct": 15.0,
+				"dodge": 5.0
+			},
+			"grp": "armor",
+			"name": "幻影",
+			"runes": [
+				2,
+				8
+			],
+			"tier": 2
+		},
+		"rw_plunder": {
+			"desc": "金幣 +15%；每擊倒一名敵人，本次遠征金幣 +2%（最多 +50%）",
+			"fx": {
+				"flip": 1.0,
+				"gold_pct": 15.0
+			},
+			"grp": "weapon",
+			"name": "戰利之怒",
+			"runes": [
+				4,
+				1
+			],
+			"tier": 1
+		},
+		"rw_reaver": {
+			"desc": "金幣 +30%、掉寶 +1%，每擊倒一名敵人本次遠征金幣 +2%",
+			"fx": {
+				"flip": 1.0,
+				"gold_pct": 30.0,
+				"loot": 1.0
+			},
+			"grp": "weapon",
+			"name": "掠奪者",
+			"runes": [
+				12,
+				18
+			],
+			"tier": 3
+		},
+		"rw_renewal": {
+			"desc": "每秒生命回復 +4",
+			"fx": {
+				"regen": 4.0
+			},
+			"grp": "armor",
+			"name": "再生",
+			"runes": [
+				3,
+				9
+			],
+			"tier": 2
+		},
+		"rw_sanctuary": {
+			"desc": "攻擊、生命、法術傷害、金幣 +12%，魔法抵抗 +10%",
+			"fx": {
+				"all_pct": 12.0,
+				"res_magic": 10.0
+			},
+			"grp": "armor",
+			"name": "聖域",
+			"runes": [
+				29,
+				26,
+				21
+			],
+			"tier": 4
+		},
+		"rw_siege": {
+			"desc": "攻擊 +10%，命中時 25% 機率破甲 2 層",
+			"fx": {
+				"atk_pct": 10.0,
+				"sunder_on_hit": 25.0
+			},
+			"grp": "weapon",
+			"name": "破城",
+			"runes": [
+				6,
+				9,
+				7
+			],
+			"tier": 2
+		},
+		"rw_skyfire": {
+			"desc": "攻擊 +35%、暴擊傷害 +40%",
+			"fx": {
+				"atk_pct": 35.0,
+				"critx_pct": 40.0
+			},
+			"grp": "weapon",
+			"name": "焚天",
+			"runes": [
+				21,
+				13,
+				25,
+				18
+			],
+			"tier": 4
+		},
+		"rw_starfire": {
+			"desc": "法術傷害 +18%、法術冷卻 −5%",
+			"fx": {
+				"spell_cdr": 0.05,
+				"spell_pct": 18.0
+			},
+			"grp": "weapon",
+			"name": "星火",
+			"runes": [
+				5,
+				10
+			],
+			"tier": 2
+		},
+		"rw_stoneskin": {
+			"desc": "護甲 +12%、魔法抵抗 +4%",
+			"fx": {
+				"armor_pct": 12.0,
+				"res_magic": 4.0
+			},
+			"grp": "armor",
+			"name": "石膚",
+			"runes": [
+				6,
+				1
+			],
+			"tier": 1
+		},
+		"rw_stride": {
+			"desc": "移動速度 +15%、閃避 +5",
+			"fx": {
+				"dodge": 5.0,
+				"move_pct": 15.0
+			},
+			"grp": "armor",
+			"name": "疾行",
+			"runes": [
+				8,
+				7,
+				11
+			],
+			"tier": 2
+		},
+		"rw_thorns": {
+			"desc": "護甲 +10%，反彈 20% 受到的近戰傷害",
+			"fx": {
+				"armor_pct": 10.0,
+				"thorns": 20.0
+			},
+			"grp": "armor",
+			"name": "荊棘之牆",
+			"runes": [
+				12,
+				6,
+				6
+			],
+			"tier": 2
+		},
+		"rw_thunder": {
+			"desc": "攻擊 +18%，攻擊有 8% 機率連擊兩次",
+			"fx": {
+				"atk_pct": 18.0,
+				"double": 8.0
+			},
+			"grp": "weapon",
+			"name": "雷霆之怒",
+			"runes": [
+				13,
+				9,
+				15
+			],
+			"tier": 3
+		},
+		"rw_time": {
+			"desc": "法術冷卻 −10%、移動速度 +12%",
+			"fx": {
+				"move_pct": 12.0,
+				"spell_cdr": 0.1
+			},
+			"grp": "armor",
+			"name": "時光",
+			"runes": [
+				19,
+				14
+			],
+			"tier": 3
+		},
+		"rw_torrent": {
+			"desc": "法術傷害 +35%、法術冷卻 −10%",
+			"fx": {
+				"spell_cdr": 0.1,
+				"spell_pct": 35.0
+			},
+			"grp": "weapon",
+			"name": "奧術洪流",
+			"runes": [
+				17,
+				10,
+				13
+			],
+			"tier": 3
+		},
+		"rw_trinity": {
+			"desc": "攻擊、生命 +10%，暴擊率 +6%",
+			"fx": {
+				"atk_pct": 10.0,
+				"crit": 6.0,
+				"hp_pct": 10.0
+			},
+			"grp": "armor",
+			"name": "三元素",
+			"runes": [
+				13,
+				14,
+				15
+			],
+			"tier": 3
+		},
+		"rw_unbowed": {
+			"desc": "護甲 +25%、生命 +10%、物理減傷 +5%",
+			"fx": {
+				"armor_pct": 25.0,
+				"hp_pct": 10.0,
+				"phys_red_pct": 5.0
+			},
+			"grp": "armor",
+			"name": "不屈",
+			"runes": [
+				17,
+				20,
+				16
+			],
+			"tier": 3
+		},
+		"rw_vampire": {
+			"desc": "生命 +10%，攻擊吸取 10% 傷害的生命",
+			"fx": {
+				"hp_pct": 10.0,
+				"lifesteal": 10.0
+			},
+			"grp": "armor",
+			"name": "吸血鬼",
+			"runes": [
+				15,
+				12,
+				18
+			],
+			"tier": 3
+		},
+		"rw_vigil": {
+			"desc": "生命 +12%、魔法抵抗 +6%",
+			"fx": {
+				"hp_pct": 12.0,
+				"res_magic": 6.0
+			},
+			"grp": "armor",
+			"name": "守望",
+			"runes": [
+				9,
+				12
+			],
+			"tier": 2
+		}
+	},
+	"secret_info": {
+		"bones": {
+			"desc": "金幣、一段遺言，偶爾有符文之語配方",
+			"icon": [
+				12,
+				15
+			],
+			"name": "迷途冒險者的遺骸"
+		},
+		"cache": {
+			"desc": "一大筆金幣，可能還有裝備",
+			"icon": [
+				11,
+				11
+			],
+			"name": "藏寶密室"
+		},
+		"cat": {
+			"desc": "？",
+			"icon": [
+				13,
+				14
+			],
+			"name": "迷路的黑貓"
+		},
+		"elite": {
+			"desc": "沉睡的古代勇士守在這裡：很強，但戰利品很好",
+			"icon": [
+				5,
+				3
+			],
+			"name": "古代戰場"
+		},
+		"page": {
+			"desc": "找到一件收藏品",
+			"icon": [
+				13,
+				4
+			],
+			"name": "塵封的角落"
+		},
+		"shrine": {
+			"desc": "永久：攻擊、生命 +1%（最多 20 座）",
+			"icon": [
+				17,
+				1
+			],
+			"name": "被遺忘的神龕"
+		}
+	},
+	"secret_random_w": {
+		"bones": 20.0,
+		"cache": 25.0,
+		"elite": 10.0,
+		"page": 40.0,
+		"shrine": 5.0
+	},
+	"set_share": 0.12,
 	"sets": {
 		"guardian": {
 			"ach": "set_guardian",
@@ -3405,6 +4357,7 @@ window.GAME = {
 				]
 			],
 			"ch": 2,
+			"cls": "swordsman",
 			"name": "鐵壁聖騎",
 			"pieces": {
 				"badge": {
@@ -3477,6 +4430,7 @@ window.GAME = {
 					"王者光輝：每秒對房間內所有敵人造成 20% 攻擊的傷害"
 				]
 			],
+			"cls": "",
 			"name": "王室近衛",
 			"pieces": {
 				"badge": {
@@ -3546,10 +4500,11 @@ window.GAME = {
 				],
 				[
 					6,
-					"暗影之舞：閃避後的下一擊必定暴擊，掉寶 +10%"
+					"暗影之舞：閃避後的下一擊必定暴擊，掉寶 +1%"
 				]
 			],
-			"name": "暗影盜賊",
+			"cls": "",
+			"name": "暗影獵手",
 			"pieces": {
 				"badge": {
 					"gold": 0.1,
@@ -3557,7 +4512,7 @@ window.GAME = {
 						8,
 						8
 					],
-					"name": "盜賊公會徽記"
+					"name": "獵手徽記"
 				},
 				"body": {
 					"armor": 3.0,
@@ -3606,7 +4561,7 @@ window.GAME = {
 					"type": "pierce"
 				}
 			},
-			"req": "luk"
+			"req": ""
 		},
 		"starmage": {
 			"ach": "set_starmage",
@@ -3625,6 +4580,7 @@ window.GAME = {
 				]
 			],
 			"ch": 2,
+			"cls": "mage",
 			"name": "星辰法師",
 			"pieces": {
 				"badge": {
@@ -3698,6 +4654,7 @@ window.GAME = {
 				]
 			],
 			"ch": 2,
+			"cls": "archer",
 			"name": "疾風遊俠",
 			"pieces": {
 				"badge": {
@@ -3773,92 +4730,146 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				15,
-				1.45
+				9,
+				1.16
 			],
-			"desc": "攻擊 +10%",
+			"desc": "攻擊 +4%（每級）",
+			"fx": [
+				[
+					"atk_pct",
+					4.0
+				]
+			],
 			"grp": "str",
 			"id": "atk_up",
-			"max": 10,
+			"max": 20,
 			"name": "武器鍛鍊",
 			"pre": [
 				[
 					"str",
 					1
 				]
-			],
-			"sig": "swordsman"
+			]
 		},
 		{
 			"cost": [
-				18,
-				1.5
+				8,
+				1.16
 			],
-			"desc": "使用劍斧類武器時，攻擊 +4%",
+			"desc": "護甲 +2（每級）",
+			"fx": [
+				[
+					"armor",
+					2.0
+				]
+			],
+			"grp": "str",
+			"id": "armor_up",
+			"max": 20,
+			"name": "護甲保養",
+			"pre": [
+				[
+					"str",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				10,
+				1.17
+			],
+			"desc": "使用劍斧類武器時，攻擊 +2.5%（每級）",
 			"fx": [
 				[
 					"slash_pct",
-					4.0
+					2.5
 				]
 			],
 			"grp": "str",
 			"id": "m_slash",
-			"max": 5,
+			"max": 15,
 			"name": "劍術",
 			"pre": [
 				[
 					"str",
 					2
 				]
-			],
-			"sig": "swordsman"
+			]
 		},
 		{
 			"cost": [
-				18,
-				1.5
+				10,
+				1.17
 			],
-			"desc": "使用鈍器類武器時，攻擊 +4%",
+			"desc": "使用鈍器類武器時，攻擊 +2.5%（每級）",
 			"fx": [
 				[
 					"blunt_pct",
-					4.0
+					2.5
 				]
 			],
 			"grp": "str",
 			"id": "m_blunt",
-			"max": 5,
+			"max": 15,
 			"name": "錘術",
 			"pre": [
 				[
 					"str",
 					2
 				]
-			],
-			"sig": "swordsman"
+			]
 		},
 		{
 			"cost": [
-				14,
-				1.45
+				27,
+				1.2
 			],
-			"desc": "護甲 +3",
+			"desc": "對生命低於 30% 的敵人，傷害 +3%（每級）",
+			"fx": [
+				[
+					"execute_pct",
+					3.0
+				]
+			],
 			"grp": "str",
-			"id": "armor_up",
-			"max": 10,
-			"name": "護甲保養",
+			"id": "b_execute",
+			"max": 8,
+			"name": "終結",
 			"pre": [
 				[
 					"atk_up",
-					1
+					5
 				]
-			],
-			"sig": "swordsman"
+			]
 		},
 		{
 			"cost": [
-				40,
-				1.7
+				27,
+				1.22
+			],
+			"desc": "每場戰鬥的第一擊傷害 +15%（每級）",
+			"fx": [
+				[
+					"first_pct",
+					15.0
+				]
+			],
+			"grp": "str",
+			"id": "b_first",
+			"max": 6,
+			"name": "先制",
+			"pre": [
+				[
+					"atk_up",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.35
 			],
 			"desc": "每 7 次攻擊，該次額外 +40% 傷害（每級 +40%）",
 			"grp": "str",
@@ -3868,108 +4879,108 @@ window.GAME = {
 			"pre": [
 				[
 					"atk_up",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				90,
+				1.45
+			],
+			"desc": "力量超過 10 的部分，每點攻擊再 +1%（每級 +0.5%）",
+			"grp": "str",
+			"id": "c_grip",
+			"max": 3,
+			"name": "劍士之力",
+			"pre": [
+				[
+					"str",
+					5
+				],
+				[
+					"atk_up",
 					2
 				]
-			],
-			"sig": "swordsman"
+			]
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				30,
+				1.2
 			],
-			"desc": "對生命低於 30% 的敵人，傷害 +6%（每級）",
+			"desc": "劍斧、鈍器類武器攻擊 +3%（每級）",
 			"fx": [
 				[
-					"execute_pct",
-					6.0
+					"slash_pct",
+					3.0
+				],
+				[
+					"blunt_pct",
+					3.0
 				]
 			],
 			"grp": "str",
-			"id": "b_execute",
-			"max": 4,
-			"name": "終結",
+			"id": "c_disc",
+			"max": 10,
+			"name": "武器大師",
 			"pre": [
 				[
-					"atk_up",
+					"m_slash",
 					3
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				18,
+				1.2
 			],
-			"desc": "每場戰鬥的第一擊傷害 +30%（每級）",
-			"fx": [
-				[
-					"first_pct",
-					30.0
-				]
-			],
-			"grp": "str",
-			"id": "b_first",
-			"max": 3,
-			"name": "先制",
-			"pre": [
-				[
-					"atk_up",
-					3
-				]
-			]
-		},
-		{
-			"cost": [
-				20,
-				1.5
-			],
-			"desc": "穿重型護甲時，受到的物理傷害 −3%（每級）",
+			"desc": "穿重型護甲時，受到的物理傷害 −1.5%（每級）",
 			"fx": [
 				[
 					"heavy_red",
-					0.03
+					0.015
 				]
 			],
 			"grp": "str",
 			"id": "t_heavy",
-			"max": 5,
+			"max": 10,
 			"name": "板甲適應",
 			"pre": [
 				[
 					"armor_up",
-					2
-				]
-			],
-			"sig": "swordsman"
-		},
-		{
-			"cost": [
-				20,
-				1.5
-			],
-			"desc": "穿中型護甲時，受到的物理傷害 −2%（每級）",
-			"fx": [
-				[
-					"medium_red",
-					0.02
-				]
-			],
-			"grp": "str",
-			"id": "t_medium",
-			"max": 5,
-			"name": "鎖甲適應",
-			"pre": [
-				[
-					"armor_up",
-					1
+					3
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.7
+				17,
+				1.2
+			],
+			"desc": "穿中型護甲時，受到的物理傷害 −1%（每級）",
+			"fx": [
+				[
+					"medium_red",
+					0.01
+				]
+			],
+			"grp": "str",
+			"id": "t_medium",
+			"max": 10,
+			"name": "鎖甲適應",
+			"pre": [
+				[
+					"armor_up",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.35
 			],
 			"desc": "每被擊中 12 次，獲得堅固 4 秒（每級 +1 秒）",
 			"grp": "str",
@@ -3979,38 +4990,60 @@ window.GAME = {
 			"pre": [
 				[
 					"armor_up",
-					2
-				]
-			],
-			"sig": "swordsman"
-		},
-		{
-			"cost": [
-				40,
-				1.6
-			],
-			"desc": "護甲 +8%（每級）",
-			"fx": [
-				[
-					"armor_pct",
-					8.0
-				]
-			],
-			"grp": "str",
-			"id": "b_thick",
-			"max": 5,
-			"name": "千錘百鍊",
-			"pre": [
-				[
-					"armor_up",
-					3
+					4
 				]
 			]
 		},
 		{
 			"cost": [
-				60,
-				1.8
+				30,
+				1.2
+			],
+			"desc": "受到的物理傷害 −1.5%（每級）",
+			"fx": [
+				[
+					"phys_red",
+					0.015
+				]
+			],
+			"grp": "str",
+			"id": "c_rebar",
+			"max": 10,
+			"name": "盾牆",
+			"pre": [
+				[
+					"armor_up",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				33,
+				1.2
+			],
+			"desc": "護甲 +4%（每級）",
+			"fx": [
+				[
+					"armor_pct",
+					4.0
+				]
+			],
+			"grp": "str",
+			"id": "b_thick",
+			"max": 10,
+			"name": "千錘百鍊",
+			"pre": [
+				[
+					"armor_up",
+					8
+				]
+			]
+		},
+		{
+			"cost": [
+				110,
+				1.7
 			],
 			"desc": "蓄力一擊每級提早 1 次觸發（7 → 5）",
 			"grp": "str",
@@ -4026,8 +5059,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				60,
-				1.7
+				90,
+				1.5
 			],
 			"desc": "蓄力一擊讓目標暈眩 0.3 秒（每級 +0.3 秒）",
 			"grp": "str",
@@ -4043,8 +5076,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				50,
-				1.7
+				90,
+				1.5
 			],
 			"desc": "不動如山所需的被擊次數 −3（每級）",
 			"grp": "str",
@@ -4060,174 +5093,31 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				300,
-				1.5
+				30,
+				1.2
 			],
-			"desc": "攻擊 +12%（每級）",
+			"desc": "受到的魔法傷害 −3%（每級）",
 			"fx": [
 				[
-					"atk_pct",
-					12.0
+					"magic_red",
+					3.0
 				]
 			],
 			"grp": "str",
-			"id": "st_titan",
-			"max": 5,
-			"name": "巨人之力",
-			"pre": [
-				[
-					"atk_up",
-					5
-				],
-				[
-					"seal",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				500,
-				1.5
-			],
-			"desc": "護甲 +15%（每級）",
-			"fx": [
-				[
-					"armor_pct",
-					15.0
-				]
-			],
-			"grp": "str",
-			"id": "st_bulwark",
-			"max": 5,
-			"name": "不滅壁壘",
+			"id": "st_wardoff",
+			"max": 10,
+			"name": "破魔之盾",
 			"pre": [
 				[
 					"armor_up",
-					5
-				],
-				[
-					"seal",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				30,
-				1.5
-			],
-			"desc": "主動：揮劍掃過全房間，造成 90% 攻擊傷害（每級 +12%）",
-			"grp": "str",
-			"id": "s_whirl",
-			"max": 10,
-			"name": "旋風斬",
-			"pre": [
-				[
-					"str",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				30,
-				1.5
-			],
-			"desc": "主動：對單體造成 160% 攻擊傷害並暈眩 1 秒（每級 +20% 傷害、+0.1 秒）",
-			"grp": "str",
-			"id": "s_bash",
-			"max": 10,
-			"name": "盾牌猛擊",
-			"pre": [
-				[
-					"str",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				35,
-				1.55
-			],
-			"desc": "主動：8 秒內攻擊 +20%（每級 +4%）",
-			"grp": "str",
-			"id": "s_warcry",
-			"max": 10,
-			"name": "戰吼",
-			"pre": [
-				[
-					"atk_up",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.55
-			],
-			"desc": "主動：重擊地面，對全房間造成 60% 攻擊傷害並緩速 3 秒（每級 +8% 傷害）",
-			"grp": "str",
-			"id": "s_quake",
-			"max": 10,
-			"name": "大地震擊",
-			"pre": [
-				[
-					"s_whirl",
 					3
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.55
-			],
-			"desc": "主動：召喚一座石像吸引所有敵人攻擊 6 秒，石像生命為你的 40%（每級 +10%）",
-			"grp": "str",
-			"id": "s_barrel",
-			"max": 10,
-			"name": "石像守衛",
-			"pre": [
-				[
-					"armor_up",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				400,
-				1.4
-			],
-			"desc": "攻擊 +10%（每級）",
-			"fx": [
-				[
-					"atk_pct",
-					10.0
-				]
-			],
-			"grp": "str",
-			"id": "st_dragonslayer",
-			"max": 5,
-			"name": "屠龍之力",
-			"pre": [
-				[
-					"st_titan",
-					3
-				],
-				[
-					"priest",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
+				90,
+				1.5
 			],
 			"desc": "堅固狀態時，受到的魔法傷害也 −5%（每級）",
 			"fx": [
@@ -4249,6 +5139,359 @@ window.GAME = {
 		},
 		{
 			"cost": [
+				33,
+				1.2
+			],
+			"desc": "攻擊有 2% 機率讓目標暈眩 1 秒（每級）",
+			"fx": [
+				[
+					"stun_on_hit",
+					2.0
+				]
+			],
+			"grp": "str",
+			"id": "c_cement",
+			"max": 10,
+			"name": "盾擊",
+			"pre": [
+				[
+					"c_rebar",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				280,
+				1
+			],
+			"desc": "劍斧類武器攻擊時，另外 2 名敵人受到 20% 傷害",
+			"grp": "str",
+			"id": "c_cleave",
+			"max": 1,
+			"name": "迴旋斬",
+			"pre": [
+				[
+					"c_disc",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				280,
+				1
+			],
+			"desc": "鈍器類武器命中有 20% 機率破甲",
+			"grp": "str",
+			"id": "c_breaker",
+			"max": 1,
+			"name": "碎甲",
+			"pre": [
+				[
+					"c_disc",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				260,
+				1
+			],
+			"desc": "板甲適應效果 ×1.25",
+			"grp": "str",
+			"id": "c_ironclad",
+			"max": 1,
+			"name": "重裝",
+			"pre": [
+				[
+					"t_heavy",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				320,
+				1
+			],
+			"desc": "被近戰攻擊時反彈 10% 攻擊的傷害",
+			"grp": "str",
+			"id": "c_spiked",
+			"max": 1,
+			"name": "荊棘盾",
+			"pre": [
+				[
+					"c_ironclad",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				160,
+				1.3
+			],
+			"desc": "對所有頭目傷害 +3%（騎士團長、祭司、王、古龍、秘境守衛與秘境之王；每級）",
+			"fx": [
+				[
+					"boss_dmg",
+					3.0
+				]
+			],
+			"grp": "str",
+			"id": "c_champion",
+			"max": 5,
+			"name": "屠魔者",
+			"pre": [
+				[
+					"c_cement",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				900,
+				1
+			],
+			"desc": "終極：生命低於 40% 時攻擊速度 +40%",
+			"grp": "str",
+			"id": "c_overnight",
+			"max": 1,
+			"name": "狂戰之怒",
+			"pre": [
+				[
+					"c_cement",
+					5
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				350,
+				1.18
+			],
+			"desc": "攻擊 +4%（每級）",
+			"fx": [
+				[
+					"atk_pct",
+					4.0
+				]
+			],
+			"grp": "str",
+			"id": "st_titan",
+			"max": 10,
+			"name": "巨人之力",
+			"pre": [
+				[
+					"atk_up",
+					10
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				450,
+				1.18
+			],
+			"desc": "護甲 +5%（每級）",
+			"fx": [
+				[
+					"armor_pct",
+					5.0
+				]
+			],
+			"grp": "str",
+			"id": "st_bulwark",
+			"max": 10,
+			"name": "不滅壁壘",
+			"pre": [
+				[
+					"armor_up",
+					10
+				],
+				[
+					"seal",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				700,
+				1.15
+			],
+			"desc": "攻擊 +4%（每級）",
+			"fx": [
+				[
+					"atk_pct",
+					4.0
+				]
+			],
+			"grp": "str",
+			"id": "st_dragonslayer",
+			"max": 10,
+			"name": "屠龍之力",
+			"pre": [
+				[
+					"st_titan",
+					5
+				],
+				[
+					"priest",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				700,
+				1.15
+			],
+			"desc": "護甲 +5%、生命 +2.5%、受到的魔法傷害 −4%（每級）",
+			"fx": [
+				[
+					"armor_pct",
+					5.0
+				],
+				[
+					"hp_pct",
+					2.5
+				],
+				[
+					"magic_red",
+					4.0
+				]
+			],
+			"grp": "str",
+			"id": "c_aegis",
+			"max": 10,
+			"name": "聖盾守護",
+			"pre": [
+				[
+					"armor_up",
+					8
+				],
+				[
+					"priest",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				35,
+				1.45
+			],
+			"desc": "主動：揮劍掃過全房間，造成 90% 攻擊傷害（每級 +12%）",
+			"grp": "str",
+			"id": "s_whirl",
+			"max": 10,
+			"name": "旋風斬",
+			"pre": [
+				[
+					"str",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				35,
+				1.45
+			],
+			"desc": "主動：對單體造成 160% 攻擊傷害並暈眩 1 秒（每級 +20% 傷害、+0.1 秒）",
+			"grp": "str",
+			"id": "s_bash",
+			"max": 10,
+			"name": "盾牌猛擊",
+			"pre": [
+				[
+					"str",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				40,
+				1.48
+			],
+			"desc": "主動：8 秒內攻擊 +20%（每級 +4%）",
+			"grp": "str",
+			"id": "s_warcry",
+			"max": 10,
+			"name": "戰吼",
+			"pre": [
+				[
+					"atk_up",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				50,
+				1.48
+			],
+			"desc": "主動：重擊地面，對全房間造成 60% 攻擊傷害並緩速 3 秒（每級 +8% 傷害）",
+			"grp": "str",
+			"id": "s_quake",
+			"max": 10,
+			"name": "大地震擊",
+			"pre": [
+				[
+					"s_whirl",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				50,
+				1.48
+			],
+			"desc": "主動：召喚一座石像吸引所有敵人攻擊 6 秒，石像生命為你的 40%（每級 +10%）",
+			"grp": "str",
+			"id": "s_barrel",
+			"max": 10,
+			"name": "石像守衛",
+			"pre": [
+				[
+					"armor_up",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				55,
+				1.48
+			],
+			"desc": "主動：用金幣雇 1 名傭兵助戰 12 秒（3 級 2 名、6 級 3 名），攻擊為你的 30%（每級 +5%）",
+			"grp": "str",
+			"id": "s_summon",
+			"max": 10,
+			"name": "召喚傭兵",
+			"pre": [
+				[
+					"str",
+					8
+				]
+			]
+		},
+		{
+			"cost": [
 				8,
 				1.13
 			],
@@ -4261,49 +5504,65 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				15,
-				1.45
+				9,
+				1.16
 			],
-			"desc": "攻擊速度 +6%",
+			"desc": "攻擊速度 +3%（每級）",
+			"fx": [
+				[
+					"aspd_pct",
+					3.0
+				]
+			],
 			"grp": "dex",
 			"id": "aspd",
-			"max": 10,
+			"max": 20,
 			"name": "迅捷連擊",
 			"pre": [
 				[
 					"dex",
 					1
 				]
-			],
-			"sig": "archer"
+			]
 		},
 		{
 			"cost": [
-				14,
-				1.45
+				8,
+				1.16
 			],
-			"desc": "閃避 +2",
+			"desc": "閃避 +1（每級）",
+			"fx": [
+				[
+					"dodge",
+					1.0
+				]
+			],
 			"grp": "dex",
 			"id": "dodge_up",
-			"max": 10,
+			"max": 15,
 			"name": "身法",
 			"pre": [
 				[
 					"dex",
 					1
 				]
-			],
-			"sig": "rogue"
+			]
 		},
 		{
 			"cost": [
-				12,
-				1.4
+				7,
+				1.15
 			],
-			"desc": "移動速度 +8%",
+			"desc": "移動速度 +3%（每級）",
+			"fx": [
+				[
+					"move_pct",
+					3.0
+				]
+			],
 			"grp": "dex",
 			"id": "move",
-			"max": 10,
+			"max": 15,
 			"name": "輕盈腳步",
 			"pre": [
 				[
@@ -4314,50 +5573,144 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				18,
-				1.5
+				7,
+				1.15
 			],
-			"desc": "使用十字弓時，攻擊 +4%",
+			"desc": "命中 +1.5（每級）",
+			"fx": [
+				[
+					"hit",
+					1.5
+				]
+			],
+			"grp": "dex",
+			"id": "hit_up",
+			"max": 15,
+			"name": "穩定出手",
+			"pre": [
+				[
+					"dex",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				10,
+				1.16
+			],
+			"desc": "暴擊率 +1%（每級）",
+			"fx": [
+				[
+					"crit",
+					1.0
+				]
+			],
+			"grp": "dex",
+			"id": "crit",
+			"max": 20,
+			"name": "弱點洞察",
+			"pre": [
+				[
+					"dex",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				11,
+				1.16
+			],
+			"desc": "暴擊傷害 +8%（每級）",
+			"fx": [
+				[
+					"critx_pct",
+					8.0
+				]
+			],
+			"grp": "dex",
+			"id": "critx",
+			"max": 20,
+			"name": "致命一擊",
+			"pre": [
+				[
+					"dex",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				10,
+				1.17
+			],
+			"desc": "使用十字弓時，攻擊 +2.5%（每級）",
 			"fx": [
 				[
 					"bow_pct",
-					4.0
+					2.5
 				]
 			],
 			"grp": "dex",
 			"id": "m_bow",
-			"max": 5,
+			"max": 15,
 			"name": "弩術",
 			"pre": [
 				[
 					"dex",
 					2
 				]
-			],
-			"sig": "archer"
+			]
 		},
 		{
 			"cost": [
-				22,
-				1.45
+				10,
+				1.17
 			],
-			"desc": "暴擊傷害 +15%",
+			"desc": "使用匕首類武器時，攻擊 +2.5%（每級）",
+			"fx": [
+				[
+					"pierce_pct",
+					2.5
+				]
+			],
 			"grp": "dex",
-			"id": "critx",
-			"max": 10,
-			"name": "致命一擊",
+			"id": "m_pierce",
+			"max": 15,
+			"name": "刺擊術",
 			"pre": [
 				[
 					"dex",
 					2
 				]
-			],
-			"sig": "archer"
+			]
 		},
 		{
 			"cost": [
-				40,
-				1.7
+				90,
+				1.45
+			],
+			"desc": "敏捷超過 10 的部分，每點攻擊 +1%（每級 +0.5%）",
+			"grp": "dex",
+			"id": "a_eagle",
+			"max": 3,
+			"name": "鷹眼",
+			"pre": [
+				[
+					"dex",
+					5
+				],
+				[
+					"hit_up",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.35
 			],
 			"desc": "閃避 3 次後反擊，造成 100% 攻擊傷害（每級 +50%）",
 			"grp": "dex",
@@ -4367,61 +5720,60 @@ window.GAME = {
 			"pre": [
 				[
 					"dodge_up",
-					2
-				]
-			],
-			"sig": "rogue"
-		},
-		{
-			"cost": [
-				20,
-				1.5
-			],
-			"desc": "穿輕型護甲時，閃避 +2（每級）",
-			"fx": [
-				[
-					"light_dodge",
-					2.0
-				]
-			],
-			"grp": "dex",
-			"id": "t_light",
-			"max": 5,
-			"name": "皮甲適應",
-			"pre": [
-				[
-					"dodge_up",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.6
-			],
-			"desc": "攻擊速度 +3%（每級）",
-			"fx": [
-				[
-					"aspd_pct",
-					3.0
-				]
-			],
-			"grp": "dex",
-			"id": "b_rhythm",
-			"max": 5,
-			"name": "行雲流水",
-			"pre": [
-				[
-					"aspd",
 					3
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				18,
+				1.2
+			],
+			"desc": "穿輕型護甲時，閃避 +1（每級）",
+			"fx": [
+				[
+					"light_dodge",
+					1.0
+				]
+			],
+			"grp": "dex",
+			"id": "t_light",
+			"max": 10,
+			"name": "皮甲適應",
+			"pre": [
+				[
+					"dodge_up",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				30,
+				1.2
+			],
+			"desc": "攻擊速度 +1.5%（每級）",
+			"fx": [
+				[
+					"aspd_pct",
+					1.5
+				]
+			],
+			"grp": "dex",
+			"id": "b_rhythm",
+			"max": 10,
+			"name": "行雲流水",
+			"pre": [
+				[
+					"aspd",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.45
 			],
 			"desc": "每場戰鬥前 5 秒攻擊速度 +15%（每級）",
 			"grp": "dex",
@@ -4437,8 +5789,143 @@ window.GAME = {
 		},
 		{
 			"cost": [
+				30,
+				1.2
+			],
+			"desc": "攻擊有 1.5% 機率連擊兩次（每級）",
+			"fx": [
+				[
+					"double",
+					1.5
+				]
+			],
+			"grp": "dex",
+			"id": "c_double",
+			"max": 10,
+			"name": "連刺",
+			"pre": [
+				[
+					"aspd",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
 				60,
-				1.8
+				1.35
+			],
+			"desc": "每 6 次攻擊，讓目標流血 5 秒（每級 +1 層）",
+			"grp": "dex",
+			"id": "p_bleed",
+			"max": 5,
+			"name": "撕裂",
+			"pre": [
+				[
+					"crit",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.35
+			],
+			"desc": "每 9 次攻擊，讓目標中毒 6 秒（每級 +1 層）",
+			"grp": "dex",
+			"id": "p_poison",
+			"max": 5,
+			"name": "淬毒",
+			"pre": [
+				[
+					"p_bleed",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				33,
+				1.2
+			],
+			"desc": "你造成的流血、中毒、燃燒傷害 +6%（每級）",
+			"fx": [
+				[
+					"dot_pct",
+					6.0
+				]
+			],
+			"grp": "dex",
+			"id": "c_toxic",
+			"max": 10,
+			"name": "劇毒專精",
+			"pre": [
+				[
+					"p_bleed",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.4
+			],
+			"desc": "對流血中的敵人，暴擊率 +3%（每級）",
+			"grp": "dex",
+			"id": "b_bleedcrit",
+			"max": 4,
+			"name": "血腥嗅覺",
+			"pre": [
+				[
+					"crit",
+					5
+				],
+				[
+					"p_bleed",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				90,
+				1.5
+			],
+			"desc": "每次暴擊回復 3% 生命（每級）",
+			"grp": "dex",
+			"id": "b_ruthless",
+			"max": 3,
+			"name": "嗜血",
+			"pre": [
+				[
+					"crit",
+					6
+				]
+			]
+		},
+		{
+			"cost": [
+				80,
+				1.4
+			],
+			"desc": "對生命低於 30% 的敵人，暴擊傷害 +10%（每級）",
+			"grp": "dex",
+			"id": "b_executioner",
+			"max": 4,
+			"name": "斬首",
+			"pre": [
+				[
+					"critx",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				110,
+				1.7
 			],
 			"desc": "見招拆招所需閃避次數 −1（每級，最少 1）",
 			"grp": "dex",
@@ -4454,8 +5941,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				70,
+				1.35
 			],
 			"desc": "見招拆招的反擊傷害 +20%（每級）",
 			"grp": "dex",
@@ -4471,26 +5958,390 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				12,
-				1.4
+				260,
+				1
 			],
-			"desc": "命中 +3",
+			"desc": "閃避後 3 秒內攻擊速度 +25%",
 			"grp": "dex",
-			"id": "hit_up",
-			"max": 10,
-			"name": "穩定出手",
+			"id": "c_twin",
+			"max": 1,
+			"name": "旋身",
 			"pre": [
 				[
-					"dex",
-					1
+					"p_dodge",
+					2
 				]
-			],
-			"sig": "archer"
+			]
 		},
 		{
 			"cost": [
-				30,
+				260,
+				1
+			],
+			"desc": "匕首類武器暴擊時讓目標流血",
+			"grp": "dex",
+			"id": "c_puncture",
+			"max": 1,
+			"name": "放血",
+			"pre": [
+				[
+					"m_pierce",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				280,
+				1
+			],
+			"desc": "普通攻擊會穿透，再打中 1 名敵人造成 50% 傷害",
+			"grp": "dex",
+			"id": "a_pierce",
+			"max": 1,
+			"name": "穿透箭",
+			"pre": [
+				[
+					"m_bow",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.35
+			],
+			"desc": "對生命高於 80% 的敵人，傷害 +10%（每級）",
+			"grp": "dex",
+			"id": "a_hunter",
+			"max": 5,
+			"name": "狩獵本能",
+			"pre": [
+				[
+					"hit_up",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				260,
+				1
+			],
+			"desc": "每場戰鬥開始時，隨機讓 1 名敵人暈眩 1.5 秒",
+			"grp": "dex",
+			"id": "a_snare",
+			"max": 1,
+			"name": "獸夾",
+			"pre": [
+				[
+					"dodge_up",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				90,
 				1.5
+			],
+			"desc": "命中時 10% 機率讓目標中毒 2 層（每級 +10%）",
+			"grp": "dex",
+			"id": "a_poison",
+			"max": 3,
+			"name": "淬毒箭頭",
+			"pre": [
+				[
+					"m_bow",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				90,
+				1.5
+			],
+			"desc": "命中時 10% 機率讓目標燃燒 2 層（每級 +10%）",
+			"grp": "dex",
+			"id": "a_fire",
+			"max": 3,
+			"name": "火焰箭",
+			"pre": [
+				[
+					"m_bow",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				280,
+				1
+			],
+			"desc": "每場戰鬥第一個攻擊的目標易傷 6 秒",
+			"grp": "dex",
+			"id": "a_mark",
+			"max": 1,
+			"name": "獵物標記",
+			"pre": [
+				[
+					"a_hunter",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				140,
+				1.6
+			],
+			"desc": "每 8 次攻擊，對所有敵人射出一輪箭，造成 40% 攻擊傷害（每級 +20%）",
+			"grp": "dex",
+			"id": "a_volley",
+			"max": 3,
+			"name": "齊射",
+			"pre": [
+				[
+					"a_pierce",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				300,
+				1
+			],
+			"desc": "施放暗影斗篷後，接下來 3 次攻擊必定暴擊",
+			"grp": "dex",
+			"id": "c_shadow",
+			"max": 1,
+			"name": "暗殺姿態",
+			"pre": [
+				[
+					"s_playdead",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				900,
+				1
+			],
+			"desc": "終極：閃避後的下一擊必定暴擊",
+			"grp": "dex",
+			"id": "c_ontime",
+			"max": 1,
+			"name": "致命節奏",
+			"pre": [
+				[
+					"c_twin",
+					1
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				900,
+				1
+			],
+			"desc": "終極：齊射改成每 5 次攻擊觸發，並讓所有敵人暈眩 0.5 秒",
+			"grp": "dex",
+			"id": "a_rain",
+			"max": 1,
+			"name": "箭雨",
+			"pre": [
+				[
+					"a_volley",
+					2
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				350,
+				1.18
+			],
+			"desc": "攻擊速度 +2%（每級）",
+			"fx": [
+				[
+					"aspd_pct",
+					2.0
+				]
+			],
+			"grp": "dex",
+			"id": "dx_storm",
+			"max": 10,
+			"name": "疾風之舞",
+			"pre": [
+				[
+					"aspd",
+					10
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				350,
+				1.18
+			],
+			"desc": "暴擊率 +1%（每級）",
+			"fx": [
+				[
+					"crit",
+					1.0
+				]
+			],
+			"grp": "dex",
+			"id": "lk_goddess",
+			"max": 10,
+			"name": "命運女神",
+			"pre": [
+				[
+					"crit",
+					10
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				450,
+				1.18
+			],
+			"desc": "暴擊傷害 +8%（每級）",
+			"fx": [
+				[
+					"critx_pct",
+					8.0
+				]
+			],
+			"grp": "dex",
+			"id": "dx_assassin",
+			"max": 10,
+			"name": "刺殺本能",
+			"pre": [
+				[
+					"critx",
+					10
+				],
+				[
+					"seal",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				700,
+				1.15
+			],
+			"desc": "暴擊率 +0.8%（每級）",
+			"fx": [
+				[
+					"crit",
+					0.8
+				]
+			],
+			"grp": "dex",
+			"id": "dx_gale",
+			"max": 10,
+			"name": "颶風之眼",
+			"pre": [
+				[
+					"lk_goddess",
+					3
+				],
+				[
+					"priest",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				700,
+				1.15
+			],
+			"desc": "暴擊傷害 +7%（每級）",
+			"fx": [
+				[
+					"critx_pct",
+					7.0
+				]
+			],
+			"grp": "dex",
+			"id": "lk_fate",
+			"max": 10,
+			"name": "命運編織",
+			"pre": [
+				[
+					"dx_assassin",
+					3
+				],
+				[
+					"priest",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				700,
+				1.15
+			],
+			"desc": "攻擊 +2%、暴擊傷害 +4%、受到的魔法傷害 −2.5%（每級）",
+			"fx": [
+				[
+					"atk_pct",
+					2.0
+				],
+				[
+					"critx_pct",
+					4.0
+				],
+				[
+					"magic_red",
+					2.5
+				]
+			],
+			"grp": "dex",
+			"id": "a_hawk",
+			"max": 10,
+			"name": "鷹擊",
+			"pre": [
+				[
+					"dx_storm",
+					3
+				],
+				[
+					"priest",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				35,
+				1.45
 			],
 			"desc": "主動：瞄準一名敵人，造成 200% 攻擊的暴擊傷害（每級 +25%）",
 			"grp": "dex",
@@ -4506,8 +6357,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				30,
-				1.5
+				35,
+				1.45
 			],
 			"desc": "主動：同時射向 3 名敵人，各造成 80% 攻擊傷害（每級 +10%，每 3 級多 1 名）",
 			"grp": "dex",
@@ -4523,8 +6374,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				35,
-				1.6
+				45,
+				1.55
 			],
 			"desc": "主動：網住 1 名敵人，暈眩 2 秒（每級多 1 名）",
 			"grp": "dex",
@@ -4540,8 +6391,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				35,
-				1.55
+				40,
+				1.48
 			],
 			"desc": "主動：6 秒內攻擊速度 +25%、閃避 +15（每級 +0.5 秒、閃避 +2）",
 			"grp": "dex",
@@ -4557,8 +6408,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.55
+				50,
+				1.48
 			],
 			"desc": "主動：毒箭灑落全房間，造成 30% 攻擊傷害並中毒 2 層（每 3 級 +1 層）",
 			"grp": "dex",
@@ -4574,55 +6425,52 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				400,
-				1.4
+				40,
+				1.48
 			],
-			"desc": "暴擊率 +2%（每級）",
-			"fx": [
-				[
-					"crit",
-					2.0
-				]
-			],
+			"desc": "主動：5 秒內閃避 +60（每級 +3）",
 			"grp": "dex",
-			"id": "dx_gale",
-			"max": 5,
-			"name": "颶風之眼",
+			"id": "s_playdead",
+			"max": 10,
+			"name": "暗影斗篷",
 			"pre": [
 				[
-					"aspd",
-					8
-				],
-				[
-					"priest",
-					1
+					"dodge_up",
+					2
 				]
 			]
 		},
 		{
 			"cost": [
-				300,
-				1.5
+				40,
+				1.48
 			],
-			"desc": "攻擊速度 +6%（每級）",
-			"fx": [
-				[
-					"aspd_pct",
-					6.0
-				]
-			],
+			"desc": "主動：接下來 2 次攻擊必定暴擊（每 3 級多 1 次）",
 			"grp": "dex",
-			"id": "dx_storm",
-			"max": 5,
-			"name": "疾風之舞",
+			"id": "s_fortune",
+			"max": 10,
+			"name": "命運之輪",
 			"pre": [
 				[
-					"aspd",
-					5
-				],
+					"crit",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				50,
+				1.48
+			],
+			"desc": "主動：全房間的敵人虛弱並緩速 4 秒（每級 +0.3 秒）",
+			"grp": "dex",
+			"id": "s_smoke",
+			"max": 10,
+			"name": "煙霧彈",
+			"pre": [
 				[
-					"seal",
-					1
+					"s_playdead",
+					2
 				]
 			]
 		},
@@ -4640,23 +6488,23 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				15,
-				1.45
+				8,
+				1.16
 			],
-			"desc": "法力 +15%、法力回復 +0.5（每級）",
+			"desc": "法力 +8%、法力回復 +0.25（每級）",
 			"fx": [
 				[
 					"mp_pct",
-					15.0
+					8.0
 				],
 				[
 					"mp_regen",
-					0.5
+					0.25
 				]
 			],
 			"grp": "int",
 			"id": "mana_up",
-			"max": 10,
+			"max": 20,
 			"name": "冥想",
 			"pre": [
 				[
@@ -4667,49 +6515,93 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				18,
-				1.45
+				10,
+				1.16
 			],
-			"desc": "每級 3% 機率讓一次魔法攻擊完全無效（上限 35%，對頭目只算一半）",
+			"desc": "每級 1.5% 機率讓一次魔法攻擊完全無效（上限 35%，對頭目只算一半）",
+			"fx": [
+				[
+					"res_magic",
+					1.5
+				]
+			],
 			"grp": "int",
 			"id": "res_magic",
-			"max": 10,
+			"max": 20,
 			"name": "魔法屏障",
+			"pre": []
+		},
+		{
+			"cost": [
+				10,
+				1.16
+			],
+			"desc": "法術傷害 +5%（每級）",
+			"fx": [
+				[
+					"spell_pct",
+					5.0
+				]
+			],
+			"grp": "int",
+			"id": "c_stamp",
+			"max": 20,
+			"name": "元素增幅",
 			"pre": [
 				[
 					"int",
-					1
+					2
 				]
 			]
 		},
 		{
 			"cost": [
-				18,
-				1.5
+				10,
+				1.17
 			],
-			"desc": "使用法杖時，法術傷害 +5%（每級）",
+			"desc": "使用法杖時，法術傷害 +2.5%（每級）",
 			"fx": [
 				[
 					"staff_spell",
-					5.0
+					2.5
 				]
 			],
 			"grp": "int",
 			"id": "m_magic",
-			"max": 5,
+			"max": 15,
 			"name": "法杖精通",
 			"pre": [
 				[
 					"int",
 					2
 				]
-			],
-			"sig": "mage"
+			]
 		},
 		{
 			"cost": [
-				40,
-				1.7
+				90,
+				1.45
+			],
+			"desc": "智力超過 10 的部分，每點法術傷害 +1%（每級 +0.5%）",
+			"grp": "int",
+			"id": "c_focus",
+			"max": 3,
+			"name": "奧術之心",
+			"pre": [
+				[
+					"int",
+					5
+				],
+				[
+					"c_stamp",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.35
 			],
 			"desc": "每 10 次攻擊回復 5 法力（每級 +5）",
 			"grp": "int",
@@ -4718,15 +6610,105 @@ window.GAME = {
 			"name": "魔力回流",
 			"pre": [
 				[
-					"int",
+					"mana_up",
 					3
 				]
 			]
 		},
 		{
 			"cost": [
-				45,
-				1.7
+				30,
+				1.2
+			],
+			"desc": "法力回復 +0.4、法術冷卻 −1.5%（每級）",
+			"fx": [
+				[
+					"mp_regen",
+					0.4
+				],
+				[
+					"spell_cdr",
+					0.015
+				]
+			],
+			"grp": "int",
+			"id": "c_clause",
+			"max": 10,
+			"name": "詠唱精簡",
+			"pre": [
+				[
+					"mana_up",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				27,
+				1.22
+			],
+			"desc": "經驗 +2%（每級）",
+			"fx": [
+				[
+					"xp_pct",
+					2.0
+				]
+			],
+			"grp": "int",
+			"id": "c_scholar",
+			"max": 10,
+			"name": "博學",
+			"pre": [
+				[
+					"int",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				260,
+				1
+			],
+			"desc": "你造成的暈眩、冰凍持續時間 ×1.25",
+			"fx": [
+				[
+					"stun_dur",
+					0.25
+				]
+			],
+			"grp": "int",
+			"id": "c_stillness",
+			"max": 1,
+			"name": "時停",
+			"pre": [
+				[
+					"c_stamp",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				80,
+				1.35
+			],
+			"desc": "取下符文免費；合成符文時有 4% 機率退回 1 顆材料（每級）",
+			"grp": "int",
+			"id": "c_sticker",
+			"max": 5,
+			"name": "符文學者",
+			"pre": [
+				[
+					"int",
+					6
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.35
 			],
 			"desc": "每 10 次攻擊，雷弧打中 1 名其他敵人，造成 10 傷害（每級 +10，另加 25% 攻擊）",
 			"grp": "int",
@@ -4738,13 +6720,12 @@ window.GAME = {
 					"s_nail",
 					1
 				]
-			],
-			"sig": "mage"
+			]
 		},
 		{
 			"cost": [
-				45,
-				1.7
+				70,
+				1.35
 			],
 			"desc": "每 20 次攻擊，暈眩全房間 0.6 秒（每級 +0.2 秒）",
 			"grp": "int",
@@ -4756,13 +6737,120 @@ window.GAME = {
 					"s_freeze",
 					1
 				]
-			],
-			"sig": "mage"
+			]
 		},
 		{
 			"cost": [
-				60,
-				1.8
+				280,
+				1
+			],
+			"desc": "每點智力 +0.1% 魔法抵抗",
+			"grp": "int",
+			"id": "c_hexwall",
+			"max": 1,
+			"name": "法則護盾",
+			"pre": [
+				[
+					"c_stillness",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				260,
+				1
+			],
+			"desc": "喝聖泉後 15 秒內法術傷害 +15%",
+			"grp": "int",
+			"id": "c_wellspring",
+			"max": 1,
+			"name": "魔泉",
+			"pre": [
+				[
+					"c_stillness",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				280,
+				1
+			],
+			"desc": "每 1 點法力回復，法術傷害 +0.5%",
+			"grp": "int",
+			"id": "c_overflow",
+			"max": 1,
+			"name": "魔力潮汐",
+			"pre": [
+				[
+					"c_clause",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				400,
+				1
+			],
+			"desc": "每點智力讓法術冷卻 −0.2%（最多 −30%）",
+			"grp": "int",
+			"id": "c_archmage",
+			"max": 1,
+			"name": "時間扭曲",
+			"pre": [
+				[
+					"c_clause",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				260,
+				1
+			],
+			"desc": "對異變敵人傷害 +20%，異變敵人掉符文的機率 ×2",
+			"fx": [
+				[
+					"mut_dmg",
+					20.0
+				]
+			],
+			"grp": "int",
+			"id": "c_hexbreaker",
+			"max": 1,
+			"name": "淨化之光",
+			"pre": [
+				[
+					"c_sticker",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				280,
+				1
+			],
+			"desc": "每持有一件遺物或收藏品，所有傷害 +1%",
+			"grp": "int",
+			"id": "c_lore",
+			"max": 1,
+			"name": "古代學識",
+			"pre": [
+				[
+					"c_scholar",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				110,
+				1.6
 			],
 			"desc": "雷弧每級多打中 1 名敵人",
 			"grp": "int",
@@ -4778,62 +6866,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				300,
-				1.5
-			],
-			"desc": "法術傷害 +20%（每級）",
-			"fx": [
-				[
-					"spell_pct",
-					15.0
-				]
-			],
-			"grp": "int",
-			"id": "in_forbidden",
-			"max": 5,
-			"name": "禁咒",
-			"pre": [
-				[
-					"int",
-					10
-				],
-				[
-					"seal",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				500,
-				1.5
-			],
-			"desc": "法術冷卻 −4%（每級）",
-			"fx": [
-				[
-					"spell_cdr",
-					0.04
-				]
-			],
-			"grp": "int",
-			"id": "in_archive",
-			"max": 5,
-			"name": "封印魔典",
-			"pre": [
-				[
-					"mana_up",
-					3
-				],
-				[
-					"seal",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
+				90,
+				1.45
 			],
 			"desc": "雷霆震擊也造成 25% 攻擊的魔法傷害（每級）",
 			"grp": "int",
@@ -4849,123 +6883,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				30,
+				90,
 				1.5
-			],
-			"desc": "主動：對全房間造成 25 傷害（每級 +12%，另加 30% 攻擊）",
-			"grp": "int",
-			"id": "s_paper",
-			"max": 10,
-			"name": "火焰風暴",
-			"pre": [
-				[
-					"int",
-					1
-				]
-			],
-			"sig": "mage"
-		},
-		{
-			"cost": [
-				30,
-				1.5
-			],
-			"desc": "主動：對單體造成 45 傷害（每級 +12%，另加 60% 攻擊）",
-			"grp": "int",
-			"id": "s_drill",
-			"max": 10,
-			"name": "雷擊",
-			"pre": [
-				[
-					"int",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				32,
-				1.5
-			],
-			"desc": "主動：每級多射 1 發奧術飛彈（最多 6 發），每發 20 傷害（每級 +5%，另加 15% 攻擊）",
-			"grp": "int",
-			"id": "s_nail",
-			"max": 10,
-			"name": "奧術連射",
-			"pre": [
-				[
-					"int",
-					2
-				]
-			],
-			"sig": "mage"
-		},
-		{
-			"cost": [
-				38,
-				1.55
-			],
-			"desc": "主動：冰凍全房間 1.5 秒（每級 +0.15 秒），冰凍中的敵人受到傷害 +10%",
-			"grp": "int",
-			"id": "s_freeze",
-			"max": 10,
-			"name": "冰霜新星",
-			"pre": [
-				[
-					"s_paper",
-					2
-				]
-			],
-			"sig": "mage"
-		},
-		{
-			"cost": [
-				30,
-				1.5
-			],
-			"desc": "主動：10 秒內每秒回復 9 生命（每級 +4.5）",
-			"grp": "int",
-			"id": "s_tonic",
-			"max": 10,
-			"name": "治癒術",
-			"pre": [
-				[
-					"mana_up",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				400,
-				1.4
-			],
-			"desc": "法術傷害 +20%（每級）",
-			"fx": [
-				[
-					"spell_pct",
-					20.0
-				]
-			],
-			"grp": "int",
-			"id": "in_elemental",
-			"max": 5,
-			"name": "元素共鳴",
-			"pre": [
-				[
-					"in_forbidden",
-					3
-				],
-				[
-					"priest",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
 			],
 			"desc": "雷霆震擊每級提早 2 次攻擊觸發（20 → 14）",
 			"grp": "int",
@@ -4981,212 +6900,18 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				8,
-				1.13
+				900,
+				1
 			],
-			"desc": "攻擊 +3%、暴擊率 +0.4%、金幣 +1%（60 級後效果減半）",
-			"grp": "luk",
-			"id": "luk",
-			"max": 99,
-			"name": "幸運",
-			"pre": []
-		},
-		{
-			"cost": [
-				18,
-				1.4
-			],
-			"desc": "暴擊率 +2%",
-			"grp": "luk",
-			"id": "crit",
-			"max": 15,
-			"name": "弱點洞察",
+			"desc": "終極：法術有 25% 機率免費再施放一次",
+			"grp": "int",
+			"id": "c_loophole",
+			"max": 1,
+			"name": "雙重詠唱",
 			"pre": [
 				[
-					"luk",
+					"c_archmage",
 					1
-				]
-			],
-			"sig": "rogue"
-		},
-		{
-			"cost": [
-				18,
-				1.5
-			],
-			"desc": "使用匕首類武器時，攻擊 +4%",
-			"fx": [
-				[
-					"pierce_pct",
-					4.0
-				]
-			],
-			"grp": "luk",
-			"id": "m_pierce",
-			"max": 5,
-			"name": "刺擊術",
-			"pre": [
-				[
-					"luk",
-					2
-				]
-			],
-			"sig": "rogue"
-		},
-		{
-			"cost": [
-				40,
-				1.6
-			],
-			"desc": "暴擊率 +1%（每級）",
-			"fx": [
-				[
-					"crit",
-					1.0
-				]
-			],
-			"grp": "luk",
-			"id": "b_lucky",
-			"max": 5,
-			"name": "幸運星",
-			"pre": [
-				[
-					"crit",
-					3
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.6
-			],
-			"desc": "對流血中的敵人，暴擊率 +3%（每級）",
-			"grp": "luk",
-			"id": "b_bleedcrit",
-			"max": 4,
-			"name": "血腥嗅覺",
-			"pre": [
-				[
-					"crit",
-					3
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
-			],
-			"desc": "每次暴擊回復 3% 生命（每級）",
-			"grp": "luk",
-			"id": "b_ruthless",
-			"max": 3,
-			"name": "嗜血",
-			"pre": [
-				[
-					"crit",
-					4
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
-			],
-			"desc": "對生命低於 30% 的敵人，暴擊傷害 +10%（每級）",
-			"grp": "luk",
-			"id": "b_executioner",
-			"max": 4,
-			"name": "斬首",
-			"pre": [
-				[
-					"crit",
-					5
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.7
-			],
-			"desc": "每 6 次攻擊，讓目標流血 5 秒（每級 +1 層）",
-			"grp": "luk",
-			"id": "p_bleed",
-			"max": 5,
-			"name": "撕裂",
-			"pre": [
-				[
-					"crit",
-					2
-				]
-			],
-			"sig": "rogue"
-		},
-		{
-			"cost": [
-				40,
-				1.7
-			],
-			"desc": "每 9 次攻擊，讓目標中毒 6 秒（每級 +1 層）",
-			"grp": "luk",
-			"id": "p_poison",
-			"max": 5,
-			"name": "淬毒",
-			"pre": [
-				[
-					"p_bleed",
-					1
-				]
-			],
-			"sig": "rogue"
-		},
-		{
-			"cost": [
-				30,
-				1.6
-			],
-			"desc": "金幣 +8%（每級）",
-			"fx": [
-				[
-					"gold_pct",
-					8.0
-				]
-			],
-			"grp": "luk",
-			"id": "lk_gold",
-			"max": 5,
-			"name": "財運亨通",
-			"pre": [
-				[
-					"luk",
-					3
-				]
-			],
-			"sig": "rogue"
-		},
-		{
-			"cost": [
-				300,
-				1.5
-			],
-			"desc": "暴擊率 +2%（每級）",
-			"fx": [
-				[
-					"crit",
-					2.0
-				]
-			],
-			"grp": "luk",
-			"id": "lk_goddess",
-			"max": 5,
-			"name": "命運女神",
-			"pre": [
-				[
-					"crit",
-					5
 				],
 				[
 					"seal",
@@ -5196,24 +6921,51 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				500,
-				1.5
+				350,
+				1.18
 			],
-			"desc": "暴擊傷害 +25%（每級）",
+			"desc": "法術傷害 +6%（每級）",
 			"fx": [
 				[
-					"critx_pct",
-					25.0
+					"spell_pct",
+					6.0
 				]
 			],
-			"grp": "luk",
-			"id": "dx_assassin",
-			"max": 4,
-			"name": "刺殺本能",
+			"grp": "int",
+			"id": "in_forbidden",
+			"max": 10,
+			"name": "禁咒",
 			"pre": [
 				[
-					"crit",
-					8
+					"c_stamp",
+					10
+				],
+				[
+					"seal",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				450,
+				1.18
+			],
+			"desc": "法術冷卻 −1.5%（每級）",
+			"fx": [
+				[
+					"spell_cdr",
+					0.015
+				]
+			],
+			"grp": "int",
+			"id": "in_archive",
+			"max": 10,
+			"name": "封印魔典",
+			"pre": [
+				[
+					"c_clause",
+					5
 				],
 				[
 					"seal",
@@ -5223,23 +6975,23 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				400,
-				1.4
+				700,
+				1.15
 			],
-			"desc": "暴擊傷害 +20%（每級）",
+			"desc": "法術傷害 +7%（每級）",
 			"fx": [
 				[
-					"critx_pct",
-					20.0
+					"spell_pct",
+					7.0
 				]
 			],
-			"grp": "luk",
-			"id": "lk_fate",
-			"max": 5,
-			"name": "命運編織",
+			"grp": "int",
+			"id": "in_elemental",
+			"max": 10,
+			"name": "元素共鳴",
 			"pre": [
 				[
-					"lk_goddess",
+					"in_forbidden",
 					3
 				],
 				[
@@ -5250,44 +7002,35 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				500,
-				1.5
+				700,
+				1.15
 			],
-			"desc": "掉寶機率 +3%（每級）",
+			"desc": "法術傷害 +20%、生命 +7%、受到的魔法傷害 −5.5%（每級）",
 			"fx": [
 				[
-					"loot",
-					3.0
-				]
-			],
-			"grp": "luk",
-			"id": "lk_jackpot",
-			"max": 5,
-			"name": "大豐收",
-			"pre": [
-				[
-					"lk_gold",
-					3
+					"spell_pct",
+					20.0
 				],
 				[
-					"seal",
-					2
+					"hp_pct",
+					7.0
+				],
+				[
+					"magic_red",
+					5.5
 				]
-			]
-		},
-		{
-			"cost": [
-				30,
-				1.5
 			],
-			"desc": "主動：對單體造成 140% 攻擊傷害，順手摸走金幣（每級 +15% 傷害、金幣更多）",
-			"grp": "luk",
-			"id": "s_steal",
+			"grp": "int",
+			"id": "c_astral",
 			"max": 10,
-			"name": "妙手偷襲",
+			"name": "星辰之力",
 			"pre": [
 				[
-					"luk",
+					"c_stamp",
+					8
+				],
+				[
+					"priest",
 					1
 				]
 			]
@@ -5295,33 +7038,50 @@ window.GAME = {
 		{
 			"cost": [
 				35,
-				1.55
+				1.45
 			],
-			"desc": "主動：5 秒內閃避 +60（每級 +3）",
-			"grp": "luk",
-			"id": "s_playdead",
+			"desc": "主動：對全房間造成 25 傷害（每級 +12%，另加 30% 攻擊）",
+			"grp": "int",
+			"id": "s_paper",
 			"max": 10,
-			"name": "暗影斗篷",
+			"name": "火焰風暴",
 			"pre": [
 				[
-					"luk",
-					2
+					"int",
+					1
 				]
 			]
 		},
 		{
 			"cost": [
 				35,
-				1.55
+				1.45
 			],
-			"desc": "主動：接下來 2 次攻擊必定暴擊（每 3 級多 1 次）",
-			"grp": "luk",
-			"id": "s_fortune",
+			"desc": "主動：對單體造成 45 傷害（每級 +12%，另加 60% 攻擊）",
+			"grp": "int",
+			"id": "s_drill",
 			"max": 10,
-			"name": "命運之輪",
+			"name": "雷擊",
 			"pre": [
 				[
-					"crit",
+					"int",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				38,
+				1.45
+			],
+			"desc": "主動：每級多射 1 發奧術飛彈（最多 6 發），每發 20 傷害（每級 +5%，另加 15% 攻擊）",
+			"grp": "int",
+			"id": "s_nail",
+			"max": 10,
+			"name": "奧術連射",
+			"pre": [
+				[
+					"int",
 					2
 				]
 			]
@@ -5329,34 +7089,34 @@ window.GAME = {
 		{
 			"cost": [
 				45,
-				1.55
+				1.48
 			],
-			"desc": "主動：用金幣雇 1 名傭兵助戰 12 秒（3 級 2 名、6 級 3 名），攻擊為你的 30%（每級 +5%）",
-			"grp": "luk",
-			"id": "s_summon",
+			"desc": "主動：冰凍全房間 1.5 秒（每級 +0.15 秒），冰凍中的敵人受到傷害 +10%",
+			"grp": "int",
+			"id": "s_freeze",
 			"max": 10,
-			"name": "召喚傭兵",
+			"name": "冰霜新星",
 			"pre": [
 				[
-					"s_steal",
+					"s_paper",
 					2
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.55
+				35,
+				1.45
 			],
-			"desc": "主動：全房間的敵人虛弱並緩速 4 秒（每級 +0.3 秒）",
-			"grp": "luk",
-			"id": "s_smoke",
+			"desc": "主動：10 秒內每秒回復 9 生命（每級 +4.5）",
+			"grp": "int",
+			"id": "s_tonic",
 			"max": 10,
-			"name": "煙霧彈",
+			"name": "治癒術",
 			"pre": [
 				[
-					"s_playdead",
-					2
+					"mana_up",
+					1
 				]
 			]
 		},
@@ -5365,7 +7125,7 @@ window.GAME = {
 				8,
 				1.13
 			],
-			"desc": "生命 +10%、每秒生命回復 +0.5（60 級後效果減半）",
+			"desc": "生命 +10%、每秒生命回復 +1（60 級後效果減半）",
 			"grp": "vit",
 			"id": "vit",
 			"max": 99,
@@ -5374,13 +7134,19 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				14,
-				1.45
+				8,
+				1.16
 			],
-			"desc": "生命 +15%",
+			"desc": "生命 +6%（每級）",
+			"fx": [
+				[
+					"hp_pct",
+					6.0
+				]
+			],
 			"grp": "vit",
 			"id": "hp_up",
-			"max": 10,
+			"max": 20,
 			"name": "強健體魄",
 			"pre": [
 				[
@@ -5391,10 +7157,16 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				20,
-				1.8
+				40,
+				1.6
 			],
 			"desc": "紅藥水使用次數 +1（每次遠征自動補滿）",
+			"fx": [
+				[
+					"potions",
+					1.0
+				]
+			],
 			"grp": "vit",
 			"id": "potion",
 			"max": 5,
@@ -5408,13 +7180,19 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				14,
-				1.45
+				8,
+				1.16
 			],
-			"desc": "每秒生命回復 +2",
+			"desc": "每秒生命回復 +1.3（每級）",
+			"fx": [
+				[
+					"regen",
+					1.3
+				]
+			],
 			"grp": "vit",
 			"id": "regen",
-			"max": 10,
+			"max": 20,
 			"name": "自癒",
 			"pre": [
 				[
@@ -5425,13 +7203,19 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				16,
-				1.45
+				10,
+				1.17
 			],
-			"desc": "紅藥水回復量 +10%（基礎 35% 生命）",
+			"desc": "紅藥水回復量 +4%（基礎 35% 生命；每級）",
+			"fx": [
+				[
+					"potion_heal_pct",
+					4.0
+				]
+			],
 			"grp": "vit",
 			"id": "potion_power",
-			"max": 10,
+			"max": 15,
 			"name": "濃縮配方",
 			"pre": [
 				[
@@ -5442,8 +7226,31 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				30,
-				1.6
+				12,
+				1.18
+			],
+			"desc": "護甲 +1（每級）",
+			"fx": [
+				[
+					"armor",
+					1.0
+				]
+			],
+			"grp": "vit",
+			"id": "vt_iron",
+			"max": 10,
+			"name": "鐵骨",
+			"pre": [
+				[
+					"hp_up",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				45,
+				1.4
 			],
 			"desc": "自動喝藥水的生命門檻 +2%（基礎 25%）",
 			"fx": [
@@ -5465,8 +7272,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.7
+				60,
+				1.35
 			],
 			"desc": "每 12 次攻擊回復 15% 生命（每級 +6%）",
 			"grp": "vit",
@@ -5476,14 +7283,14 @@ window.GAME = {
 			"pre": [
 				[
 					"regen",
-					2
+					3
 				]
 			]
 		},
 		{
 			"cost": [
-				250,
-				1.0
+				300,
+				1
 			],
 			"desc": "倒下後可「原地復活」：下次遠征從倒下的房間出發",
 			"grp": "vit",
@@ -5499,31 +7306,31 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				27,
+				1.2
 			],
-			"desc": "生命 +5%（每級）",
+			"desc": "生命 +2%（每級）",
 			"fx": [
 				[
 					"hp_pct",
-					5.0
+					2.0
 				]
 			],
 			"grp": "vit",
 			"id": "b_tough",
-			"max": 5,
+			"max": 10,
 			"name": "厚實體格",
 			"pre": [
 				[
 					"hp_up",
-					3
+					5
 				]
 			]
 		},
 		{
 			"cost": [
-				50,
-				1.7
+				90,
+				1.5
 			],
 			"desc": "每次遠征第一次生命低於 20% 時，回復 10% 生命（每級）",
 			"grp": "vit",
@@ -5533,14 +7340,14 @@ window.GAME = {
 			"pre": [
 				[
 					"hp_up",
-					3
+					5
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				80,
+				1.45
 			],
 			"desc": "每進入一間新房間回復 1% 生命（每級）",
 			"grp": "vit",
@@ -5550,14 +7357,14 @@ window.GAME = {
 			"pre": [
 				[
 					"regen",
-					3
+					4
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				80,
+				1.45
 			],
 			"desc": "生命低於 30% 時生命回復 +50%（每級）",
 			"grp": "vit",
@@ -5567,14 +7374,37 @@ window.GAME = {
 			"pre": [
 				[
 					"regen",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.3
+			],
+			"desc": "紅藥水回復量 +5%（每級）",
+			"fx": [
+				[
+					"potion_heal_pct",
+					5.0
+				]
+			],
+			"grp": "vit",
+			"id": "c_medic",
+			"max": 5,
+			"name": "戰場包紮",
+			"pre": [
+				[
+					"potion_power",
 					3
 				]
 			]
 		},
 		{
 			"cost": [
-				50,
-				1.7
+				90,
+				1.5
 			],
 			"desc": "戰鬥回春每級提早 2 次攻擊觸發（12 → 6）",
 			"grp": "vit",
@@ -5590,8 +7420,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				70,
+				1.45
 			],
 			"desc": "戰鬥回春觸發時也回復 5 法力（每級）",
 			"grp": "vit",
@@ -5607,47 +7437,64 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				30,
+				1.2
 			],
-			"desc": "紅藥水回復量再 +10%（每級）",
+			"desc": "紅藥水回復量再 +4%（每級）",
 			"fx": [
 				[
 					"potion_heal_pct",
-					10.0
+					4.0
 				]
 			],
 			"grp": "vit",
 			"id": "b_steady",
-			"max": 5,
+			"max": 10,
 			"name": "調藥師",
 			"pre": [
 				[
 					"potion_power",
-					2
+					5
 				]
 			]
 		},
 		{
 			"cost": [
-				300,
-				1.5
+				220,
+				1
 			],
-			"desc": "生命 +12%（每級）",
+			"desc": "喝紅藥水時順便解除中毒、流血、燃燒",
+			"grp": "vit",
+			"id": "b_purify",
+			"max": 1,
+			"name": "解毒配方",
+			"pre": [
+				[
+					"potion_power",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				350,
+				1.18
+			],
+			"desc": "生命 +5%（每級）",
 			"fx": [
 				[
 					"hp_pct",
-					12.0
+					5.0
 				]
 			],
 			"grp": "vit",
 			"id": "vt_undying",
-			"max": 5,
+			"max": 10,
 			"name": "不朽之軀",
 			"pre": [
 				[
 					"hp_up",
-					5
+					10
 				],
 				[
 					"seal",
@@ -5657,24 +7504,24 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				500,
-				1.5
+				450,
+				1.18
 			],
-			"desc": "每秒生命回復 +6（每級）",
+			"desc": "每秒生命回復 +2.5（每級）",
 			"fx": [
 				[
 					"regen",
-					6.0
+					2.5
 				]
 			],
 			"grp": "vit",
 			"id": "vt_blessing",
-			"max": 5,
+			"max": 10,
 			"name": "騎士的祝福",
 			"pre": [
 				[
 					"regen",
-					5
+					10
 				],
 				[
 					"seal",
@@ -5684,19 +7531,19 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				550,
-				1.4
+				700,
+				1.15
 			],
-			"desc": "生命 +12%（每級）",
+			"desc": "生命 +5%（每級）",
 			"fx": [
 				[
 					"hp_pct",
-					12.0
+					5.0
 				]
 			],
 			"grp": "vit",
 			"id": "vt_dragonheart",
-			"max": 5,
+			"max": 10,
 			"name": "龍心",
 			"pre": [
 				[
@@ -5711,42 +7558,37 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				120,
-				1.0
+				6,
+				1.12
 			],
-			"desc": "喝紅藥水時順便解除中毒、流血、燃燒",
-			"grp": "vit",
-			"id": "b_purify",
-			"max": 1,
-			"name": "解毒配方",
-			"pre": [
+			"desc": "燈油上限 +4 秒（每級）",
+			"fx": [
 				[
-					"potion_power",
-					2
+					"battery",
+					4.0
 				]
-			]
-		},
-		{
-			"cost": [
-				10,
-				1.3
 			],
-			"desc": "燈油上限 +6 秒",
 			"grp": "exp",
 			"id": "battery",
-			"max": 25,
+			"max": 30,
 			"name": "燈油儲備",
 			"pre": []
 		},
 		{
 			"cost": [
-				18,
-				1.5
+				9,
+				1.16
 			],
-			"desc": "金幣 +10%",
+			"desc": "金幣 +4%（每級）",
+			"fx": [
+				[
+					"gold_pct",
+					4.0
+				]
+			],
 			"grp": "exp",
 			"id": "gold_find",
-			"max": 10,
+			"max": 20,
 			"name": "尋金術",
 			"pre": [
 				[
@@ -5757,13 +7599,19 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				12,
-				1.5
+				7,
+				1.2
 			],
-			"desc": "陷阱傷害 −15%",
+			"desc": "陷阱傷害 −6%（每級）",
+			"fx": [
+				[
+					"trap_red",
+					0.06
+				]
+			],
 			"grp": "exp",
 			"id": "trap",
-			"max": 5,
+			"max": 10,
 			"name": "機關識破",
 			"pre": [
 				[
@@ -5774,13 +7622,19 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				16,
-				1.5
+				8,
+				1.2
 			],
-			"desc": "摸黑懲罰 −15%",
+			"desc": "摸黑懲罰 −6%（每級）",
+			"fx": [
+				[
+					"dark_red",
+					0.06
+				]
+			],
 			"grp": "exp",
 			"id": "night",
-			"max": 5,
+			"max": 10,
 			"name": "夜行者",
 			"pre": [
 				[
@@ -5791,14 +7645,20 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				2.5
+				12,
+				1.16
 			],
-			"desc": "打通廢墟時多 1 個區塊可以挑（最多 3 選 1）",
+			"desc": "敵人掉裝備機率 +0.15%（基礎 4%；每級）",
+			"fx": [
+				[
+					"loot",
+					0.15
+				]
+			],
 			"grp": "exp",
-			"id": "draft",
-			"max": 2,
-			"name": "迷宮製圖",
+			"id": "loot",
+			"max": 20,
+			"name": "搜刮",
 			"pre": [
 				[
 					"battery",
@@ -5807,122 +7667,16 @@ window.GAME = {
 			]
 		},
 		{
-			"cost": [
-				18,
-				1.5
+			"costs": [
+				200,
+				500,
+				1500,
+				3000
 			],
-			"desc": "敵人掉裝備機率 +2%",
-			"grp": "exp",
-			"id": "loot",
-			"max": 10,
-			"name": "搜刮",
-			"pre": [
-				[
-					"gold_find",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.7
-			],
-			"desc": "擊倒敵人的金幣 +25%（每級）",
-			"fx": [
-				[
-					"kill_gold_pct",
-					25.0
-				]
-			],
-			"grp": "exp",
-			"id": "e_rush",
-			"max": 4,
-			"name": "賞金獵人",
-			"pre": [
-				[
-					"gold_find",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.7
-			],
-			"desc": "每擊倒 10 名敵人，額外獲得一筆金幣（約 5 名敵人的份，每級 +100%）",
-			"grp": "exp",
-			"id": "p_kickback",
-			"max": 5,
-			"name": "戰利品分成",
-			"pre": [
-				[
-					"loot",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
-			],
-			"desc": "戰利品分成每級提早 2 名敵人觸發（10 → 4）",
-			"grp": "exp",
-			"id": "b_midas",
-			"max": 3,
-			"name": "精打細算",
-			"pre": [
-				[
-					"p_kickback",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				50,
-				1.7
-			],
-			"desc": "戰利品分成觸發時有 3% 機率附贈一顆符文（每級）",
-			"grp": "exp",
-			"id": "b_giltsticker",
-			"max": 3,
-			"name": "符文收藏家",
-			"pre": [
-				[
-					"p_kickback",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				60,
-				2.0
-			],
-			"desc": "可在房間插編號旗幟，冒險者會依序前往（每級 +1 面）",
-			"grp": "exp",
-			"id": "flags",
-			"max": 3,
-			"name": "路線標記",
-			"pre": [
-				[
-					"draft",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				20,
-				3.0
-			],
-			"desc": "遠征時可以切換到 2 倍速（2 級：3 倍速）",
+			"desc": "遠征時可以加快速度：1 級 1.5 倍、2 級 2 倍、3 級 2.5 倍、4 級 3 倍",
 			"grp": "exp",
 			"id": "e_speed",
-			"max": 2,
+			"max": 4,
 			"name": "急行軍",
 			"pre": [
 				[
@@ -5933,71 +7687,99 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				200,
-				1.0
+				60,
+				3
 			],
-			"desc": "解鎖「自動遠征」：一次結束後自動出發下一次",
+			"desc": "打通廢墟時多 1 個區塊可以挑（最多 3 選 1）",
 			"grp": "exp",
-			"id": "auto_loop",
-			"max": 1,
-			"name": "持續遠征",
+			"id": "draft",
+			"max": 2,
+			"name": "迷宮製圖",
 			"pre": [
 				[
 					"battery",
-					5
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.6
-			],
-			"desc": "燈油消耗 −4%（每級）",
-			"fx": [
-				[
-					"drain_red",
-					0.04
-				]
-			],
-			"grp": "exp",
-			"id": "b_powersave",
-			"max": 5,
-			"name": "節約燈油",
-			"pre": [
-				[
-					"battery",
-					5
-				]
-			]
-		},
-		{
-			"cost": [
-				40,
-				1.6
-			],
-			"desc": "摸黑懲罰再 −10%（每級）",
-			"fx": [
-				[
-					"dark_red",
-					0.1
-				]
-			],
-			"grp": "exp",
-			"id": "b_flashlight",
-			"max": 3,
-			"name": "夜明燈",
-			"pre": [
-				[
-					"night",
-					2
+					3
 				]
 			]
 		},
 		{
 			"cost": [
 				60,
-				2.0
+				1.28
+			],
+			"desc": "倒下時少損失 3% 的金幣與經驗（基礎損失 50%，點滿只損失 20%；每級）",
+			"grp": "exp",
+			"id": "e_salvage",
+			"max": 10,
+			"name": "保命符咒",
+			"pre": [
+				[
+					"battery",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				24,
+				1.2
+			],
+			"desc": "擊倒敵人的金幣 +6%（每級）",
+			"fx": [
+				[
+					"kill_gold_pct",
+					6.0
+				]
+			],
+			"grp": "exp",
+			"id": "e_rush",
+			"max": 10,
+			"name": "賞金獵人",
+			"pre": [
+				[
+					"gold_find",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.3
+			],
+			"desc": "打通廢墟的價格 −2%（每級）",
+			"grp": "exp",
+			"id": "c_mason",
+			"max": 5,
+			"name": "開路先鋒",
+			"pre": [
+				[
+					"gold_find",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				100,
+				1.8
+			],
+			"desc": "共通儲藏箱 +5 格（每級；所有存檔共用，任何一個存檔學會都算）",
+			"grp": "exp",
+			"id": "e_stash",
+			"max": 6,
+			"name": "共通倉庫",
+			"pre": [
+				[
+					"gold_find",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				80,
+				2
 			],
 			"desc": "背包 +5 格（每級）",
 			"grp": "exp",
@@ -6014,157 +7796,348 @@ window.GAME = {
 		{
 			"cost": [
 				60,
-				2.0
+				1.35
 			],
-			"desc": "儲藏箱 +5 格（每級）",
+			"desc": "每擊倒 10 名敵人，額外獲得一筆金幣（約 5 名敵人的份，每級 +100%）",
 			"grp": "exp",
-			"id": "e_stash",
-			"max": 4,
-			"name": "營地倉庫",
-			"pre": [
-				[
-					"gold_find",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				300,
-				1.5
-			],
-			"desc": "金幣 +15%、經驗 +10%（每級）",
-			"fx": [
-				[
-					"gold_pct",
-					15.0
-				],
-				[
-					"xp_pct",
-					10.0
-				]
-			],
-			"grp": "exp",
-			"id": "ex_legend",
+			"id": "p_kickback",
 			"max": 5,
-			"name": "傳奇遠征隊",
+			"name": "戰利品分成",
 			"pre": [
 				[
-					"gold_find",
-					3
-				],
-				[
-					"seal",
-					1
-				]
-			]
-		},
-		{
-			"cost": [
-				500,
-				1.5
-			],
-			"desc": "燈油上限 +12 秒（每級）",
-			"fx": [
-				[
-					"battery",
-					12.0
-				]
-			],
-			"grp": "exp",
-			"id": "ex_oil",
-			"max": 4,
-			"name": "永燃燈芯",
-			"pre": [
-				[
-					"battery",
-					10
-				],
-				[
-					"seal",
+					"loot",
 					2
 				]
 			]
 		},
 		{
 			"cost": [
-				800,
-				1.5
+				80,
+				2
 			],
-			"desc": "對所有頭目傷害 +10%（騎士團長、祭司、王、古龍、秘境守衛與秘境之王；每級）",
-			"fx": [
-				[
-					"boss_dmg",
-					10.0
-				]
-			],
+			"desc": "可在房間插編號旗幟，冒險者會依序前往（每級 +1 面）",
 			"grp": "exp",
-			"id": "ex_final",
-			"max": 5,
-			"name": "王國的希望",
-			"pre": [
-				[
-					"ex_legend",
-					1
-				],
-				[
-					"seal",
-					3
-				]
-			]
-		},
-		{
-			"cost": [
-				550,
-				1.4
-			],
-			"desc": "金幣 +10%、經驗 +10%（每級）",
-			"fx": [
-				[
-					"gold_pct",
-					10.0
-				],
-				[
-					"xp_pct",
-					10.0
-				]
-			],
-			"grp": "exp",
-			"id": "ex_deep",
-			"max": 5,
-			"name": "深淵探索",
-			"pre": [
-				[
-					"ex_legend",
-					3
-				],
-				[
-					"priest",
-					2
-				]
-			]
-		},
-		{
-			"cost": [
-				800,
-				1.6
-			],
-			"desc": "無盡秘境的掉寶 +10%、秘境石掉落率 +10%（每級）",
-			"grp": "exp",
-			"id": "ex_realm",
+			"id": "flags",
 			"max": 3,
-			"name": "秘境嚮導",
+			"name": "路線標記",
 			"pre": [
 				[
-					"ex_deep",
+					"draft",
 					1
 				]
 			]
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				250,
+				1
+			],
+			"desc": "解鎖「自動遠征」：一次結束後自動出發下一次",
+			"grp": "exp",
+			"id": "auto_loop",
+			"max": 1,
+			"name": "持續遠征",
+			"pre": [
+				[
+					"battery",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				27,
+				1.2
+			],
+			"desc": "燈油消耗 −1.5%（每級）",
+			"fx": [
+				[
+					"drain_red",
+					0.015
+				]
+			],
+			"grp": "exp",
+			"id": "b_powersave",
+			"max": 10,
+			"name": "節約燈油",
+			"pre": [
+				[
+					"battery",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.3
+			],
+			"desc": "摸黑懲罰再 −4%（每級）",
+			"fx": [
+				[
+					"dark_red",
+					0.04
+				]
+			],
+			"grp": "exp",
+			"id": "b_flashlight",
+			"max": 5,
+			"name": "夜明燈",
+			"pre": [
+				[
+					"night",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				200,
+				1
+			],
+			"desc": "商人的古銀鑰匙便宜 30%",
+			"fx": [
+				[
+					"key_disc",
+					0.3
+				]
+			],
+			"grp": "exp",
+			"id": "c_lockpick",
+			"max": 1,
+			"name": "撬鎖專家",
+			"pre": [
+				[
+					"trap",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				200,
+				1
+			],
+			"desc": "陷阱傷害再 −25%",
+			"fx": [
+				[
+					"trap_red",
+					0.25
+				]
+			],
+			"grp": "exp",
+			"id": "c_trapwise",
+			"max": 1,
+			"name": "機關大師",
+			"pre": [
+				[
+					"trap",
+					5
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.3
+			],
+			"desc": "寶箱的金幣 +10%（每級）",
+			"fx": [
+				[
+					"chest_gold_pct",
+					10.0
+				]
+			],
+			"grp": "exp",
+			"id": "c_treasure",
+			"max": 5,
+			"name": "藏寶嗅覺",
+			"pre": [
+				[
+					"trap",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.3
+			],
+			"desc": "商人的所有東西便宜 2%（每級）",
+			"grp": "exp",
+			"id": "c_barter",
+			"max": 5,
+			"name": "黑市門路",
+			"pre": [
+				[
+					"gold_find",
+					4
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.3
+			],
+			"desc": "裝備、重複配方的賣價 +5%（每級）",
+			"grp": "exp",
+			"id": "c_fence",
+			"max": 5,
+			"name": "銷贓管道",
+			"pre": [
+				[
+					"c_barter",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				200,
+				1
+			],
+			"desc": "商人換一批貨便宜 30%",
+			"fx": [
+				[
+					"reroll_disc",
+					0.3
+				]
+			],
+			"grp": "exp",
+			"id": "c_divine",
+			"max": 1,
+			"name": "預言",
+			"pre": [
+				[
+					"c_barter",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				220,
+				1
+			],
+			"desc": "擊倒敵人的金幣 +15%",
+			"fx": [
+				[
+					"kill_gold_pct",
+					15.0
+				]
+			],
+			"grp": "exp",
+			"id": "c_pickpocket",
+			"max": 1,
+			"name": "妙手空空",
+			"pre": [
+				[
+					"e_rush",
+					3
+				]
+			]
+		},
+		{
+			"cost": [
+				220,
+				1
+			],
+			"desc": "爆破符便宜 30%，可多帶 1 張",
+			"grp": "exp",
+			"id": "c_demoman",
+			"max": 1,
+			"name": "爆破專精",
+			"pre": [
+				[
+					"c_mason",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				350,
+				1
+			],
+			"desc": "打通廢墟時再多 1 個區塊可以挑",
+			"grp": "exp",
+			"id": "c_surveyor",
+			"max": 1,
+			"name": "先遣探路",
+			"pre": [
+				[
+					"c_mason",
+					2
+				],
+				[
+					"draft",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
+				70,
+				1.3
+			],
+			"desc": "打通廢墟時，出現隱藏地點的機率 +6%（每級）",
+			"fx": [
+				[
+					"secret_pct",
+					6.0
+				]
+			],
+			"grp": "exp",
+			"id": "e_cartographer",
+			"max": 5,
+			"name": "尋寶直覺",
+			"pre": [
+				[
+					"draft",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				90,
+				1.5
+			],
+			"desc": "戰利品分成每級提早 2 名敵人觸發（10 → 4）",
+			"grp": "exp",
+			"id": "b_midas",
+			"max": 3,
+			"name": "精打細算",
+			"pre": [
+				[
+					"p_kickback",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				90,
+				1.5
+			],
+			"desc": "戰利品分成觸發時有 1.5% 機率附贈一顆符文（每級）",
+			"grp": "exp",
+			"id": "b_giltsticker",
+			"max": 3,
+			"name": "符文收藏家",
+			"pre": [
+				[
+					"p_kickback",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				60,
+				1.4
 			],
 			"desc": "從地牢救出的同伴攻擊速度 +15%（每級）",
 			"fx": [
@@ -6186,8 +8159,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				60,
+				1.4
 			],
 			"desc": "救出同伴時回復 10% 生命（每級）",
 			"fx": [
@@ -6209,8 +8182,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				60,
+				1.4
 			],
 			"desc": "每經過一格古王大道，燈油 +1 秒（每級）",
 			"fx": [
@@ -6232,8 +8205,8 @@ window.GAME = {
 		},
 		{
 			"cost": [
-				40,
-				1.6
+				60,
+				1.4
 			],
 			"desc": "每次遠征第一次走到古王大道盡頭，獲得一筆金幣（約 12 名敵人的份，每級）",
 			"fx": [
@@ -6254,336 +8227,46 @@ window.GAME = {
 			]
 		},
 		{
-			"cls": "swordsman",
 			"cost": [
-				50,
-				1.6
+				40,
+				1.48
 			],
-			"desc": "力量超過 10 的部分，每點攻擊再 +1%（每級 +0.5%）",
-			"grp": "swordsman",
-			"id": "c_grip",
-			"max": 3,
-			"name": "劍士之力",
+			"desc": "主動：對單體造成 140% 攻擊傷害，順手摸走金幣（每級 +15% 傷害、金幣更多）",
+			"grp": "exp",
+			"id": "s_steal",
+			"max": 10,
+			"name": "妙手偷襲",
 			"pre": [
 				[
-					"str",
-					3
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "劍斧、鈍器類武器攻擊 +10%（每級）",
-			"fx": [
-				[
-					"slash_pct",
-					10.0
-				],
-				[
-					"blunt_pct",
-					10.0
-				]
-			],
-			"grp": "swordsman",
-			"id": "c_disc",
-			"max": 3,
-			"name": "武器大師",
-			"pre": [
-				[
-					"c_grip",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "受到的物理傷害 −4%（每級）",
-			"grp": "swordsman",
-			"id": "c_rebar",
-			"max": 5,
-			"name": "盾牆",
-			"pre": [
-				[
-					"c_grip",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "打通廢墟的價格 −10%",
-			"fx": [
-				[
-					"piece_disc",
-					0.1
-				]
-			],
-			"grp": "swordsman",
-			"id": "c_mason",
-			"max": 1,
-			"name": "開路先鋒",
-			"pre": [
-				[
-					"c_grip",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "劍斧類武器攻擊時，另外 2 名敵人受到 20% 傷害",
-			"grp": "swordsman",
-			"id": "c_cleave",
-			"max": 1,
-			"name": "迴旋斬",
-			"pre": [
-				[
-					"c_disc",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "鈍器類武器命中有 20% 機率破甲",
-			"grp": "swordsman",
-			"id": "c_breaker",
-			"max": 1,
-			"name": "碎甲",
-			"pre": [
-				[
-					"c_disc",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "攻擊有 6% 機率讓目標暈眩 1 秒（每級）",
-			"grp": "swordsman",
-			"id": "c_cement",
-			"max": 5,
-			"name": "盾擊",
-			"pre": [
-				[
-					"c_rebar",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "板甲適應效果 ×1.25",
-			"grp": "swordsman",
-			"id": "c_ironclad",
-			"max": 1,
-			"name": "重裝",
-			"pre": [
-				[
-					"c_rebar",
+					"gold_find",
 					2
 				]
 			]
 		},
 		{
-			"cls": "swordsman",
 			"cost": [
-				120,
-				1.0
+				350,
+				1.18
 			],
-			"desc": "紅藥水回復量 +25%",
+			"desc": "金幣 +5%、經驗 +3%（每級）",
 			"fx": [
 				[
-					"potion_heal_pct",
-					25.0
-				]
-			],
-			"grp": "swordsman",
-			"id": "c_medic",
-			"max": 1,
-			"name": "戰場包紮",
-			"pre": [
-				[
-					"c_rebar",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "爆破符便宜 30%，可多帶 1 張",
-			"grp": "swordsman",
-			"id": "c_demoman",
-			"max": 1,
-			"name": "爆破專精",
-			"pre": [
-				[
-					"c_mason",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				200,
-				1.0
-			],
-			"desc": "打通廢墟時再多 1 個區塊可以挑",
-			"grp": "swordsman",
-			"id": "c_surveyor",
-			"max": 1,
-			"name": "先遣探路",
-			"pre": [
-				[
-					"c_mason",
-					1
-				],
-				[
-					"draft",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "被近戰攻擊時反彈 10% 攻擊的傷害",
-			"grp": "swordsman",
-			"id": "c_spiked",
-			"max": 1,
-			"name": "荊棘盾",
-			"pre": [
-				[
-					"c_ironclad",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				200,
-				1.0
-			],
-			"desc": "倒下時保留 65% 收入（原本 50%）",
-			"grp": "swordsman",
-			"id": "c_laststand",
-			"max": 1,
-			"name": "不屈意志",
-			"pre": [
-				[
-					"c_medic",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				250,
-				1.0
-			],
-			"desc": "對所有頭目傷害 +15%（騎士團長、祭司、王、古龍、秘境守衛與秘境之王）",
-			"fx": [
-				[
-					"boss_dmg",
-					15.0
-				]
-			],
-			"grp": "swordsman",
-			"id": "c_champion",
-			"max": 1,
-			"name": "屠魔者",
-			"pre": [
-				[
-					"c_cement",
-					1
-				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				400,
-				1.4
-			],
-			"desc": "護甲 +10%、生命 +5%（每級）",
-			"fx": [
-				[
-					"armor_pct",
-					10.0
-				],
-				[
-					"hp_pct",
+					"gold_pct",
 					5.0
-				]
-			],
-			"grp": "swordsman",
-			"id": "c_aegis",
-			"max": 5,
-			"name": "聖盾守護",
-			"pre": [
-				[
-					"c_rebar",
-					3
 				],
 				[
-					"priest",
-					1
+					"xp_pct",
+					3.0
 				]
-			]
-		},
-		{
-			"cls": "swordsman",
-			"cost": [
-				400,
-				1.0
 			],
-			"desc": "終極：生命低於 40% 時攻擊速度 +40%",
-			"grp": "swordsman",
-			"id": "c_overnight",
-			"max": 1,
-			"name": "狂戰之怒",
+			"grp": "exp",
+			"id": "ex_legend",
+			"max": 10,
+			"name": "傳奇遠征隊",
 			"pre": [
 				[
-					"c_cement",
-					2
+					"gold_find",
+					10
 				],
 				[
 					"seal",
@@ -6592,1073 +8275,103 @@ window.GAME = {
 			]
 		},
 		{
-			"cls": "archer",
 			"cost": [
-				50,
-				1.6
+				450,
+				1.18
 			],
-			"desc": "敏捷超過 10 的部分，每點攻擊 +1%（每級 +0.5%）",
-			"grp": "archer",
-			"id": "a_eagle",
-			"max": 3,
-			"name": "鷹眼",
-			"pre": [
-				[
-					"dex",
-					3
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				40,
-				1.55
-			],
-			"desc": "命中 +4（每級）",
-			"fx": [
-				[
-					"hit",
-					4.0
-				]
-			],
-			"grp": "archer",
-			"id": "a_aim",
-			"max": 5,
-			"name": "穩手上弦",
-			"pre": [
-				[
-					"a_eagle",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "攻擊速度 +6%（每級）",
-			"fx": [
-				[
-					"aspd_pct",
-					6.0
-				]
-			],
-			"grp": "archer",
-			"id": "a_quick",
-			"max": 5,
-			"name": "快速裝填",
-			"pre": [
-				[
-					"a_aim",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "閃避 +3（每級）",
-			"fx": [
-				[
-					"dodge",
-					3.0
-				]
-			],
-			"grp": "archer",
-			"id": "a_kite",
-			"max": 5,
-			"name": "拉開距離",
-			"pre": [
-				[
-					"a_aim",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				60,
-				1.6
-			],
-			"desc": "燈油上限 +8 秒（每級）",
+			"desc": "燈油上限 +5 秒（每級）",
 			"fx": [
 				[
 					"battery",
-					8.0
+					5.0
 				]
 			],
-			"grp": "archer",
-			"id": "a_scout",
-			"max": 3,
-			"name": "斥候",
+			"grp": "exp",
+			"id": "ex_oil",
+			"max": 10,
+			"name": "永燃燈芯",
 			"pre": [
 				[
-					"a_aim",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				60,
-				1.6
-			],
-			"desc": "暴擊傷害 +20%（每級）",
-			"fx": [
+					"battery",
+					15
+				],
 				[
-					"critx_pct",
-					20.0
-				]
-			],
-			"grp": "archer",
-			"id": "a_headshot",
-			"max": 3,
-			"name": "瞄準要害",
-			"pre": [
-				[
-					"a_quick",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "普通攻擊會穿透，再打中 1 名敵人造成 50% 傷害",
-			"grp": "archer",
-			"id": "a_pierce",
-			"max": 1,
-			"name": "穿透箭",
-			"pre": [
-				[
-					"a_quick",
+					"seal",
 					2
 				]
 			]
 		},
 		{
-			"cls": "archer",
 			"cost": [
-				60,
-				1.6
+				800,
+				1.15
 			],
-			"desc": "對生命高於 80% 的敵人，傷害 +10%（每級）",
-			"grp": "archer",
-			"id": "a_hunter",
-			"max": 3,
-			"name": "狩獵本能",
-			"pre": [
-				[
-					"a_quick",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "每場戰鬥第一個攻擊的目標易傷 6 秒",
-			"grp": "archer",
-			"id": "a_mark",
-			"max": 1,
-			"name": "獵物標記",
-			"pre": [
-				[
-					"a_hunter",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "每場戰鬥開始時，隨機讓 1 名敵人暈眩 1.5 秒",
-			"grp": "archer",
-			"id": "a_snare",
-			"max": 1,
-			"name": "獸夾",
-			"pre": [
-				[
-					"a_kite",
-					2
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				60,
-				1.6
-			],
-			"desc": "命中時 10% 機率讓目標中毒 2 層（每級 +10%）",
-			"grp": "archer",
-			"id": "a_poison",
-			"max": 3,
-			"name": "淬毒箭頭",
-			"pre": [
-				[
-					"a_headshot",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				60,
-				1.6
-			],
-			"desc": "命中時 10% 機率讓目標燃燒 2 層（每級 +10%）",
-			"grp": "archer",
-			"id": "a_fire",
-			"max": 3,
-			"name": "火焰箭",
-			"pre": [
-				[
-					"a_headshot",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				60,
-				1.6
-			],
-			"desc": "掉寶機率 +3%（每級）",
+			"desc": "對所有頭目傷害 +3%（騎士團長、祭司、王、古龍、秘境守衛與秘境之王；每級）",
 			"fx": [
 				[
-					"loot",
+					"boss_dmg",
 					3.0
 				]
 			],
-			"grp": "archer",
-			"id": "a_tracker",
-			"max": 3,
-			"name": "追蹤者",
+			"grp": "exp",
+			"id": "ex_final",
+			"max": 10,
+			"name": "王國的希望",
 			"pre": [
 				[
-					"a_scout",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				60,
-				1.6
-			],
-			"desc": "移動速度 +10%（每級）",
-			"fx": [
-				[
-					"move_pct",
-					10.0
-				]
-			],
-			"grp": "archer",
-			"id": "a_wind",
-			"max": 3,
-			"name": "順風",
-			"pre": [
-				[
-					"a_scout",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				80,
-				1.7
-			],
-			"desc": "每 8 次攻擊，對所有敵人射出一輪箭，造成 40% 攻擊傷害（每級 +20%）",
-			"grp": "archer",
-			"id": "a_volley",
-			"max": 3,
-			"name": "齊射",
-			"pre": [
-				[
-					"a_pierce",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				400,
-				1.4
-			],
-			"desc": "攻擊 +4%、暴擊傷害 +8%、受到的魔法傷害 −5%（每級）",
-			"fx": [
-				[
-					"atk_pct",
-					4.0
-				],
-				[
-					"critx_pct",
-					8.0
-				],
-				[
-					"magic_red",
-					5.0
-				]
-			],
-			"grp": "archer",
-			"id": "a_hawk",
-			"max": 5,
-			"name": "鷹擊",
-			"pre": [
-				[
-					"a_quick",
+					"ex_legend",
 					3
-				],
-				[
-					"priest",
-					1
-				]
-			]
-		},
-		{
-			"cls": "archer",
-			"cost": [
-				400,
-				1.0
-			],
-			"desc": "終極：齊射改成每 5 次攻擊觸發，並讓所有敵人暈眩 0.5 秒",
-			"grp": "archer",
-			"id": "a_rain",
-			"max": 1,
-			"name": "箭雨",
-			"pre": [
-				[
-					"a_volley",
-					2
 				],
 				[
 					"seal",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "智力超過 10 的部分，每點法術傷害 +1%（每級 +0.5%）",
-			"grp": "mage",
-			"id": "c_focus",
-			"max": 3,
-			"name": "奧術之心",
-			"pre": [
-				[
-					"int",
 					3
 				]
 			]
 		},
 		{
-			"cls": "mage",
 			"cost": [
-				50,
-				1.6
+				700,
+				1.15
 			],
-			"desc": "法術傷害 +10%（每級）",
-			"grp": "mage",
-			"id": "c_stamp",
-			"max": 5,
-			"name": "元素增幅",
-			"pre": [
-				[
-					"c_focus",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "商人換一批貨便宜 30%",
+			"desc": "金幣 +4%、經驗 +4%（每級）",
 			"fx": [
 				[
-					"reroll_disc",
-					0.3
-				]
-			],
-			"grp": "mage",
-			"id": "c_divine",
-			"max": 1,
-			"name": "預言",
-			"pre": [
-				[
-					"c_focus",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "2 顆同系同階符文就能合成高一階；取下符文免費",
-			"grp": "mage",
-			"id": "c_sticker",
-			"max": 1,
-			"name": "符文鍛造",
-			"pre": [
-				[
-					"c_focus",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "法力回復 +1、法術冷卻 −5%（每級）",
-			"grp": "mage",
-			"id": "c_clause",
-			"max": 5,
-			"name": "詠唱精簡",
-			"pre": [
-				[
-					"c_stamp",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "你造成的暈眩、冰凍持續時間 ×1.25",
-			"fx": [
-				[
-					"stun_dur",
-					0.25
-				]
-			],
-			"grp": "mage",
-			"id": "c_stillness",
-			"max": 1,
-			"name": "時停",
-			"pre": [
-				[
-					"c_stamp",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "掉裝備機率 +5%",
-			"fx": [
-				[
-					"loot",
-					5.0
-				]
-			],
-			"grp": "mage",
-			"id": "c_scavenger",
-			"max": 1,
-			"name": "魔力感知",
-			"pre": [
-				[
-					"c_divine",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "經驗再 +10%",
-			"fx": [
+					"gold_pct",
+					4.0
+				],
 				[
 					"xp_pct",
-					10.0
-				]
-			],
-			"grp": "mage",
-			"id": "c_scholar",
-			"max": 1,
-			"name": "博學",
-			"pre": [
-				[
-					"c_divine",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "對異變敵人傷害 +20%，異變符文掉落 ×2",
-			"fx": [
-				[
-					"mut_dmg",
-					20.0
-				]
-			],
-			"grp": "mage",
-			"id": "c_hexbreaker",
-			"max": 1,
-			"name": "淨化之光",
-			"pre": [
-				[
-					"c_sticker",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "每持有一件遺物，所有傷害 +1%",
-			"grp": "mage",
-			"id": "c_lore",
-			"max": 1,
-			"name": "古代學識",
-			"pre": [
-				[
-					"c_sticker",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "每 1 點法力回復，法術傷害 +0.5%",
-			"grp": "mage",
-			"id": "c_overflow",
-			"max": 1,
-			"name": "魔力潮汐",
-			"pre": [
-				[
-					"c_clause",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				250,
-				1.0
-			],
-			"desc": "每點智力讓法術冷卻 −0.2%（最多 −30%）",
-			"grp": "mage",
-			"id": "c_archmage",
-			"max": 1,
-			"name": "時間扭曲",
-			"pre": [
-				[
-					"c_clause",
-					2
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "喝聖泉後 15 秒內法術傷害 +15%",
-			"grp": "mage",
-			"id": "c_wellspring",
-			"max": 1,
-			"name": "魔泉",
-			"pre": [
-				[
-					"c_stillness",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "每點智力 +0.1% 魔法抵抗",
-			"grp": "mage",
-			"id": "c_hexwall",
-			"max": 1,
-			"name": "法則護盾",
-			"pre": [
-				[
-					"c_stillness",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				400,
-				1.4
-			],
-			"desc": "法術傷害 +40%、生命 +14%、受到的魔法傷害 −11%（每級）",
-			"fx": [
-				[
-					"spell_pct",
-					40.0
-				],
-				[
-					"hp_pct",
-					14.0
-				],
-				[
-					"magic_red",
-					11.0
-				]
-			],
-			"grp": "mage",
-			"id": "c_astral",
-			"max": 5,
-			"name": "星辰之力",
-			"pre": [
-				[
-					"c_stamp",
-					3
-				],
-				[
-					"priest",
-					1
-				]
-			]
-		},
-		{
-			"cls": "mage",
-			"cost": [
-				400,
-				1.0
-			],
-			"desc": "終極：法術有 25% 機率免費再施放一次",
-			"grp": "mage",
-			"id": "c_loophole",
-			"max": 1,
-			"name": "雙重詠唱",
-			"pre": [
-				[
-					"c_clause",
-					2
-				],
-				[
-					"seal",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "幸運超過 10 的部分，每點暴擊傷害 +1%（每級 +0.5%）",
-			"grp": "rogue",
-			"id": "c_keen",
-			"max": 3,
-			"name": "陰影之眼",
-			"pre": [
-				[
-					"luk",
-					3
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "匕首、劍斧類武器攻擊 +10%（每級）",
-			"fx": [
-				[
-					"pierce_pct",
-					10.0
-				],
-				[
-					"slash_pct",
-					10.0
-				]
-			],
-			"grp": "rogue",
-			"id": "c_blade",
-			"max": 3,
-			"name": "雙刃專精",
-			"pre": [
-				[
-					"c_keen",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "閃避 +2（每級）",
-			"grp": "rogue",
-			"id": "c_overtake",
-			"max": 5,
-			"name": "閃身",
-			"pre": [
-				[
-					"c_keen",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "商人的所有東西再便宜 10%",
-			"fx": [
-				[
-					"shop_disc",
-					0.1
-				]
-			],
-			"grp": "rogue",
-			"id": "c_barter",
-			"max": 1,
-			"name": "黑市門路",
-			"pre": [
-				[
-					"c_keen",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "8% 機率連擊兩次（每級）",
-			"grp": "rogue",
-			"id": "c_double",
-			"max": 5,
-			"name": "連刺",
-			"pre": [
-				[
-					"c_overtake",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				50,
-				1.6
-			],
-			"desc": "你造成的流血、中毒、燃燒傷害 +20%（每級）",
-			"fx": [
-				[
-					"dot_pct",
-					20.0
-				]
-			],
-			"grp": "rogue",
-			"id": "c_toxic",
-			"max": 3,
-			"name": "劇毒專精",
-			"pre": [
-				[
-					"c_blade",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "匕首類武器暴擊時讓目標流血",
-			"grp": "rogue",
-			"id": "c_puncture",
-			"max": 1,
-			"name": "放血",
-			"pre": [
-				[
-					"c_blade",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "閃避後 3 秒內攻擊速度 +25%",
-			"grp": "rogue",
-			"id": "c_twin",
-			"max": 1,
-			"name": "旋身",
-			"pre": [
-				[
-					"c_overtake",
-					2
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "裝備賣價 +25%",
-			"fx": [
-				[
-					"sell_pct",
-					25.0
-				]
-			],
-			"grp": "rogue",
-			"id": "c_fence",
-			"max": 1,
-			"name": "銷贓管道",
-			"pre": [
-				[
-					"c_barter",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "擊倒敵人的金幣 +15%",
-			"fx": [
-				[
-					"kill_gold_pct",
-					15.0
-				]
-			],
-			"grp": "rogue",
-			"id": "c_pickpocket",
-			"max": 1,
-			"name": "妙手空空",
-			"pre": [
-				[
-					"c_barter",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "陷阱傷害再 −25%",
-			"fx": [
-				[
-					"trap_red",
-					0.25
-				]
-			],
-			"grp": "rogue",
-			"id": "c_trapwise",
-			"max": 1,
-			"name": "機關大師",
-			"pre": [
-				[
-					"c_overtake",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				200,
-				1.0
-			],
-			"desc": "施放暗影斗篷後，接下來 3 次攻擊必定暴擊",
-			"grp": "rogue",
-			"id": "c_shadow",
-			"max": 1,
-			"name": "暗殺姿態",
-			"pre": [
-				[
-					"c_twin",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				150,
-				1.0
-			],
-			"desc": "寶箱的金幣 +50%",
-			"fx": [
-				[
-					"chest_gold_pct",
-					50.0
-				]
-			],
-			"grp": "rogue",
-			"id": "c_treasure",
-			"max": 1,
-			"name": "藏寶嗅覺",
-			"pre": [
-				[
-					"c_trapwise",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				120,
-				1.0
-			],
-			"desc": "商人的古銀鑰匙便宜 30%",
-			"fx": [
-				[
-					"key_disc",
-					0.3
-				]
-			],
-			"grp": "rogue",
-			"id": "c_lockpick",
-			"max": 1,
-			"name": "撬鎖專家",
-			"pre": [
-				[
-					"c_trapwise",
-					1
-				]
-			]
-		},
-		{
-			"cls": "rogue",
-			"cost": [
-				400,
-				1.4
-			],
-			"desc": "攻擊 +12%、生命 +14%、受到的魔法傷害 −4%（每級）",
-			"fx": [
-				[
-					"atk_pct",
-					12.0
-				],
-				[
-					"hp_pct",
-					14.0
-				],
-				[
-					"magic_red",
 					4.0
 				]
 			],
-			"grp": "rogue",
-			"id": "c_phantom",
-			"max": 5,
-			"name": "幻影步",
+			"grp": "exp",
+			"id": "ex_deep",
+			"max": 10,
+			"name": "深淵探索",
 			"pre": [
 				[
-					"c_overtake",
-					3
+					"ex_legend",
+					5
 				],
 				[
 					"priest",
-					1
+					2
 				]
 			]
 		},
 		{
-			"cls": "rogue",
 			"cost": [
-				400,
-				1.0
+				900,
+				1.5
 			],
-			"desc": "終極：閃避後的下一擊必定暴擊",
-			"grp": "rogue",
-			"id": "c_ontime",
-			"max": 1,
-			"name": "致命節奏",
+			"desc": "無盡秘境的掉寶 +10%、秘境石掉落率 +10%（每級）",
+			"grp": "exp",
+			"id": "ex_realm",
+			"max": 3,
+			"name": "秘境嚮導",
 			"pre": [
 				[
-					"c_double",
-					2
-				],
-				[
-					"seal",
+					"ex_deep",
 					1
 				]
 			]
@@ -7842,7 +8555,7 @@ window.GAME = {
 			"name": "雷擊"
 		},
 		"s_fortune": {
-			"attr": "luk",
+			"attr": "dex",
 			"cd": 12.0,
 			"icon": [
 				13,
@@ -7902,7 +8615,7 @@ window.GAME = {
 			"name": "火焰風暴"
 		},
 		"s_playdead": {
-			"attr": "luk",
+			"attr": "dex",
 			"cd": 16.0,
 			"icon": [
 				7,
@@ -7932,7 +8645,7 @@ window.GAME = {
 			"name": "大地震擊"
 		},
 		"s_smoke": {
-			"attr": "luk",
+			"attr": "dex",
 			"cd": 15.0,
 			"icon": [
 				0,
@@ -7952,7 +8665,7 @@ window.GAME = {
 			"name": "致命狙擊"
 		},
 		"s_steal": {
-			"attr": "luk",
+			"attr": "exp",
 			"cd": 8.0,
 			"icon": [
 				12,
@@ -7962,7 +8675,7 @@ window.GAME = {
 			"name": "妙手偷襲"
 		},
 		"s_summon": {
-			"attr": "luk",
+			"attr": "str",
 			"cd": 22.0,
 			"icon": [
 				3,
@@ -8013,12 +8726,12 @@ window.GAME = {
 		}
 	},
 	"stats": {
-		"achievements": 44,
-		"combos": 18,
+		"achievements": 49,
+		"combos": 32,
 		"enemies": 41,
 		"pieces": 21,
 		"relics": 8,
-		"skills": 191,
+		"skills": 178,
 		"uniques": 14
 	},
 	"subtitle": "瑟蘭迷宮遠征記",
@@ -8028,10 +8741,44 @@ window.GAME = {
 		"提示：越外圈的房間敵人越強，但金幣和經驗也越多。",
 		"提示：打不過騎士團長？先把旁邊的房間清乾淨、存點錢升級。",
 		"提示：符文嵌進裝備後，花一點金幣就能取下來換到別的裝備上。",
-		"提示：同一件裝備嵌滿三顆符文，可能觸發隱藏的符文之語。",
+		"提示：符文之語要「照順序」嵌進孔數剛好的裝備：2 孔放 2 顆、3 孔放 3 顆、4 孔放 4 顆。",
 		"提示：營地的「強化設施」每項最高 10 級，升到 Lv1、Lv4、Lv8 時營地會換上新擺設。",
 		"提示：在角色頁設定「自動賣掉」，垃圾裝備就不會塞爆背包。",
-		"提示：買區塊時注意它的能力，「豐饒」「寶藏」的房間特別值得往外蓋。"
+		"提示：買區塊時注意它的能力，「豐饒」「寶藏」的房間特別值得往外蓋。",
+		"提示：燈油燒完冒險者會摸黑前進，命中和傷害都會變差；傷得太重他會自己撤退。",
+		"提示：冒險者走進房間會先停一下觀察，房間裡的敵人也是這時才發現他。",
+		"提示：「安寧」區塊沒有敵人也沒有陷阱，很適合拿來接通遠處的地標。",
+		"提示：「營火」「燈台」只在每次遠征第一次經過時生效，把它們蓋在出發的路上最划算。",
+		"提示：聖泉會一次補滿生命和法力，戰鬥前路過一下很值得。",
+		"提示：陷阱房不會有敵人，踩過一次就安全了。「機關識破」可以減少陷阱傷害。",
+		"提示：插旗子可以指定冒險者的路線，旗子上的數字就是前往的順序。",
+		"提示：騎士團長和國王的房間附近會冒出「氣息」，但真正的位置會偏一點點。",
+		"提示：沉睡之王的傷勢會累積：就算這次沒打贏，下次他也會更虛弱。",
+		"提示：每打倒一位騎士團長，沉睡之王就會變弱 25%。",
+		"提示：連續倒下會累積「不屈之志」，冒險者會越打越強；平安回來時會慢慢消退。",
+		"提示：倒下只會少一半金幣和經驗，撿到的裝備、符文、配方都會帶回來。「保命符咒」能讓損失更少。",
+		"提示：寶庫要用古銀鑰匙打開。鑰匙祭壇和商人那裡都拿得到鑰匙。",
+		"提示：裝備的符文孔數跟稀有度有關：稀有 2 孔、史詩 3 孔，只有傳說的武器和護甲有 4 孔。",
+		"提示：符文 1～20 號是 3 顆合成 1 顆，21 號起只要 2 顆；10 號以上的合成要付金幣。",
+		"提示：目前最高只會掉到 10 號符文，更高號的只能靠合成。",
+		"提示：重複的配方不會浪費，可以在符文頁的配方書裡賣給商人。",
+		"提示：撿到別的職業的裝備別急著賣，放進共通儲藏箱，其他存檔也拿得到。",
+		"提示：「職業不符」的裝備穿不上，但通用裝備（沒有職業標示的）大家都能穿。",
+		"提示：技能沒有職業限制，劍士也可以點智力學火焰風暴，只是不一定划算。",
+		"提示：技能越往外圍越貴，同一個技能越往上點也越貴。先把核心技能點起來。",
+		"提示：「急行軍」能讓遠征加速，最高 3 倍速。",
+		"提示：「持續遠征」學會後，可以讓冒險者一趟接一趟自動出發。",
+		"提示：地圖上還空著的地方藏著隱藏地點：神龕、密室、收藏品……把整層打通才找得齊。",
+		"提示：被遺忘的神龕每座都能永久提升攻擊和生命，最多 20 座。",
+		"提示：收藏品收齊一整組，會有永久獎勵和一段故事。在「選單 → 收藏品」查看。",
+		"提示：古代戰場的守護者很強，但戰利品比一般寶箱好。",
+		"提示：異變遠征的敵人更強，但金幣和經驗多 50%。",
+		"提示：從地牢救出的冒險者會陪你打完這趟遠征。",
+		"提示：古王大道走很遠，盡頭一定有一間石室，常常放著寶箱。",
+		"提示：選單裡的「世界地圖」可以選擇這次遠征要去的地方。",
+		"提示：弓箭手和法師站在後排，受到的近戰傷害比較少。",
+		"提示：法術冷卻和法力都有限，主動技能最多同時裝 3 個。",
+		"提示：魔法抵抗是「機率完全擋下」一次魔法攻擊，對頭目只算一半。"
 	],
 	"title": "沉沒王國",
 	"trinket_tiers": [
@@ -8051,10 +8798,12 @@ window.GAME = {
 			25
 		]
 	],
+	"unique_share": 0.35,
 	"uniques": [
 		{
 			"atk": 9.0,
 			"cd": 0.8,
+			"cls": "swordsman",
 			"fx": {
 				"double": 15.0
 			},
@@ -8071,6 +8820,7 @@ window.GAME = {
 		{
 			"atk": 12.0,
 			"cd": 1.3,
+			"cls": "swordsman",
 			"fx": {
 				"sunder_on_hit": 30.0
 			},
@@ -8157,6 +8907,7 @@ window.GAME = {
 		},
 		{
 			"armor": 3.0,
+			"cls": "archer",
 			"fx": {
 				"drain_red": 0.1,
 				"move_pct": 25.0
@@ -8172,6 +8923,7 @@ window.GAME = {
 		},
 		{
 			"armor": 10.0,
+			"cls": "swordsman",
 			"fx": {
 				"fort_start": 6.0
 			},
@@ -8185,6 +8937,7 @@ window.GAME = {
 			"text": "每場戰鬥開始時堅固 6 秒"
 		},
 		{
+			"cls": "mage",
 			"fx": {
 				"spell_cdr": 0.15,
 				"spell_pct": 30.0
@@ -8201,16 +8954,16 @@ window.GAME = {
 		{
 			"fx": {
 				"gold_pct": 20.0,
-				"loot": 15.0
+				"loot": 1.5
 			},
 			"icon": [
 				8,
 				4
 			],
 			"id": "u_hoop",
-			"name": "盜賊公會指環",
+			"name": "尋寶者指環",
 			"slot": "ring",
-			"text": "掉寶 +15%，金幣 +20%"
+			"text": "掉寶 +1.5%，金幣 +20%"
 		},
 		{
 			"atk": 7.5,
@@ -8384,7 +9137,7 @@ window.GAME = {
 				}
 			],
 			"armor": 4.0,
-			"atk": 5.0,
+			"atk": 4.75,
 			"cd": 1.2,
 			"ch": 2,
 			"defeat": "牢籠……碎了。牠會從地底最深處醒來，去任何牠想去的地方。快！",
@@ -8497,6 +9250,7 @@ window.GAME = {
 		{
 			"atk": 5.5,
 			"cd": 0.9,
+			"cls": "swordsman",
 			"icon": [
 				5,
 				1
@@ -8508,6 +9262,7 @@ window.GAME = {
 		{
 			"atk": 7.0,
 			"cd": 1.1,
+			"cls": "swordsman",
 			"icon": [
 				5,
 				2
@@ -8519,6 +9274,7 @@ window.GAME = {
 		{
 			"atk": 5.0,
 			"cd": 0.85,
+			"cls": "",
 			"icon": [
 				5,
 				5
@@ -8530,6 +9286,7 @@ window.GAME = {
 		{
 			"atk": 8.0,
 			"cd": 1.3,
+			"cls": "swordsman",
 			"icon": [
 				5,
 				10
@@ -8541,6 +9298,7 @@ window.GAME = {
 		{
 			"atk": 9.0,
 			"cd": 1.4,
+			"cls": "swordsman",
 			"icon": [
 				5,
 				3
@@ -8552,61 +9310,55 @@ window.GAME = {
 		{
 			"atk": 4.0,
 			"cd": 0.75,
+			"cls": "",
 			"icon": [
 				5,
 				6
 			],
 			"name": "匕首",
-			"req": "luk",
+			"req": "dex",
 			"type": "pierce"
 		},
 		{
 			"atk": 5.0,
 			"cd": 0.85,
+			"cls": "",
 			"icon": [
 				5,
 				7
 			],
 			"name": "刺劍",
-			"req": "luk",
+			"req": "dex",
 			"type": "pierce"
 		},
 		{
 			"atk": 4.0,
 			"cd": 0.7,
+			"cls": "",
 			"icon": [
 				5,
 				9
 			],
 			"name": "雙刃匕首",
-			"req": "luk",
+			"req": "dex",
 			"type": "pierce"
 		},
 		{
 			"atk": 4.6,
 			"cd": 0.72,
+			"cls": "",
 			"icon": [
 				5,
 				7
 			],
 			"name": "暗殺短刀",
-			"req": "luk",
+			"req": "dex",
 			"type": "pierce"
-		},
-		{
-			"atk": 5.4,
-			"cd": 0.8,
-			"icon": [
-				5,
-				5
-			],
-			"name": "盜賊彎刃",
-			"req": "luk",
-			"type": "slash"
 		},
 		{
 			"atk": 6.5,
 			"cd": 1.1,
+			"cls": "swordsman",
 			"icon": [
 				5,
 				8
@@ -8618,6 +9370,7 @@ window.GAME = {
 		{
 			"atk": 7.0,
 			"cd": 1.15,
+			"cls": "swordsman",
 			"icon": [
 				5,
 				13
@@ -8629,6 +9382,7 @@ window.GAME = {
 		{
 			"atk": 8.0,
 			"cd": 1.3,
+			"cls": "swordsman",
 			"icon": [
 				10,
 				4
@@ -8640,6 +9394,7 @@ window.GAME = {
 		{
 			"atk": 6.5,
 			"cd": 1.1,
+			"cls": "",
 			"icon": [
 				5,
 				12
@@ -8651,6 +9406,7 @@ window.GAME = {
 		{
 			"atk": 6.0,
 			"cd": 1.0,
+			"cls": "",
 			"icon": [
 				5,
 				0
@@ -8662,6 +9418,7 @@ window.GAME = {
 		{
 			"atk": 4.0,
 			"cd": 1.0,
+			"cls": "mage",
 			"icon": [
 				6,
 				7
@@ -8674,6 +9431,7 @@ window.GAME = {
 		{
 			"atk": 3.5,
 			"cd": 0.95,
+			"cls": "mage",
 			"icon": [
 				6,
 				9
@@ -8686,6 +9444,7 @@ window.GAME = {
 		{
 			"atk": 4.5,
 			"cd": 0.8,
+			"cls": "archer",
 			"icon": [
 				6,
 				4
@@ -8697,6 +9456,7 @@ window.GAME = {
 		{
 			"atk": 5.5,
 			"cd": 0.95,
+			"cls": "archer",
 			"icon": [
 				6,
 				4
@@ -8708,6 +9468,7 @@ window.GAME = {
 		{
 			"atk": 7.5,
 			"cd": 1.25,
+			"cls": "archer",
 			"icon": [
 				6,
 				4
@@ -8760,5 +9521,122 @@ window.GAME = {
 		"pierce": "匕首",
 		"slash": "劍斧",
 		"staff": "法杖"
-	}
+	},
+	"world": [
+		{
+			"ch": 1,
+			"color": "#d9b373",
+			"desc": "三百年前一夜之間沉入地底的王國。三位騎士團長守著封印，沉睡之王在最深的王座上等著。",
+			"floors": [
+				0,
+				1
+			],
+			"name": "沉沒王國 瑟蘭",
+			"pos": [
+				0.270000010728836,
+				0.550000011920929
+			]
+		},
+		{
+			"ch": 2,
+			"color": "#ff8c59",
+			"desc": "王座底下的階梯通往更古老的地層。四位元素祭司看守著讓瑟蘭沉沒的真正災厄。",
+			"floors": [
+				2
+			],
+			"name": "王座之下",
+			"pos": [
+				0.370000004768372,
+				0.680000007152557
+			]
+		},
+		{
+			"ch": 3,
+			"color": "#ff6626",
+			"desc": "艾菈的信裡說「深到看得見火光」。大地的心臟在這裡跳動，熔岩河旁有巨人留下的鍛爐。",
+			"floors": [],
+			"name": "熔火之心",
+			"pos": [
+				0.5,
+				0.879999995231628
+			]
+		},
+		{
+			"ch": 4,
+			"color": "#73ccff",
+			"desc": "地底的大湖，水晶會記住聲音。冒險者聽見的「牆裡的歌聲」，也許就是從這裡傳來的。",
+			"floors": [],
+			"name": "沉眠水晶湖",
+			"pos": [
+				0.660000026226044,
+				0.790000021457672
+			]
+		},
+		{
+			"ch": 5,
+			"color": "#cc9966",
+			"desc": "比瑟蘭更古老的矮人地下城。他們也曾挖到會跳動的黑石——然後封上了整座要塞。",
+			"floors": [],
+			"name": "鐵爐要塞",
+			"pos": [
+				0.790000021457672,
+				0.660000026226044
+			]
+		},
+		{
+			"ch": 6,
+			"color": "#80d973",
+			"desc": "巨樹的根系貫穿每一層岩層，順著它往上爬，就能回到地表。",
+			"floors": [],
+			"name": "世界之根",
+			"pos": [
+				0.870000004768372,
+				0.519999980926514
+			]
+		},
+		{
+			"ch": 7,
+			"color": "#bfb8ad",
+			"desc": "瑟蘭沉沒後留在地表的大坑與廢城。三百年來，這裡沒有人敢靠近。",
+			"floors": [],
+			"name": "荒蕪王都",
+			"pos": [
+				0.709999978542328,
+				0.370000004768372
+			]
+		},
+		{
+			"ch": 8,
+			"color": "#99b3f2",
+			"desc": "第四騎士團的足跡在高原上的風暴之塔中斷。塔頂的閃電，從來沒有停過。",
+			"floors": [],
+			"name": "風暴高原",
+			"pos": [
+				0.519999980926514,
+				0.28999999165535
+			]
+		},
+		{
+			"ch": 9,
+			"color": "#d9e6ff",
+			"desc": "漂浮在雲上的島嶼。徽章上那對翅膀的主人，就住在這裡。",
+			"floors": [],
+			"name": "浮空群島",
+			"pos": [
+				0.310000002384186,
+				0.170000001788139
+			]
+		},
+		{
+			"ch": 10,
+			"color": "#ffe68c",
+			"desc": "心石的來處。「別讓那顆石頭見到天空」——所有的答案，都在星空之下。",
+			"floors": [],
+			"name": "天穹聖殿",
+			"pos": [
+				0.600000023841858,
+				0.0700000002980232
+			]
+		}
+	]
 };
