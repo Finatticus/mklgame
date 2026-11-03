@@ -542,7 +542,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=29"></script>
+<script src="data.js?v=30"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -674,7 +674,6 @@ $("dragon-card").innerHTML = `<div class="grid" style="grid-template-columns:320
 	$("ch3-dock-ring").textContent = C3.dock_min_ring;
 	$("ch3-ship-stay").textContent = C3.ship_stay;
 	$("ch3-islet").innerHTML = `湖上每 <b>${C3.islet_every}</b> 趟遠征會漂來一座小島，停 <b>${C3.islet_stay}</b> 趟（占卜師每級 +1 趟）就漂走，同時最多 ${C3.islet_max} 座。浮島出現在你目前在湖上群島蓋到的最外圈<b>再往外 ${C3.islet_gap[0]}～${C3.islet_gap[1]} 格</b>，一定蓋得到，也會把你往外拉。地圖上會標出「幾趟後漂走」。被困居民的機率 ${Math.round(C3.islet_folk * 100)}%，多一張配方或好符文的機率 ${Math.round(C3.islet_rune * 100)}%。`;
-	$("town-table").innerHTML = `<tr><th>人數</th><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th></tr>` + G.renos.filter((r) => r.folk).map((r) => `<tr><td>${r.folk} 人</td><td>${icon(r.icon)}<b>${esc(r.name)}</b></td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td></tr>`).join("");
 	$("captain-list").innerHTML = Object.entries(G.wardens).filter(([, w]) => w.ch === 3).map(wardenCard).join("");
 	const BT = G.barto;
 	$("barto-card").innerHTML = `<div class="grid" style="grid-template-columns:320px 1fr;align-items:center">
@@ -802,6 +801,7 @@ $("reno-max").textContent = G.reno_max;
 $("reno-grow").textContent = G.reno_grow;
 const renoCost = (r, lv) => Math.floor(G.reno_price * Math.pow(G.reno_grow, lv) * (r.mult || 1));
 $("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th><th>Lv1</th><th>Lv4</th><th>Lv8</th></tr>` + G.renos.map((r) => `<tr><td>${icon(r.icon)}<b>${esc(r.name)}</b>${r.ch ? `<br><span class="dim">第${["", "一", "二", "三", "四"][r.ch]}章${r.folk ? `．居民 ${r.folk} 人` : ""}</span>` : ""}</td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td>${r.tiers.map((t) => `<td class="dim">${esc(t)}</td>`).join("")}</tr>`).join("");
+$("town-table").innerHTML = `<tr><th>人數</th><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th></tr>` + G.renos.filter((r) => r.folk).map((r) => `<tr><td>${r.folk} 人</td><td>${icon(r.icon)}<b>${esc(r.name)}</b></td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td></tr>`).join("");
 const E = G.enh;
 $("enh-step").textContent = E.step;
 $("enh-safe").textContent = E.safe;
