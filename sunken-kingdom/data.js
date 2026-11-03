@@ -260,6 +260,41 @@ window.GAME = {
 			"merchant_home",
 			"安身之所",
 			"護送流浪商人回到營地"
+		],
+		[
+			"ch3",
+			"浮城",
+			"打倒古龍，見證王城浮上湖面"
+		],
+		[
+			"islet5",
+			"拾荒者",
+			"接上 5 座漂流浮島"
+		],
+		[
+			"folk10",
+			"重建家園",
+			"救回 10 位瑟蘭居民"
+		],
+		[
+			"folk25",
+			"浮城之主",
+			"救回 25 位瑟蘭居民"
+		],
+		[
+			"captains3",
+			"掃蕩拾骨者",
+			"打倒三位拾骨者船長"
+		],
+		[
+			"barto",
+			"鉤斷船沉",
+			"打倒「鐵鉤」巴爾托"
+		],
+		[
+			"set_scavenger",
+			"滿載而歸",
+			"穿上完整的拾骨者套裝"
 		]
 	],
 	"affixes": {
@@ -680,6 +715,47 @@ window.GAME = {
 		"str": "力量",
 		"vit": "體質"
 	},
+	"barto": {
+		"abil": [
+			{
+				"on": "start",
+				"stacks": 2,
+				"status": "sunder"
+			},
+			{
+				"dur": 6.0,
+				"on": "start",
+				"status": "weaken"
+			},
+			{
+				"at": [
+					0.66,
+					0.33
+				],
+				"on": "phase"
+			},
+			{
+				"enemy": "c3_deckhand",
+				"every": 6.0,
+				"on": "summon"
+			},
+			{
+				"chance": 35,
+				"on": "hit",
+				"stacks": 2,
+				"status": "bleed"
+			}
+		],
+		"armor": 9.0,
+		"atk": 5.0,
+		"cd": 1.4,
+		"dodge": 5.0,
+		"hp": 60.0,
+		"model": "Barbarian",
+		"name": "「鐵鉤」巴爾托",
+		"tint": "#f2c78c",
+		"type": "melee"
+	},
 	"base_loot": 4.0,
 	"boss": {
 		"abil": [
@@ -728,6 +804,37 @@ window.GAME = {
 		"tint": "#ffd14d",
 		"type": "melee"
 	},
+	"ch3": {
+		"barto_atk": 2.4,
+		"barto_hp": 10.0,
+		"captain_atk": 1.8,
+		"captain_folk": 3,
+		"captain_hp": 9.0,
+		"captain_ids": [
+			"cap_hook",
+			"cap_powder",
+			"cap_diver"
+		],
+		"captain_rings": [
+			7,
+			11,
+			15
+		],
+		"dock_min_ring": 14,
+		"docks": 6,
+		"islet_every": 5,
+		"islet_folk": 0.5,
+		"islet_gap": [
+			3,
+			5
+		],
+		"islet_max": 2,
+		"islet_rune": 0.15,
+		"islet_stay": 10,
+		"lake_ring_bonus": 34,
+		"lake_size": 37,
+		"ship_stay": 4
+	},
 	"chapters": [
 		{
 			"end": "瓦爾克倒下了，但王座底下傳來更深的回響……廢墟的秘密還沒結束。",
@@ -740,6 +847,12 @@ window.GAME = {
 			"goal": "走下王座底下的階梯，擊敗守著封印的四元素祭司，阻止甦醒的古龍 伊格尼斯",
 			"id": 2,
 			"name": "第二章　王座之下"
+		},
+		{
+			"end": "巴爾托倒下了，拾骨者的船隊四散逃走。可是他的藏寶圖上，蓋著白鴉帝國的印章……是誰把瑟蘭的位置告訴了帝國？",
+			"goal": "在浮上湖面的王城裡打倒三位拾骨者船長，追上「鐵鉤」巴爾托的掠奪船，救回瑟蘭的居民",
+			"id": 3,
+			"name": "第三章　浮城"
 		}
 	],
 	"classes": {
@@ -941,6 +1054,50 @@ window.GAME = {
 				}
 			],
 			"name": "葛倫的舊信"
+		},
+		"logbook": {
+			"bonus": "攻擊、法術傷害 +6%",
+			"ch": 3,
+			"done_lines": [
+				"白斗篷、白烏鴉……巴爾托背後還有人。",
+				"隊長，這本日誌我會親自送到公會。如果帝國真的盯上了瑟蘭，我們得早點準備。"
+			],
+			"fx": {
+				"atk_pct": 6.0,
+				"spell_pct": 6.0
+			},
+			"icon": [
+				13,
+				2
+			],
+			"items": [
+				{
+					"id": "log1",
+					"lore": "「北岸的漁民說，湖底下有一整座城。巴爾托笑他們喝多了，但還是把船開了過去。」",
+					"name": "航海日誌．第一頁"
+				},
+				{
+					"id": "log2",
+					"lore": "「湖水退了三尺，水底的屋頂露出來了。屋頂上的瓦，跟三百年前的史書畫的一模一樣。」",
+					"name": "航海日誌．第二頁"
+				},
+				{
+					"id": "log3",
+					"lore": "「有個穿白斗篷的人來找老大，給了一張地圖和一袋金幣。他說：等城浮起來，搶到的東西分他一半。」",
+					"name": "航海日誌．第三頁"
+				},
+				{
+					"id": "log4",
+					"lore": "「城真的浮起來了！可是那些居民……他們醒了。老大說，人也能賣錢。我不想幹了。」",
+					"name": "航海日誌．第四頁"
+				},
+				{
+					"id": "log5",
+					"lore": "「白斗篷的人又來了，這次他胸口別著一隻白色的烏鴉。老大跪下去的時候，我看見他在發抖。」",
+					"name": "航海日誌．最後一頁"
+				}
+			],
+			"name": "拾骨者的航海日誌"
 		},
 		"miner": {
 			"bonus": "燈油 +10 秒",
@@ -1485,6 +1642,465 @@ window.GAME = {
 			"ring": 29,
 			"tint": "#ffffff",
 			"type": "melee",
+			"xp": 8.0
+		},
+		"c3_bigcrab": {
+			"abil": [
+				{
+					"dur": 6.0,
+					"on": "start",
+					"self": true,
+					"status": "fortified"
+				},
+				{
+					"chance": 35,
+					"on": "hit",
+					"stacks": 2,
+					"status": "sunder"
+				}
+			],
+			"armor": 14.0,
+			"atk": 7.0,
+			"cd": 1.8,
+			"ch": 3,
+			"dodge": 0.0,
+			"gold": 11.0,
+			"hit": 84.0,
+			"hp": 90.0,
+			"model": "q:Crab",
+			"name": "鐵殼蟹王",
+			"ring": 45,
+			"scale": 1.45,
+			"tint": "#bf99f2",
+			"type": "melee",
+			"xp": 10.0
+		},
+		"c3_bomber": {
+			"abil": [
+				{
+					"on": "start",
+					"stacks": 2,
+					"status": "burn"
+				},
+				{
+					"explode": 0.06,
+					"on": "death"
+				}
+			],
+			"armor": 0.0,
+			"atk": 6.0,
+			"cd": 1.6,
+			"ch": 3,
+			"dodge": 4.0,
+			"gold": 5.0,
+			"hit": 86.0,
+			"hp": 22.0,
+			"model": "Rogue_Hooded",
+			"name": "火藥兵",
+			"ring": 36,
+			"tint": "#ff9959",
+			"type": "magic",
+			"xp": 4.0
+		},
+		"c3_brute": {
+			"abil": [
+				{
+					"dur": 5.0,
+					"on": "start",
+					"self": true,
+					"status": "fortified"
+				},
+				{
+					"chance": 12,
+					"dur": 0.8,
+					"on": "hit",
+					"status": "stun"
+				}
+			],
+			"armor": 4.0,
+			"atk": 5.0,
+			"cd": 1.6,
+			"ch": 3,
+			"dodge": 0.0,
+			"gold": 7.0,
+			"hit": 82.0,
+			"hp": 55.0,
+			"model": "Barbarian",
+			"name": "船上打手",
+			"ring": 37,
+			"scale": 1.1,
+			"tint": "#d9b399",
+			"type": "melee",
+			"xp": 6.0
+		},
+		"c3_crab": {
+			"abil": [
+				{
+					"dur": 4.0,
+					"on": "start",
+					"self": true,
+					"status": "fortified"
+				}
+			],
+			"armor": 8.0,
+			"atk": 4.0,
+			"cd": 1.3,
+			"ch": 3,
+			"dodge": 2.0,
+			"gold": 6.0,
+			"hit": 82.0,
+			"hp": 40.0,
+			"model": "q:Crab",
+			"name": "湖岸巨蟹",
+			"ring": 35,
+			"tint": "#99d9ff",
+			"type": "melee",
+			"xp": 5.0
+		},
+		"c3_deckhand": {
+			"abil": [
+				{
+					"chance": 25,
+					"on": "hit",
+					"stacks": 1,
+					"status": "bleed"
+				}
+			],
+			"armor": 1.0,
+			"atk": 4.5,
+			"cd": 1.0,
+			"ch": 3,
+			"dodge": 6.0,
+			"gold": 5.0,
+			"hit": 85.0,
+			"hp": 26.0,
+			"model": "Rogue",
+			"name": "拾骨者水手",
+			"ring": 35,
+			"tint": "#ccb899",
+			"type": "melee",
+			"xp": 4.0
+		},
+		"c3_diver": {
+			"abil": [
+				{
+					"chance": 30,
+					"on": "hit",
+					"stacks": 1,
+					"status": "poison"
+				}
+			],
+			"armor": 0.0,
+			"atk": 5.0,
+			"cd": 0.8,
+			"ch": 3,
+			"dodge": 18.0,
+			"gold": 6.0,
+			"hit": 88.0,
+			"hp": 24.0,
+			"model": "Rogue",
+			"name": "潛水盜賊",
+			"ring": 38,
+			"tint": "#73b3cc",
+			"type": "melee",
+			"xp": 5.0
+		},
+		"c3_ghost": {
+			"abil": [
+				{
+					"dur": 4.0,
+					"on": "start",
+					"status": "weaken"
+				},
+				{
+					"chance": 25,
+					"dur": 4.0,
+					"on": "hit",
+					"status": "vulnerable"
+				}
+			],
+			"armor": 0.0,
+			"atk": 6.0,
+			"cd": 1.3,
+			"ch": 3,
+			"dodge": 15.0,
+			"gold": 6.0,
+			"hit": 86.0,
+			"hp": 22.0,
+			"model": "q:Ghost",
+			"name": "溺魂",
+			"ring": 38,
+			"tint": "#8cd9ff",
+			"type": "magic",
+			"xp": 5.0
+		},
+		"c3_gunner": {
+			"abil": [
+				{
+					"chance": 20,
+					"dur": 4.0,
+					"on": "hit",
+					"status": "vulnerable"
+				}
+			],
+			"armor": 2.0,
+			"atk": 6.5,
+			"cd": 1.5,
+			"ch": 3,
+			"dodge": 4.0,
+			"gold": 6.0,
+			"hit": 92.0,
+			"hp": 24.0,
+			"model": "Knight",
+			"name": "火槍手",
+			"ring": 39,
+			"tint": "#998c80",
+			"type": "magic",
+			"xp": 5.0
+		},
+		"c3_hooker": {
+			"abil": [
+				{
+					"dur": 0.8,
+					"on": "start",
+					"status": "stun"
+				},
+				{
+					"chance": 20,
+					"on": "hit",
+					"stacks": 1,
+					"status": "sunder"
+				}
+			],
+			"armor": 2.0,
+			"atk": 4.5,
+			"cd": 1.2,
+			"ch": 3,
+			"dodge": 4.0,
+			"gold": 5.0,
+			"hit": 85.0,
+			"hp": 28.0,
+			"model": "Rogue_Hooded",
+			"name": "鉤索手下",
+			"ring": 35,
+			"tint": "#b39e80",
+			"type": "melee",
+			"xp": 4.0
+		},
+		"c3_kraken": {
+			"abil": [
+				{
+					"dur": 5.0,
+					"on": "start",
+					"status": "slow"
+				},
+				{
+					"chance": 30,
+					"dur": 4.0,
+					"on": "hit",
+					"status": "vulnerable"
+				},
+				{
+					"enemy": "c3_tentacle",
+					"every": 8.0,
+					"on": "summon"
+				}
+			],
+			"armor": 5.0,
+			"atk": 8.0,
+			"cd": 1.6,
+			"ch": 3,
+			"dodge": 4.0,
+			"gold": 14.0,
+			"hit": 90.0,
+			"hp": 85.0,
+			"model": "q:Cthulhu",
+			"name": "湖之主的眷屬",
+			"ring": 49,
+			"scale": 1.3,
+			"tint": "#6699f2",
+			"type": "magic",
+			"xp": 12.0
+		},
+		"c3_looter": {
+			"abil": [
+				{
+					"dur": 5.0,
+					"on": "start",
+					"self": true,
+					"status": "haste"
+				},
+				{
+					"chance": 35,
+					"on": "hit",
+					"stacks": 2,
+					"status": "bleed"
+				}
+			],
+			"armor": 2.0,
+			"atk": 5.5,
+			"cd": 1.1,
+			"ch": 3,
+			"dodge": 6.0,
+			"gold": 8.0,
+			"hit": 86.0,
+			"hp": 40.0,
+			"model": "Barbarian",
+			"name": "掠奪者",
+			"ring": 40,
+			"tint": "#f2cc80",
+			"type": "melee",
+			"xp": 6.0
+		},
+		"c3_mate": {
+			"abil": [
+				{
+					"dur": 6.0,
+					"on": "start",
+					"self": true,
+					"status": "fortified"
+				},
+				{
+					"chance": 30,
+					"on": "hit",
+					"stacks": 2,
+					"status": "sunder"
+				}
+			],
+			"armor": 7.0,
+			"atk": 6.0,
+			"cd": 1.4,
+			"ch": 3,
+			"dodge": 2.0,
+			"gold": 9.0,
+			"hit": 88.0,
+			"hp": 60.0,
+			"model": "Knight",
+			"name": "拾骨者大副",
+			"ring": 42,
+			"scale": 1.15,
+			"tint": "#bf9973",
+			"type": "melee",
+			"xp": 8.0
+		},
+		"c3_quarter": {
+			"abil": [
+				{
+					"dur": 5.0,
+					"on": "start",
+					"status": "vulnerable"
+				},
+				{
+					"enemy": "c3_deckhand",
+					"every": 7.0,
+					"on": "summon"
+				}
+			],
+			"armor": 9.0,
+			"atk": 7.0,
+			"cd": 1.5,
+			"ch": 3,
+			"dodge": 2.0,
+			"gold": 13.0,
+			"hit": 90.0,
+			"hp": 80.0,
+			"model": "Knight",
+			"name": "拾骨者軍需官",
+			"ring": 47,
+			"scale": 1.25,
+			"tint": "#ffd966",
+			"type": "melee",
+			"xp": 11.0
+		},
+		"c3_slime": {
+			"abil": [
+				{
+					"chance": 30,
+					"on": "hit",
+					"status": "slow"
+				},
+				{
+					"n": 2,
+					"on": "death",
+					"split": "c2_slimelet"
+				}
+			],
+			"armor": 2.0,
+			"atk": 4.0,
+			"cd": 1.2,
+			"ch": 3,
+			"dodge": 0.0,
+			"gold": 5.0,
+			"hit": 80.0,
+			"hp": 34.0,
+			"model": "q:Slime",
+			"name": "湖底軟泥",
+			"ring": 36,
+			"tint": "#73b3d9",
+			"type": "melee",
+			"xp": 4.0
+		},
+		"c3_tentacle": {
+			"abil": [
+				{
+					"dur": 4.0,
+					"on": "start",
+					"status": "slow"
+				},
+				{
+					"chance": 15,
+					"dur": 1.0,
+					"on": "hit",
+					"status": "stun"
+				}
+			],
+			"armor": 3.0,
+			"atk": 6.0,
+			"cd": 1.5,
+			"ch": 3,
+			"dodge": 2.0,
+			"gold": 7.0,
+			"hit": 84.0,
+			"hp": 50.0,
+			"model": "q:Cthulhu",
+			"name": "深湖觸手",
+			"ring": 41,
+			"scale": 0.9,
+			"tint": "#80bfb3",
+			"type": "melee",
+			"xp": 6.0
+		},
+		"c3_witch": {
+			"abil": [
+				{
+					"dur": 5.0,
+					"on": "start",
+					"status": "weaken"
+				},
+				{
+					"chance": 30,
+					"on": "hit",
+					"stacks": 2,
+					"status": "poison"
+				},
+				{
+					"heal": 0.3,
+					"on": "low"
+				}
+			],
+			"armor": 0.0,
+			"atk": 7.0,
+			"cd": 1.4,
+			"ch": 3,
+			"dodge": 6.0,
+			"gold": 9.0,
+			"hit": 94.0,
+			"hp": 32.0,
+			"model": "Mage",
+			"name": "沼澤巫婆",
+			"ring": 44,
+			"tint": "#8ccc80",
+			"type": "magic",
 			"xp": 8.0
 		},
 		"debt": {
@@ -2206,7 +2822,9 @@ window.GAME = {
 	"floor_names": [
 		"地下一樓",
 		"地下二樓",
-		"地下三樓"
+		"地下三樓",
+		"無盡秘境",
+		"湖上群島"
 	],
 	"floor_reward_pct": 0.9,
 	"floor_rewards": [
@@ -2251,6 +2869,25 @@ window.GAME = {
 				]
 			],
 			"name": "祭司的餘燼"
+		},
+		{},
+		{
+			"desc": "生命、攻擊、法術傷害 +8%",
+			"fx": [
+				[
+					"hp_pct",
+					8.0
+				],
+				[
+					"atk_pct",
+					8.0
+				],
+				[
+					"spell_pct",
+					8.0
+				]
+			],
+			"name": "浮城的潮聲"
 		}
 	],
 	"floor_secrets": [
@@ -2279,6 +2916,21 @@ window.GAME = {
 			"page",
 			"shrine",
 			"shrine",
+			"cache",
+			"elite",
+			"elite",
+			"bones"
+		],
+		[],
+		[
+			"page",
+			"page",
+			"page",
+			"page",
+			"page",
+			"shrine",
+			"shrine",
+			"cache",
 			"cache",
 			"elite",
 			"elite",
@@ -2337,11 +2989,30 @@ window.GAME = {
 		"warden": "騎士團長之間"
 	},
 	"lines": {
+		"barto_intro": [
+			"那就是「鐵鉤」巴爾托。小心他的鉤子，隊長。"
+		],
+		"barto_victory": [
+			"巴爾托倒下了！拾骨者的船隊四散逃走，瑟蘭的居民終於安全了。",
+			"不過……你看他身上這張藏寶圖。角落蓋著的，是白鴉帝國的印章。",
+			"是誰把瑟蘭的位置告訴帝國的？第四章「白鴉的使節」——之後開放。"
+		],
 		"boss_intro": [
 			"那就是沉睡之王……瓦爾克。王國的詛咒就是從他身上開始的。"
 		],
 		"boss_skip": [
 			"你沒擊敗任何一位騎士團長，就直接闖進王座廳？國王的力量完全沒被削弱……祝你好運。"
+		],
+		"cap_1": [
+			"一位拾骨者船長倒下了。被他押著的居民得救了。",
+			"拾骨者的首領叫「鐵鉤」巴爾托……他的船遲早會出現。"
+		],
+		"cap_2": [
+			"第二位船長也倒了。湖上的拾骨者開始騷動，他們在等首領的命令。"
+		],
+		"cap_3": [
+			"三位船長都倒下了！湖面上出現了一艘大船——巴爾托的掠奪船！",
+			"他不會一直停在同一個地方。看地圖上的碼頭，在船開走之前把路接過去。"
 		],
 		"cat": [
 			"一隻黑貓從瓦礫堆裡鑽出來，盯著冒險者看了很久，然後……跟著回營地了。",
@@ -2352,6 +3023,21 @@ window.GAME = {
 			"瓦爾克不是詛咒的元凶，隊長。他是封印。三百年前，地底醒來的是一條古龍，國王用他的長眠把牠封在王座之下，四位元素祭司負責看守。",
 			"現在國王安息了，封印正在崩塌。下去吧，我們得在牠完全醒來之前趕到。",
 			"公會已經在地下三樓的樓梯口搭好營地。出發前在「遠征樓層」選地下三樓，冒險者就會從那裡出發。"
+		],
+		"ch3_folk": [
+			"救回來的人說，他們是三百年前睡著的瑟蘭居民，醒來時城已經浮在湖上了。",
+			"他們想留在營地幫忙。人多了，營地就能慢慢變成一座小鎮。"
+		],
+		"ch3_intro": [
+			"……隊長，你感覺到了嗎？地面在晃。不，是整座城在動。",
+			"古龍的心火熄滅了，壓著瑟蘭的重量也跟著消失……王城正在往上浮！",
+			"我們在湖中央的小島上搭了新營地。湖上到處是半沉的街道和小島——還有，那些船是誰的？"
+		],
+		"ch3_islet": [
+			"湖上漂來一座小島，上面好像有東西在發光。趁它還沒漂走，把路接過去吧。"
+		],
+		"ch3_town": [
+			"營地越來越熱鬧了。去「營地」看看，居民們想蓋點新東西。"
 		],
 		"dragon_intro": [
 			"那就是讓瑟蘭沉沒的災厄……古龍 伊格尼斯。"
@@ -2414,6 +3100,9 @@ window.GAME = {
 			"等等……這面牆後面是空的？",
 			"廢墟裡還藏著很多公會地圖上沒有的地方，隊長。打通越多廢墟，就越有機會找到它們。"
 		],
+		"ship_move": [
+			"掠奪船起錨了，往另一個碼頭開去。沒關係，他的傷不會那麼快好。"
+		],
 		"shop": [
 			"那是流浪商人！聽說他在廢墟裡做生意已經好幾代了，從沒人知道他怎麼下來的。"
 		],
@@ -2435,6 +3124,17 @@ window.GAME = {
 		]
 	},
 	"loot": {
+		"barto": {
+			"chance": 0.9,
+			"rolls": 3,
+			"w": [
+				0.0,
+				0.0,
+				45.0,
+				32.0,
+				23.0
+			]
+		},
 		"big_chest": {
 			"chance": 0.75,
 			"w": [
@@ -2484,6 +3184,16 @@ window.GAME = {
 				38.0,
 				9.0,
 				1.0
+			]
+		},
+		"islet": {
+			"chance": 0.8,
+			"w": [
+				0.0,
+				25.0,
+				50.0,
+				21.0,
+				4.0
 			]
 		},
 		"kill": {
@@ -2598,7 +3308,8 @@ window.GAME = {
 		12.0,
 		60.0,
 		150.0,
-		150.0
+		150.0,
+		250.0
 	],
 	"pieces": [
 		{
@@ -3280,6 +3991,7 @@ window.GAME = {
 		"boss": 0.1,
 		"chest": 0.004,
 		"guard": 0.01,
+		"islet": 0.02,
 		"kill": 0.0002,
 		"realm_king": 0.05,
 		"warden": 0.06
@@ -3382,6 +4094,39 @@ window.GAME = {
 			"id": "r_anchor",
 			"lore": "曾經鑲滿寶石的王冠，只剩下一角。上面刻著：「榮耀屬於地上的人民。」",
 			"name": "瑟蘭王冠的碎片",
+			"story": false
+		},
+		{
+			"ch": 3,
+			"icon": [
+				13,
+				12
+			],
+			"id": "r_tidemap",
+			"lore": "巴爾托的藏寶圖。瑟蘭沉沒的位置畫得分毫不差——比公會的地圖還準。角落的印章，是一隻展翅的白色烏鴉。",
+			"name": "蓋著白鴉印章的藏寶圖",
+			"story": true
+		},
+		{
+			"ch": 3,
+			"icon": [
+				13,
+				4
+			],
+			"id": "r_cradle",
+			"lore": "一張泛黃的樂譜，曲名是「給萊恩」。湖上的居民說，城浮起來的那一夜，他們都聽見有人在唱這首歌。",
+			"name": "浮城的搖籃曲",
+			"story": true
+		},
+		{
+			"ch": 3,
+			"icon": [
+				10,
+				13
+			],
+			"id": "r_oar",
+			"lore": "居民們用沉船的木板拼出第一艘渡船。船槳上刻滿了名字，都是三百年前沒能醒來的人。",
+			"name": "第一艘渡船的船槳",
 			"story": false
 		}
 	],
@@ -3598,6 +4343,91 @@ window.GAME = {
 				"祈禱台",
 				"彩窗禮拜堂"
 			]
+		},
+		{
+			"ch": 3,
+			"desc": "湖上群島的區塊 −3%",
+			"folk": 3,
+			"icon": [
+				10,
+				13
+			],
+			"id": "shipwright",
+			"mult": 6.0,
+			"name": "船匠工坊",
+			"tiers": [
+				"修船架",
+				"木工棚",
+				"大船塢"
+			]
+		},
+		{
+			"ch": 3,
+			"desc": "漂流浮島多停 1 趟；Lv1 起預告掠奪船下一個停靠的碼頭",
+			"folk": 6,
+			"icon": [
+				13,
+				14
+			],
+			"id": "seer",
+			"mult": 6.0,
+			"name": "占卜師的帳篷",
+			"tiers": [
+				"星象帳篷",
+				"水晶球",
+				"占星台"
+			]
+		},
+		{
+			"ch": 3,
+			"desc": "生命回復 +1.5／秒、紅藥水回復量 +3%",
+			"folk": 10,
+			"icon": [
+				9,
+				0
+			],
+			"id": "fisher",
+			"mult": 6.0,
+			"name": "漁夫碼頭",
+			"tiers": [
+				"小漁船",
+				"曬魚架",
+				"漁市"
+			]
+		},
+		{
+			"ch": 3,
+			"desc": "經驗 +3%；Lv1 起在湖上群島遠征時，一位傭兵全程同行（每級更強）",
+			"folk": 15,
+			"icon": [
+				9,
+				12
+			],
+			"id": "tavern",
+			"mult": 6.0,
+			"name": "湖畔酒館",
+			"tiers": [
+				"酒桶攤",
+				"小酒館",
+				"湖畔酒館"
+			]
+		},
+		{
+			"ch": 3,
+			"desc": "燈油 +2 秒、命中 +1",
+			"folk": 20,
+			"icon": [
+				10,
+				7
+			],
+			"id": "lighthouse",
+			"mult": 6.0,
+			"name": "燈塔",
+			"tiers": [
+				"火盆",
+				"木燈塔",
+				"石砌燈塔"
+			]
 		}
 	],
 	"room_mods": {
@@ -3668,6 +4498,7 @@ window.GAME = {
 		"boss": 0.4,
 		"chest": 0.04,
 		"guard": 0.06,
+		"islet": 0.12,
 		"kill": 0.004,
 		"mutant": 0.03,
 		"realm_king": 0.3,
@@ -4243,6 +5074,23 @@ window.GAME = {
 			],
 			"tier": 2
 		},
+		"rw_harbor": {
+			"ch": 3,
+			"desc": "生命 +18%、護甲 +18%、魔法抵抗 +6%",
+			"fx": {
+				"armor_pct": 18.0,
+				"hp_pct": 18.0,
+				"res_magic": 6.0
+			},
+			"grp": "armor",
+			"name": "避風港",
+			"runes": [
+				17,
+				13,
+				20
+			],
+			"tier": 3
+		},
 		"rw_immortal": {
 			"desc": "護甲 +40%、生命 +25%、魔法抵抗 +10%",
 			"fx": {
@@ -4306,6 +5154,22 @@ window.GAME = {
 			"runes": [
 				14,
 				11,
+				16
+			],
+			"tier": 3
+		},
+		"rw_lantern": {
+			"ch": 3,
+			"desc": "燈油消耗 −15%、命中 +8、生命 +8%",
+			"fx": {
+				"drain_red": 0.15,
+				"hit": 8.0,
+				"hp_pct": 8.0
+			},
+			"grp": "armor",
+			"name": "長明",
+			"runes": [
+				20,
 				16
 			],
 			"tier": 3
@@ -4498,6 +5362,21 @@ window.GAME = {
 			],
 			"tier": 3
 		},
+		"rw_tidal": {
+			"ch": 3,
+			"desc": "法術傷害 +30%、攻擊速度 +10%",
+			"fx": {
+				"aspd_pct": 10.0,
+				"spell_pct": 30.0
+			},
+			"grp": "weapon",
+			"name": "大潮",
+			"runes": [
+				18,
+				15
+			],
+			"tier": 3
+		},
 		"rw_time": {
 			"desc": "法術冷卻 −10%、移動速度 +12%",
 			"fx": {
@@ -4556,6 +5435,23 @@ window.GAME = {
 				17,
 				20,
 				16
+			],
+			"tier": 3
+		},
+		"rw_undertow": {
+			"ch": 3,
+			"desc": "攻擊 +20%，命中時 15% 機率冰凍 1 秒，對頭目傷害 +10%",
+			"fx": {
+				"atk_pct": 20.0,
+				"boss_dmg": 10.0,
+				"freeze_on_hit": 15.0
+			},
+			"grp": "weapon",
+			"name": "暗流",
+			"runes": [
+				16,
+				12,
+				19
 			],
 			"tier": 3
 		},
@@ -4790,6 +5686,81 @@ window.GAME = {
 						1
 					],
 					"name": "近衛長劍",
+					"type": "slash"
+				}
+			},
+			"req": ""
+		},
+		"scavenger": {
+			"ach": "set_scavenger",
+			"bonus": [
+				[
+					2,
+					"金幣 +15%、掉寶 +1%"
+				],
+				[
+					4,
+					"攻擊、法術傷害 +12%，生命 +10%"
+				],
+				[
+					6,
+					"滿載而歸：每擊倒一名敵人，本次遠征攻擊 +1%（最多 +30%）"
+				]
+			],
+			"ch": 3,
+			"cls": "",
+			"name": "拾骨者",
+			"pieces": {
+				"badge": {
+					"gold": 0.08,
+					"icon": [
+						8,
+						8
+					],
+					"name": "拾骨者黑旗"
+				},
+				"body": {
+					"armor": 5.0,
+					"icon": [
+						7,
+						14
+					],
+					"name": "拾骨者皮大衣",
+					"weight": "medium"
+				},
+				"helmet": {
+					"armor": 3.0,
+					"dodge": 2.0,
+					"icon": [
+						7,
+						0
+					],
+					"name": "拾骨者三角帽"
+				},
+				"offhand": {
+					"armor": 5.0,
+					"icon": [
+						6,
+						2
+					],
+					"name": "拾骨者鉤盾"
+				},
+				"ring": {
+					"crit": 3.0,
+					"icon": [
+						8,
+						5
+					],
+					"name": "拾骨者骨戒"
+				},
+				"weapon": {
+					"atk": 8.5,
+					"cd": 0.95,
+					"icon": [
+						5,
+						5
+					],
+					"name": "拾骨者彎刀",
 					"type": "slash"
 				}
 			},
@@ -5693,6 +6664,64 @@ window.GAME = {
 				[
 					"priest",
 					1
+				]
+			]
+		},
+		{
+			"cost": [
+				4000,
+				1.25
+			],
+			"desc": "攻擊 +5%（每級）",
+			"fx": [
+				[
+					"atk_pct",
+					5.0
+				]
+			],
+			"grp": "str",
+			"id": "st_tidebreaker",
+			"max": 10,
+			"name": "怒潮之力",
+			"pre": [
+				[
+					"st_dragonslayer",
+					5
+				],
+				[
+					"captain",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				4500,
+				1.25
+			],
+			"desc": "護甲 +6%、生命 +3%（每級）",
+			"fx": [
+				[
+					"armor_pct",
+					6.0
+				],
+				[
+					"hp_pct",
+					3.0
+				]
+			],
+			"grp": "str",
+			"id": "c_seawall",
+			"max": 10,
+			"name": "防波堤",
+			"pre": [
+				[
+					"c_aegis",
+					5
+				],
+				[
+					"captain",
+					2
 				]
 			]
 		},
@@ -6648,6 +7677,68 @@ window.GAME = {
 		},
 		{
 			"cost": [
+				4000,
+				1.25
+			],
+			"desc": "攻擊速度 +3%、閃避 +0.5（每級）",
+			"fx": [
+				[
+					"aspd_pct",
+					3.0
+				],
+				[
+					"dodge",
+					0.5
+				]
+			],
+			"grp": "dex",
+			"id": "dx_undertow",
+			"max": 10,
+			"name": "暗流身法",
+			"pre": [
+				[
+					"dx_gale",
+					3
+				],
+				[
+					"captain",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				5000,
+				1.25
+			],
+			"desc": "暴擊傷害 +6%、對頭目傷害 +2%（每級）",
+			"fx": [
+				[
+					"critx_pct",
+					6.0
+				],
+				[
+					"boss_dmg",
+					2.0
+				]
+			],
+			"grp": "dex",
+			"id": "a_harpoon",
+			"max": 10,
+			"name": "魚叉射擊",
+			"pre": [
+				[
+					"a_hawk",
+					3
+				],
+				[
+					"captain",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
 				35,
 				1.45
 			],
@@ -7345,6 +8436,64 @@ window.GAME = {
 		},
 		{
 			"cost": [
+				4000,
+				1.25
+			],
+			"desc": "法術傷害 +8%（每級）",
+			"fx": [
+				[
+					"spell_pct",
+					8.0
+				]
+			],
+			"grp": "int",
+			"id": "in_tide",
+			"max": 10,
+			"name": "潮汐咒文",
+			"pre": [
+				[
+					"in_elemental",
+					5
+				],
+				[
+					"captain",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				5000,
+				1.25
+			],
+			"desc": "法力回復 +1、法術冷卻 −1.5%（每級）",
+			"fx": [
+				[
+					"mp_regen",
+					1.0
+				],
+				[
+					"spell_cdr",
+					0.015
+				]
+			],
+			"grp": "int",
+			"id": "c_moonwell",
+			"max": 10,
+			"name": "月光泉",
+			"pre": [
+				[
+					"c_astral",
+					3
+				],
+				[
+					"captain",
+					2
+				]
+			]
+		},
+		{
+			"cost": [
 				35,
 				1.45
 			],
@@ -7861,6 +9010,37 @@ window.GAME = {
 				[
 					"priest",
 					2
+				]
+			]
+		},
+		{
+			"cost": [
+				4500,
+				1.25
+			],
+			"desc": "生命 +5%、每秒生命回復 +2（每級）",
+			"fx": [
+				[
+					"hp_pct",
+					5.0
+				],
+				[
+					"regen",
+					2.0
+				]
+			],
+			"grp": "vit",
+			"id": "vt_islander",
+			"max": 10,
+			"name": "島民之心",
+			"pre": [
+				[
+					"vt_dragonheart",
+					3
+				],
+				[
+					"captain",
+					1
 				]
 			]
 		},
@@ -8683,6 +9863,72 @@ window.GAME = {
 					1
 				]
 			]
+		},
+		{
+			"cost": [
+				6000,
+				1.25
+			],
+			"desc": "金幣 +5%、經驗 +5%、掉寶 +0.2%（每級）",
+			"fx": [
+				[
+					"gold_pct",
+					5.0
+				],
+				[
+					"xp_pct",
+					5.0
+				],
+				[
+					"loot",
+					0.2
+				]
+			],
+			"grp": "exp",
+			"id": "ex_salvage",
+			"max": 10,
+			"name": "打撈專家",
+			"pre": [
+				[
+					"ex_deep",
+					3
+				],
+				[
+					"captain",
+					1
+				]
+			]
+		},
+		{
+			"cost": [
+				6000,
+				1.3
+			],
+			"desc": "燈油 +3 秒、移動速度 +2%（每級）",
+			"fx": [
+				[
+					"battery",
+					3.0
+				],
+				[
+					"move_pct",
+					2.0
+				]
+			],
+			"grp": "exp",
+			"id": "ex_lakeguide",
+			"max": 5,
+			"name": "湖上嚮導",
+			"pre": [
+				[
+					"ex_deep",
+					2
+				],
+				[
+					"captain",
+					2
+				]
+			]
 		}
 	],
 	"slots": {
@@ -9034,13 +10280,13 @@ window.GAME = {
 		}
 	},
 	"stats": {
-		"achievements": 52,
-		"combos": 32,
-		"enemies": 41,
+		"achievements": 59,
+		"combos": 36,
+		"enemies": 57,
 		"pieces": 21,
-		"relics": 8,
-		"skills": 178,
-		"uniques": 14
+		"relics": 11,
+		"skills": 187,
+		"uniques": 20
 	},
 	"subtitle": "瑟蘭迷宮遠征記",
 	"tips": [
@@ -9323,9 +10569,216 @@ window.GAME = {
 			"slot": "body",
 			"text": "閃避 +10，魔法抵抗 +10%",
 			"weight": "light"
+		},
+		{
+			"atk": 12.5,
+			"cd": 1.25,
+			"ch": 3,
+			"fx": {
+				"boss_dmg": 15.0,
+				"sunder_on_hit": 35.0
+			},
+			"icon": [
+				10,
+				4
+			],
+			"id": "u_ironhook",
+			"name": "鐵鉤",
+			"slot": "weapon",
+			"text": "命中有 35% 機率破甲 2 層，對頭目傷害 +15%",
+			"type": "blunt"
+		},
+		{
+			"atk": 6.0,
+			"cd": 0.95,
+			"ch": 3,
+			"cls": "mage",
+			"fx": {
+				"spell_cdr": 0.1,
+				"spell_pct": 35.0
+			},
+			"icon": [
+				6,
+				9
+			],
+			"id": "u_tidecaller",
+			"name": "喚潮法杖",
+			"slot": "weapon",
+			"text": "法術傷害 +35%，法術冷卻 −10%",
+			"type": "staff"
+		},
+		{
+			"atk": 8.0,
+			"cd": 0.85,
+			"ch": 3,
+			"cls": "archer",
+			"fx": {
+				"crit": 12.0,
+				"critx_pct": 35.0
+			},
+			"icon": [
+				6,
+				4
+			],
+			"id": "u_harpoon",
+			"name": "捕鯨魚叉弩",
+			"slot": "weapon",
+			"text": "暴擊率 +12%，暴擊傷害 +35%",
+			"type": "bow"
+		},
+		{
+			"ch": 3,
+			"fx": {
+				"regen_pct": 0.02,
+				"res_magic": 8.0
+			},
+			"icon": [
+				8,
+				4
+			],
+			"id": "u_pearl",
+			"name": "湖心珍珠",
+			"slot": "ring",
+			"text": "每秒回復 2% 生命，魔法抵抗 +8%"
+		},
+		{
+			"armor": 9.0,
+			"ch": 3,
+			"fx": {
+				"armor_pct": 30.0,
+				"stun_immune": 1.0
+			},
+			"icon": [
+				7,
+				7
+			],
+			"id": "u_anchor",
+			"name": "沉錨重鎧",
+			"slot": "body",
+			"text": "護甲 +30%，不會被暈眩",
+			"weight": "heavy"
+		},
+		{
+			"ch": 3,
+			"fx": {
+				"gold_pct": 20.0,
+				"loot": 1.5,
+				"xp_pct": 10.0
+			},
+			"icon": [
+				12,
+				7
+			],
+			"id": "u_compass",
+			"name": "瑟蘭羅盤",
+			"slot": "badge",
+			"text": "掉寶 +1.5%，金幣 +20%，經驗 +10%"
 		}
 	],
 	"wardens": {
+		"cap_diver": {
+			"abil": [
+				{
+					"dur": 8.0,
+					"on": "start",
+					"self": true,
+					"status": "haste"
+				},
+				{
+					"chance": 40,
+					"on": "hit",
+					"stacks": 2,
+					"status": "poison"
+				},
+				{
+					"heal": 0.3,
+					"on": "low"
+				}
+			],
+			"armor": 2.0,
+			"atk": 4.5,
+			"cd": 0.85,
+			"ch": 3,
+			"defeat": "水……好冷。告訴巴爾托，湖底那張藏寶圖……不是他的。",
+			"dodge": 16.0,
+			"hp": 22.0,
+			"intro": "湖底的寶藏，我一件一件撈上來。你也是從底下爬上來的吧？那就再沉回去。",
+			"model": "Rogue",
+			"name": "潛水刺客 薩爾",
+			"tint": "#73bfd9",
+			"type": "melee"
+		},
+		"cap_hook": {
+			"abil": [
+				{
+					"dur": 1.5,
+					"on": "start",
+					"status": "stun"
+				},
+				{
+					"chance": 40,
+					"on": "hit",
+					"stacks": 2,
+					"status": "sunder"
+				},
+				{
+					"dur": 8.0,
+					"on": "low",
+					"self": true,
+					"status": "haste"
+				}
+			],
+			"armor": 6.0,
+			"atk": 4.5,
+			"cd": 1.2,
+			"ch": 3,
+			"defeat": "鉤……斷了。押在船艙裡的那幾個人，你帶走吧。老大不會放過你的。",
+			"dodge": 4.0,
+			"hp": 30.0,
+			"intro": "鉤子丟出去，從來沒有空手收回來過。你的盔甲，看起來挺值錢的。",
+			"model": "Rogue_Hooded",
+			"name": "鉤索手 葛雷克",
+			"tint": "#bf9e73",
+			"type": "melee"
+		},
+		"cap_powder": {
+			"abil": [
+				{
+					"on": "start",
+					"stacks": 3,
+					"status": "burn"
+				},
+				{
+					"chance": 45,
+					"on": "hit",
+					"stacks": 1,
+					"status": "burn"
+				},
+				{
+					"at": [
+						0.5
+					],
+					"on": "phase"
+				},
+				{
+					"enemy": "c3_bomber",
+					"every": 6.0,
+					"on": "summon"
+				}
+			],
+			"armor": 3.0,
+			"atk": 5.0,
+			"cd": 1.4,
+			"ch": 3,
+			"defeat": "引信……濕了。哈，原來湖水也有站在你那邊的時候。",
+			"dodge": 6.0,
+			"hp": 24.0,
+			"intro": "整座城都是木頭和舊骨頭，一點就著。退後點，冒險者——除非你想聽聽爆炸的聲音。",
+			"model": "Rogue_Hooded",
+			"name": "火藥師 莫芙",
+			"tint": "#ff8c4d",
+			"type": "magic"
+		},
 		"fire": {
 			"abil": [
 				{
@@ -9864,90 +11317,92 @@ window.GAME = {
 		},
 		{
 			"ch": 3,
-			"color": "#ff6626",
-			"desc": "艾菈的信裡說「深到看得見火光」。大地的心臟在這裡跳動，熔岩河旁有巨人留下的鍛爐。",
-			"floors": [],
-			"name": "熔火之心",
+			"color": "#73bfff",
+			"desc": "古龍的心火熄滅，整座王城從地底升起，浮在一片大湖上。湖面冒出小島和半沉的街道，拾骨者的船隊正趁夜搶掠。",
+			"floors": [
+				4
+			],
+			"name": "湖上王城",
 			"pos": [
-				0.5,
-				0.879999995231628
+				0.439999997615814,
+				0.409999996423721
 			]
 		},
 		{
 			"ch": 4,
-			"color": "#73ccff",
-			"desc": "地底的大湖，水晶會記住聲音。冒險者聽見的「牆裡的歌聲」，也許就是從這裡傳來的。",
+			"color": "#ebebfa",
+			"desc": "鄰國白鴉帝國的使節團來到湖畔，宣稱瑟蘭是「無主之地」。王城外城的街區裡，有談判，也有比武。",
 			"floors": [],
-			"name": "沉眠水晶湖",
+			"name": "白鴉的使節",
 			"pos": [
-				0.660000026226044,
-				0.790000021457672
+				0.560000002384186,
+				0.379999995231628
 			]
 		},
 		{
 			"ch": 5,
-			"color": "#cc9966",
-			"desc": "比瑟蘭更古老的矮人地下城。他們也曾挖到會跳動的黑石——然後封上了整座要塞。",
+			"color": "#8ccc99",
+			"desc": "王城外的濃霧裡住著當年沒跟著王國沉下去的遺民。霧裡什麼都看不清，提燈的光圈就是你的全部。",
 			"floors": [],
-			"name": "鐵爐要塞",
+			"name": "霧沼的遺民",
 			"pos": [
-				0.790000021457672,
-				0.660000026226044
+				0.689999997615814,
+				0.46000000834465
 			]
 		},
 		{
 			"ch": 6,
-			"color": "#80d973",
-			"desc": "巨樹的根系貫穿每一層岩層，順著它往上爬，就能回到地表。",
+			"color": "#ccb3ff",
+			"desc": "湖心升起一座被封了三百年的高塔，塔頂傳來小孩的笑聲。女王當年就是在這裡許下了願望。",
 			"floors": [],
-			"name": "世界之根",
+			"name": "觀星塔",
 			"pos": [
-				0.870000004768372,
-				0.519999980926514
+				0.46000000834465,
+				0.25
 			]
 		},
 		{
 			"ch": 7,
 			"color": "#bfb8ad",
-			"desc": "瑟蘭沉沒後留在地表的大坑與廢城。三百年來，這裡沒有人敢靠近。",
+			"desc": "白鴉帝國的首都，夜裡有巡邏的衛兵與鐘樓。皇帝好幾年沒有露面，帝國其實握在「白鴉國師」手裡。",
 			"floors": [],
-			"name": "荒蕪王都",
+			"name": "帝都暗潮",
 			"pos": [
-				0.709999978542328,
-				0.370000004768372
+				0.839999973773956,
+				0.360000014305115
 			]
 		},
 		{
 			"ch": 8,
-			"color": "#99b3f2",
-			"desc": "第四騎士團的足跡在高原上的風暴之塔中斷。塔頂的閃電，從來沒有停過。",
+			"color": "#99bffa",
+			"desc": "天空被撕開後裂成碎片，大塊陸地浮在半空。秘境開始和現實融合，怪物從天上掉下來。",
 			"floors": [],
-			"name": "風暴高原",
+			"name": "碎空群島",
 			"pos": [
-				0.519999980926514,
-				0.28999999165535
+				0.660000026226044,
+				0.159999996423721
 			]
 		},
 		{
 			"ch": 9,
-			"color": "#d9e6ff",
-			"desc": "漂浮在雲上的島嶼。徽章上那對翅膀的主人，就住在這裡。",
+			"color": "#ffd173",
+			"desc": "星瞳把星星砸向剛浮起的瑟蘭。守住王都，直到找到通往星瞳的路。",
 			"floors": [],
-			"name": "浮空群島",
+			"name": "星落之夜",
 			"pos": [
-				0.310000002384186,
-				0.170000001788139
+				0.330000013113022,
+				0.300000011920929
 			]
 		},
 		{
 			"ch": 10,
-			"color": "#ffe68c",
-			"desc": "心石的來處。「別讓那顆石頭見到天空」——所有的答案，都在星空之下。",
+			"color": "#ffeb99",
+			"desc": "天空最高處，一口倒過來的「天空之井」。走進星瞳的眼睛裡，所有的答案都在星空之下。",
 			"floors": [],
-			"name": "天穹聖殿",
+			"name": "黎明的王座",
 			"pos": [
-				0.600000023841858,
-				0.0700000002980232
+				0.519999980926514,
+				0.0599999986588955
 			]
 		}
 	]

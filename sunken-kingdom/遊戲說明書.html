@@ -148,7 +148,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 				<li><b>前期（第 1～25 塊）漲得快、有感：</b>每蓋一塊就貴 9%，地下一樓是 12 → 13 → 14 → … 到第 25 塊約 95，大約是起始價的 8 倍。</li>
 				<li><b>中期（第 26～50 塊）漲幅等量慢慢降：</b>每多蓋一塊，漲幅就少約 0.33%（9% → 8.7% → 8.3% → … → 0.8%），不會一下子變平。到第 50 塊價格大約是第 25 塊的 3 倍，這一段開始要多跑幾趟才買得起。</li>
 				<li><b>後期（第 51 塊以後）固定只漲 0.8%：</b>這時一塊已經很貴了，再漲快會變成不可能，所以放緩；但每一塊仍然要存一陣子，想把整層蓋到九成拿隱藏獎勵是長期目標。</li>
-				<li><b>起始價怎麼訂：</b>大約是剛到那一層時一趟遠征收入的幾分之一。地下一樓固定 12，讓剛開局買得起；地下二樓 60，到那裡時已經打完三位騎士團長、一趟大約能賺 150～350 金幣，所以第一塊大約是一趟收入的 1/4，第 25 塊（大約蓋到第 3 環）一塊就要將近兩趟；地下三樓 150。第二章的起始價不能太便宜，不然冒險者會一口氣擴建太多房間、反而常常倒下。之後的章節新增樓層也照這個原則只訂起始價。</li>
+				<li><b>起始價怎麼訂：</b>大約是剛到那一層時一趟遠征收入的幾分之一。地下一樓固定 12，讓剛開局買得起；地下二樓 60，到那裡時已經打完三位騎士團長、一趟大約能賺 150～350 金幣，所以第一塊大約是一趟收入的 1/4，第 25 塊（大約蓋到第 3 環）一塊就要將近兩趟；地下三樓 150；湖上群島 250（第二章結束時一趟收入中位數約 950 的 1/4）。第二章的起始價不能太便宜，不然冒險者會一口氣擴建太多房間、反而常常倒下。之後的章節新增樓層也照這個原則只訂起始價。</li>
 			</ul>
 		</div>
 		<table id="piece-cost-table"></table>
@@ -234,6 +234,37 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		</div>
 	</section>
 
+	<section id="ch3" data-nav="第三章：浮城">
+		<h2>第三章：浮城</h2>
+		<p>古龍的心火熄滅，壓著瑟蘭三百年的重量跟著消失——<b class="gold">整座王城從地底升起，浮在一片大湖上</b>。湖面冒出許多小島和半沉的街道，三百年前睡著的居民也一個個醒來。消息傳開，一群叫<b>拾骨者</b>的盜掘團搭船而來，想搶光王國的寶藏，連醒來的居民也不放過。</p>
+		<div class="grid g2">
+			<div class="card"><h4>湖上群島</h4><p>打倒古龍後自動開始第三章：湖中央的小島搭好<b>湖心營地</b>，到世界地圖選「湖上王城．湖上群島」出發。地圖 <span id="ch3-size"></span>，不再往下挖，而是往四面八方展開。</p>
+				<p>湖面也可以蓋區塊：蓋在水上的會變成<b>木棧橋</b>，蓋在島上的是石地與半截廢牆，規則跟前兩章一樣。這裡是<b>夜晚的湖面</b>，燈油、摸黑的規則都不變。</p>
+				<p class="dim">難度：湖上群島第 1 環大約等於地下三樓第 13 環（剛進來比古龍前的外圈好打一點），往外每環照第二章的成長率變強，第 18 環比古龍那一帶強不少。這一層只會出現第三章的 16 種新敵人。</p></div>
+			<div class="card"><h4>三位拾骨者船長 → 掠奪船</h4><p>三位船長分別守在第 <span id="ch3-cap-rings"></span> 環（用騎士團長同一套頭目規則）。每打倒一位，救回被他押著的 <span id="ch3-cap-folk"></span> 位居民。</p>
+				<p>三位都倒下後，「鐵鉤」巴爾托的<b>掠奪船</b>出現在湖上 <span id="ch3-docks"></span> 個碼頭之一（碼頭都在第 <span id="ch3-dock-ring"></span> 環以外，一開始就看得到）。船每停 <span id="ch3-ship-stay"></span> 趟就開往另一個碼頭，地圖上會標出「還剩幾趟」。把路接到船停的碼頭就能開打；打不贏也沒關係，<b>巴爾托受的傷大部分會保留</b>（跟沉睡之王、古龍一樣），船開走了也會再回來。</p></div>
+		</div>
+		<h3>漂流浮島</h3>
+		<p id="ch3-islet"></p>
+		<ul>
+			<li><b>一定有一個寶箱</b>（比一般寶箱好一級，可能掉第三章的裝備），由一隻<b>拾骨者精英</b>守著，要打倒才打得開。</li>
+			<li>大約一半的浮島上有<b>被困的居民</b>，清完就救回營地；少數浮島還藏著一張配方或一顆好符文。</li>
+			<li>把區塊接到浮島旁邊（貼著它蓋，門會自動打開），浮島就<b>變成永久的陸地</b>，不會再漂走，也算進「打通九成」的統計。</li>
+		</ul>
+		<h3>重建浮城</h3>
+		<p>救回的居民會在湖心營地定居。居民人數達到門檻，就能在「營地」分頁用金幣建造浮城的新設施（跟營地強化設施一樣可以升到 Lv10）；每蓋好一棟，湖心營地就會多一間小屋和一位居民。居民的來源：<b>漂流浮島</b>、<b>湖上群島的地牢房</b>（打完看守就救回一位）、<b>打倒拾骨者船長</b>。</p>
+		<table id="town-table"></table>
+		<h3>拾骨者船長</h3>
+		<div class="grid g3" id="captain-list"></div>
+		<div class="card boss" id="barto-card" style="margin-top:18px"></div>
+		<h3>第三章的新內容</h3>
+		<div class="grid g3">
+			<div class="card"><h4>湖底傳說與拾骨者套裝</h4><p>6 件第三章才會掉的傳說（鐵鉤、喚潮法杖、捕鯨魚叉弩、湖心珍珠、沉錨重鎧、瑟蘭羅盤），以及所有職業都能穿的<b>拾骨者套裝</b>（6 件：每擊倒一名敵人，本次遠征攻擊 +1%，最多 +30%）。</p></div>
+			<div class="card"><h4>新技能、符文之語、符文</h4><p>每棵技能樹多 1～2 個打倒拾骨者船長才能學的技能（第 1 級 4000～6000 經驗）。新增 4 個第三章的符文之語（暗流、大潮、避風港、長明）。第三章的符文最高會掉到 12 號。</p></div>
+			<div class="card"><h4>遺物、收藏品、成就</h4><p>2 件新的故事遺物（蓋著白鴉印章的藏寶圖、浮城的搖籃曲）與 1 件遺物；新收藏品「拾骨者的航海日誌」；湖上群島藏著 12 處隱藏地點；7 個新成就。</p></div>
+		</div>
+	</section>
+
 	<section id="realm" data-nav="無盡秘境">
 		<h2>無盡秘境</h2>
 		<p>打倒沉睡之王後，營地的東南角會出現一道<b class="gold">秘境傳送門</b>。門後是另一個不斷變化的空間，和主線分開，拿來刷裝備、挑戰極限。</p>
@@ -315,7 +346,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="world" data-nav="世界地圖">
 		<h2>世界地圖</h2>
-		<p>右下角的「遠征地點」或「選單 → 世界地圖」會打開一張世界剖面圖：上面是天空、中間是地表、下面是一層層的地底。可以去的地方亮著，點一下再選從哪一層出發；還沒開放的章節是背景，點了可以看介紹。故事路線先往下走到最深的熔火之心，再從另一側一路爬回地表，最後登上天空。</p>
+		<p>右下角的「遠征地點」或「選單 → 世界地圖」會打開一張世界剖面圖：上面是天空、中間是地表、下面是一層層的地底。可以去的地方亮著，點一下再選從哪一層出發；還沒開放的章節是背景，點了可以看介紹。故事路線：第一、二章往地底挖；古龍倒下後王城浮上地表的大湖（第三章），之後往外走到湖畔、霧沼與鄰國帝都，往上爬上觀星塔，最後登上天空。</p>
 		<div><img class="shot" src="img/ui_world.png"></div>
 		<div class="grid g2" id="world-list" style="margin-top:14px"></div>
 	</section>
@@ -437,7 +468,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<h3>已經預留好的擴充點（加資料就能用）</h3>
 		<table>
 			<tr><th>想新增</th><th>改哪裡</th><th>說明</th></tr>
-			<tr><td>新章節／新劇情</td><td><code>data.gd</code> 的 <code>CHAPTERS</code>、<code>LINES</code>；<code>game_state.gd</code> 的 <code>start_chapter2</code></td><td>第二章的做法可以照抄：新樓層加在 <code>dungeon.gd</code> 的 <code>FLOOR_X／FLOOR_SIZE／FLOOR_RING_BONUS</code>，頭目寫在 <code>PRIESTS</code> 這類字典並合併進 <code>WARDENS</code>。</td></tr>
+			<tr><td>新章節／新劇情</td><td><code>data.gd</code> 的 <code>CHAPTERS</code>、<code>LINES</code>、<code>WORLD</code>（填 <code>floors</code> 就能出發）；<code>game_state.gd</code> 的 <code>start_chapter3</code></td><td>第三章的做法可以照抄：新樓層在 <code>dungeon.gd</code> 的 <code>FLOOR_X／FLOOR_SIZE／FLOOR_RING_BONUS／FLOOR_NAMES</code> 加一格、加進 <code>BUILD_FLOORS</code>，再補 <code>PIECE_START</code>、<code>FLOOR_REWARDS</code>、<code>FLOOR_SECRETS</code> 同一格；頭目寫在 <code>CAPTAINS</code> 這類字典並合併進 <code>WARDENS</code>，敵人用 <code>ch</code> 標章節（<code>_pick_enemy</code> 依樓層挑）；傳說、套裝、符文之語、遺物、收藏品加 <code>ch</code> 就只在那一章之後掉落。打倒上一章頭目時呼叫開場函式，舊存檔在 <code>load_game</code> 補上。</td></tr>
 			<tr><td>第二章以後的難度</td><td><code>data.gd</code> 的 <code>CH2_*</code> 常數</td><td>第 22 環以後（地下三樓與秘境）敵人與報酬改用自己的成長率。</td></tr>
 			<tr><td>秘境地形／秘境之王</td><td><code>content_data.gd</code> 的 <code>REALM_TEMPLATES</code>、<code>REALM_KINGS</code>、<code>REALM_UNIQUES</code></td><td>地形是 10 行字串（# 房間、+ 走廊、S 入口、. 空地）。</td></tr>
 			<tr><td>新的主動技能</td><td><code>data.gd</code> 的 <code>SPELLS</code>＋<code>skills_data.gd</code> 加節點＋<code>run_sim.gd</code> 的 <code>_do_spell</code></td><td>指定 <code>attr</code> 就會自動套用「非本職業 −25%」規則，也會出現在角色的技能分頁和說明書。</td></tr>
@@ -475,7 +506,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<div class="grid g2">
 			<div class="card"><h4>第一章　沉睡之王（已完成）</h4><p>打通瑟蘭廢墟的地下一、二樓，擊敗三位騎士團長，讓沉睡之王瓦爾克安息。</p></div>
 			<div class="card"><h4>第二章　王座之下（已完成）</h4><p>王座下的地下三樓，擊敗四元素祭司與古龍伊格尼斯。結尾的疑問：「秘境的傳送門是誰留下的？」</p></div>
-			<div class="card"><h4>第三章　浮城</h4><p><b>劇情：</b>古龍的心火熄滅，瑟蘭整座王城從地底升起，浮出一片大湖。湖面上冒出許多小島和半沉的街道。消息傳開，一群叫<b>拾骨者</b>的盜掘團搭船而來，想搶光王國的寶藏。</p><p><b>舞台：</b>湖上群島，地圖往四面八方展開，不再往下挖。</p><p><b>新玩法：</b>潮汐（退潮時才走得過某些石橋）、<b>夜襲防守</b>（拾骨者會趁夜攻打營地，要用區塊排出防線、放陷阱）。</p><p><b>頭目：</b>拾骨者首領「鐵鉤」巴爾托與他的掠奪船。</p><p class="dim">伏筆：巴爾托的藏寶圖上，蓋著白鴉帝國的印章。是誰把瑟蘭的位置告訴帝國的？</p></div>
+			<div class="card"><h4>第三章　浮城（已完成）</h4><p><b>劇情：</b>古龍的心火熄滅，瑟蘭整座王城從地底升起，浮出一片大湖。湖面上冒出許多小島和半沉的街道，三百年前睡著的居民也醒了。一群叫<b>拾骨者</b>的盜掘團搭船而來，想搶光王國的寶藏。</p><p><b>舞台：</b>湖上群島（37×37），地圖往四面八方展開，不再往下挖；蓋在水上的區塊是木棧橋。</p><p><b>新玩法：</b><b>漂流浮島</b>（限時漂來的寶物小島，接上就變成陸地）、<b>重建浮城</b>（救回居民解鎖新設施，營地長成小鎮）、<b>追擊掠奪船</b>（頭目的船會在碼頭之間移動）。</p><p><b>頭目：</b>三位拾骨者船長，以及首領「鐵鉤」巴爾托與他的掠奪船。</p><p><b>伏筆：</b>巴爾托的藏寶圖上，蓋著白鴉帝國的印章。是誰把瑟蘭的位置告訴帝國的？</p></div>
 			<div class="card"><h4>第四章　白鴉的使節</h4><p><b>劇情：</b>鄰國白鴉帝國派使節團來到湖畔，宣稱瑟蘭是「無主之地」，要公會交出王城。公會和使節談判，也和帝國的騎士比武。</p><p><b>舞台：</b>王城外城的街區，區塊變成街道、廣場和房屋。</p><p><b>新玩法：</b><b>抉擇事件</b>：遠征途中遇到難民、商人、帝國士兵，你的選擇會影響報酬、名聲和之後的同伴。</p><p><b>頭目：</b>帝國審判長 艾德溫（一對一決鬥，打贏換來帝國暫時退兵）。</p><p class="dim">伏筆：在使節團的文件裡發現一個名字──帝國國師的本名，竟然是「艾莉希雅」，和三百年前沉沒的王后同名。</p></div>
 			<div class="card"><h4>第五章　霧沼的遺民</h4><p><b>劇情：</b>王城外的濃霧裡住著一群<b>瑟蘭遺民</b>，他們的祖先當年沒來得及跟著王國沉下去。遺民不信任外人，但霧沼裡的魔物越來越多，他們需要幫手。</p><p><b>舞台：</b>霧沼，視野極差，提燈的光圈大小變得非常重要。</p><p><b>新玩法：</b><b>同伴系統</b>：遺民的獵人、治療師、鐵匠可以加入隊伍一起遠征，各有被動能力；救出的冒險者也能留在營地。</p><p><b>頭目：</b>霧沼魔女 蘿溫──當年女王的貼身侍女。</p><p class="dim">真相第一塊：蘿溫臨死前說出王子生病、女王向星星許願的往事，以及「國王把王國沉下去，是為了不讓星星看見」。</p></div>
 			<div class="card"><h4>第六章　觀星塔</h4><p><b>劇情：</b>湖心升起一座三百年前就被封住的觀星塔，塔頂傳來小孩的笑聲。這裡是女王當年許願的地方。</p><p><b>舞台：</b>往<b>上爬</b>的高塔，每一層是一間會旋轉的大廳。</p><p><b>新玩法：</b><b>星座拼圖</b>：把區塊排成特定星座的形狀，會打開隱藏房間、拿到星座祝福。</p><p><b>頭目：</b>無眠王子 萊恩（第一戰）。他打不死，最後穿過一道秘境傳送門逃走。</p><p class="dim">真相第二塊：秘境的傳送門是星瞳伸進人間的「睫毛」，王子就是它的眼睛。第二章的疑問在這裡解答。</p></div>
@@ -490,7 +521,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<p class="dim">括號裡是預定在哪一章加入；沒標的是還沒排進主線的點子。</p>
 		<div class="grid g2">
 			<div class="card"><h4>遠征中的抉擇事件（第四章）</h4><p>走到特定房間跳出小事件：要不要喝下可疑的藥水、要不要救被困的冒險者、跟商人賭一把。選擇會影響這趟的收穫或風險。</p></div>
-			<div class="card"><h4>佈置陷阱與防守（第三、九章）</h4><p>反過來的玩法：怪物會從深處往營地進攻，玩家用打通的區塊排出防線、放陷阱和衛兵，守住營地拿獎勵。</p></div>
+			<div class="card"><h4>佈置陷阱與防守（第九章）</h4><p>反過來的玩法：怪物會從深處往營地進攻，玩家用打通的區塊排出防線、放陷阱和衛兵，守住營地拿獎勵。</p></div>
 			<div class="card"><h4>同伴與寵物（第五章）</h4><p>救出的冒險者可以留在營地成為同伴，一起遠征；也可以收服小怪當寵物（每種有被動能力）。</p></div>
 			<div class="card"><h4>每週挑戰與排行</h4><p>每週固定一張地圖和異變，比誰用最少次遠征打倒頭目；秘境最高層數排行。</p></div>
 			<div class="card"><h4>手動技能時機（第七章）</h4><p>技能欄可以切換成手動施放：在頭目重擊前放護盾、在怪物聚集時放範圍技，讓會操作的人打得更快。</p></div>
@@ -511,7 +542,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=28"></script>
+<script src="data.js?v=29"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -576,38 +607,38 @@ function pieceSvg(p) {
 	return s + "</svg>";
 }
 {
-	const ns = [1, 2, 3, 10, 25, 50, 100, 200, 300, 500];
-	$("floor-reward-table").innerHTML = `<tr><th>樓層</th><th>隱藏獎勵</th><th>效果（永久）</th></tr>` + G.floor_rewards.map((r, i) => `<tr><td>${esc(G.floor_names[i] || ("第 " + (i + 1) + " 層"))}</td><td><b class="gold">${esc(r.name)}</b></td><td>${esc(r.desc)}</td></tr>`).join("");
+	const ns = [1, 2, 3, 10, 25, 50, 100, 200, 300, 500, 650];
+	$("floor-reward-table").innerHTML = `<tr><th>樓層</th><th>隱藏獎勵</th><th>效果（永久）</th></tr>` + G.floor_rewards.map((r, i) => !r.name ? "" : `<tr><td>${esc(G.floor_names[i] || ("第 " + (i + 1) + " 層"))}</td><td><b class="gold">${esc(r.name)}</b></td><td>${esc(r.desc)}</td></tr>`).join("");
 	const K = G.piece_curve;
 	const rate = (p) => { if (p <= K[0][0]) return K[0][1]; for (let i = 1; i < K.length; i++) if (p <= K[i][0]) return K[i - 1][1] + (K[i][1] - K[i - 1][1]) * (p - K[i - 1][0]) / (K[i][0] - K[i - 1][0]); return K[K.length - 1][1]; };
 	const price = (st, n) => { let c = st; for (let p = 2; p <= n + 1; p++) c *= 1 + rate(p); return c; };
 	$("piece-curve").innerHTML = `<li>前期：第 1～${K[0][0]} 塊，每塊 <b>+${(K[0][1] * 100).toFixed(1)}%</b></li>` + K.slice(1).map(([p, r], i) => `<li>中期：第 ${K[i][0] + 1}～${p} 塊，漲幅每塊少 ${((K[i][1] - r) / (p - K[i][0]) * 100).toFixed(2)}%，從 ${(K[i][1] * 100).toFixed(1)}% 等量降到 ${(r * 100).toFixed(1)}%</li>`).join("") + `<li>後期：第 ${K[K.length - 1][0] + 1} 塊以後，每塊固定 <b>+${(K[K.length - 1][1] * 100).toFixed(1)}%</b></li>`;
 	{
-		const W = 780, H = 340, L = 64, R = 150, T = 18, B = 40, maxN = 460, y0 = 1, y1 = 6;
+		const W = 780, H = 340, L = 64, R = 150, T = 18, B = 40, maxN = 700, y0 = 1, y1 = 7;
 		const X = (n) => L + (n - 1) / (maxN - 1) * (W - L - R);
 		const Y = (v) => T + (1 - (Math.log10(v) - y0) / (y1 - y0)) * (H - T - B);
-		const cols = ["#e8c46a", "#d9824b", "#6fb3d9"], chap = ["第一章", "第一章後半", "第二章"], caps = [307, 311, 547];
+		const cols = ["#e8c46a", "#d9824b", "#6fb3d9", "", "#7fd6b0"], chap = ["第一章", "第一章後半", "第二章", "", "第三章"], caps = [307, 311, 547, 0, 690];
 		let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;min-width:560px" font-size="12" fill="currentColor">`;
 		for (let e = y0; e <= y1; e++) {
 			s += `<line x1="${L}" x2="${W - R}" y1="${Y(10 ** e)}" y2="${Y(10 ** e)}" stroke="currentColor" stroke-opacity="0.15"/><text x="${L - 6}" y="${Y(10 ** e) + 4}" text-anchor="end" opacity="0.7">${(10 ** e).toLocaleString()}</text>`;
 		}
-		for (const n of [1, 100, 200, 300, 400]) s += `<text x="${X(n)}" y="${H - B + 16}" text-anchor="middle" opacity="0.7">${n}</text>`;
+		for (const n of [1, 100, 200, 300, 400, 500, 600, 700]) s += `<text x="${X(n)}" y="${H - B + 16}" text-anchor="middle" opacity="0.7">${n}</text>`;
 		s += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" opacity="0.8">這一層已經蓋到第幾塊</text>`;
 		const marks = [1, ...K.map((k) => k[0]), maxN];
 		K.forEach(([p]) => { s += `<line x1="${X(p)}" x2="${X(p)}" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 4"/>`; });
 		const lab = [`前期 +${(K[0][1] * 100).toFixed(0)}%`, "中期 漸緩", `後期 +${(K[K.length - 1][1] * 100).toFixed(1)}%`];
 		[marks[0], marks[1], marks[marks.length - 2]].forEach((a, i) => { s += `<text x="${X(a) + 4}" y="${T + 12 + i * 15}" opacity="0.85">${lab[i]}${i < 2 ? `（第 ${a}～${marks[i + 1]} 塊）` : `（第 ${a + 1} 塊以後）`}</text>`; });
-		G.piece_start.slice(0, 3).forEach((st, f) => {
+		[0, 1, 2, 4].map((f) => [G.piece_start[f], f]).forEach(([st, f], li) => {
 			const pts = [];
 			for (let n = 1; n <= caps[f]; n += 1) pts.push(`${X(n).toFixed(1)},${Y(price(st, n - 1)).toFixed(1)}`);
 			s += `<polyline points="${pts.join(" ")}" fill="none" stroke="${cols[f]}" stroke-width="3"/>`;
 			const last = price(st, caps[f] - 1);
 			s += `<circle cx="${X(caps[f])}" cy="${Y(last)}" r="4" fill="${cols[f]}"/>`;
-			s += `<text x="${W - R + 8}" y="${T + 40 + f * 44}" fill="${cols[f]}" font-weight="bold">${chap[f]}．${esc(G.floor_names[f])}</text><text x="${W - R + 8}" y="${T + 56 + f * 44}" opacity="0.8">起始 ${st}，蓋滿約 ${Math.round(last).toLocaleString()}</text>`;
+			s += `<text x="${W - R + 8}" y="${T + 40 + li * 44}" fill="${cols[f]}" font-weight="bold">${chap[f]}．${esc(G.floor_names[f])}</text><text x="${W - R + 8}" y="${T + 56 + li * 44}" opacity="0.8">起始 ${st}，蓋滿約 ${Math.round(last).toLocaleString()}</text>`;
 		});
 		$("piece-chart").innerHTML = s + "</svg>";
 	}
-	$("piece-cost-table").innerHTML = `<tr><th>樓層</th>${ns.map((n) => `<th>第 ${n} 塊</th>`).join("")}</tr>` + G.piece_start.slice(0, 3).map((st, i) => `<tr><td><b>${esc(G.floor_names[i])}</b></td>${ns.map((n) => n > [310, 310, 550][i] ? '<td class="dim">—</td>' : `<td>${Math.round(price(st, n - 1)).toLocaleString()}</td>`).join("")}</tr>`).join("") + `<tr><td colspan="${ns.length + 1}" class="dim">一、二樓各 625 格（25×25），區塊平均約 2 格，大約 310 塊蓋滿、約 280 塊到九成；三樓 1089 格（33×33），大約 550 塊蓋滿、約 490 塊到九成。抽到大區塊越多，需要的塊數越少。技能「開路先鋒」每級再便宜 2%。</td></tr>`;
+	$("piece-cost-table").innerHTML = `<tr><th>樓層</th>${ns.map((n) => `<th>第 ${n} 塊</th>`).join("")}</tr>` + [0, 1, 2, 4].map((i) => [G.piece_start[i], i]).map(([st, i]) => `<tr><td><b>${esc(G.floor_names[i])}</b></td>${ns.map((n) => n > [310, 310, 550, 0, 690][i] ? '<td class="dim">—</td>' : `<td>${Math.round(price(st, n - 1)).toLocaleString()}</td>`).join("")}</tr>`).join("") + `<tr><td colspan="${ns.length + 1}" class="dim">一、二樓各 625 格（25×25），區塊平均約 2 格，大約 310 塊蓋滿、約 280 塊到九成；三樓 1089 格（33×33），大約 550 塊蓋滿、約 490 塊到九成；湖上群島 1369 格（37×37），大約 690 塊蓋滿、約 620 塊到九成。抽到大區塊越多，需要的塊數越少。技能「開路先鋒」每級再便宜 2%。</td></tr>`;
 }
 $("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");
 $("mod-list").innerHTML = Object.entries(G.room_mods).filter(([k]) => k).map(([k, m]) => `<div class="card"><b style="color:${m.color}">◆ ${esc(m.name)}</b><div>${esc(m.desc)}</div></div>`).join("");
@@ -634,6 +665,26 @@ $("dragon-card").innerHTML = `<div class="grid" style="grid-template-columns:320
 	<div class="stat-row" style="margin:10px 0">類型 <b>${TYPE[DR.type] || DR.type}</b> 生命 <b>×${DR.hp}</b> 攻擊 <b>×${DR.atk}</b> 間隔 <b>${DR.cd}s</b> 護甲 <b>${DR.armor}</b> 閃避 <b>${DR.dodge}</b></div>
 	<div>${abil(DR.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
 	<p class="dim" style="margin-top:10px">${esc(G.chapters[1].end)}</p></div></div>`;
+{
+	const C3 = G.ch3;
+	$("ch3-size").textContent = `${C3.lake_size}×${C3.lake_size}、${(C3.lake_size - 1) / 2} 環（比地下三樓還大）`;
+	$("ch3-cap-rings").textContent = C3.captain_rings.join("／");
+	$("ch3-cap-folk").textContent = C3.captain_folk;
+	$("ch3-docks").textContent = C3.docks;
+	$("ch3-dock-ring").textContent = C3.dock_min_ring;
+	$("ch3-ship-stay").textContent = C3.ship_stay;
+	$("ch3-islet").innerHTML = `湖上每 <b>${C3.islet_every}</b> 趟遠征會漂來一座小島，停 <b>${C3.islet_stay}</b> 趟（占卜師每級 +1 趟）就漂走，同時最多 ${C3.islet_max} 座。浮島出現在你目前在湖上群島蓋到的最外圈<b>再往外 ${C3.islet_gap[0]}～${C3.islet_gap[1]} 格</b>，一定蓋得到，也會把你往外拉。地圖上會標出「幾趟後漂走」。被困居民的機率 ${Math.round(C3.islet_folk * 100)}%，多一張配方或好符文的機率 ${Math.round(C3.islet_rune * 100)}%。`;
+	$("town-table").innerHTML = `<tr><th>人數</th><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th></tr>` + G.renos.filter((r) => r.folk).map((r) => `<tr><td>${r.folk} 人</td><td>${icon(r.icon)}<b>${esc(r.name)}</b></td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td></tr>`).join("");
+	$("captain-list").innerHTML = Object.entries(G.wardens).filter(([, w]) => w.ch === 3).map(wardenCard).join("");
+	const BT = G.barto;
+	$("barto-card").innerHTML = `<div class="grid" style="grid-template-columns:320px 1fr;align-items:center">
+	<div class="portrait"><img src="img/barto.png" alt="${esc(BT.name)}"></div>
+	<div><h3 style="color:${BT.tint};font-size:28px">第三章頭目：${esc(BT.name)}</h3>
+	<p>拾骨者的首領。三位船長倒下後，他的掠奪船會在湖上的碼頭之間來回停靠。打倒他就打通第三章；他身上的藏寶圖，蓋著白鴉帝國的印章。</p>
+	<div class="stat-row" style="margin:10px 0">類型 <b>${TYPE[BT.type] || BT.type}</b> 生命 <b>×${BT.hp}</b> 攻擊 <b>×${BT.atk}</b> 間隔 <b>${BT.cd}s</b> 護甲 <b>${BT.armor}</b> 閃避 <b>${BT.dodge}</b></div>
+	<div>${abil(BT.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+	<p class="dim" style="margin-top:10px">${esc(G.chapters[2].end)}</p></div></div>`;
+}
 $("realm-layers").textContent = G.realm_layers;
 function realmSvg(map) {
 	const cs = 16; let s = `<svg width="${cs * 10 + 8}" height="${cs * 10 + 8}">`;
@@ -665,7 +716,7 @@ $("enemy-list").innerHTML = Object.entries(G.enemies).sort((a, b) => a[1].ring -
 	<div style="margin-top:6px">${abil(e.abil).map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div></div>`).join("");
 
 // 技能
-const preText = (p) => p[0] === "seal" ? `擊敗 ${p[1]} 位騎士團長` : (p[0] === "priest" ? `擊敗 ${p[1]} 位元素祭司` : `${G.skills.find((s) => s.id === p[0])?.name || G.attr[p[0]] || p[0]} Lv${p[1]}`);
+const preText = (p) => p[0] === "seal" ? `擊敗 ${p[1]} 位騎士團長` : p[0] === "captain" ? `擊敗 ${p[1]} 位拾骨者船長` : (p[0] === "priest" ? `擊敗 ${p[1]} 位元素祭司` : `${G.skills.find((s) => s.id === p[0])?.name || G.attr[p[0]] || p[0]} Lv${p[1]}`);
 const costText = (s) => s.costs ? s.costs.join("／") : `${s.cost[0]}（每級 ×${s.cost[1]}）`;
 $("skill-tabs").innerHTML = G.groups.map((g) => {
 	const list = G.skills.filter((s) => s.grp === g[0]);
@@ -718,8 +769,9 @@ const wtxt = (w) => { const t = w.reduce((a, b) => a + b, 0); return w.map((x) =
 $("loot-odds").innerHTML = `<tr><th>來源</th><th>掉一件的機率</th><th>稀有度（普通／精良／稀有／史詩／傳說）</th></tr>` + [
 	["一般敵人", `${G.base_loot}%（每級搜刮 +0.15%；巢穴房 +3%）`, L.kill.w],
 	["寶箱", P(L.chest.chance) + "（法師開兩次）", L.chest.w], ["封印寶庫的大寶箱", P(L.big_chest.chance) + "（法師開兩次）", L.big_chest.w],
-	["古代戰場的勇士（隱藏地點）", P(L.big_chest.chance), L.big_chest.w], ["騎士團長、元素祭司", P(L.warden.chance), L.warden.w],
+	["古代戰場的勇士（隱藏地點）", P(L.big_chest.chance), L.big_chest.w], ["騎士團長、元素祭司、拾骨者船長", P(L.warden.chance), L.warden.w],
 	["沉睡之王", P(L.boss.chance), L.boss.w], ["古龍", `${P(L.dragon.chance)} × ${L.dragon.rolls} 次`, L.dragon.w],
+	["漂流浮島的寶箱", P(L.islet.chance) + "（法師開兩次）", L.islet.w], ["「鐵鉤」巴爾托", `${P(L.barto.chance)} × ${L.barto.rolls} 次`, L.barto.w],
 	["秘境守衛", P(L.guard.chance), L.guard.w], ["秘境之王", `${P(L.realm_king.chance)} × ${L.realm_king.rolls} 次`, L.realm_king.w], ["商人的貨架（每次補貨 4 件）", "—", L.shop.w],
 ].map(([n, c, w]) => `<tr><td>${n}</td><td>${c}</td><td>${wtxt(w)}</td></tr>`).join("");
 $("loot-note").textContent = `傳說裝備有 ${Math.round(G.unique_share * 100)}% 是獨特傳說（有特殊能力）；史詩以上有 ${Math.round(G.set_share * 100)}% 是套裝。符文孔數＝稀有度（普通 0、精良 1、稀有 2、史詩 3、傳說 4），但不超過部位上限：武器、護甲 4，副手、頭盔 3，戒指、護符 1。`;
@@ -736,7 +788,7 @@ const tw = G.recipe_tier_w, twt = Object.values(tw).reduce((a, b) => a + b, 0);
 $("recipe-tiers").textContent = `掉落時先抽強弱：常見 ${P(tw[1] / twt)}、少見 ${P(tw[2] / twt)}、稀有 ${P(tw[3] / twt)}、傳說 ${P(tw[4] / twt)}，再從那個強弱的配方裡隨機挑一張（學過的也會掉，帶回營地變成重複的配方，可以賣：常見 ${G.recipe_sell[1]}、少見 ${G.recipe_sell[2]}、稀有 ${G.recipe_sell[3]}、傳說 ${G.recipe_sell[4]} 金幣）。所以每打倒一隻頭目，掉傳說配方的機率只有 ${P(rc.boss * tw[4] / twt)}。`;
 // 機率：隱藏地點
 const sw = G.secret_random_w, swt = Object.values(sw).reduce((a, b) => a + b, 0);
-$("secret-odds").textContent = `每層預先藏好的隱藏地點：地下一樓 ${G.floor_secrets[0].length} 處、地下二樓 ${G.floor_secrets[1].length} 處、地下三樓 ${G.floor_secrets[2].length} 處（第 2 環以外）。另外每間新蓋的石室有 4% 機率（尋寶直覺每級 ×1.06）出現隨機的隱藏地點：` + Object.entries(sw).map(([k, v]) => `${G.secret_info[k].name} ${P(v / swt)}`).join("、") + "。";
+$("secret-odds").textContent = `每層預先藏好的隱藏地點：地下一樓 ${G.floor_secrets[0].length} 處、地下二樓 ${G.floor_secrets[1].length} 處、地下三樓 ${G.floor_secrets[2].length} 處、湖上群島 ${G.floor_secrets[4].length} 處（第 2 環以外）。另外每間新蓋的石室有 4% 機率（尋寶直覺每級 ×1.06）出現隨機的隱藏地點：` + Object.entries(sw).map(([k, v]) => `${G.secret_info[k].name} ${P(v / swt)}`).join("、") + "。";
 // 機率：區塊能力
 const mods = Object.entries(G.room_mods), mw = mods.reduce((a, [, m]) => a + m.w, 0);
 $("mod-odds").innerHTML = `<tr><th>挖到的區塊帶能力</th><th>機率</th></tr>` + mods.map(([k, m]) => `<tr><td>${k === "" ? "沒有能力" : esc(m.name) + "：" + esc(m.desc)}</td><td>${Math.round(m.w / mw * 100)}%</td></tr>`).join("");
@@ -749,7 +801,7 @@ $("ach-table").innerHTML = `<tr><th>成就</th><th>條件</th></tr>` + G.achieve
 $("reno-max").textContent = G.reno_max;
 $("reno-grow").textContent = G.reno_grow;
 const renoCost = (r, lv) => Math.floor(G.reno_price * Math.pow(G.reno_grow, lv) * (r.mult || 1));
-$("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th><th>Lv1</th><th>Lv4</th><th>Lv8</th></tr>` + G.renos.map((r) => `<tr><td>${icon(r.icon)}<b>${esc(r.name)}</b>${r.ch === 2 ? '<br><span class="dim">第二章</span>' : ""}</td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td>${r.tiers.map((t) => `<td class="dim">${esc(t)}</td>`).join("")}</tr>`).join("");
+$("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th><th>Lv1</th><th>Lv4</th><th>Lv8</th></tr>` + G.renos.map((r) => `<tr><td>${icon(r.icon)}<b>${esc(r.name)}</b>${r.ch ? `<br><span class="dim">第${["", "一", "二", "三", "四"][r.ch]}章${r.folk ? `．居民 ${r.folk} 人` : ""}</span>` : ""}</td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td>${r.tiers.map((t) => `<td class="dim">${esc(t)}</td>`).join("")}</tr>`).join("");
 const E = G.enh;
 $("enh-step").textContent = E.step;
 $("enh-safe").textContent = E.safe;
