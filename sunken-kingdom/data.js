@@ -104,7 +104,7 @@ window.GAME = {
 		[
 			"relics",
 			"王國的記憶",
-			"收集全部 4 件故事遺物"
+			"收集 4 件故事遺物"
 		],
 		[
 			"set",
@@ -718,9 +718,9 @@ window.GAME = {
 	"barto": {
 		"abil": [
 			{
+				"dur": 5.0,
 				"on": "start",
-				"stacks": 2,
-				"status": "sunder"
+				"status": "slow"
 			},
 			{
 				"dur": 6.0,
@@ -736,13 +736,13 @@ window.GAME = {
 			},
 			{
 				"enemy": "c3_deckhand",
-				"every": 6.0,
+				"every": 10.0,
 				"on": "summon"
 			},
 			{
-				"chance": 35,
+				"chance": 25,
 				"on": "hit",
-				"stacks": 2,
+				"stacks": 1,
 				"status": "bleed"
 			}
 		],
@@ -805,11 +805,11 @@ window.GAME = {
 		"type": "melee"
 	},
 	"ch3": {
-		"barto_atk": 2.4,
-		"barto_hp": 10.0,
+		"barto_atk": 2.2,
+		"barto_hp": 20.0,
 		"captain_atk": 1.8,
 		"captain_folk": 3,
-		"captain_hp": 9.0,
+		"captain_hp": 18.0,
 		"captain_ids": [
 			"cap_hook",
 			"cap_powder",
@@ -1688,7 +1688,7 @@ window.GAME = {
 				}
 			],
 			"armor": 0.0,
-			"atk": 6.0,
+			"atk": 5.0,
 			"cd": 1.6,
 			"ch": 3,
 			"dodge": 4.0,
@@ -6672,11 +6672,11 @@ window.GAME = {
 				4000,
 				1.25
 			],
-			"desc": "攻擊 +5%（每級）",
+			"desc": "攻擊 +6%（每級）",
 			"fx": [
 				[
 					"atk_pct",
-					5.0
+					6.0
 				]
 			],
 			"grp": "str",
@@ -6699,7 +6699,7 @@ window.GAME = {
 				4500,
 				1.25
 			],
-			"desc": "護甲 +6%、生命 +3%（每級）",
+			"desc": "護甲 +6%、生命 +3%、受到的魔法傷害 −2%（每級）",
 			"fx": [
 				[
 					"armor_pct",
@@ -6708,6 +6708,10 @@ window.GAME = {
 				[
 					"hp_pct",
 					3.0
+				],
+				[
+					"magic_red",
+					2.0
 				]
 			],
 			"grp": "str",
@@ -6721,7 +6725,7 @@ window.GAME = {
 				],
 				[
 					"captain",
-					2
+					1
 				]
 			]
 		},
@@ -7680,11 +7684,11 @@ window.GAME = {
 				4000,
 				1.25
 			],
-			"desc": "攻擊速度 +3%、閃避 +0.5（每級）",
+			"desc": "攻擊速度 +4%、閃避 +0.5（每級）",
 			"fx": [
 				[
 					"aspd_pct",
-					3.0
+					4.0
 				],
 				[
 					"dodge",
@@ -7711,8 +7715,12 @@ window.GAME = {
 				5000,
 				1.25
 			],
-			"desc": "暴擊傷害 +6%、對頭目傷害 +2%（每級）",
+			"desc": "攻擊 +3%、暴擊傷害 +6%、對頭目傷害 +2%（每級）",
 			"fx": [
+				[
+					"atk_pct",
+					3.0
+				],
 				[
 					"critx_pct",
 					6.0
@@ -7733,7 +7741,7 @@ window.GAME = {
 				],
 				[
 					"captain",
-					2
+					1
 				]
 			]
 		},
@@ -8439,11 +8447,11 @@ window.GAME = {
 				4000,
 				1.25
 			],
-			"desc": "法術傷害 +8%（每級）",
+			"desc": "法術傷害 +6%（每級）",
 			"fx": [
 				[
 					"spell_pct",
-					8.0
+					6.0
 				]
 			],
 			"grp": "int",
@@ -10685,13 +10693,13 @@ window.GAME = {
 					"status": "haste"
 				},
 				{
-					"chance": 40,
+					"chance": 25,
 					"on": "hit",
-					"stacks": 2,
+					"stacks": 1,
 					"status": "poison"
 				},
 				{
-					"heal": 0.3,
+					"heal": 0.2,
 					"on": "low"
 				}
 			],
@@ -10700,8 +10708,8 @@ window.GAME = {
 			"cd": 0.85,
 			"ch": 3,
 			"defeat": "水……好冷。告訴巴爾托，湖底那張藏寶圖……不是他的。",
-			"dodge": 16.0,
-			"hp": 22.0,
+			"dodge": 11.0,
+			"hp": 24.0,
 			"intro": "湖底的寶藏，我一件一件撈上來。你也是從底下爬上來的吧？那就再沉回去。",
 			"model": "Rogue",
 			"name": "潛水刺客 薩爾",
@@ -10745,7 +10753,7 @@ window.GAME = {
 			"abil": [
 				{
 					"on": "start",
-					"stacks": 3,
+					"stacks": 2,
 					"status": "burn"
 				},
 				{
@@ -10767,7 +10775,7 @@ window.GAME = {
 				}
 			],
 			"armor": 3.0,
-			"atk": 5.0,
+			"atk": 4.2,
 			"cd": 1.4,
 			"ch": 3,
 			"defeat": "引信……濕了。哈，原來湖水也有站在你那邊的時候。",

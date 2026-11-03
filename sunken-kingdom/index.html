@@ -260,7 +260,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<h3>第三章的新內容</h3>
 		<div class="grid g3">
 			<div class="card"><h4>湖底傳說與拾骨者套裝</h4><p>6 件第三章才會掉的傳說（鐵鉤、喚潮法杖、捕鯨魚叉弩、湖心珍珠、沉錨重鎧、瑟蘭羅盤），以及所有職業都能穿的<b>拾骨者套裝</b>（6 件：每擊倒一名敵人，本次遠征攻擊 +1%，最多 +30%）。</p></div>
-			<div class="card"><h4>新技能、符文之語、符文</h4><p>每棵技能樹多 1～2 個打倒拾骨者船長才能學的技能（第 1 級 4000～6000 經驗）。新增 4 個第三章的符文之語（暗流、大潮、避風港、長明）。第三章的符文最高會掉到 12 號。</p></div>
+			<div class="card"><h4>新技能、符文之語、符文</h4><p>每棵技能樹多 1～2 個打倒拾骨者船長才能學的技能（第 1 級 4000～6000 經驗）。新增 4 個第三章的符文之語（暗流、大潮、避風港、長明）。第三章起符文最高會掉到 13 號（多開 11～13 號）。</p></div>
 			<div class="card"><h4>遺物、收藏品、成就</h4><p>2 件新的故事遺物（蓋著白鴉印章的藏寶圖、浮城的搖籃曲）與 1 件遺物；新收藏品「拾骨者的航海日誌」；湖上群島藏著 12 處隱藏地點；7 個新成就。</p></div>
 		</div>
 	</section>
@@ -542,7 +542,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=31"></script>
+<script src="data.js?v=32"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -779,7 +779,7 @@ const RC = G.rune_chance;
 $("rune-odds").innerHTML = `<tr><th>來源</th><th>掉一顆符文的機率</th></tr>` + [["每打倒一隻一般敵人", RC.kill], ["異變敵人（淨化之光 ×2）", RC.mutant], ["一般寶箱", RC.chest], ["封印寶庫的大寶箱、古代戰場", RC.big_chest], ["秘境守衛", RC.guard], ["騎士團長／元素祭司", RC.warden], ["沉睡之王／古龍", RC.boss], ["秘境之王", RC.realm_king]].map(([n, v]) => `<tr><td>${n}</td><td>${P(v)}</td></tr>`).join("");
 const dec = G.rune_decay;
 let wsum = 0; for (let n = 1; n <= 10; n++) wsum += Math.pow(dec, n - 1);
-$("rune-odds-note").textContent = `掉到符文時先決定號碼上限：2＋難度環數÷4（最高 ${G.rune_drop_cap} 號；頭目、寶庫、古代戰場 +2）。再從 1 號到上限之間抽，每高一號權重 ×${dec}。上限 10 號時：1 號 ${P(1 / wsum)}、5 號 ${P(Math.pow(dec, 4) / wsum)}、10 號 ${P(Math.pow(dec, 9) / wsum)}。戰利品分成觸發時（符文收藏家）每級 1.5% 附贈一顆。`;
+$("rune-odds-note").textContent = `掉到符文時先決定號碼上限：2＋難度環數÷4（第一、二章最高 ${G.rune_drop_cap} 號，第三章起最高 ${G.rune_drop_cap + 3} 號；頭目、寶庫、古代戰場 +2，但不超過上限）。再從 1 號到上限之間抽，每高一號權重 ×${dec}。上限 10 號時：1 號 ${P(1 / wsum)}、5 號 ${P(Math.pow(dec, 4) / wsum)}、10 號 ${P(Math.pow(dec, 9) / wsum)}。戰利品分成觸發時（符文收藏家）每級 1.5% 附贈一顆。`;
 // 機率：配方
 const rc = G.recipe_chance;
 $("recipe-odds").innerHTML = `<tr><th>來源</th><th>掉一張配方的機率</th></tr>` + [["每打倒一隻一般敵人", rc.kill], ["一般寶箱", rc.chest], ["封印寶庫的大寶箱、古代戰場", rc.big_chest], ["秘境守衛", rc.guard], ["騎士團長／元素祭司", rc.warden], ["沉睡之王／古龍", rc.boss], ["秘境之王", rc.realm_king], ["迷途冒險者的遺骸（隱藏地點）", 0.1]].map(([n, v]) => `<tr><td>${n}</td><td>${P(v)}</td></tr>`).join("");
