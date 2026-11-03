@@ -2203,6 +2203,11 @@ window.GAME = {
 		"step": 5,
 		"transfer": 50
 	},
+	"floor_names": [
+		"地下一樓",
+		"地下二樓",
+		"地下三樓"
+	],
 	"floor_secrets": [
 		[
 			"page",
@@ -2534,6 +2539,24 @@ window.GAME = {
 		}
 	},
 	"narrator": "老嚮導 葛倫",
+	"piece_floors": [
+		[
+			12.0,
+			1.0178
+		],
+		[
+			60.0,
+			1.0158
+		],
+		[
+			900.0,
+			1.02
+		],
+		[
+			900.0,
+			1.02
+		]
+	],
 	"pieces": [
 		{
 			"cells": [

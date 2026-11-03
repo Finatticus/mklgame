@@ -138,7 +138,9 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="build" data-nav="打通廢墟">
 		<h2>打通廢墟：區塊</h2>
-		<p>每次挖掘會隨機抽出區塊（技能「勘查」可以一次看到更多塊再挑），價格會隨著蓋過的塊數慢慢變貴，但漲得很溫和：想一環一環把地圖蓋完整也付得起（第 1 塊 12 金幣、第 20 塊約 19、第 50 塊約 30、第 100 塊約 52、第 200 塊約 112）。打倒沉睡之王後，第二章的區塊從頭算起，價格 ×10。技能「開路先鋒」每級再便宜 2%。區塊有不同的形狀與門口，<b>至少要有一個門口對上現有通道</b>才能放。黃色箭頭代表「這裡還能往外接」。</p>
+		<p>每次挖掘會隨機抽出區塊（技能「勘查」可以一次看到更多塊再挑），價格<b>每一層樓各算各的</b>：照畫面目前看著的那一層計價（放到別層會多退少補），只看那一層已經蓋了幾塊。每一層有自己的起始價，每蓋一塊就乘上一點點成長率（指數成長）。一環一環慢慢蓋也能通關；但想把整層蓋滿，最外圈會貴到要靠下一章的收入回來補。技能「開路先鋒」每級再便宜 2%。</p>
+		<table id="piece-cost-table"></table>
+		<p>區塊有不同的形狀與門口，<b>至少要有一個門口對上現有通道</b>才能放。黃色箭頭代表「這裡還能往外接」。</p>
 		<p class="dim">區塊大小從 1 格到 4 格都有：直走廊、轉角、丁字、十字、L 形、閃電形、方形大廳……房間（大格）會有敵人與寶箱，走廊（細格）通常比較安全。</p>
 		<div class="grid g4" id="piece-list"></div>
 		<h3>區塊能力</h3>
@@ -474,7 +476,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=19"></script>
+<script src="data.js?v=20"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -537,6 +539,10 @@ function pieceSvg(p) {
 		}
 	}
 	return s + "</svg>";
+}
+{
+	const ns = [1, 25, 50, 100, 150, 200, 250, 300, 400];
+	$("piece-cost-table").innerHTML = `<tr><th>樓層</th><th>每塊漲幅</th>${ns.map((n) => `<th>第 ${n} 塊</th>`).join("")}</tr>` + G.piece_floors.slice(0, 3).map((pf, i) => `<tr><td><b>${esc(G.floor_names[i])}</b></td><td>+${(pf[1] * 100 - 100).toFixed(2)}%</td>${ns.map((n) => n > [270, 270, 460][i] ? '<td class="dim">—</td>' : `<td>${Math.ceil(pf[0] * Math.pow(pf[1], n - 1)).toLocaleString()}</td>`).join("")}</tr>`).join("") + `<tr><td colspan="${ns.length + 2}" class="dim">一、二樓大約蓋 260 塊就滿了，三樓大約 450 塊（看區塊大小）</td></tr>`;
 }
 $("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");
 $("mod-list").innerHTML = Object.entries(G.room_mods).filter(([k]) => k).map(([k, m]) => `<div class="card"><b style="color:${m.color}">◆ ${esc(m.name)}</b><div>${esc(m.desc)}</div></div>`).join("");
