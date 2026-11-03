@@ -141,10 +141,15 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<p>每次挖掘會隨機抽出區塊（技能「勘查」可以一次看到更多塊再挑），價格<b>每一層樓各算各的</b>：照畫面目前看著的那一層計價（放到別層會多退少補），只看那一層已經蓋了幾塊。每一層有自己的起始價，每蓋一塊就乘上一點點成長率（指數成長）。一環一環慢慢蓋也能通關；但想把整層蓋滿，最外圈會貴到要靠下一章的收入回來補。技能「開路先鋒」每級再便宜 2%。</p>
 		<table id="piece-cost-table"></table>
 		<ul class="dim">
+			<li><b>每層統計：</b>建造面板的挖掘按鈕下方有一行小統計：畫面看著的那一層「已打通幾格．還沒打通幾格」和百分比（地標、營地也算已打通），下面一條細進度條；拿到該層隱藏獎勵後會變成綠色。</li>
 			<li><b>公會補助：</b>前期（最遠只到第 5 環以內）遠征回來時，如果身上的錢連地下一樓的下一塊都買不起，公會會補到剛好夠買，避免開局卡死。</li>
 			<li><b>爆破符</b>只會炸掉一格、不會退錢，該層「已經蓋的塊數」也不會減少，所以價格不會因為炸掉而變便宜。</li>
 			<li>買了區塊還沒放下就存檔、回到標題或關掉遊戲，會自動取消並<b>全額退款</b>。</li>
 		</ul>
+		<h3>隱藏獎勵：打通九成</h3>
+		<p>遊戲裡不會事先告訴你：任何一層<b>打通的格子達到 90%</b>，就會跳出「隱藏獎勵！」並永久獲得那一層的加成。每層只給一次，之後用爆破符炸掉幾格掉回 90% 以下也不會收回。舊存檔如果早就蓋到九成，讀檔時會直接補上。之後的章節每多一層，就會多一個隱藏獎勵。</p>
+		<table id="floor-reward-table"></table>
+		<p class="dim">提醒：照現在的區塊價格，地下一、二樓在第一章後段就有機會蓋到九成；地下三樓蓋到九成時一塊要上百萬金幣，是留給之後章節回頭挑戰的目標。</p>
 		<p>區塊有不同的形狀與門口，<b>至少要有一個門口對上現有通道</b>才能放。黃色箭頭代表「這裡還能往外接」。</p>
 		<p class="dim">區塊大小從 1 格到 4 格都有：直走廊、轉角、丁字、十字、L 形、閃電形、方形大廳……房間（大格）會有敵人與寶箱，走廊（細格）通常比較安全。</p>
 		<div class="grid g4" id="piece-list"></div>
@@ -426,6 +431,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<tr><td>新職業</td><td><code>data.gd</code> 的 <code>CLASSES</code>＋<code>skills_data.gd</code> 的職業樹</td><td>需要選一個主屬性（或新增屬性）和角色模型。存檔欄位是 4 格，可以再加。</td></tr>
 			<tr><td>新敵人</td><td><code>content_data.gd</code> 的 <code>MORE_ENEMIES</code></td><td>設定出沒環數、能力（開戰、命中、低血量、召喚……）。</td></tr>
 			<tr><td>新樓層的區塊價格</td><td><code>data.gd</code> 的 <code>PIECE_FLOORS</code></td><td>每一層一行 <code>[起始價, 每塊成長率]</code>；新章節的樓層照那一章剛開始時一趟遠征的收入訂起始價（約 1/3），成長率 1.015～1.02。存檔裡每層的塊數記在 <code>floor_pieces</code>，陣列會自動補長度。</td></tr>
+			<tr><td>新樓層的隱藏獎勵</td><td><code>data.gd</code> 的 <code>FLOOR_REWARDS</code></td><td>照樓層順序加一行 <code>{name, desc, fx}</code>，<code>fx</code> 和技能用同一套數值（例如 <code>["gold_pct", 10.0]</code>）；門檻是 <code>FLOOR_REWARD_PCT</code>（0.9）。說明書表格會自動更新。</td></tr>
 			<tr><td>新區塊形狀</td><td><code>data.gd</code> 的 <code>PIECES</code></td><td>每格寫種類、位置、門的方向；相鄰格的門要互相對上。</td></tr>
 			<tr><td>新區塊能力／特殊房間</td><td><code>ROOM_MODS</code>／<code>MORE_SPECIAL_PIECES</code></td><td>能力的效果寫在 <code>run_sim.gd</code>。</td></tr>
 			<tr><td>新營地設施</td><td><code>data.gd</code> 的 <code>RENOS</code></td><td>加成寫在 <code>hero_stats</code>，外觀寫在 <code>world.gd</code> 的 <code>_decorate_camp</code>。</td></tr>
@@ -479,7 +485,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<div class="card"><h4>蓋滿一層的獎勵</h4><p>把某一層的空地全部蓋滿，就給那一層永久獎勵（例如該層敵人掉落 +20%、燈油消耗減半、解鎖該層專屬遺物），讓「最外圈很貴」變成值得挑戰的長期目標，也讓第二章回頭補地下一、二樓有理由。</p></div>
 			<div class="card"><h4>藍圖與自動購買</h4><p>先在空地上「預約」想蓋的形狀與方向，錢夠了自動買下最符合的區塊並放好；適合想一環一環慢慢蓋、又不想每趟都手動挑的玩家。</p></div>
 			<div class="card"><h4>拆除退款與搬移區塊</h4><p>新的營地設施或技能：爆破時退還一部分當初的價格，或把已經蓋好的區塊旋轉／搬到別處（花一點錢），修正早期蓋歪、門口對不上的地方。</p></div>
-			<div class="card"><h4>每層統計面板</h4><p>建造分頁顯示每一層「已蓋／可蓋」的塊數、下一塊價格、最近 10 趟的平均收入，以及大約還要幾趟才買得起，讓玩家自己規劃擴建速度。</p></div>
+			<div class="card"><h4>每層統計面板（已完成）</h4><p>建造分頁顯示每一層「已蓋／可蓋」的塊數、下一塊價格、最近 10 趟的平均收入，以及大約還要幾趟才買得起，讓玩家自己規劃擴建速度。</p></div>
 			<div class="card"><h4>存檔匯出與雲端同步</h4><p>把存檔匯出成一串文字或檔案，換電腦或手機時匯入；也方便回報問題時附上存檔。</p></div>
 			<div class="card"><h4>遠征紀錄回放</h4><p>保存最近幾趟遠征的路線、受傷與死因，結束後可以快轉回看，幫玩家判斷該補裝備、技能還是改路線標記。</p></div>
 			<div class="card"><h4>操作與無障礙設定</h4><p>自訂按鍵、色盲友善的門口／稀有度配色、字體大小與畫面震動開關。</p></div>
@@ -489,7 +495,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=21"></script>
+<script src="data.js?v=22"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -555,6 +561,7 @@ function pieceSvg(p) {
 }
 {
 	const ns = [1, 25, 50, 100, 150, 200, 250, 300, 400];
+	$("floor-reward-table").innerHTML = `<tr><th>樓層</th><th>隱藏獎勵</th><th>效果（永久）</th></tr>` + G.floor_rewards.map((r, i) => `<tr><td>${esc(G.floor_names[i] || ("第 " + (i + 1) + " 層"))}</td><td><b class="gold">${esc(r.name)}</b></td><td>${esc(r.desc)}</td></tr>`).join("");
 	$("piece-cost-table").innerHTML = `<tr><th>樓層</th><th>每塊漲幅</th>${ns.map((n) => `<th>第 ${n} 塊</th>`).join("")}</tr>` + G.piece_floors.slice(0, 3).map((pf, i) => `<tr><td><b>${esc(G.floor_names[i])}</b></td><td>+${(pf[1] * 100 - 100).toFixed(2)}%</td>${ns.map((n) => n > [270, 270, 460][i] ? '<td class="dim">—</td>' : `<td>${Math.ceil(pf[0] * Math.pow(pf[1], n - 1)).toLocaleString()}</td>`).join("")}</tr>`).join("") + `<tr><td colspan="${ns.length + 2}" class="dim">一、二樓大約蓋 260 塊就滿了，三樓大約 450 塊（看區塊大小）</td></tr>`;
 }
 $("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");

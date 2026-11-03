@@ -2208,6 +2208,51 @@ window.GAME = {
 		"地下二樓",
 		"地下三樓"
 	],
+	"floor_reward_pct": 0.9,
+	"floor_rewards": [
+		{
+			"desc": "金幣、經驗 +10%",
+			"fx": [
+				[
+					"gold_pct",
+					10.0
+				],
+				[
+					"xp_pct",
+					10.0
+				]
+			],
+			"name": "老礦工的地圖"
+		},
+		{
+			"desc": "生命、護甲 +10%",
+			"fx": [
+				[
+					"hp_pct",
+					10.0
+				],
+				[
+					"armor_pct",
+					10.0
+				]
+			],
+			"name": "騎士團的舊旗"
+		},
+		{
+			"desc": "攻擊、法術傷害 +10%",
+			"fx": [
+				[
+					"atk_pct",
+					10.0
+				],
+				[
+					"spell_pct",
+					10.0
+				]
+			],
+			"name": "祭司的餘燼"
+		}
+	],
 	"floor_secrets": [
 		[
 			"page",
