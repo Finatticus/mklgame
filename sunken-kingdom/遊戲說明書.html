@@ -353,16 +353,30 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<table id="ach-table"></table>
 	</section>
 
-	<section id="camp" data-nav="營地設施">
+	<section id="camp" data-nav="營地與鐵匠">
 		<h2>營地強化設施</h2>
-		<p>在流浪商人那裡購買（要先在第 5 環遇到商人，把他帶回營地）。每項設施最高 <b id="reno-max"></b> 級，升到 <b>Lv1、Lv4、Lv8</b> 時，營地裡的擺設會跟著升級，從簡陋的帳篷慢慢變成氣派的據點。營地名牌上的 <b>Lv</b> 是所有設施等級的總和。第二章之前，營地東南角是<b>擴建預定地</b>，第二章的新設施（煉金台、圖書館、馬廄、秘境傳送門）會蓋在那裡。</p>
+		<p>點左側功能列的<b>「營地」</b>建造，一開始就能蓋，不用等商人。每項設施最高 <b id="reno-max"></b> 級，價格每升一級 ×<span id="reno-grow"></span>。升到 <b>Lv1、Lv4、Lv8</b> 時，營地裡的擺設會跟著升級，從簡陋的帳篷慢慢變成氣派的據點。營地名牌上的 <b>Lv</b> 是所有設施等級的總和。</p>
+		<p>前五項是直接變強的加成；<b>鐵匠鋪、倉庫、瞭望塔、商隊驛站</b>偏便利，價格比較高，是中後期金幣的去處。第二章之前，營地東南角是<b>擴建預定地</b>，第二章的新設施（煉金台、圖書館、馬廄、小禮拜堂、秘境傳送門）會蓋在那裡。</p>
 		<table id="reno-table"></table>
+		<h2 style="margin-top:40px">鐵匠強化</h2>
+		<p>營地東側的鐵匠<b>布洛克</b>可以強化身上的裝備：每 <b>+1</b>，裝備本身的數值（武器攻擊、護甲、詞綴）<b>+<span id="enh-step"></span>%</b>；符文和傳說特效不受影響。強化等級跟著裝備走，名字前面會顯示 <b>+N</b>。</p>
+		<ul>
+			<li><b>+<span id="enh-safe"></span> 以前一定成功</b>，之後成功率每級下降；高等級<b>失敗會掉一級</b>（不會壞掉）。</li>
+			<li>強化上限一開始是 <b>+<span id="enh-cap"></span></b>，<b>鐵匠鋪</b>每級上限 +1、成功率 +2%，Lv10 可以強化到 +15。</li>
+			<li>價格＝<span id="enh-cost"></span> ×（1 + 0.35 ×（裝備等級 − 1））×（1 + 0.3 × 稀有度）× <span id="enh-grow"></span><sup>目前強化等級</sup>。高等級、高稀有度的裝備比較貴。</li>
+			<li><b>轉移強化</b>：換了新裝備，舊裝備的強化不會白費。背包裡有同部位、強化比較高的舊裝備時，鐵匠面板會出現「轉移」，付錢就能把 <b><span id="enh-transfer"></span>%</b> 的強化等級轉到新裝備上（舊裝備歸零）。</li>
+		</ul>
+		<table id="enh-table"></table>
+		<div class="grid g2" style="margin-top:16px">
+			<div><img class="shot" src="img/ui_camp.png"><div class="figcap">營地面板：左邊蓋設施，右邊找鐵匠強化與轉移</div></div>
+			<div><img class="shot" src="img/camp_smith.png"><div class="figcap">鐵匠布洛克的鍛造爐</div></div>
+		</div>
 		<div class="grid g3" style="margin-top:16px">
 			<div><img class="shot" src="img/camp_0.png"><div class="figcap">剛開始：簡陋的營地</div></div>
 			<div><img class="shot" src="img/camp_4.png"><div class="figcap">全部 Lv4</div></div>
 			<div><img class="shot" src="img/camp_8.png"><div class="figcap">全部 Lv8：黃金寶箱、宴席、長明燈柱</div></div>
 		</div>
-		<div style="margin-top:16px"><img class="shot" src="img/ui_shop.png"><div class="figcap">流浪商人：冒險用品、營地設施、今日貨架</div></div>
+		<div style="margin-top:16px"><img class="shot" src="img/ui_shop.png"><div class="figcap">流浪商人：冒險用品、今日貨架</div></div>
 	</section>
 
 	<section id="char" data-nav="角色介面">
@@ -460,7 +474,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=17"></script>
+<script src="data.js?v=18"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -527,7 +541,7 @@ function pieceSvg(p) {
 $("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");
 $("mod-list").innerHTML = Object.entries(G.room_mods).filter(([k]) => k).map(([k, m]) => `<div class="card"><b style="color:${m.color}">◆ ${esc(m.name)}</b><div>${esc(m.desc)}</div></div>`).join("");
 $("special-list").innerHTML = G.special_pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim">${esc(G.special_info[p.special] || "")}</div></div>`).join("");
-const LM_DESC = {start: "你的家。所有遠征從這裡出發。", shop: "第 5 環。遇到後商人會跟著冒險者回營地，開放商店：補給、營地設施、裝備。", key: "取得古銀鑰匙，用來打開封印寶庫。", locked: "需要鑰匙，裡面有豐富的寶藏。", warden: "三位騎士團長各據一方，擊敗他們解開封印。", boss: "沉睡之王的所在。只在地下二樓。", stairs: "通往地下二樓的古老階梯。"};
+const LM_DESC = {start: "你的家。所有遠征從這裡出發。", shop: "第 5 環。遇到後商人會跟著冒險者回營地，開放商店：補給和裝備。", key: "取得古銀鑰匙，用來打開封印寶庫。", locked: "需要鑰匙，裡面有豐富的寶藏。", warden: "三位騎士團長各據一方，擊敗他們解開封印。", boss: "沉睡之王的所在。只在地下二樓。", stairs: "通往地下二樓的古老階梯。"};
 $("landmark-list").innerHTML = Object.entries(G.landmarks).map(([k, n]) => `<div class="card"><b class="gold">${esc(n)}</b><div>${esc(LM_DESC[k] || "")}</div></div>`).join("");
 $("mutation-list").innerHTML = Object.values(G.mutations).map((m) => `<div class="card"><b style="color:${m.tint}">${esc(m.prefix)}（${esc(m.name)}）</b><div>${esc(m.desc)}</div></div>`).join("");
 
@@ -662,7 +676,17 @@ $("ach-table").innerHTML = `<tr><th>成就</th><th>條件</th></tr>` + G.achieve
 
 // 營地
 $("reno-max").textContent = G.reno_max;
-$("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>Lv1</th><th>Lv4</th><th>Lv8</th></tr>` + G.renos.map((r) => `<tr><td>${icon(r.icon)}<b>${esc(r.name)}</b></td><td>${esc(r.desc)}</td>${r.tiers.map((t) => `<td class="dim">${esc(t)}</td>`).join("")}</tr>`).join("");
+$("reno-grow").textContent = G.reno_grow;
+const renoCost = (r, lv) => Math.floor(G.reno_price * Math.pow(G.reno_grow, lv) * (r.mult || 1));
+$("reno-table").innerHTML = `<tr><th>設施</th><th>每級效果</th><th>價格 Lv1／Lv10</th><th>Lv1</th><th>Lv4</th><th>Lv8</th></tr>` + G.renos.map((r) => `<tr><td>${icon(r.icon)}<b>${esc(r.name)}</b>${r.ch === 2 ? '<br><span class="dim">第二章</span>' : ""}</td><td>${esc(r.desc)}</td><td>${renoCost(r, 0).toLocaleString()}／${renoCost(r, 9).toLocaleString()}</td>${r.tiers.map((t) => `<td class="dim">${esc(t)}</td>`).join("")}</tr>`).join("");
+const E = G.enh;
+$("enh-step").textContent = E.step;
+$("enh-safe").textContent = E.safe;
+$("enh-cap").textContent = E.base_cap;
+$("enh-cost").textContent = E.cost;
+$("enh-grow").textContent = E.grow;
+$("enh-transfer").textContent = E.transfer;
+$("enh-table").innerHTML = `<tr><th>強化到</th><th>數值加成</th><th>成功率（鐵匠鋪 Lv0）</th><th>成功率（鐵匠鋪 Lv10）</th><th>失敗時</th><th>價格倍率</th><th>需要鐵匠鋪</th></tr>` + E.rows.map((r) => `<tr><td><b>+${r.to}</b></td><td>+${r.bonus}%</td><td>${r.need > 0 ? '<span class="dim">—</span>' : r.r0 + "%"}</td><td>${r.r10}%</td><td>${r.fail}</td><td>×${r.cost}</td><td>${r.need > 0 ? "Lv" + r.need : '<span class="dim">不用</span>'}</td></tr>`).join("");
 
 // 小技巧、數量
 $("tip-list").innerHTML = G.tips.map((t) => `<div class="card">${esc(t)}</div>`).join("");
