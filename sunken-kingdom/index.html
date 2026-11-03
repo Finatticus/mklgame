@@ -90,6 +90,17 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<div class="quote" id="chapter-goal"></div>
 	</section>
 
+	<section id="mobile" data-nav="手機版">
+		<h2>手機版（加到主畫面像 App 一樣玩）</h2>
+		<div class="grid g2">
+			<div class="card"><h4>怎麼玩</h4><p>手機打開 <a href="play/">遊戲網址（play/）</a>，註冊帳號、等管理員開通後登入。iPhone 用 Safari「分享 → 加入主畫面」，Android 用 Chrome「⋮ → 加到主畫面」，之後從主畫面圖示打開就是全螢幕、橫向。</p>
+			<p>進度存在手機裡，<b>沒網路也能玩</b>；有網路時會在背景自動同步到雲端（右上角的 ☁ 顯示同步狀態）。換手機登入同一個帳號，進度就跟著過去。每次打開都會自動更新到最新版。</p></div>
+			<div class="card"><h4>操作與設定</h4><p>單指拖曳移動鏡頭、雙指捏合縮放；打通廢墟時拖曳移動預覽，用下方的「旋轉／放下／取消」；長按物品＝右鍵（賣出等）、點兩下＝裝備。</p>
+			<p>選單 → <b>畫面與效能</b>：畫質高／中／低、陰影、光暈、霧、邊緣平滑、火把光源數量、3D 解析度、幀率 30／60、介面大小 100％／115％／130％。手機預設「中」與 115％。</p>
+			<p class="dim">管理員：<a href="gas/">雲端伺服器（Google Apps Script）設定教學</a>。電腦版（開始遊戲.bat）維持單機，跟手機版的存檔完全分開。</p></div>
+		</div>
+	</section>
+
 	<section id="loop" data-nav="遊戲流程">
 		<h2>遊戲流程</h2>
 		<p>這是一款「蓋迷宮 × 自動冒險」遊戲：<b>你負責規劃道路，冒險者自己去闖</b>。每一輪都會變強一點，一路從營地打到王座。</p>
@@ -542,7 +553,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=32"></script>
+<script src="data.js?v=33"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);

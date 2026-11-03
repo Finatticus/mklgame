@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>沉沒王國：雲端伺服器設定</title>
+<style>
+:root { --bg: #f7f3ea; --ink: #2a2420; --dim: #6b6157; --gold: #9a6b14; --card: #fffdf8; --line: #e3d9c6; --code: #f1ebdf; }
+@media (prefers-color-scheme: dark) { :root { --bg: #15120f; --ink: #eee6d6; --dim: #a99d8c; --gold: #e2b75c; --card: #1f1b17; --line: #3a3229; --code: #2a241e; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.75 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { color: var(--gold); font-size: 28px; margin: 8px 0 4px; }
+h2 { font-size: 21px; margin: 32px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 12px 0; }
+ol li, ul li { margin: 6px 0; }
+code { background: var(--code); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+pre { background: var(--code); padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 13px; max-height: 360px; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 15px; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+.dim { color: var(--dim); }
+.btn { display: inline-block; background: var(--gold); color: #fff; padding: 8px 16px; border-radius: 8px; text-decoration: none; border: 0; font-size: 15px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+	<h1>沉沒王國：雲端伺服器設定</h1>
+	<p class="dim">只要設定一次。之後你和朋友在手機上註冊、你在試算表填 v 開通，就能玩，進度會自動在背景存到這份試算表。</p>
+
+	<h2>1. 建立試算表與程式</h2>
+	<ol>
+		<li>到 <a href="https://sheets.new" target="_blank">sheets.new</a> 建一份新的 Google 試算表，名字隨意（例如「沉沒王國存檔」）。</li>
+		<li>上方選單 <b>擴充功能 → Apps Script</b>。</li>
+		<li>把左邊 <code>程式碼.gs</code> 裡原本的內容全部刪掉，貼上下面這整段程式，按 <b>儲存</b>（磁片圖示）。</li>
+	</ol>
+	<p><button class="btn" id="copy">複製程式碼</button> <a class="btn" href="Code.gs" download>下載 Code.gs</a> <span class="dim" id="copied"></span></p>
+	<pre id="code">載入中……</pre>
+
+	<h2>2. 部署成網頁應用程式</h2>
+	<ol>
+		<li>右上角 <b>部署 → 新增部署作業</b>。</li>
+		<li>左邊齒輪「選取類型」選 <b>網頁應用程式</b>。</li>
+		<li><b>執行身分：我</b>；<b>誰可以存取：所有人</b>（一定要選「所有人」，手機才連得上；別人沒有你開通的帳號也登不進去）。</li>
+		<li>按 <b>部署</b>，第一次會要求授權：選你的 Google 帳號 → 出現「Google 尚未驗證這個應用程式」→ 點 <b>進階 → 前往（不安全）</b> → <b>允許</b>。這是你自己寫的程式，所以 Google 會這樣提醒。</li>
+		<li>複製畫面上的 <b>網頁應用程式網址</b>（<code>https://script.google.com/macros/s/……/exec</code>）。</li>
+		<li>想確認有沒有成功：用瀏覽器打開那個網址，看到 <code>{"ok":true,"msg":"沉沒王國伺服器運作中"}</code> 就對了。</li>
+	</ol>
+
+	<h2>3. 把網址告訴遊戲（擇一）</h2>
+	<div class="card">
+		<p><b>方法 A（推薦）：</b>把網址傳給 Claude，請它更新到網站上的 <code>cloud_config.json</code>。之後所有手機打開都會自動用這個網址，不用每支手機設定。</p>
+		<p><b>方法 B：</b>自己在 GitHub 網站打開 <code>mklgame/sunken-kingdom/play/cloud_config.json</code>，按鉛筆編輯成：</p>
+		<pre>{ "url": "https://script.google.com/macros/s/你的部署ID/exec" }</pre>
+		<p><b>方法 C（臨時）：</b>在遊戲登入畫面按「進階：伺服器網址」，直接貼上。只對那一支手機有效。</p>
+	</div>
+
+	<h2>4. 開通帳號</h2>
+	<ol>
+		<li>手機打開 <a href="../play/" target="_blank">遊戲網址</a> → 「還沒有帳號？註冊」→ 輸入帳號、密碼。</li>
+		<li>回到試算表，會多一個 <b>「帳號」</b> 工作頁：</li>
+	</ol>
+	<table>
+		<tr><th>A 帳號</th><th>B 密碼</th><th>C 開通（填 v）</th><th>D 註冊時間</th><th>E 最後登入</th></tr>
+		<tr><td>你註冊的帳號</td><td>密碼（不打碼）</td><td><b>你手動填 v</b></td><td>自動</td><td>自動</td></tr>
+	</table>
+	<ul>
+		<li>在 <b>C 欄填 v</b> 就開通，手機上按「登入」就能玩。</li>
+		<li>把 <b>v 刪掉＝停權</b>：那支手機下次同步時會顯示「帳號未開通或已停權」，進度留在手機上但不能再同步；回到標題要重新登入。</li>
+		<li>第一次登入成功後，會自動多一個 <b>「存檔_帳號」</b> 工作頁：第 2～4 列是存檔欄位 1～3、第 5 列共用儲藏箱、第 6 列備份（兩台裝置進度不同時，被蓋掉的那一份）。前面幾欄可以直接看職業、章節、遠征次數、金幣、經驗、最深環數；後面是完整存檔（太長會自動接到右邊的格子）。<b>不要手動改存檔資料那幾格</b>。</li>
+	</ul>
+
+	<h2>5. 手機加到主畫面</h2>
+	<div class="card">
+		<p><b>iPhone（Safari）：</b>打開遊戲網址 → 下方「分享」→ <b>加入主畫面</b>。之後從主畫面圖示打開就是全螢幕。iPhone 沒辦法鎖定方向，直拿時會提示你轉成橫向。</p>
+		<p><b>Android（Chrome）：</b>打開遊戲網址 → 右上角 ⋮ → <b>加到主畫面／安裝應用程式</b>。從圖示打開會自動全螢幕、鎖定橫向。</p>
+		<p class="dim">第一次打開要下載約 55 MB（建議用 Wi-Fi；會存在手機裡，之後很快、沒網路也能開）。每次有網路打開時會自動檢查新版本，有新版就自動更新後再進遊戲。</p>
+	</div>
+
+	<h2>常見問題</h2>
+	<ul>
+		<li><b>改了 Apps Script 程式之後：</b>要「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本選『新版本』→ 部署」，網址不會變。</li>
+		<li><b>登入顯示「連不上伺服器」：</b>確認「誰可以存取」是「所有人」，以及 cloud_config.json 的網址是 <code>/exec</code> 結尾的那個。</li>
+		<li><b>手機跑起來卡：</b>遊戲裡 選單 → 畫面與效能，選「低」或把 3D 解析度調低、幀率設 30。</li>
+	</ul>
+</main>
+<script>
+fetch('Code.gs').then((r) => r.text()).then((t) => { document.getElementById('code').textContent = t; });
+document.getElementById('copy').onclick = async () => {
+	const t = document.getElementById('code').textContent;
+	try { await navigator.clipboard.writeText(t); document.getElementById('copied').textContent = '已複製'; }
+	catch (e) { document.getElementById('copied').textContent = '複製失敗，請長按程式碼全選複製'; }
+};
+</script>
+</body>
+</html>
