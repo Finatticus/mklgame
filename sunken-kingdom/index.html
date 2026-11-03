@@ -509,7 +509,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=25"></script>
+<script src="data.js?v=26"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -584,7 +584,7 @@ function pieceSvg(p) {
 		const W = 780, H = 340, L = 64, R = 150, T = 18, B = 40, maxN = 460, y0 = 1, y1 = 6;
 		const X = (n) => L + (n - 1) / (maxN - 1) * (W - L - R);
 		const Y = (v) => T + (1 - (Math.log10(v) - y0) / (y1 - y0)) * (H - T - B);
-		const cols = ["#e8c46a", "#d9824b", "#6fb3d9"], chap = ["第一章", "第一章後半", "第二章"], caps = [270, 270, 460];
+		const cols = ["#e8c46a", "#d9824b", "#6fb3d9"], chap = ["第一章", "第一章後半", "第二章"], caps = [260, 260, 450];
 		let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;min-width:560px" font-size="12" fill="currentColor">`;
 		for (let e = y0; e <= y1; e++) {
 			s += `<line x1="${L}" x2="${W - R}" y1="${Y(10 ** e)}" y2="${Y(10 ** e)}" stroke="currentColor" stroke-opacity="0.15"/><text x="${L - 6}" y="${Y(10 ** e) + 4}" text-anchor="end" opacity="0.7">${(10 ** e).toLocaleString()}</text>`;
@@ -594,7 +594,7 @@ function pieceSvg(p) {
 		const marks = [1, ...K.map((k) => k[0]), maxN];
 		K.forEach(([p]) => { s += `<line x1="${X(p)}" x2="${X(p)}" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 4"/>`; });
 		const lab = [`前期 +${(K[0][1] * 100).toFixed(0)}%`, "中期 漸緩", `後期 +${(K[K.length - 1][1] * 100).toFixed(1)}%`];
-		[[marks[0], marks[1]], [marks[1], marks[marks.length - 2]], [marks[marks.length - 2], maxN]].forEach(([a, b], i) => { s += `<text x="${(X(a) + X(b)) / 2}" y="${T + 12}" text-anchor="middle" opacity="0.8">${lab[i]}</text>`; });
+		[marks[0], marks[1], marks[marks.length - 2]].forEach((a, i) => { s += `<text x="${X(a) + 4}" y="${T + 12 + i * 15}" opacity="0.85">${lab[i]}${i < 2 ? `（第 ${a}～${marks[i + 1]} 塊）` : `（第 ${a + 1} 塊以後）`}</text>`; });
 		G.piece_start.slice(0, 3).forEach((st, f) => {
 			const pts = [];
 			for (let n = 1; n <= caps[f]; n += 1) pts.push(`${X(n).toFixed(1)},${Y(price(st, n - 1)).toFixed(1)}`);
