@@ -138,8 +138,21 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 
 	<section id="build" data-nav="打通廢墟">
 		<h2>打通廢墟：區塊</h2>
-		<p>每次挖掘會隨機抽出區塊（技能「勘查」可以一次看到更多塊再挑），價格<b>每一層樓各算各的</b>：照畫面目前看著的那一層計價（放到別層會多退少補），只看那一層已經蓋了幾塊。每一層有自己的起始價，每蓋一塊就乘上一點點成長率（指數成長）。一環一環慢慢蓋也能通關；但想把整層蓋滿，最外圈會貴到要靠下一章的收入回來補。技能「開路先鋒」每級再便宜 2%。</p>
+		<p>每次挖掘會隨機抽出區塊（技能「勘查」可以一次看到更多塊再挑），價格<b>每一層樓各算各的</b>：照畫面目前看著的那一層計價（放到別層會多退少補），只看那一層已經蓋了幾塊。</p>
+		<div class="card" style="margin:10px 0"><h4>區塊價格怎麼設計的</h4>
+			<p><b>所有樓層共用同一條曲線，每一層只設定自己的起始價（第 1 塊）。</b>之後的章節新增樓層，也只要給一個起始價，就沿用同一條曲線。</p>
+			<ul id="piece-curve"></ul>
+			<ul>
+				<li><b>前期（第 1～25 塊）漲得快、有感：</b>每蓋一塊就貴 9%，地下一樓是 12 → 13 → 14 → … 到第 25 塊約 95，大約是起始價的 8 倍。</li>
+				<li><b>中期（第 26～50 塊）漲幅等量慢慢降：</b>每多蓋一塊，漲幅就少約 0.33%（9% → 8.7% → 8.3% → … → 0.8%），不會一下子變平。到第 50 塊價格大約是第 25 塊的 3 倍，這一段開始要多跑幾趟才買得起。</li>
+				<li><b>後期（第 51 塊以後）固定只漲 0.8%：</b>這時一塊已經很貴了，再漲快會變成不可能，所以放緩；但每一塊仍然要存一陣子，想把整層蓋到九成拿隱藏獎勵是長期目標。</li>
+				<li><b>起始價怎麼訂：</b>地下一樓固定 12，讓剛開局買得起；之後每一層的起始價，讓「蓋到打倒該章頭目大約需要的塊數」總花費和那一章的收入相當：地下二樓 15、地下三樓 150。之後的章節新增樓層也照這個原則只訂起始價。</li>
+			</ul>
+		</div>
 		<table id="piece-cost-table"></table>
+		<h4 style="margin-top:14px">各章節的區塊價格曲線</h4>
+		<div id="piece-chart" style="overflow-x:auto"></div>
+		<p class="dim">縱軸是對數刻度（每往上一格價格乘 10），所以三段曲線的「斜率」就是漲幅：前期最陡、中期變緩、後期最平。</p>
 		<ul class="dim">
 			<li><b>每層統計：</b>建造面板的挖掘按鈕下方有一行小統計：畫面看著的那一層「已打通幾格．還沒打通幾格」和百分比（地標、營地也算已打通），下面一條細進度條；拿到該層隱藏獎勵後會變成綠色。</li>
 			<li><b>公會補助：</b>前期（最遠只到第 5 環以內）遠征回來時，如果身上的錢連地下一樓的下一塊都買不起，公會會補到剛好夠買，避免開局卡死。</li>
@@ -431,7 +444,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<tr><td>技能樹大改版</td><td><code>game_state.gd</code> 的 <code>SKILL_VER</code> 加 1</td><td>讀到舊存檔會自動退還全部經驗，並跳出說明視窗。</td></tr>
 			<tr><td>新職業</td><td><code>data.gd</code> 的 <code>CLASSES</code>＋<code>skills_data.gd</code> 的職業樹</td><td>需要選一個主屬性（或新增屬性）和角色模型。存檔欄位是 4 格，可以再加。</td></tr>
 			<tr><td>新敵人</td><td><code>content_data.gd</code> 的 <code>MORE_ENEMIES</code></td><td>設定出沒環數、能力（開戰、命中、低血量、召喚……）。</td></tr>
-			<tr><td>新樓層的區塊價格</td><td><code>data.gd</code> 的 <code>PIECE_FLOORS</code></td><td>每一層一行 <code>[起始價, 每塊成長率]</code>；新章節的樓層照那一章剛開始時一趟遠征的收入訂起始價（約 1/3），成長率 1.015～1.02。存檔裡每層的塊數記在 <code>floor_pieces</code>，陣列會自動補長度。</td></tr>
+			<tr><td>新樓層的區塊價格</td><td><code>data.gd</code> 的 <code>PIECE_START</code>（＋共用的 <code>PIECE_CURVE</code>）</td><td>新樓層只要在 <code>PIECE_START</code> 加一個起始價（約剛到那一層時一趟遠征的收入），漲幅自動沿用共用曲線 <code>PIECE_CURVE</code>（前 25 塊 +9%，第 26～50 塊等量降到 0.8%，之後固定 +0.8%）。存檔裡每層的塊數記在 <code>floor_pieces</code>，陣列會自動補長度。</td></tr>
 			<tr><td>新樓層的隱藏獎勵</td><td><code>data.gd</code> 的 <code>FLOOR_REWARDS</code></td><td>照樓層順序加一行 <code>{name, desc, fx}</code>，<code>fx</code> 和技能用同一套數值（例如 <code>["gold_pct", 10.0]</code>）；門檻是 <code>FLOOR_REWARD_PCT</code>（0.9）。說明書表格會自動更新。</td></tr>
 			<tr><td>新區塊形狀</td><td><code>data.gd</code> 的 <code>PIECES</code></td><td>每格寫種類、位置、門的方向；相鄰格的門要互相對上。</td></tr>
 			<tr><td>新區塊能力／特殊房間</td><td><code>ROOM_MODS</code>／<code>MORE_SPECIAL_PIECES</code></td><td>能力的效果寫在 <code>run_sim.gd</code>。</td></tr>
@@ -496,7 +509,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=23"></script>
+<script src="data.js?v=25"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
@@ -561,9 +574,38 @@ function pieceSvg(p) {
 	return s + "</svg>";
 }
 {
-	const ns = [1, 25, 50, 100, 150, 200, 250, 300, 400];
+	const ns = [1, 2, 3, 10, 25, 50, 100, 200, 260, 450];
 	$("floor-reward-table").innerHTML = `<tr><th>樓層</th><th>隱藏獎勵</th><th>效果（永久）</th></tr>` + G.floor_rewards.map((r, i) => `<tr><td>${esc(G.floor_names[i] || ("第 " + (i + 1) + " 層"))}</td><td><b class="gold">${esc(r.name)}</b></td><td>${esc(r.desc)}</td></tr>`).join("");
-	$("piece-cost-table").innerHTML = `<tr><th>樓層</th><th>每塊漲幅</th>${ns.map((n) => `<th>第 ${n} 塊</th>`).join("")}</tr>` + G.piece_floors.slice(0, 3).map((pf, i) => `<tr><td><b>${esc(G.floor_names[i])}</b></td><td>+${(pf[1] * 100 - 100).toFixed(2)}%</td>${ns.map((n) => n > [270, 270, 460][i] ? '<td class="dim">—</td>' : `<td>${Math.ceil(pf[0] * Math.pow(pf[1], n - 1)).toLocaleString()}</td>`).join("")}</tr>`).join("") + `<tr><td colspan="${ns.length + 2}" class="dim">一、二樓大約蓋 260 塊就滿了，三樓大約 450 塊（看區塊大小）</td></tr>`;
+	const K = G.piece_curve;
+	const rate = (p) => { if (p <= K[0][0]) return K[0][1]; for (let i = 1; i < K.length; i++) if (p <= K[i][0]) return K[i - 1][1] + (K[i][1] - K[i - 1][1]) * (p - K[i - 1][0]) / (K[i][0] - K[i - 1][0]); return K[K.length - 1][1]; };
+	const price = (st, n) => { let c = st; for (let p = 2; p <= n + 1; p++) c *= 1 + rate(p); return c; };
+	$("piece-curve").innerHTML = `<li>前期：第 1～${K[0][0]} 塊，每塊 <b>+${(K[0][1] * 100).toFixed(1)}%</b></li>` + K.slice(1).map(([p, r], i) => `<li>中期：第 ${K[i][0] + 1}～${p} 塊，漲幅每塊少 ${((K[i][1] - r) / (p - K[i][0]) * 100).toFixed(2)}%，從 ${(K[i][1] * 100).toFixed(1)}% 等量降到 ${(r * 100).toFixed(1)}%</li>`).join("") + `<li>後期：第 ${K[K.length - 1][0] + 1} 塊以後，每塊固定 <b>+${(K[K.length - 1][1] * 100).toFixed(1)}%</b></li>`;
+	{
+		const W = 780, H = 340, L = 64, R = 150, T = 18, B = 40, maxN = 460, y0 = 1, y1 = 6;
+		const X = (n) => L + (n - 1) / (maxN - 1) * (W - L - R);
+		const Y = (v) => T + (1 - (Math.log10(v) - y0) / (y1 - y0)) * (H - T - B);
+		const cols = ["#e8c46a", "#d9824b", "#6fb3d9"], chap = ["第一章", "第一章後半", "第二章"], caps = [270, 270, 460];
+		let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;min-width:560px" font-size="12" fill="currentColor">`;
+		for (let e = y0; e <= y1; e++) {
+			s += `<line x1="${L}" x2="${W - R}" y1="${Y(10 ** e)}" y2="${Y(10 ** e)}" stroke="currentColor" stroke-opacity="0.15"/><text x="${L - 6}" y="${Y(10 ** e) + 4}" text-anchor="end" opacity="0.7">${(10 ** e).toLocaleString()}</text>`;
+		}
+		for (const n of [1, 100, 200, 300, 400]) s += `<text x="${X(n)}" y="${H - B + 16}" text-anchor="middle" opacity="0.7">${n}</text>`;
+		s += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" opacity="0.8">這一層已經蓋到第幾塊</text>`;
+		const marks = [1, ...K.map((k) => k[0]), maxN];
+		K.forEach(([p]) => { s += `<line x1="${X(p)}" x2="${X(p)}" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="4 4"/>`; });
+		const lab = [`前期 +${(K[0][1] * 100).toFixed(0)}%`, "中期 漸緩", `後期 +${(K[K.length - 1][1] * 100).toFixed(1)}%`];
+		[[marks[0], marks[1]], [marks[1], marks[marks.length - 2]], [marks[marks.length - 2], maxN]].forEach(([a, b], i) => { s += `<text x="${(X(a) + X(b)) / 2}" y="${T + 12}" text-anchor="middle" opacity="0.8">${lab[i]}</text>`; });
+		G.piece_start.slice(0, 3).forEach((st, f) => {
+			const pts = [];
+			for (let n = 1; n <= caps[f]; n += 1) pts.push(`${X(n).toFixed(1)},${Y(price(st, n - 1)).toFixed(1)}`);
+			s += `<polyline points="${pts.join(" ")}" fill="none" stroke="${cols[f]}" stroke-width="3"/>`;
+			const last = price(st, caps[f] - 1);
+			s += `<circle cx="${X(caps[f])}" cy="${Y(last)}" r="4" fill="${cols[f]}"/>`;
+			s += `<text x="${W - R + 8}" y="${T + 40 + f * 44}" fill="${cols[f]}" font-weight="bold">${chap[f]}．${esc(G.floor_names[f])}</text><text x="${W - R + 8}" y="${T + 56 + f * 44}" opacity="0.8">起始 ${st}，蓋滿約 ${Math.round(last).toLocaleString()}</text>`;
+		});
+		$("piece-chart").innerHTML = s + "</svg>";
+	}
+	$("piece-cost-table").innerHTML = `<tr><th>樓層</th>${ns.map((n) => `<th>第 ${n} 塊</th>`).join("")}</tr>` + G.piece_start.slice(0, 3).map((st, i) => `<tr><td><b>${esc(G.floor_names[i])}</b></td>${ns.map((n) => n > [270, 270, 460][i] ? '<td class="dim">—</td>' : `<td>${Math.round(price(st, n - 1)).toLocaleString()}</td>`).join("")}</tr>`).join("") + `<tr><td colspan="${ns.length + 1}" class="dim">一、二樓大約蓋 260 塊就滿了，三樓大約 450 塊（看區塊大小）。技能「開路先鋒」每級再便宜 2%。</td></tr>`;
 }
 $("piece-list").innerHTML = G.pieces.map((p) => `<div class="card piece" style="text-align:center">${pieceSvg(p)}<b>${esc(p.name)}</b><div class="dim" style="font-size:13px">${p.cells.length} 格．出現權重 ${p.w}</div></div>`).join("");
 $("mod-list").innerHTML = Object.entries(G.room_mods).filter(([k]) => k).map(([k, m]) => `<div class="card"><b style="color:${m.color}">◆ ${esc(m.name)}</b><div>${esc(m.desc)}</div></div>`).join("");
