@@ -19,7 +19,7 @@ body { color: #f0e6d2; overflow: hidden; touch-action: none; -webkit-user-select
 #wrap { position: fixed; top: env(safe-area-inset-top); right: env(safe-area-inset-right); bottom: env(safe-area-inset-bottom); left: env(safe-area-inset-left); }
 #canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 /* 手機直拿：整個遊戲轉 90 度橫著顯示（像一般橫向手遊，不用叫玩家去解除方向鎖定）；觸控座標在 index.js 跟著轉 */
-body.rot #canvas { left: 100%; transform-origin: 0 0; transform: rotate(90deg); }
+body.rot #canvas { left: 100% !important; transform-origin: 0 0; transform: rotate(90deg); } /* Godot 會寫 inline 的 left:0 */
 #canvas:focus { outline: none; }
 .cover { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: #0b0a0d; z-index: 5; padding: 24px; box-sizing: border-box; }
 .cover h1 { color: #e8c46a; font-size: 28px; margin: 0 0 12px; letter-spacing: 4px; }
