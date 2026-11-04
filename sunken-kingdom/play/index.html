@@ -10,23 +10,22 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 		<meta name="apple-mobile-web-app-title" content="沉沒王國">
-		<link rel="apple-touch-icon" href="icon-192.png">
+		<link rel="apple-touch-icon" href="icon-180.png">
 		<link rel="icon" href="icon-192.png">
 		<style>
 html, body { margin: 0; padding: 0; border: 0; width: 100%; height: 100%; background: #000; }
 body { color: #f0e6d2; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; font-family: 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif; }
 /* 瀏海、圓角、Home 條：畫面只畫在安全區裡，介面不會被擋到 */
 #wrap { position: fixed; top: env(safe-area-inset-top); right: env(safe-area-inset-right); bottom: env(safe-area-inset-bottom); left: env(safe-area-inset-left); }
-#canvas { display: block; width: 100%; height: 100%; }
+#canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+/* 手機直拿：整個遊戲轉 90 度橫著顯示（像一般橫向手遊，不用叫玩家去解除方向鎖定）；觸控座標在 index.js 跟著轉 */
+body.rot #canvas { left: 100%; transform-origin: 0 0; transform: rotate(90deg); }
 #canvas:focus { outline: none; }
 .cover { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: #0b0a0d; z-index: 5; padding: 24px; box-sizing: border-box; }
 .cover h1 { color: #e8c46a; font-size: 28px; margin: 0 0 12px; letter-spacing: 4px; }
 .cover p { margin: 6px 0; font-size: 16px; line-height: 1.6; color: #cfc4ae; }
 #status { display: flex; z-index: 4; }
 #status progress { width: 60%; max-width: 420px; height: 12px; margin-top: 18px; accent-color: #e8c46a; }
-#rotate .phone { width: 56px; height: 92px; border: 4px solid #e8c46a; border-radius: 12px; margin-bottom: 18px; animation: turn 2s ease-in-out infinite; }
-@keyframes turn { 0%, 30% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
-@media (orientation: portrait) { body.mobile #rotate { display: flex; } }
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
@@ -38,11 +37,6 @@ body { color: #f0e6d2; overflow: hidden; touch-action: none; -webkit-user-select
 			<h1>沉沒王國</h1>
 			<p id="status-text">載入中……</p>
 			<progress id="status-progress"></progress>
-		</div>
-		<div id="rotate" class="cover">
-			<div class="phone"></div>
-			<h1>請把手機轉成橫向</h1>
-			<p>這個遊戲只能橫向遊玩</p>
 		</div>
 		<noscript>這個遊戲需要開啟 JavaScript。</noscript>
 
@@ -62,6 +56,19 @@ body { color: #f0e6d2; overflow: hidden; touch-action: none; -webkit-user-select
 		p.then(() => { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); });
 	}
 	window.addEventListener('pointerdown', lock, { once: false, passive: true });
+	// 直拿的時候（iPhone 不能鎖方向、Android 沒鎖成功）：遊戲畫面轉 90 度，Godot 每一幀都會來問畫布大小
+	const wrap = document.getElementById('wrap');
+	window.SK_rot = false;
+	window.SK_canvasSize = function () {
+		const w = wrap.clientWidth, h = wrap.clientHeight;
+		const rot = mobile && h > w;
+		if (rot !== window.SK_rot) {
+			window.SK_rot = rot;
+			document.body.classList.toggle('rot', rot);
+		}
+		return rot ? [h, w] : [w, h];
+	};
+	window.SK_canvasSize();
 	if (standalone && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
 }());
 		</script>
