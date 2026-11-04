@@ -111,7 +111,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<div class="card step"><b>④ 變強</b>學技能、換裝備、鑲符文、升級營地</div>
 		</div>
 		<div class="grid g3" style="margin-top:18px">
-			<div><img class="shot" src="img/ui_hub.png"><div class="figcap">營地畫面：左邊是功能列，右上是小地圖（點一下展開）</div></div>
+			<div><img class="shot" src="img/ui_hub.png"><div class="figcap">營地畫面：左邊是功能列，右上是小地圖（點一下展開），右下角是挖掘和出發遠征</div></div>
 			<div><img class="shot" src="img/ui_draft.png"><div class="figcap">挖掘新區塊：從隨機的幾塊裡挑一塊</div></div>
 			<div><img class="shot" src="img/ui_run.png"><div class="figcap">遠征中：提燈照亮周圍，其他地方昏暗</div></div>
 		</div>
@@ -121,7 +121,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 		<h2>操作方式</h2>
 		<table>
 			<tr><th>動作</th><th>操作</th></tr>
-			<tr><td>收起打通廢墟視窗</td><td>視窗上的「收起 ✕」，再點左邊「打通廢墟」打開</td></tr>
+			<tr><td>挖掘新區塊</td><td>右下角「挖掘」（在「出發遠征」旁邊），旁邊的小按鈕是「爆破」「插旗」。點地圖格子時，左上角會出現那一格的資訊</td></tr>
 			<tr><td>移動鏡頭</td><td>WASD／方向鍵，或按住左鍵拖曳（遠征中鏡頭鎖定冒險者）</td></tr>
 			<tr><td>縮放／旋轉視角</td><td>滑鼠滾輪／Q、E</td></tr>
 			<tr><td>放置區塊</td><td>左鍵放下，右鍵或 R 旋轉，Esc 取消（退款）</td></tr>
@@ -131,10 +131,11 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 			<tr><td>符文</td><td>符文袋依 1～30 號排好；點符文看能力、合成；拖到裝備上鑲嵌；花金幣可取下</td></tr>
 			<tr><td>遠征地點</td><td>右下角的「遠征地點」按鈕（或「選單 → 世界地圖」）打開世界地圖，點亮著的地點，再選從哪一層出發</td></tr>
 			<tr><td>滑鼠滾輪</td><td>滑鼠在任何視窗或面板上時，滾輪只捲動那個視窗，背景的大廳不會跟著動</td></tr>
-			<tr><td>主動技能</td><td>「角色 → 技能」分頁，把學會的主動技能放進技能欄（最多 3 個），戰鬥中自動施放</td></tr>
+			<tr><td>主動技能</td><td>「角色 → 技能」分頁，點技能跳出說明，按「放進技能欄」（最多 3 個），戰鬥中自動施放</td></tr>
+			<tr><td>技能樹</td><td>一個屬性一頁、一層一排，不用捲動就看得完；點技能跳出說明和「學習」，它的前置技能會用青色框標出來</td></tr>
 			<tr><td>遠征速度</td><td>一開始只有 1 倍速（＝現實時間）。在技能樹「冒險」學會<b>急行軍</b>後，HUD 的「速度」按鈕可以加速：1 級 2x（200 經驗）、2 級 3x（500）、3 級 4x（1500）、4 級 5x（3000），會記住上次的設定；還沒學會時按鈕是灰色的</td></tr>
 			<tr><td>藥水與技能</td><td>遠征畫面下方有 3 格藥水欄（點紅藥水可以立刻喝）和 3 格技能欄（顯示冷卻秒數）</td></tr>
-			<tr><td>地圖</td><td>右上角小地圖，點一下展開成完整的平面圖（第二章開放後有三層）</td></tr>
+			<tr><td>地圖</td><td>營地時右上角小地圖，點一下展開成完整的平面圖（一次看一層，上方切換樓層）；遠征時按遠征日誌旁的「地圖」</td></tr>
 			<tr><td>無盡秘境</td><td>打倒沉睡之王後，左邊功能列多一個「秘境」，或點營地東南角的傳送門</td></tr>
 			<tr><td>存檔</td><td>4 個欄位，自動存檔；每個職業可以各開一個。前 3 個欄位共用一個<b>共通儲藏箱</b></td></tr>
 			<tr><td>音樂與音效</td><td>營地、地城探索、摸黑、頭目戰各有一首很輕的背景音樂；攻擊、受傷、怪物倒下、寶箱、藥水、陷阱、蓋區塊、學技能都有音效。「選單 → 設定」可以分別調背景音樂和音效的音量</td></tr>
@@ -553,7 +554,7 @@ summary { cursor: pointer; color: var(--gold); font: 700 18px "Noto Serif TC", s
 </main>
 </div>
 <div class="lightbox" id="lb"><img alt=""></div>
-<script src="data.js?v=34"></script>
+<script src="data.js?v=35"></script>
 <script>
 const G = window.GAME;
 const $ = (id) => document.getElementById(id);
