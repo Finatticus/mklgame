@@ -55,6 +55,7 @@ body { color: #f0e6d2; overflow: hidden; touch-action: none; -webkit-user-select
 	const mobile = /iPhone|iPad|iPod|Android/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
 	if (mobile) document.body.classList.add('mobile');
 	window.SK_MOBILE = mobile;
+	window.SK_maxDpr = mobile ? 2 : 99; // 手機最多畫 2 倍像素（3 倍的 iPhone 會很燙，看起來差不多）
 	const standalone = window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true;
 	function lock() {
 		// Android：全螢幕之後才能鎖定橫向（加到主畫面的 App 由 manifest 直接鎖橫向）；iOS 不支援，只能提示轉向
@@ -72,7 +73,7 @@ body { color: #f0e6d2; overflow: hidden; touch-action: none; -webkit-user-select
 		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":46631552,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":46634864,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const statusBox = document.getElementById('status');
 const statusText = document.getElementById('status-text');
@@ -141,7 +142,7 @@ async function registerWorker() {
 			if (current > 0 && total > 0) {
 				statusProgress.value = current;
 				statusProgress.max = total;
-				statusText.textContent = '載入中……' + Math.round(current / total * 100) + '%（第一次比較久，之後會存在手機裡）';
+				statusText.textContent = '載入中……' + Math.round(current / total * 100) + '%';
 			}
 		},
 	}).then(() => {
