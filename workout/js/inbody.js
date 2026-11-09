@@ -26,7 +26,7 @@
       throw e;
     }
   }
-  const bodySeg = (k) => W.segNav([['#/weight', '體重', 'weight'], ['#/inbody', 'InBody', 'inbody']], k);
+  const bodySeg = (k) => W.segNav([['#/weight', '體重', 'weight'], ['#/inbody', 'InBody', 'inbody']], k, 'tone-inbody');
 
   /* =========================================================
    * InBody 總覽：趨勢 + 歷程
@@ -56,10 +56,10 @@
     }).join('');
 
     return head + `
-      <div class="kpis">${kpi}</div>
+      <div class="kpis tone-inbody">${kpi}</div>
       <div class="sec-head"><h2>趨勢</h2><span class="muted sm">${recs.length} 次量測</span></div>
       <div class="chips" id="metricChips">${METRICS.map((m) => `<button class="chip ${m.k === S.metric ? 'on' : ''}" data-k="${m.k}">${m.label}</button>`).join('')}</div>
-      <div class="card chart-card" id="chartCard"></div>
+      <div class="card chart-card tone-inbody" id="chartCard"></div>
       <div class="sec-head"><h2>組成歷程</h2></div>
       <div class="card hist">${historyTable(recs)}</div>
       <div class="sec-head"><h2>所有紀錄</h2></div>
@@ -190,7 +190,7 @@
       return `<span class="pill ${cls}">${esc(v)}</span>`;
     };
 
-    const ctrl = has(r.target_weight) ? `<div class="card">
+    const ctrl = has(r.target_weight) ? `<div class="card tone-inbody">
         <div class="card-h"><h3>體重控制</h3><span class="muted sm">InBody 建議</span></div>
         <div class="ctrl-main">
           <div><span class="muted sm">目前</span><b>${num(r.weight, 1)}</b></div>
@@ -204,7 +204,7 @@
           <div><span>肌肉控制</span><b>${signed(r.muscle_ctrl)} kg</b></div>
         </div></div>` : '';
 
-    const bodyType = r.bodyType ? `<div class="card">
+    const bodyType = r.bodyType ? `<div class="card tone-inbody">
         <div class="card-h"><h3>體型分類</h3><span class="muted sm">肌肉脂肪分析</span></div>
         <div class="btype">${[['C', 'C 型', '體重、體脂肪 > 骨骼肌'], ['I', 'I 型', '三者均衡'], ['D', 'D 型', '骨骼肌 > 體重、體脂肪']].map(([k, t, dsc]) => `
           <div class="bt ${r.bodyType === k ? 'on' : ''}">${btGlyph(k)}<b>${t}</b><span>${dsc}</span></div>`).join('')}</div>
@@ -212,11 +212,11 @@
 
     const exList = EXERCISES.filter(([k]) => has(r['ex_' + k])).sort((a, b) => r['ex_' + b[0]] - r['ex_' + a[0]]);
     const exMax = Math.max(...exList.map(([k]) => r['ex_' + k]), 1);
-    const ex = exList.length ? `<details class="card fold"><summary><h3>運動熱量消耗</h3><span class="muted sm">每 30 分鐘・依當時體重</span>${icon('chevron', 'chev')}</summary>
+    const ex = exList.length ? `<details class="card fold tone-inbody"><summary><h3>運動熱量消耗</h3><span class="muted sm">每 30 分鐘・依當時體重</span>${icon('chevron', 'chev')}</summary>
         <div class="exl">${exList.map(([k, l]) => `<div class="ex"><span>${l}</span><i style="width:${(r['ex_' + k] / exMax) * 100}%"></i><b>${r['ex_' + k]}</b></div>`).join('')}</div></details>` : '';
 
     const zHas = SEGMENTS.some(([s]) => has(r['z20_' + s]) || has(r['z100_' + s]));
-    const zt = zHas ? `<details class="card fold"><summary><h3>阻抗 Z(Ω)</h3><span class="muted sm">原始量測值</span>${icon('chevron', 'chev')}</summary>
+    const zt = zHas ? `<details class="card fold tone-inbody"><summary><h3>阻抗 Z(Ω)</h3><span class="muted sm">原始量測值</span>${icon('chevron', 'chev')}</summary>
         <table class="tbl"><thead><tr><th></th>${SEGMENTS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>
         ${['20', '100'].map((f) => `<tr><th>${f} kHz</th>${SEGMENTS.map(([s]) => `<td>${num(r[`z${f}_${s}`])}</td>`).join('')}</tr>`).join('')}
         </tbody></table></details>` : '';
@@ -227,7 +227,7 @@
         <button class="icon-btn" id="moreBtn" aria-label="更多">${icon('edit')}</button>
       </header>
 
-      <div class="card score-card">
+      <div class="card score-card tone-inbody">
         ${C.ring(r.score, 100, '/ 100')}
         <div class="score-txt"><span class="eyebrow">InBody 評分</span>
           <p>${has(r.height) ? `${num(r.height)} cm・` : ''}${has(r.age) ? `${r.age} 歲・` : ''}${esc(r.sex || '')}</p>
@@ -235,9 +235,9 @@
         </div>
       </div>
 
-      <div class="kpis six">${kpis}</div>
+      <div class="kpis six tone-inbody">${kpis}</div>
 
-      <div class="card">
+      <div class="card tone-inbody">
         <div class="card-h"><h3>身體組成分析</h3></div>
         ${stack}
         <div class="mrows">${compRow('weight', '體重', 'kg')}${compRow('tbw', '身體總水重', 'L')}${compRow('protein', '蛋白質', 'kg')}${compRow('mineral', '礦物質', 'kg')}${compRow('bfm', '體脂肪', 'kg')}</div>
@@ -245,7 +245,7 @@
 
       ${bodyType}
 
-      <div class="card">
+      <div class="card tone-inbody">
         <div class="card-h"><h3>部位別分析</h3>
           <div class="seg sm" id="segMode"><button data-m="lean" class="${S.segMode === 'lean' ? 'on' : ''}">肌肉</button><button data-m="fat" class="${S.segMode === 'fat' ? 'on' : ''}">脂肪</button></div></div>
         <div id="segFig">${segFigure(r, S.segMode)}</div>
@@ -253,7 +253,7 @@
 
       ${ctrl}
 
-      <div class="card">
+      <div class="card tone-inbody">
         <div class="card-h"><h3>評估</h3></div>
         <div class="evals">
           <div><span>BMI<small class="block">國健署標準 18.5–24</small></span><b>${num(r.bmi, 1)}</b>${evalPill(r.bmi_eval)}</div>
@@ -264,7 +264,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card tone-inbody">
         <div class="card-h"><h3>腰臀圍比・內臟脂肪</h3></div>
         <div class="mrows">
           ${has(r.whr) ? `<div class="mrow"><div class="mrow-top"><span>腰臀圍比</span><span><b>${num(r.whr, 2)}</b>${has(r.whr_hi) ? ` <span class="pill ${r.whr > r.whr_hi ? 'high' : r.whr < r.whr_lo ? 'low' : 'ok'}">${r.whr > r.whr_hi ? '高' : r.whr < r.whr_lo ? '低' : '標準'}</span>` : ''}</span></div>${C.rangeBar(r.whr, r.whr_lo, r.whr_hi, { scale: [0.7, 1.05] })}</div>` : ''}
@@ -272,7 +272,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card tone-inbody">
         <div class="card-h"><h3>研究參數</h3></div>
         <div class="params">
           <div><span>除脂體重</span><b>${num(r.ffm, 1)}<small>kg</small></b></div>
@@ -285,7 +285,7 @@
       ${ex}
       ${zt}
 
-      ${r.coachNote ? `<div class="card"><div class="card-h"><h3>備註</h3></div><p class="note">${esc(r.coachNote).replace(/\n/g, '<br>')}</p></div>` : ''}
+      ${r.coachNote ? `<div class="card tone-inbody"><div class="card-h"><h3>備註</h3></div><p class="note">${esc(r.coachNote).replace(/\n/g, '<br>')}</p></div>` : ''}
       ${r.photoUrl ? `<a class="card link-row" href="${esc(r.photoUrl)}" target="_blank" rel="noopener">${icon('image')}<span>查看原始報告照片</span>${icon('chevron', 'chev')}</a>` : ''}
 
       <div class="foot-actions">
@@ -339,29 +339,27 @@
     const g = (s) => ({ kg: r[`${mode}_${s}`], pct: r[`${mode}_${s}_pct`], ev: r[`${mode}_${s}_eval`] });
     const seg = Object.fromEntries(SEGMENTS.map(([s]) => [s, g(s)]));
     const fill = (s) => segColor(mode, seg[s].pct, seg[s].ev);
-    const label = (s, name, x, y, anchor) => {
+    const evCls = (v) => (!v.ev ? '' : v.ev === '正常' ? 'ok' : v.ev === '低' ? 'low' : 'high');
+    const cell = (s, name) => {
       const v = seg[s];
-      return `<g class="seg-l" text-anchor="${anchor}">
-        <text x="${x}" y="${y}" class="sl-n">${name}</text>
-        <text x="${x}" y="${y + 19}" class="sl-v">${num(v.kg)}<tspan class="sl-u"> kg</tspan></text>
-        <text x="${x}" y="${y + 35}" class="sl-p">${has(v.pct) ? num(v.pct, 1) + '%' : ''}${v.ev ? '・' + esc(v.ev) : ''}</text></g>`;
+      return `<div class="segc"><span class="segc-n"><i style="background:${fill(s)}"></i>${name}</span>
+        <b>${num(v.kg)}<small>kg</small></b>
+        <span class="segc-p">${has(v.pct) ? num(v.pct, 1) + '%' : ''}${v.ev ? ` <span class="pill ${evCls(v)}">${esc(v.ev)}</span>` : ''}</span></div>`;
     };
     // 依報告：圖的左側為「左」
-    return `<svg viewBox="0 0 320 262" class="segfig">
-      <circle cx="160" cy="22" r="15" class="sf-head"/>
-      <rect x="128" y="43" width="64" height="98" rx="16" fill="${fill('tr')}"/>
-      <rect x="104" y="45" width="20" height="92" rx="10" fill="${fill('la')}"/>
-      <rect x="196" y="45" width="20" height="92" rx="10" fill="${fill('ra')}"/>
-      <rect x="131" y="146" width="27" height="108" rx="13" fill="${fill('ll')}"/>
-      <rect x="162" y="146" width="27" height="108" rx="13" fill="${fill('rl')}"/>
-      <text x="160" y="88" text-anchor="middle" class="sf-in">${num(seg.tr.kg)}</text>
-      <text x="160" y="104" text-anchor="middle" class="sf-in2">${has(seg.tr.pct) ? num(seg.tr.pct, 0) + '%' : ''}</text>
-      ${label('la', '左臂', 6, 62, 'start')}
-      ${label('ra', '右臂', 314, 62, 'end')}
-      ${label('ll', '左腿', 6, 180, 'start')}
-      ${label('rl', '右腿', 314, 180, 'end')}
-    </svg>
-    <div class="seg-tr">軀幹 <b>${num(seg.tr.kg)} kg</b>・${has(seg.tr.pct) ? num(seg.tr.pct, 1) + '%' : '–'}${seg.tr.ev ? '・' + esc(seg.tr.ev) : ''}</div>
+    return `<div class="segv">
+      <div class="segv-col">${cell('la', '左臂')}${cell('ll', '左腿')}</div>
+      <svg viewBox="0 0 100 244" class="segfig2">
+        <circle cx="50" cy="15" r="12" class="sf-head"/>
+        <rect x="24" y="31" width="52" height="88" rx="14" fill="${fill('tr')}"/>
+        <rect x="4" y="33" width="16" height="84" rx="8" fill="${fill('la')}"/>
+        <rect x="80" y="33" width="16" height="84" rx="8" fill="${fill('ra')}"/>
+        <rect x="26" y="123" width="23" height="117" rx="11" fill="${fill('ll')}"/>
+        <rect x="51" y="123" width="23" height="117" rx="11" fill="${fill('rl')}"/>
+      </svg>
+      <div class="segv-col right">${cell('ra', '右臂')}${cell('rl', '右腿')}</div>
+    </div>
+    <div class="segv-tr">${cell('tr', '軀幹')}</div>
     <div class="legend center">${mode === 'lean'
       ? '<span><i style="background:var(--low)"></i>低於標準</span><span><i style="background:var(--good)"></i>標準</span><span><i style="background:var(--good-strong)"></i>高於標準</span>'
       : '<span><i style="background:var(--good)"></i>標準</span><span><i style="background:var(--high)"></i>偏高</span><span><i style="background:var(--high-strong)"></i>過高 (>250%)</span>'}</div>

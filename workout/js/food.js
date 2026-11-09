@@ -57,7 +57,7 @@
       const l = entries.filter((f) => f.meal === m);
       const mk = W.sum(l, (f) => f.kcal);
       if (!l.length) return '';
-      return `<div class="card meal"><div class="meal-h"><h3>${m}</h3><span><b>${Math.round(mk)}</b> kcal</span>
+      return `<div class="card meal tone-food"><div class="meal-h"><h3>${m}</h3><span><b>${Math.round(mk)}</b> kcal</span>
           <a class="icon-btn sm" href="#/food/new?d=${day}&meal=${encodeURIComponent(m)}" aria-label="新增${m}">${icon('plus')}</a></div>
         ${l.map((f) => `<a class="fentry" href="#/food/e/${f.id}">
           <div class="fe-main"><b>${esc(f.title || '未命名')}</b><span>${f.time ? f.time + '・' : ''}${(f.items || []).length} 項・P ${Math.round(f.protein || 0)}・C ${Math.round(f.carb || 0)}・F ${Math.round(f.fat || 0)}</span></div>
@@ -70,7 +70,7 @@
         <label class="db-mid"><b>${W.fmtDate(day, 'mdw')}</b><span>${W.relDay(day)}</span><input type="date" id="dayPick" value="${day}" max="${W.today()}"></label>
         <a href="#/food?d=${W.addDays(day, 1)}" class="db-arrow ${day >= W.today() ? 'disabled' : ''}">${icon('chevron')}</a>
       </div>
-      <div class="card nut">
+      <div class="card nut tone-food">
         <div class="nut-top">${ring}
           <div class="nut-side"><div><span>目標</span><b>${tg.kcal.toLocaleString()}</b></div><div><span>已攝取</span><b>${Math.round(tot.kcal).toLocaleString()}</b></div></div>
         </div>
@@ -79,14 +79,38 @@
       </div>
       ${mealHtml}
       <div class="sec-head"><h2>近 7 天</h2><span class="muted sm">${logged.length} 天有紀錄</span></div>
-      <div class="card chart-card">
+      <div class="card chart-card tone-food">
         ${C.bars({ items: days7.map((d, i) => ({ label: W.fmtDate(d, 'short'), value: totals7[i].kcal, cls: (d === day ? 'today ' : '') + (totals7[i].kcal > tg.kcal ? 'over' : '') })), target: tg.kcal })}
         <div class="stat3 tight"><div><span>平均熱量</span><b>${Math.round(avgK).toLocaleString()}<small>kcal</small></b></div>
           <div><span>平均蛋白質</span><b>${Math.round(avgP)}<small>g</small></b></div>
           <div><span>蛋白質達標</span><b>${logged.filter((t) => t.protein >= tg.protein * 0.9).length}<small>/ ${logged.length} 天</small></b></div></div>
       </div>
+      ${foodAnalysis(days7, totals7, tg)}
       <div class="foot-space"></div>`;
   }
+  /** 營養分析：三大營養素比例、蛋白質每日、各餐分佈 */
+  function foodAnalysis(days7, totals7, tg) {
+    const logged = totals7.filter((t) => t.count);
+    if (!logged.length) return '';
+    const P = W.sum(logged, (t) => t.protein) * 4, Cb = W.sum(logged, (t) => t.carb) * 4, F = W.sum(logged, (t) => t.fat) * 9;
+    const all = P + Cb + F || 1;
+    const pct = (v) => Math.round((v / all) * 100);
+    const tAll = tg.protein * 4 + tg.carb * 4 + tg.fat * 9;
+    const tp = (v) => Math.round((v / tAll) * 100);
+    const entries = foods().filter((f) => days7.includes(f.date));
+    const byMeal = MEALS.map((m) => ({ m, k: W.sum(entries.filter((f) => f.meal === m), (f) => f.kcal) / logged.length })).filter((x) => x.k > 0);
+    const maxMeal = Math.max(...byMeal.map((x) => x.k), 1);
+    return `<div class="card tone-food">
+      <div class="card-h"><h3>營養分析</h3><span class="muted sm">近 7 天平均</span></div>
+      <div class="sub-h">熱量來源比例</div>
+      <div class="ratio"><i class="p" style="flex:${P}">${pct(P)}%</i><i class="c" style="flex:${Cb}">${pct(Cb)}%</i><i class="f" style="flex:${F}">${pct(F)}%</i></div>
+      <div class="ratio-l"><span>蛋白質・目標 ${tp(tg.protein * 4)}%</span><span>碳水・目標 ${tp(tg.carb * 4)}%</span><span>脂肪・目標 ${tp(tg.fat * 9)}%</span></div>
+      <div class="sub-h">每日蛋白質（g）</div>
+      ${C.bars({ items: days7.map((d, i) => ({ label: W.fmtDate(d, 'short'), value: totals7[i].protein, cls: (i === 6 ? 'today ' : '') })), target: tg.protein, height: 105 })}
+      ${byMeal.length ? `<div class="sub-h">各餐平均熱量</div>${C.hbars(byMeal.map((x) => ({ label: x.m, value: x.k, text: `${Math.round(x.k)}<small>kcal</small>` })), maxMeal)}` : ''}
+    </div>`;
+  }
+
   viewFood.mount = (v) => {
     $('#dayPick', v).onchange = (e) => { if (e.target.value) location.hash = '#/food?d=' + e.target.value; };
     $('#goalBtn', v).onclick = editGoals;

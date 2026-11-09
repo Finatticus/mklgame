@@ -71,13 +71,14 @@
   }
   function nextCoachDate() {
     const t = W.today();
-    const dates = coachSessions().map((w) => w.nextDate).filter((d) => d && d >= t).sort();
+    const held = new Set(coachSessions().map((w) => w.date));
+    const dates = coachSessions().map((w) => w.nextDate).filter((d) => d && d >= t && !held.has(d)).sort();
     return dates[0] || null;
   }
   W.T = { weekStats, coachPkg, nextCoachDate, woVol, coachSessions };
 
   const fmtVol = (v) => (v >= 10000 ? `${num(v / 1000, 1)}<small>t</small>` : `${Math.round(v).toLocaleString()}<small>kg</small>`);
-  const trainSeg = (k) => W.segNav([['#/training', '訓練日誌', 'log'], ['#/coach', '教練課', 'coach']], k);
+  const trainSeg = (k) => W.segNav([['#/training', '訓練日誌', 'log'], ['#/coach', '教練課', 'coach']], k, k === 'coach' ? 'tone-coach' : 'tone-train');
 
   /* =========================================================
    * 訓練日誌首頁
@@ -91,7 +92,7 @@
     const byDate = {};
     workouts().forEach((w) => (byDate[w.date] = byDate[w.date] || []).push(w));
 
-    const week = `<div class="card week">
+    const week = `<div class="card week tone-train">
         <div class="card-h"><h3>本週</h3><span class="muted sm">${W.fmtDate(ws, 'short')} – ${W.fmtDate(W.addDays(ws, 6), 'short')}</span></div>
         <div class="stat3 flat">
           <div><span>訓練次數</span><b>${cur.count}<small>次</small></b><em class="${cur.count >= prev.count ? 'good' : ''}">上週 ${prev.count}</em></div>
@@ -117,7 +118,7 @@
     list.forEach((w) => (groups[w.date.slice(0, 7)] = groups[w.date.slice(0, 7)] || []).push(w));
 
     return trainSeg('log') + W.pageHead('訓練日誌', esc((W.S.data.settings || {}).gym || '健身工廠'), { right: `<a class="icon-btn solid" href="#/training/new" aria-label="新增訓練">${icon('plus')}</a>` }) +
-      week + calendar(byDate) + topHtml +
+      week + calendar(byDate) + trainAnalysis() + topHtml +
       (list.length ? Object.keys(groups).map((m) => `<div class="sec-head"><h2>${+m.slice(5)} 月</h2><span class="muted sm">${groups[m].length} 次</span></div>
         <div class="card list-card">${groups[m].map(woRow).join('')}</div>`).join('')
         : W.empty('dumbbell', '還沒有訓練紀錄', '每次訓練記下動作、重量、次數，就能看到每個動作的進步曲線。', `<a class="btn primary" href="#/training/new">${icon('plus')}記錄第一次訓練</a>`)) +
@@ -130,6 +131,43 @@
       W.render.keepScroll = true; W.render();
     }));
   };
+
+  /** 訓練分析：近 8 週訓練量、近 30 天部位分佈 */
+  function trainAnalysis() {
+    const list = workouts();
+    if (!list.length) return '';
+    const t = W.today();
+    const ws0 = W.weekStart(t);
+    const weeks = [];
+    for (let i = 7; i >= 0; i--) {
+      const s = W.addDays(ws0, -7 * i);
+      const st = weekStats(s);
+      weeks.push({ label: W.fmtDate(s, 'short'), value: st.volume / 1000, count: st.count, cls: i === 0 ? 'today' : '' });
+    }
+    const recent = list.filter((w) => W.daysBetween(w.date, t) < 30);
+    const sets = {};
+    recent.forEach((w) => (w.exercises || []).forEach((e) => {
+      const c = e.cat || exInfo(e.name).c;
+      if (c === '有氧') return;
+      sets[c] = (sets[c] || 0) + (e.sets || []).length;
+    }));
+    const split = CATS.filter((c) => sets[c]).map((c) => ({ label: c, value: sets[c], text: `${Math.round((sets[c] / 30) * 7)}<small>組/週</small>` })).sort((a, b) => b.value - a.value);
+    const cardio = W.sum(recent, (w) => W.sum((w.exercises || []).filter((e) => (e.cat || exInfo(e.name).c) === '有氧'), (e) => W.sum(e.sets || [], (s) => s.m)));
+    const rpes = recent.filter((w) => w.rpe);
+    const durs = recent.filter((w) => w.duration);
+    return `<div class="card tone-train">
+      <div class="card-h"><h3>訓練分析</h3><span class="muted sm">近 30 天</span></div>
+      <div class="ana">
+        <div><span>訓練次數</span><b>${recent.length}<small>次</small></b><em>每週 ${num(recent.length / 30 * 7, 1)} 次</em></div>
+        <div><span>平均時長</span><b>${durs.length ? Math.round(W.sum(durs, (w) => w.duration) / durs.length) : '–'}<small>分</small></b><em>有氧 ${Math.round(cardio)} 分</em></div>
+        <div><span>平均強度</span><b>${rpes.length ? num(W.sum(rpes, (w) => w.rpe) / rpes.length, 1) : '–'}<small>RPE</small></b><em>${coachSessions().filter((w) => W.daysBetween(w.date, t) < 30).length} 堂教練課</em></div>
+      </div>
+      <div class="sub-h">每週訓練量（噸）</div>
+      ${C.bars({ items: weeks.map((w) => ({ label: w.label, value: Math.round(w.value * 10) / 10, cls: w.cls })), height: 105 })}
+      ${split.length ? `<div class="sub-h">部位分佈（組數）</div>${C.hbars(split)}
+        <p class="hint">肌肥大建議每個部位每週約 10–20 組；長期偏少的部位可以請教練加強。</p>` : ''}
+    </div>`;
+  }
 
   function openDay(day) {
     if (!day) return;
@@ -155,7 +193,7 @@
       const l = byDate[d] || [];
       cells += `<button class="cal-d ${l.length ? 'done' : ''} ${l.some((w) => w.isCoach === 'V') ? 'coach' : ''} ${d === t ? 'today' : ''} ${d > t ? 'future' : ''}" data-day="${d}">${i}</button>`;
     }
-    return `<div class="card cal">
+    return `<div class="card cal tone-train">
       <div class="cal-h"><button data-cal="${prevM}">${icon('back')}</button><b>${d0.getFullYear()} 年 ${d0.getMonth() + 1} 月</b><span class="muted sm">${cnt} 天</span><button data-cal="${nextM}" ${month >= t.slice(0, 7) ? 'disabled' : ''}>${icon('chevron')}</button></div>
       <div class="cal-g">${['一', '二', '三', '四', '五', '六', '日'].map((x) => `<em>${x}</em>`).join('')}${cells}</div>
       <div class="legend center"><span><i style="background:var(--ink)"></i>訓練</span><span><i style="background:var(--accent)"></i>教練課</span></div>
@@ -185,7 +223,7 @@
       const k = e.kind || info.k;
       const bestScore = exScore(e, k);
       const pr = isPR(w, e);
-      return `<div class="card ex-view">
+      return `<div class="card ex-view tone-train">
         <div class="card-h"><a href="#/training/ex/${encodeURIComponent(e.name)}" class="ex-name"><h3>${esc(e.name)}</h3>${icon('chevron', 'chev')}</a>
           ${pr ? `<span class="pill pr">${icon('trophy')}新紀錄</span>` : `<span class="pill">${esc(e.cat || info.c)}</span>`}</div>
         <table class="sets"><tbody>${(e.sets || []).map((s, i) => `<tr class="${k === 'w' && e1rm(s) === bestScore && bestScore ? 'best' : ''}"><td>${i + 1}</td><td>${setStr(s, k)}</td><td class="muted">${k === 'w' && e1rm(s) ? '1RM≈' + num(e1rm(s), 1) : ''}</td></tr>`).join('')}</tbody></table>
@@ -196,7 +234,7 @@
     return W.pageHead(esc(w.title || '訓練'), `${W.fmtDate(w.date, 'mdw')}${w.location ? '・' + esc(w.location) : ''}`, {
       back: backTo, right: `<a class="icon-btn" href="#/training/edit/${w.id}" aria-label="編輯">${icon('edit')}</a>`,
     }) + `
-      <div class="kpis four">
+      <div class="kpis four tone-train">
         <div class="kpi"><span>時長</span><b>${w.duration || '–'}<small>分</small></b></div>
         <div class="kpi"><span>動作</span><b>${(w.exercises || []).length}</b></div>
         <div class="kpi"><span>組數</span><b>${woSets(w)}</b></div>
@@ -225,7 +263,7 @@
   function coachCard(w) {
     const byCat = {};
     (w.cues || []).forEach((c) => (byCat[c.cat || '其他'] = byCat[c.cat || '其他'] || []).push(c));
-    return `<div class="card coach-card">
+    return `<div class="card coach-card tone-coach">
       <div class="card-h"><h3>${icon('whistle')}教練課${w.sessionNo ? ` <span class="muted">第 ${w.sessionNo} 堂</span>` : ''}</h3><span class="muted sm">${esc(w.coach || '')}</span></div>
       ${w.focus ? `<div class="focus">${esc(w.focus)}</div>` : ''}
       ${CUE_CATS.filter((c) => byCat[c]).map((c) => `<div class="cue-g"><h4>${c}</h4>${byCat[c].map((q) => `<div class="cue">${q.ex ? `<a class="cue-ex" href="#/training/ex/${encodeURIComponent(q.ex)}">${esc(q.ex)}</a>` : ''}<p>${esc(q.text).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>`).join('')}
@@ -252,12 +290,12 @@
       ? [['估計 1RM', num(best, 1), 'kg'], ['最大重量', num(maxW, 1), 'kg'], ['單次最大量', Math.round(maxVol).toLocaleString(), 'kg'], ['練過', h.length, '次']]
       : [[SCORE_LABEL[k], num(best, k === 'c' ? 1 : 0), k === 't' ? '秒' : k === 'b' ? '下' : ''], ['練過', h.length, '次']];
     return W.pageHead(esc(name), `${esc(info.c)}・${KIND_LABEL[k]}`, { back: '#/training' }) + `
-      <div class="kpis ${stats.length === 4 ? 'four' : ''}">${stats.map(([l, v, u]) => `<div class="kpi"><span>${l}</span><b>${v}<small>${u}</small></b></div>`).join('')}</div>
-      ${pts.length ? `<div class="card chart-card"><div class="chart-head"><div><span class="muted">${SCORE_LABEL[k]}趨勢</span></div></div>
+      <div class="kpis tone-train ${stats.length === 4 ? 'four' : ''}">${stats.map(([l, v, u]) => `<div class="kpi"><span>${l}</span><b>${v}<small>${u}</small></b></div>`).join('')}</div>
+      ${pts.length ? `<div class="card chart-card tone-train"><div class="chart-head"><div><span class="muted">${SCORE_LABEL[k]}趨勢</span></div></div>
         ${C.timeChart({ series: [{ points: pts, line: true, dots: true, cls: 'raw' }], height: 150 })}
         ${k === 'w' ? '<p class="muted sm center">估計 1RM = 重量 × (1 + 次數 ÷ 30)，用來比較不同次數的組</p>' : ''}</div>` : ''}
       ${cues.length ? `<div class="sec-head"><h2>教練提醒</h2><span class="muted sm">${cues.length} 則</span></div>
-        <div class="card list-card">${cues.map(({ c, w }) => `<a class="cue-row" href="#/training/w/${w.id}"><span class="pill ok">${esc(c.cat || '其他')}</span><p>${esc(c.text)}</p><em>${W.fmtDate(w.date, 'short')}</em></a>`).join('')}</div>` : ''}
+        <div class="card list-card tone-coach">${cues.map(({ c, w }) => `<a class="cue-row" href="#/training/w/${w.id}"><span class="pill ok">${esc(c.cat || '其他')}</span><p>${esc(c.text)}</p><em>${W.fmtDate(w.date, 'short')}</em></a>`).join('')}</div>` : ''}
       <div class="sec-head"><h2>紀錄</h2></div>
       <div class="card list-card">${h.length ? h.slice().reverse().map((x) => `<a class="hist-row" href="#/training/w/${x.w.id}">
           <div class="rec-date"><b>${W.fmtDate(x.w.date, 'short')}</b><span>${x.w.date.slice(0, 4)}</span></div>
@@ -538,7 +576,7 @@
     const sessions = pkg.all.slice().reverse();
     const next = nextCoachDate();
     const remain = pkg.total ? Math.max(pkg.total - pkg.used, 0) : null;
-    const pkgCard = `<div class="card pkg">
+    const pkgCard = `<div class="card pkg tone-coach">
       <div class="card-h"><h3>課程方案</h3><button class="link-btn" id="pkgEdit">${pkg.total ? '編輯' : '設定'}</button></div>
       ${pkg.total ? `<div class="pkg-main"><div><span class="muted sm">已上</span><div class="big">${pkg.used}<small>/ ${pkg.total} 堂</small></div></div>
           <div class="pkg-remain"><span class="muted sm">剩餘</span><b>${remain}</b><small>堂</small></div></div>
@@ -546,7 +584,7 @@
         <div class="goal-row sub"><span>${pkg.name ? '教練 ' + esc(pkg.name) : ''}</span><span>${pkg.start ? W.fmtDate(pkg.start, 'day') + ' 開始' : ''}</span></div>`
         : `<p class="muted sm">設定購買的堂數，就能自動算剩餘堂數。目前已記錄 ${pkg.used} 堂。</p>`}
     </div>`;
-    const nextCard = next ? `<div class="card next-card">${icon('calendar')}<div><span class="muted sm">下次上課</span><b>${W.fmtDate(next, 'mdw')}</b></div><span class="pill ok">${W.relDay(next)}</span></div>` : '';
+    const nextCard = next ? `<div class="card next-card tone-coach">${icon('calendar')}<div><span class="muted sm">下次上課</span><b>${W.fmtDate(next, 'mdw')}</b></div><span class="pill ok">${W.relDay(next)}</span></div>` : '';
 
     // 教練重點總覽
     const cues = [];
@@ -574,7 +612,7 @@
     const groups = {};
     list.forEach((x) => (groups[x.c.ex || '一般'] = groups[x.c.ex || '一般'] || []).push(x));
     const keys = Object.keys(groups).sort((a, b) => (a === '一般') - (b === '一般') || groups[b].length - groups[a].length);
-    return keys.map((k) => `<div class="card cue-card"><div class="card-h"><h3>${k === '一般' ? '一般觀念' : `<a href="#/training/ex/${encodeURIComponent(k)}">${esc(k)}</a>`}</h3><span class="muted sm">${groups[k].length}</span></div>
+    return keys.map((k) => `<div class="card cue-card tone-coach"><div class="card-h"><h3>${k === '一般' ? '一般觀念' : `<a href="#/training/ex/${encodeURIComponent(k)}">${esc(k)}</a>`}</h3><span class="muted sm">${groups[k].length}</span></div>
       ${groups[k].sort((a, b) => b.w.date.localeCompare(a.w.date)).map(({ c, w }) => `<a class="cue-row" href="#/training/w/${w.id}"><span class="pill ${c.cat === '姿勢修正' ? 'warn' : 'ok'}">${esc(c.cat || '其他')}</span><p>${esc(c.text)}</p><em>${W.fmtDate(w.date, 'short')}</em></a>`).join('')}</div>`).join('');
   }
   viewCoach.mount = (v) => {

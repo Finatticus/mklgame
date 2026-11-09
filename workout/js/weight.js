@@ -7,7 +7,7 @@
   function viewWeight() {
     LS.set('wo.bodyTab', '#/weight');
     const series = W.weightSeries();
-    const head = W.segNav([['#/weight', '體重', 'weight'], ['#/inbody', 'InBody', 'inbody']], 'weight') +
+    const head = W.segNav([['#/weight', '體重', 'weight'], ['#/inbody', 'InBody', 'inbody']], 'weight', 'tone-weight') +
       W.pageHead('體重', '每日紀錄', { right: `<button class="icon-btn solid" id="wAdd" aria-label="記體重">${icon('plus')}</button>` });
     if (!series.length) {
       return head + W.empty('scale', '還沒有體重紀錄', '每天固定時間量（建議早上起床、如廁後、進食前），趨勢會最準。',
@@ -26,12 +26,14 @@
     const from = range === 'all' ? null : [W.addDays(t, -+range), series[0].date].sort()[1];
     const shown = from ? series.filter((p) => p.date >= from) : series;
     const shownMa = from ? ma.filter((p) => p.date >= from) : ma;
+    const showTarget = !!target && target >= Math.min(...shown.map((p) => p.value)) - 3;
     const chart = C.timeChart({
       series: [
         { points: shownMa, line: true, cls: 'ma' },
         { points: shown, dots: true, cls: 'raw', r: 3, dotClass: (p) => (p.source === 'InBody' ? 'ib' : '') },
       ],
-      refs: target ? [{ value: target, label: `目標 ${target}`, cls: 'target' }] : [],
+      // 目標太遠時不畫（避免把曲線壓扁），距目標已顯示在上方
+      refs: showTarget ? [{ value: target, label: `目標 ${target}`, cls: 'target' }] : [],
       from: from || undefined, to: t, height: 165,
     });
 
@@ -43,7 +45,7 @@
     });
 
     return head + `
-      <div class="card w-hero">
+      <div class="card w-hero tone-weight">
         <div class="w-main">
           <div><span class="eyebrow">最新</span><div class="big">${num(last.value, 1)}<small>kg</small></div>
             <div class="muted sm">${W.fmtDate(last.date, 'mdw')}・${W.relDay(last.date)}${last.source === 'InBody' ? '・InBody' : ''}</div></div>
@@ -56,9 +58,10 @@
         </div>
       </div>
       <div class="chips" id="wRange">${RANGES.map(([k, l]) => `<button class="chip ${k === range ? 'on' : ''}" data-k="${k}">${l}</button>`).join('')}</div>
-      <div class="card chart-card">${chart}
-        <div class="legend center"><span><i class="lg-dot"></i>每日</span><span><i class="lg-dot ib"></i>InBody</span><span><i class="lg-line"></i>7 日平均</span>${target ? '<span><i class="lg-dash"></i>目標</span>' : ''}</div>
+      <div class="card chart-card tone-weight">${chart}
+        <div class="legend center"><span><i class="lg-dot"></i>每日</span><span><i class="lg-dot ib"></i>InBody</span><span><i class="lg-line"></i>7 日平均</span>${showTarget ? '<span><i class="lg-dash"></i>目標</span>' : ''}</div>
       </div>
+      ${analysis(series, ma, target)}
       <p class="muted sm pad">每天體重會因水分、鹽分、排便上下 1–2 kg，看 <b>7 日平均</b>的走向比單日數字準。</p>
       ${Object.keys(groups).map((m) => `<div class="sec-head"><h2>${+m.slice(5)} 月</h2><span class="muted sm">${m.slice(0, 4)}</span></div>
         <div class="card list-card">${groups[m].map(({ p, prev }) => {
@@ -80,6 +83,56 @@
       else openWeightSheet(p.date);
     }));
   };
+
+  /** 分析：減重速度、預估達標、每週變化 */
+  function analysis(series, ma, target) {
+    if (series.length < 2) return '';
+    const t = W.today();
+    const maAt = (d) => { const l = ma.filter((p) => p.date <= d); return l.length ? l[l.length - 1].value : null; };
+    const now = maAt(t);
+    // 用近 28 天的 7 日平均做線性回歸，得到每週變化速度
+    const win = ma.filter((p) => W.daysBetween(p.date, t) <= 28);
+    let rate = null;
+    if (win.length >= 2 && W.daysBetween(win[0].date, win[win.length - 1].date) >= 4) {
+      const xs = win.map((p) => W.daysBetween(win[0].date, p.date)), ys = win.map((p) => p.value);
+      const mx = W.sum(xs) / xs.length, my = W.sum(ys) / ys.length;
+      const slope = W.sum(xs.map((x, i) => (x - mx) * (ys[i] - my))) / (W.sum(xs.map((x) => (x - mx) ** 2)) || 1);
+      rate = slope * 7;
+    }
+    const bw = now || series[series.length - 1].value;
+    const pctRate = rate != null ? (rate / bw) * 100 : null;
+    let eta = '–', etaSub = '';
+    if (target && rate != null && rate < -0.05 && bw > target) {
+      const weeks = (bw - target) / -rate;
+      eta = W.fmtDate(W.addDays(t, Math.round(weeks * 7)), 'short');
+      etaSub = `約 ${Math.round(weeks)} 週`;
+    } else if (target && bw <= target) { eta = '已達成'; }
+    const pace = pctRate == null ? '' : pctRate < -1 ? '偏快，注意肌肉流失' : pctRate <= -0.5 ? '理想速度' : pctRate < 0 ? '穩定下降' : '持平或上升';
+    // 近 8 週每週平均的變化
+    const ws0 = W.weekStart(t);
+    const weeks = [];
+    for (let i = 7; i >= 0; i--) {
+      const s = W.addDays(ws0, -7 * i), e = W.addDays(s, 7);
+      const l = series.filter((p) => p.date >= s && p.date < e);
+      weeks.push({ s, avg: l.length ? W.sum(l, (p) => p.value) / l.length : null, n: l.length });
+    }
+    const deltas = [];
+    weeks.forEach((w, i) => {
+      const prev = weeks.slice(0, i).reverse().find((x) => x.avg != null);
+      if (w.avg != null && prev) deltas.push({ label: W.fmtDate(w.s, 'short'), value: w.avg - prev.avg, text: signed(w.avg - prev.avg) });
+    });
+    const logged = series.filter((p) => W.daysBetween(p.date, t) < 30).length;
+    return `<div class="card tone-weight">
+      <div class="card-h"><h3>分析</h3><span class="muted sm">依 7 日平均</span></div>
+      <div class="ana">
+        <div><span>每週變化</span><b>${rate == null ? '–' : signed(rate, 2)}<small>kg</small></b><em>${pace}</em></div>
+        <div><span>預估達標</span><b>${eta}</b><em>${etaSub || (target ? '目標 ' + target + ' kg' : '未設定目標')}</em></div>
+        <div><span>近 30 天記錄</span><b>${logged}<small>天</small></b><em>${logged >= 20 ? '很規律' : '多量幾天更準'}</em></div>
+      </div>
+      ${deltas.length ? `<div class="sub-h">每週平均變化</div>${C.dbars(deltas.slice(-6))}` : ''}
+      <p class="hint">減脂建議速度約每週體重的 0.5–1%（你約 ${num(bw * 0.005, 1)}–${num(bw * 0.01, 1)} kg）。</p>
+    </div>`;
+  }
 
   /** 記錄 / 編輯體重 */
   function openWeightSheet(date) {

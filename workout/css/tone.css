@@ -1,0 +1,131 @@
+/* =====================================================================
+ * 功能色調：低調的莫蘭迪色，用來區分功能與重點
+ * ===================================================================== */
+:root {
+  --bg: #F3F2EE;
+  --t-weight: #5F8374;  --t-weight-bg: #E7EFEA;   /* 體重：鼠尾草綠 */
+  --t-inbody: #5C7290;  --t-inbody-bg: #E6ECF3;   /* InBody：霧藍 */
+  --t-train: #A0694B;   --t-train-bg: #F3E8E0;    /* 訓練：陶土 */
+  --t-coach: #7A6890;   --t-coach-bg: #EEEAF3;    /* 教練課：灰紫 */
+  --t-food: #9C8143;    --t-food-bg: #F3EEDF;     /* 飲食：赭黃 */
+}
+.tone-weight { --tone: var(--t-weight); --tone-bg: var(--t-weight-bg); }
+.tone-inbody { --tone: var(--t-inbody); --tone-bg: var(--t-inbody-bg); }
+.tone-train { --tone: var(--t-train); --tone-bg: var(--t-train-bg); }
+.tone-coach { --tone: var(--t-coach); --tone-bg: var(--t-coach-bg); }
+.tone-food { --tone: var(--t-food); --tone-bg: var(--t-food-bg); }
+
+/* 卡片標題前的色塊 */
+.card[class*="tone-"] > .card-h h3::before,
+.card[class*="tone-"] > .meal-h h3::before {
+  content: ''; display: inline-block; width: 4px; height: 13px; border-radius: 2px;
+  background: var(--tone); margin-right: 7px; vertical-align: -1px;
+}
+/* 卡片內的小區塊用淡色底 */
+.card[class*="tone-"] .t-cell,
+.card[class*="tone-"] .params > div,
+.card[class*="tone-"] .ctrl-list div,
+.kpis[class*="tone-"] .kpi { background: var(--tone-bg); box-shadow: none; }
+.kpis[class*="tone-"] .kpi span { color: var(--tone); font-weight: 600; }
+.card[class*="tone-"] .goal-bar i,
+.card[class*="tone-"] .t-bar i:not(.over) { background: var(--tone); }
+.card[class*="tone-"] .eyebrow { color: var(--tone); }
+.card[class*="tone-"] .ring-fg { stroke: var(--tone); }
+.card[class*="tone-"] .spark path { stroke: var(--tone); }
+.card[class*="tone-"] .spark circle { fill: var(--tone); }
+.card[class*="tone-"] .chart .line.ma,
+.card[class*="tone-"] .chart .line.raw { stroke: var(--tone); }
+.card[class*="tone-"] .chart .dot.raw.ib { fill: var(--tone); stroke: var(--tone); }
+.card[class*="tone-"] .chart .bar.today { fill: var(--tone); }
+.card[class*="tone-"] .chart .band { fill: var(--tone-bg); }
+
+/* 今日三格：各自色調 */
+.t-cell.tone-weight, .t-cell.tone-food, .t-cell.tone-train, .t-cell.tone-coach { background: var(--tone-bg) !important; }
+.t-cell[class*="tone-"] .t-l { color: var(--tone); }
+.t-cell[class*="tone-"] .t-bar i:not(.over) { background: var(--tone); }
+.t-cell[class*="tone-"] b.t-add { color: var(--tone); }
+
+/* 首頁捷徑圖示 */
+.tile[class*="tone-"] .tile-ic { background: var(--tone-bg); color: var(--tone); }
+.tile.soon .tile-ic { background: var(--surface-2); color: var(--ink-3); }
+
+/* 頁首：分頁切換與標題 */
+.seg-nav.tone-weight a.on, .seg-nav.tone-inbody a.on, .seg-nav.tone-train a.on, .seg-nav.tone-coach a.on { color: var(--tone); }
+.page-head .eyebrow.toned { color: var(--tone); }
+.icon-btn.solid.toned { background: var(--tone); }
+
+/* 圖例色點 */
+.legend i.tone { background: var(--tone); }
+
+/* 月曆與週 */
+.cal-d.done { background: var(--t-train); }
+.cal-d.coach { background: var(--t-coach); }
+.wd.done i, .week-strip.mini .wd.done i { background: var(--t-train); }
+.wd.coach i, .week-strip.mini .wd.coach i { background: var(--t-coach); }
+.coach-line .ic, .next-card > .ic, .next-row .ic, .coach-card h3 .ic, .switch-row > span .ic { color: var(--t-coach); }
+.coach-card, .coach-box.on { border-color: transparent; box-shadow: inset 0 0 0 1.5px #D9D1E3, var(--shadow); }
+.cue-g h4 { color: var(--t-coach); }
+.cue-ex { background: var(--t-coach-bg); color: var(--t-coach); }
+.pkg-remain b { color: var(--t-coach); }
+
+/* 飲食巨量營養素顏色 */
+.mbar.protein i { background: #6F8F7E; }
+.mbar.carb i { background: #C9AE73; }
+.mbar.fat i { background: #C99582; }
+.mbar.fiber i { background: #93A9BC; }
+
+/* =====================================================================
+ * 新圖表元件
+ * ===================================================================== */
+/* 橫條（分佈） */
+.hbars { display: flex; flex-direction: column; gap: 6px; }
+.hb { display: grid; grid-template-columns: 52px 1fr 62px; align-items: center; gap: 8px; font-size: 12.5px; }
+.hb > span { color: var(--ink-2); }
+.hb-t { height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.hb-t i { display: block; height: 100%; border-radius: 5px; background: var(--tone, var(--ink)); }
+.hb > b { text-align: right; font-size: 12.5px; }
+.hb > b small { margin-left: 2px; }
+/* 正負條（每週變化） */
+.dbars { display: flex; flex-direction: column; gap: 5px; }
+.db { display: grid; grid-template-columns: 52px 1fr 1fr 46px; align-items: center; gap: 0; font-size: 12px; }
+.db > span { color: var(--ink-3); }
+.db .neg, .db .pos { height: 8px; display: flex; }
+.db .neg { justify-content: flex-end; border-right: 1px solid var(--line-2); }
+.db .neg i { background: var(--t-weight); border-radius: 4px 0 0 4px; }
+.db .pos i { background: #C99582; border-radius: 0 4px 4px 0; }
+.db > b { text-align: right; font-size: 12px; }
+/* 堆疊比例條 */
+.ratio { display: flex; height: 22px; border-radius: 7px; overflow: hidden; gap: 2px; }
+.ratio i { display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 10.5px; font-weight: 700; color: #fff; min-width: 0; overflow: hidden; }
+.ratio .p { background: #6F8F7E; } .ratio .c { background: #C9AE73; } .ratio .f { background: #C99582; }
+.ratio-l { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); margin: 4px 0 10px; }
+/* 分析數字列 */
+.ana { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.ana > div { background: var(--tone-bg, var(--bg)); border-radius: 11px; padding: 7px 9px; display: flex; flex-direction: column; }
+.ana span { font-size: 10.5px; color: var(--tone, var(--ink-3)); font-weight: 600; }
+.ana b { font-size: 15px; letter-spacing: -.01em; }
+.ana b small { font-size: 10px; }
+.ana em { font-style: normal; font-size: 10px; color: var(--ink-3); }
+.sub-h { font-size: 12px; font-weight: 700; color: var(--ink-2); margin: 10px 0 6px; }
+
+/* 部位別分析（新版：文字在圖兩側） */
+.segv { display: grid; grid-template-columns: 1fr 74px 1fr; align-items: stretch; gap: 10px; }
+.segv-col { display: flex; flex-direction: column; justify-content: space-between; padding: 10px 0 14px; }
+.segv-col.right { text-align: right; }
+.segv-col.right .segc-n { justify-content: flex-end; }
+.segfig2 { width: 74px; height: auto; display: block; }
+.segc { display: flex; flex-direction: column; }
+.segc-n { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.segc-n i { width: 8px; height: 8px; border-radius: 3px; }
+.segc b { font-size: 22px; letter-spacing: -.02em; line-height: 1.2; }
+.segc b small { font-size: 11px; }
+.segc-p { font-size: 12px; color: var(--ink-2); }
+.segc-p .pill { height: 18px; font-size: 10.5px; padding: 0 6px; }
+.segv-tr { display: flex; justify-content: center; background: var(--bg); border-radius: 12px; padding: 8px; margin: 8px 0 6px; }
+.segv-tr .segc { align-items: center; flex-direction: row; gap: 10px; }
+.segv-tr .segc b { font-size: 20px; }
+
+.tone-coach .pill.ok { background: var(--t-coach-bg); color: var(--t-coach); }
+.tone-coach .pill.warn { background: #F4E9E3; color: #9A5F49; }
+.chart-card[class*="tone-"] .chart-head .muted { color: var(--tone); font-weight: 600; }
+.card[class*="tone-"] .link-btn { color: var(--tone); }

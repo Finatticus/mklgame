@@ -28,17 +28,17 @@
     const today = `<div class="card today">
       <div class="card-h"><h3>今天</h3><span class="muted sm">${W.fmtDate(t, 'mdw')}</span></div>
       <div class="t3">
-        <button class="t-cell" id="tWeight">
+        <button class="t-cell tone-weight" id="tWeight">
           <span class="t-ic">${icon('scale')}</span><span class="t-l">體重</span>
           ${todayW ? `<b>${num(todayW.value, 1)}<small>kg</small></b><em>${todayW.source === 'InBody' ? 'InBody' : '已記錄'}</em>` : `<b class="t-add">${icon('plus')}記錄</b><em>${lastW ? '上次 ' + num(lastW.value, 1) : '&nbsp;'}</em>`}
         </button>
-        <a class="t-cell" href="#/food">
+        <a class="t-cell tone-food" href="#/food">
           <span class="t-ic">${icon('food')}</span><span class="t-l">熱量</span>
           <b>${Math.round(ft.kcal).toLocaleString()}<small>kcal</small></b>
           <div class="t-bar"><i style="width:${Math.min(ft.kcal / tg.kcal, 1) * 100}%" class="${ft.kcal > tg.kcal ? 'over' : ''}"></i></div>
           <em>目標 ${tg.kcal.toLocaleString()}</em>
         </a>
-        <a class="t-cell" href="${todayWo.length ? '#/training/w/' + todayWo[0].id : '#/training/new'}">
+        <a class="t-cell ${todayWo.some((w) => w.isCoach === 'V') ? 'tone-coach' : 'tone-train'}" href="${todayWo.length ? '#/training/w/' + todayWo[0].id : '#/training/new'}">
           <span class="t-ic">${icon(todayWo.some((w) => w.isCoach === 'V') ? 'whistle' : 'dumbbell')}</span><span class="t-l">訓練</span>
           ${todayWo.length ? `<b class="t-txt">${esc(todayWo[0].title)}</b><em>${(todayWo[0].exercises || []).length} 個動作</em>` : `<b class="t-add">${icon('plus')}記錄</b><em>&nbsp;</em>`}
         </a>
@@ -55,7 +55,7 @@
           <div class="goal-bar"><i style="width:${Math.max(pct, 2)}%"></i></div>
           <div class="goal-row sub"><span>最高 ${num(start, 1)}</span><span>已減 ${num(Math.max(done, 0), 1)} kg</span></div></div>`;
       }
-      weightCard = `<a class="card wcard" href="#/weight">
+      weightCard = `<a class="card wcard tone-weight" href="#/weight">
         <div class="card-h"><h3>體重</h3><span class="muted sm">${W.fmtDate(lastW.date, 'short')}・${W.relDay(lastW.date)}</span></div>
         <div class="w-main"><div><div class="big">${num(lastW.value, 1)}<small>kg</small></div>
           <div class="muted sm">7 日平均 <b>${num(lastMa, 1)}</b> kg</div></div>
@@ -68,7 +68,7 @@
     const days = Array.from({ length: 7 }, (_, i) => W.addDays(W.weekStart(t), i));
     const pkg = W.T.coachPkg();
     const next = W.T.nextCoachDate();
-    const weekCard = `<a class="card" href="#/training">
+    const weekCard = `<a class="card tone-train" href="#/training">
       <div class="card-h"><h3>本週訓練</h3><span class="muted sm">${wk.count} 次・${wk.minutes} 分</span></div>
       <div class="week-strip mini">${days.map((d) => {
         const l = W.S.data.workout.filter((w) => w.date === d);
@@ -77,7 +77,7 @@
       ${pkg.total || next || pkg.used ? `<div class="coach-line">${icon('whistle')}<span>教練課${pkg.total ? ` 剩 <b>${Math.max(pkg.total - pkg.used, 0)}</b> 堂` : ` 已上 <b>${pkg.used}</b> 堂`}</span>${next ? `<span class="muted">下次 ${W.fmtDate(next, 'sw')}</span>` : ''}</div>` : ''}
     </a>`;
 
-    const ibCard = ib ? `<a class="card ibcard" href="#/inbody/r/${ib.id}">
+    const ibCard = ib ? `<a class="card ibcard tone-inbody" href="#/inbody/r/${ib.id}">
       ${C.ring(ib.score, 100, 'InBody')}
       <div class="ib-txt"><div class="card-h"><h3>身體組成</h3><span class="muted sm">${W.fmtDate(ib.date, 'short')}・${W.relDay(ib.date)}</span></div>
         <div class="ib-vals"><span><i>骨骼肌</i>${num(ib.smm, 1)}<small>kg</small></span><span><i>體脂率</i>${num(ib.pbf, 1)}<small>%</small></span><span><i>內臟脂肪</i>${num(ib.vfl, 0)}<small>級</small></span></div></div>
@@ -85,8 +85,8 @@
       <div class="btn-row"><a class="btn primary" href="#/inbody/scan">${icon('camera')}拍照匯入</a><a class="btn ghost" href="#/inbody/new">手動輸入</a></div></div>`;
 
     const tiles = [
-      ['#/weight', 'scale', '體重'], ['#/inbody', 'body', 'InBody'], ['#/training', 'dumbbell', '訓練'],
-      ['#/coach', 'whistle', '教練課'], ['#/food', 'food', '飲食'], ['', 'ruler', '身體圍度', true],
+      ['#/weight', 'scale', '體重', 0, 'weight'], ['#/inbody', 'body', 'InBody', 0, 'inbody'], ['#/training', 'dumbbell', '訓練', 0, 'train'],
+      ['#/coach', 'whistle', '教練課', 0, 'coach'], ['#/food', 'food', '飲食', 0, 'food'], ['', 'ruler', '身體圍度', true],
     ];
 
     return `<header class="page-head row">
@@ -94,7 +94,7 @@
         <a class="avatar sm" href="#/me" aria-label="我的">${esc(acc.slice(0, 1).toUpperCase())}</a>
       </header>
       ${W.S.backendOld ? `<div class="notice err">${icon('warn')}<div><b>後端需要更新</b><br>請依 README 把新版 Code.gs 貼到 Apps Script 並部署新版本，體重、訓練、飲食才能儲存。</div></div>` : ''}
-      <div class="tiles">${tiles.map(([h, ic, l, soon]) => `<a class="tile ${soon ? 'soon' : ''}" ${h ? `href="${h}"` : ''}><span class="tile-ic">${icon(ic)}</span><b>${l}</b><span>${soon ? '即將推出' : '&nbsp;'}</span></a>`).join('')}</div>
+      <div class="tiles">${tiles.map(([h, ic, l, soon, tone]) => `<a class="tile ${soon ? 'soon' : 'tone-' + tone}" ${h ? `href="${h}"` : ''}><span class="tile-ic">${icon(ic)}</span><b>${l}</b><span>${soon ? '即將推出' : '&nbsp;'}</span></a>`).join('')}</div>
       ${seed}${today}${weightCard}${weekCard}${ibCard}
       ${ib ? insight(ib) : ''}
       <div class="foot-space"></div>`;
@@ -121,7 +121,7 @@
     if (has(r.kcal_rec)) items.push(['熱量', `InBody 建議每日 <b>${num(r.kcal_rec, 0)} kcal</b>・基礎代謝 ${num(r.bmr, 0)}`]);
     if (!items.length) return '';
     return `<div class="sec-head"><h2>InBody 重點</h2><span class="muted sm">${W.fmtDate(r.date, 'short')} 量測</span></div>
-      <div class="card list-card">${items.map(([k, t]) => `<div class="li"><span class="li-k">${k}</span><span class="li-v">${t}</span></div>`).join('')}</div>`;
+      <div class="card list-card tone-inbody">${items.map(([k, t]) => `<div class="li"><span class="li-k">${k}</span><span class="li-v">${t}</span></div>`).join('')}</div>`;
   }
 
   W.route(/^#\/home$/, viewHome, { tab: 'home' });

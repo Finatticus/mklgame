@@ -235,7 +235,7 @@ window.W = (function () {
       ${opts.back ? back(opts.back) : ''}
       <div class="grow">${eyebrow ? `<div class="eyebrow">${eyebrow}</div>` : ''}<h1>${title}</h1></div>
       ${opts.right || ''}</header>`;
-  const segNav = (items, active) => `<nav class="seg-nav">${items.map(([href, label, key]) =>
+  const segNav = (items, active, tone = '') => `<nav class="seg-nav ${tone}">${items.map(([href, label, key]) =>
     `<a href="${href}" class="${key === active ? 'on' : ''}">${label}</a>`).join('')}</nav>`;
   const empty = (ic, title, text, actions = '') => `<div class="card empty-state">${icon(ic, 'xl')}<h3>${title}</h3><p class="muted">${text}</p>${actions ? `<div class="btn-row center">${actions}</div>` : ''}</div>`;
 

@@ -184,7 +184,7 @@
       const cx = P.l + (iw * (i + 0.5)) / items.length;
       const h = ((it.value || 0) / max) * ih;
       s += `<rect x="${cx - bw / 2}" y="${P.t + ih - h}" width="${bw}" height="${Math.max(h, it.value ? 2 : 0)}" rx="4" class="bar ${it.cls || ''}"/>`;
-      if (it.value) s += `<text x="${cx}" y="${P.t + ih - h - 5}" class="bar-v" text-anchor="middle">${Math.round(it.value)}</text>`;
+      if (it.value) s += `<text x="${cx}" y="${P.t + ih - h - 5}" class="bar-v" text-anchor="middle">${it.value < 10 ? +it.value.toFixed(1) : Math.round(it.value)}</text>`;
       s += `<text x="${cx}" y="${H - 6}" class="axis ${it.cls && it.cls.includes('today') ? 'strong' : ''}" text-anchor="middle">${it.label}</text>`;
     });
     if (opts.target) {
@@ -205,5 +205,19 @@
     return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><path d="${v.map((x, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(x).toFixed(1)}`).join('')}"/><circle cx="${X(v.length - 1)}" cy="${Y(v[v.length - 1])}" r="2.6"/></svg>`;
   }
 
-  window.Charts = { line, rangeBar, ring, parseDate, fmt, timeChart, bars, spark };
+  /** 橫條分佈：items [{label, value, text}] */
+  function hbars(items, max) {
+    const m = max || Math.max(...items.map((i) => i.value), 1);
+    return `<div class="hbars">${items.map((i) => `<div class="hb"><span>${i.label}</span><div class="hb-t"><i style="width:${(i.value / m) * 100}%"></i></div><b>${i.text ?? i.value}</b></div>`).join('')}</div>`;
+  }
+  /** 正負條（負值往左、綠；正值往右、紅）：items [{label, value, text}] */
+  function dbars(items) {
+    const m = Math.max(...items.map((i) => Math.abs(i.value || 0)), 0.1);
+    return `<div class="dbars">${items.map((i) => {
+      const w = (Math.abs(i.value || 0) / m) * 100;
+      return `<div class="db"><span>${i.label}</span><div class="neg">${i.value < 0 ? `<i style="width:${w}%"></i>` : ''}</div><div class="pos">${i.value > 0 ? `<i style="width:${w}%"></i>` : ''}</div><b>${i.text}</b></div>`;
+    }).join('')}</div>`;
+  }
+
+  window.Charts = { line, rangeBar, ring, parseDate, fmt, timeChart, bars, spark, hbars, dbars };
 })();
