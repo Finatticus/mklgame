@@ -30,6 +30,7 @@
     const tg = W.nutritionTargets();
     const tot = dayTotals(day);
     const entries = dayEntries(day);
+    const exBurn = W.sum(W.S.data.workout.filter((w) => w.date === day), (w) => ((W.T && W.T.burn(w)) || {}).net || 0);
     const remain = tg.kcal - tot.kcal;
     const pct = Math.min(tot.kcal / tg.kcal, 1.2);
     const ring = (() => {
@@ -72,7 +73,8 @@
       </div>
       <div class="card nut tone-food">
         <div class="nut-top">${ring}
-          <div class="nut-side"><div><span>目標</span><b>${tg.kcal.toLocaleString()}</b></div><div><span>已攝取</span><b>${Math.round(tot.kcal).toLocaleString()}</b></div></div>
+          <div class="nut-side"><div><span>目標</span><b>${tg.kcal.toLocaleString()}</b></div><div><span>已攝取</span><b>${Math.round(tot.kcal).toLocaleString()}</b></div>
+            ${exBurn ? `<div><span>運動消耗（淨）</span><b class="good">+${exBurn}</b></div>` : ''}</div>
         </div>
         ${bar('protein', '蛋白質', 'g')}${bar('carb', '碳水', 'g')}${bar('fat', '脂肪', 'g')}${bar('fiber', '膳食纖維', 'g')}
         <button class="link-btn" id="goalBtn">${icon('target')}調整目標${tg.custom ? '' : '（目前依 InBody 建議）'}</button>

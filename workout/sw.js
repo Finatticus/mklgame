@@ -1,5 +1,5 @@
 /* Service worker：快取 App 外殼，API 一律走網路 */
-const CACHE = 'workout-v2.2.0';
+const CACHE = 'workout-v2.3.0';
 const SHELL = [
   './', './index.html', './css/app.css', './css/v2.css', './css/compact.css', './css/tone.css',
   './js/config.js', './js/schema.js', './js/seed.js', './js/data/exercises.js', './js/data/foods.js', './js/api.js', './js/charts.js',
@@ -42,4 +42,28 @@ self.addEventListener('fetch', (e) => {
       return res;
     }).catch(() => caches.match(e.request).then((r) => r || caches.match('./index.html')))
   );
+});
+
+/* 用餐提醒推播：後端只在「這餐還沒記錄」時送出（無內容），這裡依台灣時間決定是哪一餐 */
+self.addEventListener('push', (e) => {
+  const h = +new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Taipei' }).format(new Date());
+  const meal = h < 11 ? '早餐' : h < 16 ? '午餐' : '晚餐';
+  e.waitUntil(self.registration.showNotification(`記得記錄${meal}`, {
+    body: `今天的${meal}還沒記錄，點這裡快速新增。`,
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    tag: 'meal-' + meal,
+    data: { url: './#/food/new?meal=' + encodeURIComponent(meal) },
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './#/food', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const c of list) {
+      if ('focus' in c) { c.navigate(url).catch(() => {}); return c.focus(); }
+    }
+    return self.clients.openWindow(url);
+  }));
 });

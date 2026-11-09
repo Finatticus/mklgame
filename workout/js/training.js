@@ -25,6 +25,62 @@
   const exVol = (e) => W.sum(e.sets || [], setVol);
   const woVol = (w) => W.sum(w.exercises || [], exVol);
   const woSets = (w) => W.sum(w.exercises || [], (e) => (e.sets || []).length);
+
+  /* ---------------- 熱量消耗估算 ----------------
+   * 方法：2024 Adult Compendium of Physical Activities 的 MET 值，
+   * 以「校正 MET」概念用個人靜態代謝率取代 1 MET = 3.5 ml/kg/min 的通用值：
+   *   每分鐘消耗 = MET × (BMR ÷ 1440)
+   * BMR 優先用 InBody 實測值；沒有就用 Mifflin-St Jeor 公式估算。
+   * 跑步/走路有距離與時間時，改用 ACSM 代謝公式依速度計算 VO2。 */
+  const CARDIO_MET = {
+    '飛輪': [5.5, 7.0, 8.8], '滑步機': [4.6, 5.0, 6.5], '划船機': [4.8, 7.0, 8.5], '樓梯機': [6.8, 9.0, 9.0],
+    '跳繩': [8.8, 11.8, 12.3], '游泳': [5.8, 7.0, 9.8], '跑步機': [4.3, 8.0, 9.8], '戶外跑步': [6.0, 8.0, 9.8], '快走': [3.5, 4.3, 5.0],
+  };
+  function bodyAt(date) {
+    const ws = W.weightSeries().filter((p) => p.date <= date);
+    const ibs = W.S.data.inbody.filter((r) => W.dayOf(r.date) <= date);
+    const ib = ibs[ibs.length - 1] || W.latestInbody();
+    const bw = ws.length ? ws[ws.length - 1].value : ib && ib.weight;
+    let bmr = ib && has(ib.bmr) ? ib.bmr : null, src = 'InBody 實測 BMR';
+    if (!bmr && bw) {
+      const h = ib && ib.height ? ib.height : 175, a = ib && ib.age ? ib.age : 30, male = !ib || ib.sex !== '女';
+      bmr = 10 * bw + 6.25 * h - 5 * a + (male ? 5 : -161);
+      src = 'Mifflin-St Jeor 估算 BMR';
+    }
+    return { bw, bmr, src };
+  }
+  function burn(w) {
+    const { bw, bmr, src } = bodyAt(w.date);
+    if (!bmr || !bw) return null;
+    const perMet = bmr / 1440; // kcal / 分鐘 / MET
+    const rpe = +w.rpe || 6;
+    const level = rpe >= 8 ? 2 : rpe >= 6 ? 1 : 0;
+    let cardioMin = 0, cardioKcal = 0;
+    (w.exercises || []).forEach((e) => {
+      const k = e.kind || exInfo(e.name).k;
+      if (k !== 'c') return;
+      (e.sets || []).forEach((s) => {
+        const m = n(s.m);
+        if (!m) return;
+        let met;
+        const speed = n(s.d) ? (n(s.d) * 1000) / m : 0; // m/min
+        if (speed && /跑步|快走/.test(e.name)) {
+          // ACSM：走路 VO2 = 3.5 + 0.1×速度；跑步（> 8 km/h）VO2 = 3.5 + 0.2×速度（平地）
+          met = (speed > 134 ? 3.5 + 0.2 * speed : 3.5 + 0.1 * speed) / 3.5;
+        } else met = (CARDIO_MET[e.name] || [4.5, 6.0, 8.0])[level];
+        cardioMin += m;
+        cardioKcal += met * perMet * m;
+      });
+    });
+    const strengthSets = W.sum((w.exercises || []).filter((e) => (e.kind || exInfo(e.name).k) !== 'c'), (e) => (e.sets || []).length);
+    let strengthMin = has(w.duration) ? Math.max(+w.duration - cardioMin, 0) : strengthSets * 2.5;
+    if (!strengthSets) strengthMin = has(w.duration) ? Math.max(+w.duration - cardioMin, 0) : 0;
+    const strengthMet = [3.5, 5.0, 6.0][level]; // Compendium：阻力訓練 輕度/中等/高強度
+    const strengthKcal = strengthMet * perMet * strengthMin;
+    const total = strengthKcal + cardioKcal;
+    const minutes = strengthMin + cardioMin;
+    return { total: Math.round(total), net: Math.round(total - perMet * minutes), strength: Math.round(strengthKcal), cardio: Math.round(cardioKcal), minutes, strengthMin: Math.round(strengthMin), cardioMin: Math.round(cardioMin), strengthMet, src, bmr: Math.round(bmr) };
+  }
   function setStr(s, k) {
     if (k === 't') return `${n(s.t)} 秒`;
     if (k === 'c') return [n(s.m) ? `${n(s.m)} 分` : '', n(s.d) ? `${n(s.d)} km` : ''].filter(Boolean).join('・') || '–';
@@ -60,7 +116,7 @@
   function weekStats(start) {
     const end = W.addDays(start, 7);
     const list = workouts().filter((w) => w.date >= start && w.date < end);
-    return { count: list.length, minutes: W.sum(list, (w) => w.duration), volume: W.sum(list, woVol), list };
+    return { count: list.length, minutes: W.sum(list, (w) => w.duration), volume: W.sum(list, woVol), kcal: W.sum(list, (w) => (burn(w) || {}).total || 0), list };
   }
   const coachSessions = () => workouts().filter((w) => w.isCoach === 'V');
   function coachPkg() {
@@ -75,7 +131,7 @@
     const dates = coachSessions().map((w) => w.nextDate).filter((d) => d && d >= t && !held.has(d)).sort();
     return dates[0] || null;
   }
-  W.T = { weekStats, coachPkg, nextCoachDate, woVol, coachSessions };
+  W.T = { weekStats, coachPkg, nextCoachDate, woVol, coachSessions, burn };
 
   const fmtVol = (v) => (v >= 10000 ? `${num(v / 1000, 1)}<small>t</small>` : `${Math.round(v).toLocaleString()}<small>kg</small>`);
   const trainSeg = (k) => W.segNav([['#/training', '訓練日誌', 'log'], ['#/coach', '教練課', 'coach']], k, k === 'coach' ? 'tone-coach' : 'tone-train');
@@ -96,7 +152,7 @@
         <div class="card-h"><h3>本週</h3><span class="muted sm">${W.fmtDate(ws, 'short')} – ${W.fmtDate(W.addDays(ws, 6), 'short')}</span></div>
         <div class="stat3 flat">
           <div><span>訓練次數</span><b>${cur.count}<small>次</small></b><em class="${cur.count >= prev.count ? 'good' : ''}">上週 ${prev.count}</em></div>
-          <div><span>總時長</span><b>${cur.minutes}<small>分</small></b><em>上週 ${prev.minutes}</em></div>
+          <div><span>運動消耗</span><b>${cur.kcal.toLocaleString()}<small>kcal</small></b><em>${cur.minutes} 分・上週 ${prev.kcal.toLocaleString()}</em></div>
           <div><span>總訓練量</span><b>${fmtVol(cur.volume)}</b><em>上週 ${fmtVol(prev.volume).replace(/<[^>]+>/g, '')}</em></div>
         </div></div>`;
 
@@ -205,7 +261,7 @@
     return `<a class="wo-row" href="#/training/w/${w.id}">
       <div class="rec-date"><b>${W.fmtDate(w.date, 'short')}</b><span>週${W.WD[W.parseDate(w.date).getDay()]}</span></div>
       <div class="wo-main"><b>${esc(w.title || '訓練')}${w.isCoach === 'V' ? ` <span class="pill ok">教練課${w.sessionNo ? ' #' + w.sessionNo : ''}</span>` : ''}</b>
-        <span>${(w.exercises || []).length} 個動作${w.duration ? `・${w.duration} 分` : ''}${vol ? `・${Math.round(vol).toLocaleString()} kg` : ''}</span></div>
+        <span>${(w.exercises || []).length} 個動作${w.duration ? `・${w.duration} 分` : ''}${vol ? `・${Math.round(vol).toLocaleString()} kg` : ''}${burn(w) ? `・≈${burn(w).total} kcal` : ''}</span></div>
       ${icon('chevron', 'chev')}</a>`;
   }
 
@@ -216,6 +272,7 @@
     const w = workouts().find((x) => x.id === id);
     if (!w) return W.pageHead('找不到紀錄', '', { back: '#/training' });
     const vol = woVol(w);
+    const bn = burn(w);
     const backTo = w.isCoach === 'V' && LS.get('wo.lastTrainSeg', '') === 'coach' ? '#/coach' : '#/training';
     const coach = w.isCoach === 'V' ? coachCard(w) : '';
     const exs = (w.exercises || []).map((e) => {
@@ -236,10 +293,11 @@
     }) + `
       <div class="kpis four tone-train">
         <div class="kpi"><span>時長</span><b>${w.duration || '–'}<small>分</small></b></div>
-        <div class="kpi"><span>動作</span><b>${(w.exercises || []).length}</b></div>
         <div class="kpi"><span>組數</span><b>${woSets(w)}</b></div>
         <div class="kpi"><span>訓練量</span><b>${vol ? fmtVol(vol) : '–'}</b></div>
+        <div class="kpi"><span>消耗</span><b>${bn ? bn.total : '–'}<small>kcal</small></b></div>
       </div>
+      ${bn ? burnCard(w, bn) : ''}
       ${w.rpe || w.tags ? `<div class="tag-row">${(w.tags || '').split(',').filter(Boolean).map((t) => `<span class="pill">${esc(t)}</span>`).join('')}${w.rpe ? `<span class="pill dark">RPE ${w.rpe}・${RPE_TXT[w.rpe]}</span>` : ''}</div>` : ''}
       ${coach}
       ${exs}
@@ -259,6 +317,17 @@
       history.length > 1 ? history.back() : (location.hash = '#/training');
     };
   };
+
+  function burnCard(w, bn) {
+    return `<details class="card fold tone-train burn"><summary><h3>熱量消耗 ≈ ${bn.total} kcal</h3><span class="muted sm">淨增加 ${bn.net}</span>${icon('chevron', 'chev')}</summary>
+      <div class="ana">
+        <div><span>重量訓練</span><b>${bn.strength}<small>kcal</small></b><em>MET ${bn.strengthMet}・${bn.strengthMin} 分</em></div>
+        <div><span>有氧</span><b>${bn.cardio}<small>kcal</small></b><em>${bn.cardioMin} 分</em></div>
+        <div><span>淨增加</span><b>${bn.net}<small>kcal</small></b><em>扣除靜態代謝</em></div>
+      </div>
+      <p class="hint">算法：2024 運動代謝當量表（Compendium）MET × 你的基礎代謝率 ${bn.bmr} kcal ÷ 1440 × 分鐘（${bn.src}）。重訓依整體 RPE 取 MET 3.5／5.0／6.0；跑步、走路有填距離時改用 ACSM 速度公式。沒有心率資料，誤差約 ±20%。「淨增加」是扣掉你就算休息也會消耗的熱量，適合拿來跟飲食比較。</p>
+    </details>`;
+  }
 
   function coachCard(w) {
     const byCat = {};
@@ -548,6 +617,7 @@
       duration: has(D.duration) ? +D.duration : '', rpe: D.rpe || '', location: D.location || '', note: (D.note || '').trim(),
       exercises,
       volume: Math.round(W.sum(exercises, exVol)),
+      kcal: '',
       summary: exercises.map((e) => {
         const k = e.kind || 'w';
         const best = e.sets.slice().sort((a, b) => (k === 'w' ? e1rm(b) - e1rm(a) : 0))[0];
@@ -558,6 +628,8 @@
       focus: D.isCoach ? D.focus : '', cues: D.isCoach ? D.cues.filter((c) => (c.text || '').trim()) : [],
       homework: D.isCoach ? D.homework : '', nextDate: D.isCoach ? D.nextDate : '',
     };
+    const bn = burn(rec);
+    rec.kcal = bn ? bn.total : '';
     const saved = await act('儲存中…', () => call('data.save', { col: 'workout', record: rec }));
     if (!saved) return;
     W.put('workout', saved);

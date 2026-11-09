@@ -129,3 +129,16 @@
 .tone-coach .pill.warn { background: #F4E9E3; color: #9A5F49; }
 .chart-card[class*="tone-"] .chart-head .muted { color: var(--tone); font-weight: 600; }
 .card[class*="tone-"] .link-btn { color: var(--tone); }
+
+/* 用餐提醒 */
+.remind { padding-top: 10px; padding-bottom: 10px; }
+.remind-meals { display: flex; gap: 6px; }
+.remind-meals .chip { flex: 1; height: 38px; font-weight: 500; }
+.remind-meals .chip b { font-weight: 700; margin-right: 2px; }
+.remind-meals .chip.on { background: var(--t-food); border-color: var(--t-food); }
+.remind .hint { margin: 8px 0 0; }
+.remind .btn-row { margin-top: 10px; }
+.remind .btn-row .btn { flex: 1; }
+/* 熱量消耗卡 */
+.burn summary h3 { flex: none; }
+.burn .ana { margin-top: 2px; }

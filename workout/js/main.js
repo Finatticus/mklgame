@@ -95,6 +95,8 @@
         <p class="hint">目標體重留空會用最近一次 InBody 的目標體重。營養目標在「飲食」頁設定，教練課堂數在「教練課」頁設定。</p>
         <button class="btn ghost sm" id="stSave">${icon('check')}儲存設定</button>
       </div>
+      <div class="sec-head"><h2>用餐提醒</h2></div>
+      ${reminderCard()}
       <div class="sec-head"><h2>資料</h2></div>
       <div class="card list-card">
         <button class="act" id="syncBtn"><span class="act-ic">${icon('refresh')}</span><div><b>重新同步</b><span>InBody ${d.inbody.length}・體重 ${d.weight.length}・訓練 ${d.workout.length}・飲食 ${d.food.length}</span></div></button>
@@ -113,7 +115,89 @@
       <p class="muted sm center">Workout v${esc(window.APP_CONFIG.VERSION)}</p>
       <div class="foot-space"></div>`;
   }
+  /* ---------------- 推播提醒 ---------------- */
+  const MEAL_TIMES = [['早餐', '9:00'], ['午餐', '13:00'], ['晚餐', '19:00']];
+  function pushEnv() {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    return { ios, standalone, supported, perm: supported ? Notification.permission : 'unsupported' };
+  }
+  function reminderCard() {
+    const env = pushEnv();
+    const st = LS.get('wo.push', null);
+    const meals = (st && st.meals) || ['早餐', '午餐', '晚餐'];
+    let status = '', ok = false;
+    if (env.ios && !env.standalone) status = 'iPhone 需要先用 Safari「分享 → 加入主畫面」，再從主畫面開啟 App 才能開啟提醒。';
+    else if (!env.supported) status = '這個瀏覽器不支援推播通知。';
+    else if (env.perm === 'denied') status = '通知權限被拒絕了，請到手機「設定 → 通知 → Workout」打開。';
+    else if (st && st.endpoint && env.perm === 'granted') { status = '已開啟。當天那一餐已經記錄的話就不會提醒。'; ok = true; }
+    else status = '每天固定時間提醒，當天那一餐已記錄就不會跳出來。';
+    const canOn = env.supported && env.perm !== 'denied' && !(env.ios && !env.standalone);
+    return `<div class="card form-card tone-food remind">
+      <div class="remind-meals">${MEAL_TIMES.map(([m, t]) => `<button type="button" class="chip ${meals.includes(m) ? 'on' : ''}" data-meal="${m}"><b>${m}</b> ${t}</button>`).join('')}</div>
+      <p class="hint ${ok ? 'good' : ''}">${status}</p>
+      <div class="btn-row">${ok
+        ? `<button class="btn ghost sm" id="pushTest">${icon('sparkle')}傳送測試</button><button class="btn ghost sm" id="pushSave">${icon('check')}更新時段</button><button class="btn ghost sm danger-text" id="pushOff">關閉</button>`
+        : `<button class="btn primary sm" id="pushOn" ${canOn ? '' : 'disabled'}>${icon('check')}開啟提醒</button>`}</div>
+    </div>`;
+  }
+  const b64uToBytes = (s) => {
+    const b = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4));
+    return Uint8Array.from(b, (c) => c.charCodeAt(0));
+  };
+  function bindReminder(v) {
+    const sel = () => $$('.remind-meals .chip.on', v).map((b) => b.dataset.meal);
+    $$('.remind-meals .chip', v).forEach((b) => (b.onclick = () => b.classList.toggle('on')));
+    const rerender = () => { W.render.keepScroll = true; W.render(); };
+    const on = $('#pushOn', v);
+    if (on) on.onclick = async () => {
+      const meals = sel();
+      if (!meals.length) { toast('至少選一餐', 'err'); return; }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { toast('沒有取得通知權限', 'err'); rerender(); return; }
+      const res = await act('開啟中…', async () => {
+        const reg = await navigator.serviceWorker.ready;
+        const { publicKey } = await call('push.key');
+        let sub = await reg.pushManager.getSubscription();
+        if (sub) await sub.unsubscribe();
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes(publicKey) });
+        await call('push.subscribe', { sub: sub.toJSON(), meals: meals.join(','), ua: navigator.userAgent });
+        return sub.endpoint;
+      });
+      if (res) { LS.set('wo.push', { endpoint: res, meals }); toast('提醒已開啟', 'ok'); }
+      rerender();
+    };
+    const save = $('#pushSave', v);
+    if (save) save.onclick = async () => {
+      const st = LS.get('wo.push', {});
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (!sub) { LS.del('wo.push'); rerender(); return; }
+      const meals = sel();
+      if (await act('更新中…', () => call('push.subscribe', { sub: sub.toJSON(), meals: meals.join(','), ua: navigator.userAgent }))) {
+        LS.set('wo.push', Object.assign(st, { meals }));
+        toast('已更新', 'ok');
+      }
+    };
+    const test = $('#pushTest', v);
+    if (test) test.onclick = async () => {
+      const st = LS.get('wo.push', {});
+      if (await act('傳送中…', () => call('push.test', { endpoint: st.endpoint }))) toast('已送出，幾秒內會收到通知', 'ok');
+    };
+    const off = $('#pushOff', v);
+    if (off) off.onclick = async () => {
+      const st = LS.get('wo.push', {});
+      try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch (e) { /* 忽略 */ }
+      await act('關閉中…', () => call('push.unsubscribe', { endpoint: st.endpoint }));
+      LS.del('wo.push');
+      toast('提醒已關閉');
+      rerender();
+    };
+  }
+
   viewMe.mount = (v) => {
+    bindReminder(v);
     $('#logoutBtn', v).onclick = async () => { if (await confirmSheet('登出？', '下次需要重新輸入帳號密碼。', '登出')) W.logout(); };
     $('#syncBtn', v).onclick = async () => {
       if (await act('同步中…', () => W.sync().then(() => true))) { toast('已同步', 'ok'); W.render.keepScroll = true; W.render(); }
