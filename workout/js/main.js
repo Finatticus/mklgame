@@ -256,7 +256,17 @@
   W.route(/^#\/login$/, viewLogin, { tab: false });
   W.route(/^#\/me$/, viewMe, { tab: false });
 
+  /** 像原生 App 一樣：不能雙擊放大、不能兩指縮放（InBody 照片核對區除外） */
+  function lockZoom() {
+    const allow = (e) => e.target && e.target.closest && e.target.closest('.photo-panel');
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((ev) =>
+      document.addEventListener(ev, (e) => { if (!allow(e)) e.preventDefault(); }, { passive: false }));
+    document.addEventListener('touchmove', (e) => { if (e.touches.length > 1 && !allow(e)) e.preventDefault(); }, { passive: false });
+    // 雙擊放大由 CSS touch-action: manipulation 處理（不會吃掉快速連點）
+  }
+
   function boot() {
+    lockZoom();
     $('#tabAdd').onclick = (e) => { e.preventDefault(); openAddSheet(); };
     window.addEventListener('hashchange', () => W.render());
     W.render();

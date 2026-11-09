@@ -135,6 +135,7 @@ window.W = (function () {
     trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5v1.5A3.5 3.5 0 0 0 8 11M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11M12 13v4M8.5 20.5h7M10 17h4v3.5h-4z"/>',
     flame: '<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.8 3-5.6 3.7-9.3 2.3 1.4 3.6 3.6 3.8 5.7.8-.6 1.4-1.7 1.6-2.9 2.1 1.7 3.9 4.1 3.9 6.5 0 3.6-2.6 6.2-6.5 6.2z"/>',
     clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    list: '<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.8" cy="6.5" r=".8"/><circle cx="4.8" cy="12" r=".8"/><circle cx="4.8" cy="17.5" r=".8"/>',
   };
   const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n] || ''}</svg>`;
 
@@ -298,6 +299,31 @@ window.W = (function () {
       window.scrollTo(0, 0);
     } else window.scrollTo(0, y);
     if (match.fn.mount) match.fn.mount(view, ...match.args);
+    enableHScroll(view);
+  }
+
+  /** 橫向捲動列（chips）：電腦上可用滑鼠滾輪與拖曳左右移動 */
+  function enableHScroll(root) {
+    $$('.chips, .combo-row', root).forEach((row) => {
+      if (row.dataset.hs) return;
+      row.dataset.hs = '1';
+      row.addEventListener('wheel', (e) => {
+        if (row.scrollWidth <= row.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+        e.preventDefault();
+        row.scrollLeft += e.deltaY;
+      }, { passive: false });
+      let down = false, sx = 0, sl = 0, moved = false;
+      row.addEventListener('mousedown', (e) => { down = true; moved = false; sx = e.pageX; sl = row.scrollLeft; });
+      window.addEventListener('mouseup', () => { down = false; row.classList.remove('dragging'); });
+      row.addEventListener('mousemove', (e) => {
+        if (!down) return;
+        const dx = e.pageX - sx;
+        if (Math.abs(dx) > 4) { moved = true; row.classList.add('dragging'); }
+        row.scrollLeft = sl - dx;
+      });
+      // 拖曳後放開不要觸發按鈕點擊
+      row.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    });
   }
 
   async function backgroundSync() {

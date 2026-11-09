@@ -3,6 +3,10 @@
  * （覆寫 app.css / v2.css）
  * ===================================================================== */
 body { font-size: 14px; line-height: 1.45; }
+/* 不要雙擊放大；輸入框維持 16px 以上，iPhone 點輸入框才不會自動放大 */
+html, body { touch-action: manipulation; }
+.photo-panel .pp-scroll { touch-action: pan-x pan-y pinch-zoom; }
+@media (hover: none) { input, select, textarea, .inp, .inp.sm { font-size: 16px !important; } }
 .view { padding: calc(var(--safe-t) + 10px) 12px calc(84px + var(--safe-b)); }
 .foot-space { height: 0; }
 

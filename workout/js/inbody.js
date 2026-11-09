@@ -57,8 +57,8 @@
 
     return head + `
       <div class="kpis tone-inbody">${kpi}</div>
-      <div class="sec-head"><h2>趨勢</h2><span class="muted sm">${recs.length} 次量測</span></div>
-      <div class="chips" id="metricChips">${METRICS.map((m) => `<button class="chip ${m.k === S.metric ? 'on' : ''}" data-k="${m.k}">${m.label}</button>`).join('')}</div>
+      <div class="sec-head"><h2>趨勢</h2><button class="link-btn" id="mOrder">${icon('list')}調整順序</button></div>
+      <div class="chips" id="metricChips">${orderedMetrics().map((m) => `<button class="chip ${m.k === S.metric ? 'on' : ''}" data-k="${m.k}">${m.label}</button>`).join('')}</div>
       <div class="card chart-card tone-inbody" id="chartCard"></div>
       <div class="sec-head"><h2>組成歷程</h2></div>
       <div class="card hist">${historyTable(recs)}</div>
@@ -69,9 +69,55 @@
           ${icon('chevron', 'chev')}</a>`).join('')}</div>
       <div class="foot-space"></div>`;
   }
+  /** 趨勢指標的順序：使用者可自訂（存在設定，換手機也同步） */
+  function orderedMetrics() {
+    const saved = (W.S.data.settings || {}).metricOrder || LS.get('wo.metricOrder', null) || [];
+    const byKey = Object.fromEntries(METRICS.map((m) => [m.k, m]));
+    const list = saved.filter((k) => byKey[k]).map((k) => byKey[k]);
+    METRICS.forEach((m) => { if (!list.includes(m)) list.push(m); });
+    return list;
+  }
+  function editOrder() {
+    let order = orderedMetrics().map((m) => m.k);
+    const label = (k) => METRICS.find((m) => m.k === k).label;
+    sheet(`<div class="sheet-body"><h3>調整趨勢項目順序</h3><p class="muted sm">想常看的移到前面，第一個會是預設顯示的項目。</p>
+      <div id="ordList" class="ord-list"></div>
+      <div class="btn-row"><button class="btn ghost" data-a="reset">恢復預設</button><button class="btn primary" data-a="save">儲存</button></div></div>`, (w, close) => {
+      const draw = () => {
+        $('#ordList', w).innerHTML = order.map((k, i) => `<div class="ord"><span class="ord-n">${i + 1}</span><b>${label(k)}</b>
+          <button data-top="${i}" ${i === 0 ? 'disabled' : ''} aria-label="移到最前">置頂</button>
+          <button data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="上移">${icon('back', 'rot90')}</button>
+          <button data-dn="${i}" ${i === order.length - 1 ? 'disabled' : ''} aria-label="下移">${icon('chevron', 'rot90')}</button></div>`).join('');
+      };
+      draw();
+      $('#ordList', w).onclick = (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        const mv = (from, to) => { const [x] = order.splice(from, 1); order.splice(to, 0, x); };
+        if (b.dataset.top) mv(+b.dataset.top, 0);
+        else if (b.dataset.up) mv(+b.dataset.up, +b.dataset.up - 1);
+        else if (b.dataset.dn) mv(+b.dataset.dn, +b.dataset.dn + 1);
+        draw();
+      };
+      const finish = async (o) => {
+        LS.set('wo.metricOrder', o);
+        S.metric = o[0]; LS.set('wo.metric', S.metric);
+        if (!W.S.backendOld) W.saveSettings({ metricOrder: o });
+        else W.setSettings(Object.assign({}, W.S.data.settings, { metricOrder: o }));
+        close();
+        W.render.keepScroll = true;
+        W.render();
+      };
+      $('[data-a=save]', w).onclick = () => finish(order);
+      $('[data-a=reset]', w).onclick = () => finish(METRICS.map((m) => m.k));
+    });
+  }
+
   viewInbody.mount = (v) => {
     const addBtn = $('#addBtn', v);
     if (addBtn) addBtn.onclick = openAddSheet;
+    const ob = $('#mOrder', v);
+    if (ob) ob.onclick = editOrder;
     const card = $('#chartCard', v);
     if (!card) return;
     const draw = () => {
@@ -86,7 +132,8 @@
     }));
     draw();
     const on = $('#metricChips .chip.on', v);
-    if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const row = $('#metricChips', v);
+    if (on && row) row.scrollLeft = on.offsetLeft - row.clientWidth / 2 + on.offsetWidth / 2;
   };
 
   function metricBand(m, r) {
