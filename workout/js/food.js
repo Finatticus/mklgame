@@ -19,7 +19,55 @@
     const m = +hm.slice(0, 2) * 60 + +hm.slice(3, 5);
     return m < 630 ? '早餐' : m < 870 ? '午餐' : m < 1020 ? '點心' : m < 1260 ? '晚餐' : '宵夜';
   }
-  W.F = { dayTotals, MEALS };
+  /** 把品項整理成一筆飲食紀錄（含合計） */
+  function buildRecord(items, meta) {
+    const rec = Object.assign({ id: '', note: '' }, meta, {
+      items: items.map((i) => {
+        const o = { name: (i.name || '').trim() || '未命名', amount: i.amount || '' };
+        NUT.forEach(([k]) => (o[k] = r1(i[k])));
+        if (i.src) o.src = i.src;
+        return o;
+      }),
+    });
+    NUT.forEach(([k]) => (rec[k] = r1(W.sum(rec.items, (i) => i[k]))));
+    rec.title = rec.items.map((i) => i.name).join('、').slice(0, 60);
+    return rec;
+  }
+
+  /* ---------------- 熱量收支 ----------------
+   * 每日消耗 = BMR × 日常活動係數（不含運動）＋ 當天訓練的淨消耗
+   * 缺口 = 攝取 − 消耗；7700 kcal ≈ 1 kg 體脂肪 */
+  const NEAT = [[1.2, '久坐', '辦公室、多半坐著'], [1.3, '輕度活動', '常走動、通勤走路'], [1.45, '活動量大', '站立工作、勞動']];
+  const neat = () => +((W.S.data.settings || {}).neat) || 1.2;
+  function dayBalance(d) {
+    const t = dayTotals(d);
+    const b = W.T.bodyAt(d);
+    if (!b.bmr) return null;
+    const ex = W.sum(W.S.data.workout.filter((w) => w.date === d), (w) => (W.T.burn(w) || {}).net || 0);
+    const base = b.bmr * neat();
+    return { date: d, logged: t.count > 0, intake: t.kcal, base, ex, out: base + ex, bal: t.kcal - (base + ex) };
+  }
+  function maAt(d) {
+    const ma = W.movingAvg(W.weightSeries()).filter((p) => p.date <= d);
+    return ma.length ? ma[ma.length - 1] : null;
+  }
+  function weekBalance(ws) {
+    // 今天還沒結束（飲食可能還沒記完），不列入
+    const days = Array.from({ length: 7 }, (_, i) => W.addDays(ws, i)).filter((d) => d < W.today());
+    const list = days.map(dayBalance).filter(Boolean);
+    const logged = list.filter((b) => b.logged);
+    const avg = (f) => (logged.length ? W.sum(logged, f) / logged.length : null);
+    const avgBal = avg((b) => b.bal);
+    const end = days[days.length - 1];
+    const a = maAt(W.addDays(ws, -1)), z = maAt(end);
+    const actual = a && z && a.date !== z.date && W.daysBetween(a.date, z.date) >= 4 ? z.value - a.value : null;
+    return {
+      ws, days, list, logged: logged.length, avgIn: avg((b) => b.intake), avgOut: avg((b) => b.out), avgBal,
+      pred: avgBal != null ? (avgBal * days.length) / 7700 : null, actual,
+    };
+  }
+
+  W.F = { dayTotals, MEALS, dayBalance, weekBalance, neat };
 
   /* =========================================================
    * 每日總覽
@@ -80,6 +128,8 @@
         <button class="link-btn" id="goalBtn">${icon('target')}調整目標${tg.custom ? '' : '（目前依 InBody 建議）'}</button>
       </div>
       ${mealHtml}
+      ${combosRow(day)}
+      ${balanceCard(day)}
       <div class="sec-head"><h2>近 7 天</h2><span class="muted sm">${logged.length} 天有紀錄</span></div>
       <div class="card chart-card tone-food">
         ${C.bars({ items: days7.map((d, i) => ({ label: W.fmtDate(d, 'short'), value: totals7[i].kcal, cls: (d === day ? 'today ' : '') + (totals7[i].kcal > tg.kcal ? 'over' : '') })), target: tg.kcal })}
@@ -90,6 +140,118 @@
       ${foodAnalysis(days7, totals7, tg)}
       <div class="foot-space"></div>`;
   }
+  /* ---------------- 常吃組合 ---------------- */
+  const combos = () => ((W.S.data.settings || {}).combos || []);
+  function combosRow(day) {
+    const list = combos();
+    if (!list.length) return '';
+    return `<div class="combo-row">${list.map((c) => `<button class="combo" data-combo="${c.id}"><b>${esc(c.name)}</b><span>${esc(c.meal || '')}・${Math.round(W.sum(c.items, (i) => i.kcal))} kcal</span></button>`).join('')}</div>`;
+  }
+  async function quickAdd(day, id) {
+    const c = combos().find((x) => x.id === id);
+    if (!c) return;
+    const isToday = day === W.today();
+    const meal = c.meal || mealByTime(W.nowHM());
+    const rec = buildRecord(c.items, { date: day, time: isToday ? W.nowHM() : '', meal, note: '' });
+    const saved = await act('加入中…', () => W.save('food', rec));
+    if (!saved) return;
+    W.put('food', saved);
+    toast(`已把「${c.name}」加到${meal}`, 'ok');
+    W.render.keepScroll = true;
+    W.render();
+  }
+  function pickCombo(onPick) {
+    sheet(`<div class="sheet-body"><h3>常吃組合</h3><div id="cbList"></div>
+      <p class="muted sm">在新增飲食畫面加好品項後，按「存成常吃組合」就會出現在這裡。</p></div>`, (w, close) => {
+      const draw = () => {
+        const list = combos();
+        $('#cbList', w).innerHTML = list.length ? list.map((c) => `<div class="cb-item"><button class="cb-main" data-id="${c.id}"><b>${esc(c.name)}</b>
+            <span>${esc(c.meal || '')}・${c.items.map((i) => esc(i.name)).join('、')}・${Math.round(W.sum(c.items, (i) => i.kcal))} kcal</span></button>
+            <button class="x" data-del="${c.id}">${icon('trash')}</button></div>`).join('') : '<p class="muted sm pad">還沒有組合</p>';
+        $$('.cb-main', w).forEach((b) => (b.onclick = () => { onPick(combos().find((c) => c.id === b.dataset.id)); close(); }));
+        $$('[data-del]', w).forEach((b) => (b.onclick = async () => {
+          if (await W.saveSettings({ combos: combos().filter((c) => c.id !== b.dataset.del) })) draw();
+        }));
+      };
+      draw();
+    });
+  }
+  function saveCombo(items, meal) {
+    sheet(`<div class="sheet-body"><h3>存成常吃組合</h3>
+      <label class="field"><span>名稱</span><input name="cn" value="${esc(meal)}固定"></label>
+      <div class="chips wrap" id="cbMeal">${MEALS.map((m) => `<button type="button" class="chip sm ${m === meal ? 'on' : ''}" data-m="${m}">${m}</button>`).join('')}</div>
+      <p class="muted sm">${items.map((i) => esc(i.name)).join('、')}・共 ${Math.round(W.sum(items, (i) => i.kcal))} kcal</p>
+      <div class="btn-row"><button class="btn primary" data-a="save">儲存組合</button></div></div>`, (w, close) => {
+      let m = meal;
+      $$('#cbMeal .chip', w).forEach((b) => (b.onclick = () => { m = b.dataset.m; $$('#cbMeal .chip', w).forEach((x) => x.classList.toggle('on', x === b)); }));
+      $('[data-a=save]', w).onclick = async () => {
+        const name = $('[name=cn]', w).value.trim() || m + '固定';
+        const clean = buildRecord(items, {}).items.map((i) => { const o = Object.assign({}, i); delete o.src; return o; });
+        if (await W.saveSettings({ combos: combos().concat([{ id: W.uid(), name, meal: m, items: clean }]) })) { toast('已存成組合', 'ok'); close(); }
+      };
+    });
+  }
+
+  /* ---------------- 熱量收支卡 ---------------- */
+  function balanceCard(day) {
+    if (!W.T || !W.T.bodyAt(day).bmr) return '';
+    const wb = weekBalance(W.weekStart(day));
+    if (!wb.logged) return '';
+    const items = wb.list.filter((b) => b.logged).map((b) => ({ label: W.fmtDate(b.date, 'short'), value: b.bal, text: `${b.bal > 0 ? '+' : ''}${Math.round(b.bal)}` }));
+    return `<a class="card tone-food bal" href="#/balance">
+      <div class="card-h"><h3>熱量收支</h3><span class="muted sm">本週・${wb.logged} 天有紀錄 ›</span></div>
+      <div class="ana">
+        <div><span>平均攝取</span><b>${Math.round(wb.avgIn).toLocaleString()}</b><em>kcal / 天</em></div>
+        <div><span>平均消耗</span><b>${Math.round(wb.avgOut).toLocaleString()}</b><em>含訓練</em></div>
+        <div><span>每日缺口</span><b class="${wb.avgBal < 0 ? 'good' : 'bad'}">${wb.avgBal > 0 ? '+' : ''}${Math.round(wb.avgBal)}</b><em>${wb.avgBal < 0 ? '熱量赤字' : '熱量盈餘'}</em></div>
+      </div>
+      ${C.dbars(items)}
+      <div class="bal-cmp"><span>依缺口預估 <b>${wb.pred == null ? '–' : W.signed(wb.pred, 2)} kg</b></span><span>實際（7 日平均）<b>${wb.actual == null ? '–' : W.signed(wb.actual, 2)} kg</b></span></div>
+    </a>`;
+  }
+
+  /* ---------------- 熱量收支頁 ---------------- */
+  function viewBalance() {
+    const t = W.today();
+    const ws0 = W.weekStart(t);
+    const weeks = [];
+    for (let i = 7; i >= 0; i--) weeks.push(weekBalance(W.addDays(ws0, -7 * i)));
+    const shown = weeks.filter((w) => w.logged);
+    const b = W.T.bodyAt(t);
+    // 預估 vs 實際：累積體重變化
+    let cumP = 0, cumA = 0;
+    const start = shown.length ? [{ date: W.addDays(shown[0].ws, -1), value: 0 }] : [];
+    const pP = start.slice(), pA = start.slice();
+    shown.forEach((w) => {
+      cumP += w.pred || 0; cumA += w.actual || 0;
+      const d = w.days[w.days.length - 1];
+      pP.push({ date: d, value: cumP }); if (w.actual != null) pA.push({ date: d, value: cumA });
+    });
+    const totalPred = W.sum(shown, (w) => w.pred || 0), totalAct = W.sum(shown, (w) => w.actual || 0);
+    return W.pageHead('熱量收支', '攝取 vs 消耗', { back: '#/food' }) + `
+      <div class="card tone-food">
+        <div class="card-h"><h3>日常活動量</h3><span class="muted sm">不含運動</span></div>
+        <div class="neat">${NEAT.map(([f, l, d]) => `<button class="${neat() === f ? 'on' : ''}" data-f="${f}"><b>${l}</b><span>${d}</span><em>BMR × ${f}</em></button>`).join('')}</div>
+        <p class="hint">每日消耗 = 基礎代謝 ${b.bmr ? Math.round(b.bmr) : '–'} kcal × 活動係數 ＋ 當天訓練淨消耗。7,700 kcal ≈ 1 kg 體脂肪。只計算有記錄飲食的日子。</p>
+      </div>
+      ${shown.length >= 2 ? `<div class="card chart-card tone-food"><div class="chart-head"><div><span class="muted">累積體重變化：預估 vs 實際</span></div></div>
+        ${C.timeChart({ series: [{ points: pP, line: true, dots: true, cls: 'pred' }, { points: pA, line: true, dots: true, cls: 'act' }], height: 150 })}
+        <div class="legend center"><span><i style="background:var(--t-food)"></i>依熱量缺口預估</span><span><i style="background:var(--t-weight)"></i>實際（7 日平均）</span></div>
+        <p class="hint">${Math.abs(totalPred - totalAct) > 1 ? '預估和實際差距較大：可能有漏記的飲食、份量估得偏少，或活動係數需要調整。' : '預估和實際接近，代表記錄和設定都滿準的。'}</p></div>` : ''}
+      <div class="card tone-food">
+        <div class="card-h"><h3>每週明細</h3></div>
+        ${shown.length ? `<table class="btbl"><thead><tr><th>週</th><th>天</th><th>攝取</th><th>消耗</th><th>缺口/日</th><th>預估</th><th>實際</th></tr></thead><tbody>
+          ${shown.slice().reverse().map((w) => `<tr><td>${W.fmtDate(w.ws, 'short')}</td><td>${w.logged}</td><td>${Math.round(w.avgIn)}</td><td>${Math.round(w.avgOut)}</td>
+            <td class="${w.avgBal < 0 ? 'good' : 'bad'}">${Math.round(w.avgBal)}</td><td>${w.pred == null ? '–' : W.signed(w.pred, 1)}</td><td>${w.actual == null ? '–' : W.signed(w.actual, 1)}</td></tr>`).join('')}
+        </tbody></table><p class="hint">單位：kcal/天、kg/週。</p>` : '<p class="muted sm">記錄幾天飲食後就會出現。</p>'}
+      </div><div class="foot-space"></div>`;
+  }
+  viewBalance.mount = (v) => {
+    $$('.neat button', v).forEach((b) => (b.onclick = async () => {
+      if (await W.saveSettings({ neat: +b.dataset.f })) { W.render.keepScroll = true; W.render(); }
+    }));
+  };
+
   /** 營養分析：三大營養素比例、蛋白質每日、各餐分佈 */
   function foodAnalysis(days7, totals7, tg) {
     const logged = totals7.filter((t) => t.count);
@@ -116,6 +278,8 @@
   viewFood.mount = (v) => {
     $('#dayPick', v).onchange = (e) => { if (e.target.value) location.hash = '#/food?d=' + e.target.value; };
     $('#goalBtn', v).onclick = editGoals;
+    const day = W.query().d || W.today();
+    $$('[data-combo]', v).forEach((b) => (b.onclick = () => quickAdd(day, b.dataset.combo)));
   };
 
   function editGoals() {
@@ -172,10 +336,12 @@
       <div class="add3">
         <button type="button" id="addSearch">${icon('search')}<b>搜尋食物</b><span>資料庫・常吃</span></button>
         <button type="button" id="addAI">${icon('sparkle')}<b>AI 估算</b><span>打字或拍照</span></button>
+        <button type="button" id="addCombo">${icon('copy')}<b>常吃組合</b><span>一次加入</span></button>
         <button type="button" id="addManual">${icon('edit')}<b>手動輸入</b><span>看包裝填</span></button>
       </div>
       <div id="aiNote"></div>
       <div id="items"></div>
+      <button type="button" class="link-btn save-combo" id="saveCombo">${icon('copy')}把這些品項存成常吃組合</button>
       <div class="card form-card"><div class="frow col"><label>備註</label><textarea class="inp" rows="2" data-k="note" placeholder="例如：外食、聚餐、訓練後">${esc(D.note || '')}</textarea></div></div>
       ${id ? `<button class="btn ghost block danger-text" id="fDel">${icon('trash')}刪除這筆</button>` : ''}
       <div class="sticky-cta"><div class="tot-bar" id="totBar"></div><button class="btn primary block" id="fSave">${icon('check')}儲存</button></div>`;
@@ -218,6 +384,12 @@
     });
     $('#addManual', v).onclick = () => { D.items.push({ name: '', amount: '', kcal: '', protein: '', carb: '', fat: '', fiber: '', src: '' }); draw(); const ins = $$('.fi-name', v); ins[ins.length - 1].focus(); };
     $('#addSearch', v).onclick = () => searchFood((it) => { D.items.push(it); draw(); });
+    $('#addCombo', v).onclick = () => pickCombo((c) => { c.items.forEach((i) => D.items.push(Object.assign({}, i))); draw(); });
+    $('#saveCombo', v).onclick = () => {
+      const items = D.items.filter((i) => (i.name || '').trim());
+      if (!items.length) { toast('先加入品項', 'err'); return; }
+      saveCombo(items, D.meal);
+    };
     $('#addAI', v).onclick = () => aiEstimate((res) => {
       res.items.forEach((it) => D.items.push(Object.assign({}, it, { src: 'AI' })));
       D.aiNotes = res.notes || '';
@@ -226,7 +398,7 @@
     const del = $('#fDel', v);
     if (del) del.onclick = async () => {
       if (!(await confirmSheet('刪除這筆飲食紀錄？', '刪除後無法復原。', '刪除', true))) return;
-      if (!(await act('刪除中…', () => call('data.delete', { col: 'food', id })))) return;
+      if (!(await act('刪除中…', () => W.del('food', id)))) return;
       W.drop('food', id);
       toast('已刪除');
       location.replace('#/food?d=' + D.date);
@@ -234,15 +406,8 @@
     $('#fSave', v).onclick = async () => {
       const items = D.items.filter((i) => (i.name || '').trim() || i.kcal);
       if (!items.length) { toast('至少加入一個品項', 'err'); return; }
-      const rec = { id: D.id || '', date: D.date, time: D.time || '', meal: D.meal, note: (D.note || '').trim(), items: items.map((i) => {
-        const o = { name: (i.name || '').trim() || '未命名', amount: i.amount || '' };
-        NUT.forEach(([k]) => (o[k] = r1(i[k])));
-        if (i.src) o.src = i.src;
-        return o;
-      }) };
-      NUT.forEach(([k]) => (rec[k] = r1(W.sum(rec.items, (i) => i[k]))));
-      rec.title = rec.items.map((i) => i.name).join('、').slice(0, 60);
-      const saved = await act('儲存中…', () => call('data.save', { col: 'food', record: rec }));
+      const rec = buildRecord(items, { id: D.id || '', date: D.date, time: D.time || '', meal: D.meal, note: (D.note || '').trim() });
+      const saved = await act('儲存中…', () => W.save('food', rec));
       if (!saved) return;
       W.put('food', saved);
       toast(`已記錄 ${Math.round(saved.kcal || 0)} kcal`, 'ok');
@@ -330,6 +495,7 @@
   const viewNew = () => viewEditor('');
   viewNew.mount = (v) => viewEditor.mount(v, '');
   W.route(/^#\/food$/, viewFood, { tab: 'food' });
+  W.route(/^#\/balance$/, viewBalance, { tab: 'food' });
   W.route(/^#\/food\/new$/, viewNew, { tab: false });
   W.route(/^#\/food\/e\/([\w-]+)$/, viewEditor, { tab: false });
 })();

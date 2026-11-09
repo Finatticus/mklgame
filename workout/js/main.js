@@ -116,7 +116,7 @@
       <div class="foot-space"></div>`;
   }
   /* ---------------- 推播提醒 ---------------- */
-  const MEAL_TIMES = [['早餐', '9:00'], ['午餐', '13:00'], ['晚餐', '19:00']];
+  const MEAL_TIMES = [['早餐', '9:00'], ['午餐', '13:00'], ['晚餐', '19:00'], ['週回顧', '週日 21:00']];
   function pushEnv() {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -126,7 +126,7 @@
   function reminderCard() {
     const env = pushEnv();
     const st = LS.get('wo.push', null);
-    const meals = (st && st.meals) || ['早餐', '午餐', '晚餐'];
+    const meals = (st && st.meals) || ['早餐', '午餐', '晚餐', '週回顧'];
     let status = '', ok = false;
     if (env.ios && !env.standalone) status = 'iPhone 需要先用 Safari「分享 → 加入主畫面」，再從主畫面開啟 App 才能開啟提醒。';
     else if (!env.supported) status = '這個瀏覽器不支援推播通知。';
@@ -260,6 +260,7 @@
     $('#tabAdd').onclick = (e) => { e.preventDefault(); openAddSheet(); };
     window.addEventListener('hashchange', () => W.render());
     W.render();
+    W.updateBanner();
     if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

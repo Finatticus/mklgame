@@ -131,7 +131,7 @@
     const dates = coachSessions().map((w) => w.nextDate).filter((d) => d && d >= t && !held.has(d)).sort();
     return dates[0] || null;
   }
-  W.T = { weekStats, coachPkg, nextCoachDate, woVol, coachSessions, burn };
+  W.T = { weekStats, coachPkg, nextCoachDate, woVol, coachSessions, burn, bodyAt, isPR, exHistory, exInfo };
 
   const fmtVol = (v) => (v >= 10000 ? `${num(v / 1000, 1)}<small>t</small>` : `${Math.round(v).toLocaleString()}<small>kg</small>`);
   const trainSeg = (k) => W.segNav([['#/training', '訓練日誌', 'log'], ['#/coach', '教練課', 'coach']], k, k === 'coach' ? 'tone-coach' : 'tone-train');
@@ -311,7 +311,7 @@
     const b = $('#woDel', v);
     if (b) b.onclick = async () => {
       if (!(await confirmSheet('刪除這次訓練？', '刪除後無法復原。', '刪除', true))) return;
-      if (!(await act('刪除中…', () => call('data.delete', { col: 'workout', id })))) return;
+      if (!(await act('刪除中…', () => W.del('workout', id)))) return;
       W.drop('workout', id);
       toast('已刪除');
       history.length > 1 ? history.back() : (location.hash = '#/training');
@@ -630,7 +630,7 @@
     };
     const bn = burn(rec);
     rec.kcal = bn ? bn.total : '';
-    const saved = await act('儲存中…', () => call('data.save', { col: 'workout', record: rec }));
+    const saved = await act('儲存中…', () => W.save('workout', rec));
     if (!saved) return;
     W.put('workout', saved);
     LS.del(DKEY);

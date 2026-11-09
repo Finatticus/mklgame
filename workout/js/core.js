@@ -49,8 +49,10 @@ window.W = (function () {
       S.backendOld = true;
       S.data.inbody = await call('inbody.list');
     }
+    applyQueue();
     saveCache();
     S.loaded = true;
+    setTimeout(() => flush(), 300);
   }
 
   /* ---------------- 工具 ---------------- */
@@ -366,6 +368,106 @@ window.W = (function () {
     return { kcal, protein, fat, carb, fiber, custom: has(st.kcal) };
   }
 
+  /* ---------------- 離線佇列：沒網路時先存在手機，連線後自動上傳 ---------------- */
+  const QKEY = () => 'wo.queue.' + (S.session ? S.session.account : '');
+  const queue = () => LS.get(QKEY(), []);
+  const setQueue = (q) => { LS.set(QKEY(), q); updateBanner(); };
+  const isLocal = (id) => String(id || '').startsWith('local-');
+  const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  const offline = () => navigator.onLine === false;
+  const COL_NAME = { weight: '體重', workout: '訓練', food: '飲食' };
+
+  function updateBanner() {
+    const n = S.session ? queue().length : 0;
+    let el = document.getElementById('offlineBar');
+    if (!n) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('button');
+      el.id = 'offlineBar';
+      el.onclick = () => flush(true);
+      document.body.appendChild(el);
+    }
+    el.innerHTML = `${icon('refresh')}${offline() ? '離線中・' : ''}${n} 筆待上傳${offline() ? '' : '・點此重試'}`;
+  }
+
+  function applyQueue() {
+    queue().forEach((it) => {
+      if (it.op === 'save') {
+        S.data[it.col] = S.data[it.col].filter((x) => x.id !== it.rec.id && !(it.col === 'weight' && x.date === it.rec.date && x.source !== 'InBody'));
+        S.data[it.col].push(it.rec);
+      } else S.data[it.col] = S.data[it.col].filter((x) => x.id !== it.id);
+    });
+    COLS.forEach((c) => S.data[c].sort((a, b) => sortKey(a).localeCompare(sortKey(b))));
+  }
+
+  /** 儲存（體重 / 訓練 / 飲食）：失敗於網路時改存佇列 */
+  async function save(col, rec) {
+    const action = col === 'weight' ? 'weight.save' : 'data.save';
+    if (!isLocal(rec.id) && !offline()) {
+      try { return await call(action, { col, record: rec }); } catch (e) { if (e.code !== 'NETWORK') throw e; }
+    }
+    const local = Object.assign({}, rec, { id: rec.id || 'local-' + uid(), _pending: true, updatedAt: ymd(new Date()) + ' ' + nowHM() });
+    const q = queue().filter((x) => !(x.op === 'save' && x.rec.id === local.id));
+    q.push({ qid: uid(), op: 'save', col, action, rec: local });
+    setQueue(q);
+    toast(offline() || !isLocal(rec.id) ? '目前沒有網路，已先存在手機，連線後自動上傳' : '已更新（等待上傳）');
+    if (!offline()) setTimeout(() => flush(), 500);
+    return local;
+  }
+
+  async function del(col, id) {
+    if (isLocal(id)) { setQueue(queue().filter((x) => !(x.rec && x.rec.id === id))); return { id }; }
+    if (!offline()) {
+      try { return await call('data.delete', { col, id }); } catch (e) { if (e.code !== 'NETWORK') throw e; }
+    }
+    setQueue(queue().filter((x) => !(x.op === 'save' && x.rec.id === id)).concat([{ qid: uid(), op: 'delete', col, id }]));
+    toast('目前沒有網路，連線後會自動刪除');
+    return { id };
+  }
+
+  let flushing = false;
+  async function flush(manual) {
+    if (flushing || !S.session || !queue().length) { updateBanner(); return; }
+    if (offline()) { if (manual) toast('還沒有網路'); updateBanner(); return; }
+    flushing = true;
+    let done = 0;
+    try {
+      for (const it of queue()) {
+        try {
+          if (it.op === 'save') {
+            const rec = Object.assign({}, it.rec);
+            delete rec._pending;
+            if (isLocal(rec.id)) rec.id = '';
+            const saved = await call(it.action, { col: it.col, record: rec });
+            S.data[it.col] = S.data[it.col].filter((x) => x.id !== it.rec.id && x.id !== saved.id && !(it.col === 'weight' && x.date === saved.date && x.source !== 'InBody'));
+            put(it.col, saved);
+            if (location.hash.includes(it.rec.id)) location.replace(location.hash.replace(it.rec.id, saved.id));
+          } else {
+            await call('data.delete', { col: it.col, id: it.id }).catch((e) => { if (e.code !== 'NOT_FOUND') throw e; });
+          }
+          done++;
+        } catch (e) {
+          if (e.code === 'NETWORK' || e.code === 'AUTH' || e.code === 'PENDING') break;
+          // 資料本身有問題（例如當天已有 InBody）：放棄這筆並告知
+          toast(`一筆${COL_NAME[it.col] || ''}紀錄無法上傳：${e.message}`, 'err');
+          if (it.op === 'save' && isLocal(it.rec.id)) drop(it.col, it.rec.id);
+        }
+        setQueue(queue().filter((x) => x.qid !== it.qid));
+      }
+    } finally {
+      flushing = false;
+      updateBanner();
+    }
+    if (done) {
+      toast(`已上傳 ${done} 筆離線紀錄`, 'ok');
+      render.keepScroll = true;
+      render();
+    }
+  }
+  window.addEventListener('online', () => { updateBanner(); flush(); });
+  window.addEventListener('offline', updateBanner);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') flush(); });
+
   async function saveSettings(patch) {
     if (S.backendOld) { toast('後端需要更新才能儲存設定', 'err'); return null; }
     const r = await act('儲存中…', () => call('settings', { data: patch }));
@@ -398,7 +500,7 @@ window.W = (function () {
     parseDate, ymd, today, nowHM, dayOf, addDays, weekStart, daysBetween, fmtDate, relDay,
     icon, toast, sheet, confirmSheet, busy, act, logout, login,
     back, pageHead, segNav, empty, stepper, bindSteppers,
-    route, render, query,
+    route, render, query, save, del, flush, updateBanner, uid,
     latest, latestInbody, weightSeries, movingAvg, targetWeight, nutritionTargets,
   };
 })();

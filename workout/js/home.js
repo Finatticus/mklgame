@@ -86,7 +86,7 @@
 
     const tiles = [
       ['#/weight', 'scale', '體重', 0, 'weight'], ['#/inbody', 'body', 'InBody', 0, 'inbody'], ['#/training', 'dumbbell', '訓練', 0, 'train'],
-      ['#/coach', 'whistle', '教練課', 0, 'coach'], ['#/food', 'food', '飲食', 0, 'food'], ['', 'ruler', '身體圍度', true],
+      ['#/coach', 'whistle', '教練課', 0, 'coach'], ['#/food', 'food', '飲食', 0, 'food'], ['#/review', 'chart', '週回顧', 0, 'inbody'],
     ];
 
     return `<header class="page-head row">

@@ -1,9 +1,9 @@
 /* Service worker：快取 App 外殼，API 一律走網路 */
-const CACHE = 'workout-v2.3.0';
+const CACHE = 'workout-v2.4.0';
 const SHELL = [
   './', './index.html', './css/app.css', './css/v2.css', './css/compact.css', './css/tone.css',
   './js/config.js', './js/schema.js', './js/seed.js', './js/data/exercises.js', './js/data/foods.js', './js/api.js', './js/charts.js',
-  './js/core.js', './js/inbody.js', './js/weight.js', './js/training.js', './js/food.js', './js/home.js', './js/main.js',
+  './js/core.js', './js/inbody.js', './js/weight.js', './js/training.js', './js/food.js', './js/review.js', './js/home.js', './js/main.js',
   './manifest.webmanifest', './icons/icon.svg', './icons/apple-touch-icon.png', './icons/icon-192.png',
 ];
 
@@ -46,7 +46,18 @@ self.addEventListener('fetch', (e) => {
 
 /* 用餐提醒推播：後端只在「這餐還沒記錄」時送出（無內容），這裡依台灣時間決定是哪一餐 */
 self.addEventListener('push', (e) => {
-  const h = +new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Taipei' }).format(new Date());
+  const now = new Date();
+  const h = +new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Taipei' }).format(now);
+  const wd = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Asia/Taipei' }).format(now);
+  // 週日 20 點後的推播 = 每週回顧
+  if (wd === 'Sun' && h >= 20) {
+    e.waitUntil(self.registration.showNotification('本週回顧出爐了', {
+      body: '體重變化、訓練次數、蛋白質達標天數，一頁看完，也可以分享給教練。',
+      icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'weekly-review',
+      data: { url: './#/review' },
+    }));
+    return;
+  }
   const meal = h < 11 ? '早餐' : h < 16 ? '午餐' : '晚餐';
   e.waitUntil(self.registration.showNotification(`記得記錄${meal}`, {
     body: `今天的${meal}還沒記錄，點這裡快速新增。`,

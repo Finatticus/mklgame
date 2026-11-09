@@ -168,7 +168,7 @@
       saveBtn.onclick = async () => {
         const val = parseFloat(wInp.value);
         if (!(val > 20 && val < 400)) { toast('請輸入正確的體重', 'err'); return; }
-        const rec = await act('儲存中…', () => call('weight.save', { record: { id: editId, date: day, weight: W.round(val, 1), note: $('[name=note]', w).value.trim() } }));
+        const rec = await act('儲存中…', () => W.save('weight', { id: editId, date: day, weight: W.round(val, 1), note: $('[name=note]', w).value.trim() }));
         if (!rec) return;
         W.setCol('weight', W.S.data.weight.filter((x) => x.id !== rec.id && !(x.date === rec.date && x.source !== 'InBody')).concat([rec]));
         close();
@@ -178,7 +178,7 @@
       };
       const del = $('[data-a=del]', w);
       if (del) del.onclick = async () => {
-        const r = await act('刪除中…', () => call('data.delete', { col: 'weight', id: editId }));
+        const r = await act('刪除中…', () => W.del('weight', editId));
         if (!r) return;
         W.drop('weight', editId);
         close();
