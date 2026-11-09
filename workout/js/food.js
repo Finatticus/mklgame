@@ -52,16 +52,17 @@
     const avgK = logged.length ? W.sum(logged, (t) => t.kcal) / logged.length : 0;
     const avgP = logged.length ? W.sum(logged, (t) => t.protein) / logged.length : 0;
 
+    const emptyMeals = MEALS.filter((m) => !entries.some((f) => f.meal === m));
     const mealHtml = MEALS.map((m) => {
       const l = entries.filter((f) => f.meal === m);
       const mk = W.sum(l, (f) => f.kcal);
-      if (!l.length) return `<a class="meal-empty" href="#/food/new?d=${day}&meal=${encodeURIComponent(m)}"><span>${m}</span>${icon('plus')}</a>`;
+      if (!l.length) return '';
       return `<div class="card meal"><div class="meal-h"><h3>${m}</h3><span><b>${Math.round(mk)}</b> kcal</span>
           <a class="icon-btn sm" href="#/food/new?d=${day}&meal=${encodeURIComponent(m)}" aria-label="新增${m}">${icon('plus')}</a></div>
         ${l.map((f) => `<a class="fentry" href="#/food/e/${f.id}">
           <div class="fe-main"><b>${esc(f.title || '未命名')}</b><span>${f.time ? f.time + '・' : ''}${(f.items || []).length} 項・P ${Math.round(f.protein || 0)}・C ${Math.round(f.carb || 0)}・F ${Math.round(f.fat || 0)}</span></div>
           <div class="fe-k"><b>${Math.round(f.kcal || 0)}</b><small>kcal</small></div></a>`).join('')}</div>`;
-    }).join('');
+    }).join('') + (emptyMeals.length ? `<div class="meal-adds">${emptyMeals.map((m) => `<a href="#/food/new?d=${day}&meal=${encodeURIComponent(m)}">${icon('plus')}${m}</a>`).join('')}</div>` : '');
 
     return W.pageHead('飲食', '每日營養', { right: `<a class="icon-btn solid" href="#/food/new?d=${day}" aria-label="新增">${icon('plus')}</a>` }) + `
       <div class="datebar">

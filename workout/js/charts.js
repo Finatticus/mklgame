@@ -27,7 +27,7 @@
    * opts: { points:[{date, value, id}], band:[lo,hi]|null, unit, decimals, id }
    */
   function line(opts) {
-    const W = 340, H = 190, P = { l: 36, r: 14, t: 18, b: 26 };
+    const W = 340, H = 150, P = { l: 34, r: 14, t: 16, b: 22 };
     const pts = opts.points.filter((p) => p.value != null && !isNaN(p.value));
     if (!pts.length) return `<div class="chart-empty">還沒有資料</div>`;
     const d = opts.decimals ?? 1;
@@ -127,7 +127,7 @@
    * opts: { series:[{points:[{date,value,...}], cls, line, dots, dotClass:(p)=>str}], refs:[{value,label,cls}], decimals, height, from, to }
    */
   function timeChart(opts) {
-    const W = 340, H = opts.height || 200, P = { l: 36, r: 14, t: 16, b: 24 };
+    const W = 340, H = opts.height || 160, P = { l: 34, r: 14, t: 14, b: 22 };
     const all = [];
     opts.series.forEach((s) => s.points.forEach((p) => { if (p.value != null && !isNaN(p.value)) all.push(p); }));
     if (!all.length) return `<div class="chart-empty">這段期間沒有資料</div>`;
@@ -174,7 +174,7 @@
 
   /** 直條圖：items:[{label, value, cls, sub}], target */
   function bars(opts) {
-    const W = 340, H = opts.height || 150, P = { l: 6, r: 6, t: 18, b: 22 };
+    const W = 340, H = opts.height || 115, P = { l: 6, r: 6, t: 16, b: 20 };
     const items = opts.items;
     const max = Math.max(opts.target || 0, ...items.map((i) => i.value || 0), 1) * 1.12;
     const iw = W - P.l - P.r, ih = H - P.t - P.b;

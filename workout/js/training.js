@@ -93,13 +93,7 @@
 
     const week = `<div class="card week">
         <div class="card-h"><h3>本週</h3><span class="muted sm">${W.fmtDate(ws, 'short')} – ${W.fmtDate(W.addDays(ws, 6), 'short')}</span></div>
-        <div class="week-strip">${days.map((d) => {
-          const l = byDate[d] || [];
-          const coach = l.some((w) => w.isCoach === 'V');
-          return `<button class="wd ${d === t ? 'today' : ''} ${l.length ? 'done' : ''} ${coach ? 'coach' : ''}" data-day="${d}">
-            <span>${W.WD[W.parseDate(d).getDay()]}</span><b>${W.parseDate(d).getDate()}</b><i></i></button>`;
-        }).join('')}</div>
-        <div class="stat3">
+        <div class="stat3 flat">
           <div><span>訓練次數</span><b>${cur.count}<small>次</small></b><em class="${cur.count >= prev.count ? 'good' : ''}">上週 ${prev.count}</em></div>
           <div><span>總時長</span><b>${cur.minutes}<small>分</small></b><em>上週 ${prev.minutes}</em></div>
           <div><span>總訓練量</span><b>${fmtVol(cur.volume)}</b><em>上週 ${fmtVol(prev.volume).replace(/<[^>]+>/g, '')}</em></div>
@@ -260,7 +254,7 @@
     return W.pageHead(esc(name), `${esc(info.c)}・${KIND_LABEL[k]}`, { back: '#/training' }) + `
       <div class="kpis ${stats.length === 4 ? 'four' : ''}">${stats.map(([l, v, u]) => `<div class="kpi"><span>${l}</span><b>${v}<small>${u}</small></b></div>`).join('')}</div>
       ${pts.length ? `<div class="card chart-card"><div class="chart-head"><div><span class="muted">${SCORE_LABEL[k]}趨勢</span></div></div>
-        ${C.timeChart({ series: [{ points: pts, line: true, dots: true, cls: 'raw' }], height: 180 })}
+        ${C.timeChart({ series: [{ points: pts, line: true, dots: true, cls: 'raw' }], height: 150 })}
         ${k === 'w' ? '<p class="muted sm center">估計 1RM = 重量 × (1 + 次數 ÷ 30)，用來比較不同次數的組</p>' : ''}</div>` : ''}
       ${cues.length ? `<div class="sec-head"><h2>教練提醒</h2><span class="muted sm">${cues.length} 則</span></div>
         <div class="card list-card">${cues.map(({ c, w }) => `<a class="cue-row" href="#/training/w/${w.id}"><span class="pill ok">${esc(c.cat || '其他')}</span><p>${esc(c.text)}</p><em>${W.fmtDate(w.date, 'short')}</em></a>`).join('')}</div>` : ''}

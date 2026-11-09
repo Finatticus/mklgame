@@ -32,7 +32,7 @@
         { points: shown, dots: true, cls: 'raw', r: 3, dotClass: (p) => (p.source === 'InBody' ? 'ib' : '') },
       ],
       refs: target ? [{ value: target, label: `目標 ${target}`, cls: 'target' }] : [],
-      from: from || undefined, to: t, height: 210,
+      from: from || undefined, to: t, height: 165,
     });
 
     // 依月份分組的清單

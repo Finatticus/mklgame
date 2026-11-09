@@ -1,0 +1,226 @@
+/* =====================================================================
+ * 緊湊版面：縮小留白、字級與圖表高度，讓一個畫面看到更多資訊
+ * （覆寫 app.css / v2.css）
+ * ===================================================================== */
+body { font-size: 14px; line-height: 1.45; }
+.view { padding: calc(var(--safe-t) + 10px) 12px calc(84px + var(--safe-b)); }
+.foot-space { height: 0; }
+
+/* 標題 */
+.page-head { margin: 2px 2px 10px; }
+.page-head h1 { font-size: 21px; line-height: 1.2; }
+.page-head.row { gap: 8px; }
+.page-head.row h1 { font-size: 18px; }
+.eyebrow { font-size: 11px; }
+.nav-back { width: 34px; height: 34px; }
+.icon-btn { width: 36px; height: 36px; }
+.icon-btn .ic { width: 20px; height: 20px; }
+.avatar.sm { width: 36px; height: 36px; border-radius: 11px; font-size: 15px; }
+.sec-head { margin: 14px 4px 6px; }
+.sec-head h2 { font-size: 14.5px; }
+.seg-nav { margin: 0 0 8px; }
+.seg-nav a { height: 30px; line-height: 30px; font-size: 13.5px; }
+
+/* 卡片 */
+.card { padding: 12px 14px; margin-bottom: 8px; border-radius: 16px; }
+.card-h { margin-bottom: 8px; }
+.card-h h3 { font-size: 14px; }
+.list-card { padding: 0 14px; }
+.form-card { padding: 2px 14px; }
+.notice { padding: 10px 12px; margin: 8px 0; font-size: 13px; }
+
+/* 大數字 / KPI */
+.big { font-size: 36px; }
+.big small { font-size: 14px; }
+.kpis { gap: 6px; }
+.kpis.six { margin-bottom: 8px; }
+.kpi { padding: 8px 10px; border-radius: 13px; }
+.kpi span { font-size: 11px; }
+.kpi b { font-size: 19px; line-height: 1.2; }
+.kpis.six .kpi b, .kpis.four .kpi b { font-size: 16px; }
+.kpis.four .kpi { padding: 8px 8px; }
+.kpi em { font-size: 10.5px; }
+.stat3 { padding-top: 8px; }
+.stat3 div + div { padding-left: 10px; }
+.stat3 span { font-size: 11px; }
+.stat3 b { font-size: 16px; }
+.stat3 em { font-size: 10.5px; }
+.stat3.flat { border-top: 0; padding-top: 0; }
+.ring { width: 66px; height: 66px; }
+
+/* 首頁 */
+.hero, .w-hero { padding: 14px; }
+.hero-main { margin: 4px 0 10px; }
+.w-main { margin-bottom: 8px; }
+.goal { margin-top: 10px; padding-top: 8px; }
+.goal-bar { height: 6px; margin: 5px 0 4px; }
+.goal-row { font-size: 12px; }
+.goal-row.sub { font-size: 11px; }
+.today .card-h { margin-bottom: 8px; }
+.t3 { gap: 6px; }
+.t-cell { padding: 8px 9px; border-radius: 12px; }
+.t-ic { display: none; }
+.t-l { margin: 0; font-size: 11px; }
+.t-cell b { font-size: 17px; }
+.t-cell b.t-add, .t-cell b.t-txt { font-size: 13.5px; }
+.t-cell em { font-size: 10.5px; margin-top: 1px; }
+.t-bar { height: 4px; margin-top: 4px; }
+.wcard .card-h { margin-bottom: 2px; }
+.wcard .big { font-size: 32px; }
+.coach-line { padding-top: 8px; margin-top: 6px; font-size: 12.5px; }
+.ibcard { gap: 12px; }
+.ib-txt .card-h { margin-bottom: 4px; }
+.ib-vals span { font-size: 15px; }
+.seed { padding: 10px 12px; gap: 10px; }
+.seed-ic { width: 32px; height: 32px; border-radius: 10px; }
+.seed-txt b { font-size: 13px; }
+.seed-txt span { font-size: 11px; }
+/* 功能捷徑：一排小圖示 */
+.tiles { grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.tile { min-height: 0; padding: 8px 2px 6px; align-items: center; text-align: center; gap: 4px; border-radius: 12px; box-shadow: none; background: transparent; }
+.tile-ic { width: 38px; height: 38px; border-radius: 12px; margin: 0; }
+.tile b { font-size: 11.5px; margin: 0; font-weight: 600; }
+.tile span:last-child { display: none; }
+.li { padding: 8px 0; font-size: 13px; gap: 10px; }
+.li-k { width: 56px; font-size: 12px; }
+
+/* 圖表 */
+.chart-card { padding: 12px 10px 8px; }
+.chart-head { padding: 0 4px 2px; }
+.chart-v b { font-size: 26px; }
+.chart-deltas { gap: 2px; }
+.chart-deltas b { font-size: 13.5px; }
+
+
+.legend { margin-top: 6px; font-size: 11px; gap: 2px 10px; }
+.chips { padding: 0 12px 8px; margin: 0 -12px; gap: 6px; }
+.chip { height: 30px; padding: 0 12px; font-size: 13px; }
+.chip.sm { height: 28px; padding: 0 10px; font-size: 12.5px; }
+
+/* 清單列 */
+.rec, .wo-row, .hist-row { padding: 9px 0; gap: 12px; }
+.wrow { padding: 8px 0; gap: 12px; }
+.wrow-v b { font-size: 16px; }
+.rec-date b { font-size: 15px; }
+.rec-vals { font-size: 13px; }
+.wo-main b { font-size: 14px; }
+.wo-main span { font-size: 12px; }
+.hist th, .hist td { padding: 6px 10px; font-size: 13px; }
+.act { padding: 10px 0; gap: 12px; }
+.list-card .act { padding: 10px 0; }
+.act-ic { width: 34px; height: 34px; border-radius: 10px; }
+.act b { font-size: 14px; }
+
+/* InBody 報告 */
+.score-card { gap: 14px; }
+.score-txt p { margin: 2px 0 6px; font-size: 13px; }
+.stack { height: 10px; }
+/* 每個數值一行：名稱｜範圍條｜數值 */
+.mrow { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; column-gap: 10px; padding: 6px 0 0; }
+.mrow-top { display: contents; font-size: 12.5px; }
+.mrow-top > span:first-child { order: 1; color: var(--ink-2); }
+.mrow .rbar { order: 2; }
+.mrow-top > span:last-child { order: 3; text-align: right; white-space: nowrap; font-size: 11.5px; color: var(--ink-3); }
+.mrow-top b { font-size: 14.5px; color: var(--ink); }
+.mrow-top .pill { height: 18px; padding: 0 6px; font-size: 10.5px; margin-left: 2px; }
+.mrow .hint { order: 4; grid-column: 1 / -1; margin: 0 0 4px; }
+.mrows { margin-top: 2px; }
+.rbar { padding-bottom: 12px; }
+.rbar-track { height: 6px; }
+.rbar-dot { width: 12px; height: 12px; }
+.btype { gap: 6px; margin-bottom: 6px; }
+.bt { padding: 8px 4px 6px; border-radius: 12px; }
+.bt-g { width: 34px; height: 22px; }
+.bt b { font-size: 13px; margin-top: 3px; }
+.bt span { font-size: 10px; }
+.segfig { max-height: 180px; }
+.seg-tr { margin-top: 2px; font-size: 12px; }
+.ctrl-main { margin-bottom: 8px; gap: 10px; }
+.ctrl-main b { font-size: 24px; }
+.ctrl-list div { padding: 7px 10px; }
+.ctrl-list b { font-size: 14px; }
+.evals > div { padding: 6px 0; font-size: 13px; }
+.params { gap: 6px; }
+.params > div { padding: 8px 12px; border-radius: 12px; }
+.params b { font-size: 17px; }
+.foot-actions { margin-top: 10px; }
+.btn { height: 42px; font-size: 14px; border-radius: 12px; }
+.btn.sm { height: 32px; font-size: 13px; }
+.sticky-cta { padding: 8px 12px calc(8px + var(--safe-b)); }
+.sticky-cta .btn { height: 46px; border-radius: 14px; }
+
+/* 訓練 */
+.week-strip { margin-bottom: 8px; gap: 2px; }
+.wd { padding: 5px 0 4px; gap: 1px; border-radius: 10px; }
+.wd b { font-size: 14px; }
+.cal-h { margin-bottom: 6px; }
+.cal-h button { width: 28px; height: 28px; }
+.cal-g { gap: 2px; }
+.cal-d { aspect-ratio: auto; height: 30px; border-radius: 8px; font-size: 12.5px; }
+.cal .legend { margin-top: 4px; }
+.ex-grid { gap: 6px; }
+.ex-tile { padding: 9px 12px; border-radius: 12px; }
+.ex-tile b { font-size: 13.5px; }
+.sets td { padding: 5px 4px; font-size: 13.5px; }
+.ex-view .card-h { margin-bottom: 4px; }
+.focus { font-size: 15px; margin: -2px 0 6px; }
+.cue-g { padding: 7px 0; }
+.cue p, .cue-row p { font-size: 13.5px; }
+.cue-row { padding: 8px 0; }
+.next-row { padding-top: 8px; font-size: 13px; }
+.pkg-main .big { font-size: 30px; }
+.pkg-remain b { font-size: 24px; }
+.next-card { gap: 10px; }
+.next-card b { font-size: 15px; }
+.tag-row { margin: 0 0 8px; }
+
+/* 表單 */
+.frow { min-height: 42px; padding: 4px 0; }
+.frow > label { font-size: 13.5px; }
+.frow.col { padding: 8px 0; }
+.inp { height: 36px; font-size: 15px; border-radius: 10px; }
+.ex-card { padding: 10px 12px 10px; }
+.ex-h b { font-size: 15px; }
+.ex-last { margin: 6px 0 2px; padding: 5px 6px 5px 10px; }
+.set-tbl { border-spacing: 0 4px; }
+.set-tbl .inp { height: 38px; font-size: 16px; }
+.rpe button { height: 32px; }
+.switch-row { padding: 8px 0; }
+.add-ex { height: 44px; }
+.fgroup summary { padding: 12px 14px; }
+.fbody { padding: 0 14px 10px; }
+
+/* 飲食 */
+.datebar { margin: -2px 0 8px; }
+.db-arrow { width: 34px; height: 34px; border-radius: 10px; }
+.db-mid b { font-size: 15px; }
+.nut { padding: 12px 14px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+.nut-top, .nut .link-btn { grid-column: 1 / -1; }
+.meal-adds { display: flex; gap: 6px; margin-bottom: 8px; }
+.meal-adds a { flex: 1; display: flex; align-items: center; justify-content: center; gap: 2px; height: 34px; border-radius: 11px; border: 1.5px dashed var(--line-2); color: var(--ink-3); font-size: 12.5px; font-weight: 600; }
+.meal-adds .ic { width: 14px; height: 14px; }
+.nut-top { gap: 14px; margin-bottom: 4px; }
+.kring { width: 96px; height: 96px; }
+.nut-side { gap: 6px; }
+.nut-side b { font-size: 18px; }
+.mbar { padding: 4px 0; }
+.mbar-top { font-size: 12px; margin-bottom: 3px; }
+.mbar-t { height: 5px; }
+.nut .link-btn { margin-top: 6px; font-size: 12px; }
+.meal { padding: 10px 14px 4px; }
+.meal-h { margin-bottom: 2px; }
+.meal-h h3 { font-size: 14px; }
+.fentry { padding: 7px 0; }
+.fe-main b { font-size: 13.5px; }
+.fe-k b { font-size: 15px; }
+.meal-empty { padding: 9px 14px; margin-bottom: 6px; font-size: 13px; border-radius: 14px; }
+.add3 { gap: 6px; margin-bottom: 8px; }
+.add3 button { padding: 10px 6px 8px; border-radius: 14px; }
+.add3 .ic { width: 20px; height: 20px; margin-bottom: 2px; }
+.add3 span { display: none; }
+.fitem { padding: 10px 12px; }
+.fi-nut .inp { height: 34px; }
+
+/* 底部選單 */
+.tabbar { padding: 6px 6px calc(6px + var(--safe-b)); }
+.tab-add span { width: 42px; height: 42px; border-radius: 14px; }

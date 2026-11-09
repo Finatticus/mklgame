@@ -94,9 +94,8 @@
         <a class="avatar sm" href="#/me" aria-label="我的">${esc(acc.slice(0, 1).toUpperCase())}</a>
       </header>
       ${W.S.backendOld ? `<div class="notice err">${icon('warn')}<div><b>後端需要更新</b><br>請依 README 把新版 Code.gs 貼到 Apps Script 並部署新版本，體重、訓練、飲食才能儲存。</div></div>` : ''}
-      ${seed}${today}${weightCard}${weekCard}${ibCard}
-      <div class="sec-head"><h2>功能</h2></div>
       <div class="tiles">${tiles.map(([h, ic, l, soon]) => `<a class="tile ${soon ? 'soon' : ''}" ${h ? `href="${h}"` : ''}><span class="tile-ic">${icon(ic)}</span><b>${l}</b><span>${soon ? '即將推出' : '&nbsp;'}</span></a>`).join('')}</div>
+      ${seed}${today}${weightCard}${weekCard}${ibCard}
       ${ib ? insight(ib) : ''}
       <div class="foot-space"></div>`;
   }
