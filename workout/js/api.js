@@ -7,7 +7,9 @@
   };
 
   function apiUrl() {
-    return LS.get('wo.apiUrl', '') || (window.APP_CONFIG && window.APP_CONFIG.API_URL) || '';
+    const o = LS.get('wo.apiUrl', '');
+    if (o === 'demo') return ''; // 強制示範模式（本機測試用）
+    return o || (window.APP_CONFIG && window.APP_CONFIG.API_URL) || '';
   }
   function isDemo() { return !apiUrl(); }
 
@@ -39,9 +41,30 @@
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   const nowStr = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
+  const D = (col) => LS.get('wo.demo.' + col, col === 'settings' ? {} : []);
+  const DS = (col, v) => LS.set('wo.demo.' + col, v);
+  const upsert = (col, rec) => {
+    const list = D(col);
+    const r = Object.assign({}, rec);
+    const i = r.id ? list.findIndex((x) => x.id === r.id) : -1;
+    r.updatedAt = nowStr();
+    if (i >= 0) { r.createdAt = list[i].createdAt; list[i] = r; } else { r.id = uid(); r.createdAt = nowStr(); list.push(r); }
+    DS(col, list);
+    return r;
+  };
+  const remove = (col, id) => DS(col, D(col).filter((x) => x.id !== id));
+  function syncIbWeight(ib) {
+    const day = String(ib.date || '').slice(0, 10);
+    let ws = D('weight');
+    const linked = ws.find((w) => w.inbodyId === ib.id);
+    ws = ws.filter((w) => !(w.date === day && (!linked || w.id !== linked.id)));
+    DS('weight', ws);
+    if (ib.weight == null || ib.weight === '') { if (linked) remove('weight', linked.id); return; }
+    upsert('weight', { id: linked ? linked.id : '', date: day, weight: ib.weight, source: 'InBody', inbodyId: ib.id, note: '' });
+  }
   const demo = {
     async register({ account, password }) {
-      await wait(400);
+      await wait(300);
       const users = LS.get('wo.demo.users', {});
       if (users[account]) throw new ApiError('ACCOUNT_EXISTS', '此帳號已被註冊');
       users[account] = { password, approved: true };
@@ -49,34 +72,57 @@
       return { status: 'pending' };
     },
     async login({ account, password }) {
-      await wait(400);
+      await wait(300);
       const u = LS.get('wo.demo.users', {})[account];
       if (!u || u.password !== password) throw new ApiError('BAD_LOGIN', '帳號或密碼錯誤');
       return { account, token: 'demo' };
     },
-    async me() { return { account: (LS.get('wo.session', {}) || {}).account }; },
-    async 'inbody.list'() { await wait(200); return LS.get('wo.demo.inbody', []); },
-    async 'inbody.save'({ record, photo }) {
-      await wait(400);
-      const list = LS.get('wo.demo.inbody', []);
-      const rec = Object.assign({}, record);
-      if (photo) rec.photoUrl = '';
-      const i = rec.id ? list.findIndex((r) => r.id === rec.id) : -1;
-      rec.updatedAt = nowStr();
-      if (i >= 0) { rec.createdAt = list[i].createdAt; list[i] = rec; }
-      else { rec.id = uid(); rec.createdAt = nowStr(); list.push(rec); }
-      list.sort((a, b) => String(a.date).localeCompare(String(b.date)));
-      LS.set('wo.demo.inbody', list);
-      return rec;
+    async sync() {
+      await wait(200);
+      return { inbody: D('inbody'), weight: D('weight'), workout: D('workout'), food: D('food'), settings: D('settings') };
+    },
+    async 'inbody.list'() { return D('inbody'); },
+    async 'inbody.save'({ record }) {
+      await wait(300);
+      const r = upsert('inbody', record);
+      syncIbWeight(r);
+      return { record: r, weight: D('weight') };
     },
     async 'inbody.delete'({ id }) {
-      await wait(200);
-      LS.set('wo.demo.inbody', LS.get('wo.demo.inbody', []).filter((r) => r.id !== id));
-      return { id };
+      remove('inbody', id);
+      DS('weight', D('weight').filter((w) => w.inbodyId !== id));
+      return { id, weight: D('weight') };
     },
+    async 'weight.save'({ record }) {
+      await wait(200);
+      const ws = D('weight');
+      const same = ws.find((w) => w.date === record.date && w.id !== record.id);
+      if (same && same.source === 'InBody') throw new ApiError('INBODY_DAY', `這天已有 InBody 量測（${same.weight} kg），以 InBody 為準`);
+      const self = record.id ? ws.find((w) => w.id === record.id) : null;
+      if (self && same) remove('weight', same.id);
+      return upsert('weight', { id: (self || same || {}).id || '', date: record.date, weight: record.weight, source: '手動', inbodyId: '', note: record.note || '' });
+    },
+    async 'data.save'({ col, record }) {
+      if (col === 'weight') return demo['weight.save']({ record });
+      await wait(250);
+      return upsert(col, record);
+    },
+    async 'data.delete'({ col, id }) { await wait(150); remove(col, id); return { id }; },
+    async settings({ data }) { const s = Object.assign(D('settings'), data); DS('settings', s); return s; },
     async 'inbody.parse'() {
-      await wait(1800);
+      await wait(1500);
       return { record: Object.assign({}, window.SEED_INBODY, { coachNote: '' }), notes: '示範模式：回傳的是範例資料，不是真的解析結果。', model: 'demo' };
+    },
+    async 'food.estimate'({ text }) {
+      await wait(1200);
+      return {
+        items: [
+          { name: '雞腿便當（白飯）', amount: '1 份，飯約 1 碗', kcal: 780, protein: 38, carb: 92, fat: 28, fiber: 4 },
+          { name: '茶葉蛋', amount: '1 顆', kcal: 75, protein: 7, carb: 0.5, fat: 5, fiber: 0 },
+        ],
+        notes: '示範模式：這是範例估算，不是真的 AI 結果。描述：' + (text || ''),
+        model: 'demo',
+      };
     },
   };
 

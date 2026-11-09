@@ -1,8 +1,9 @@
 /* Service worker：快取 App 外殼，API 一律走網路 */
-const CACHE = 'workout-v1.0.0';
+const CACHE = 'workout-v2.0.0';
 const SHELL = [
-  './', './index.html', './css/app.css',
-  './js/config.js', './js/schema.js', './js/seed.js', './js/api.js', './js/charts.js', './js/app.js',
+  './', './index.html', './css/app.css', './css/v2.css',
+  './js/config.js', './js/schema.js', './js/seed.js', './js/data/exercises.js', './js/data/foods.js', './js/api.js', './js/charts.js',
+  './js/core.js', './js/inbody.js', './js/weight.js', './js/training.js', './js/food.js', './js/home.js', './js/main.js',
   './manifest.webmanifest', './icons/icon.svg', './icons/apple-touch-icon.png', './icons/icon-192.png',
 ];
 

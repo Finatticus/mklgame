@@ -1,404 +1,40 @@
-/* Workout — 主程式（hash router + views） */
+/* InBody：總覽、單筆報告、拍照匯入、表單 */
 (function () {
-  const { call, isDemo, apiUrl, LS } = window.API;
-  const { GROUPS, SEGMENTS, EXERCISES, METRICS, allKeys, TEXT_KEYS } = window.SCHEMA;
+  const { $, $$, esc, has, num, signed, fmtDate, icon, toast, sheet, confirmSheet, busy, call, back, LS, isDemo } = W;
   const C = window.Charts;
-
-  /* ---------------- 狀態 ---------------- */
+  const { GROUPS, SEGMENTS, EXERCISES, METRICS, allKeys, TEXT_KEYS } = window.SCHEMA;
   const S = {
-    session: LS.get('wo.session', null), // {account, token}
-    records: [],
-    loaded: false,
-    draft: null, // {record, photo, notes, source, editId}
+    get records() { return W.S.data.inbody; },
+    get draft() { return W.S.draft; },
+    set draft(v) { W.S.draft = v; },
+    get loaded() { return W.S.loaded; },
     metric: LS.get('wo.metric', 'weight'),
     segMode: 'lean',
   };
-  if (S.session) S.records = LS.get(cacheKey(), []);
-
-  function cacheKey() { return 'wo.cache.inbody.' + (S.session ? S.session.account : ''); }
-  function setRecords(list) {
-    S.records = list.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
-    LS.set(cacheKey(), S.records);
-  }
-
-  /* ---------------- 工具 ---------------- */
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const has = (v) => v !== undefined && v !== null && v !== '' && !(typeof v === 'number' && isNaN(v));
-  const num = (v, d) => {
-    if (!has(v)) return '–';
-    if (d != null) return Number(v).toFixed(d);
-    return String(+Number(v).toFixed(2));
-  };
-  const signed = (v, d = 1) => (!has(v) ? '–' : (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(d));
-  const WD = ['日', '一', '二', '三', '四', '五', '六'];
-  function fmtDate(s, mode) {
-    const d = C.parseDate(s);
-    if (!d) return esc(s || '');
-    const p = (n) => String(n).padStart(2, '0');
-    if (mode === 'short') return `${d.getMonth() + 1}/${d.getDate()}`;
-    if (mode === 'day') return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
-    return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-  }
-  function relDays(s) {
-    const d = C.parseDate(s);
-    if (!d) return '';
-    const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(d).setHours(0, 0, 0, 0)) / 864e5);
-    return days < 0 ? '' : days === 0 ? '今天' : days === 1 ? '昨天' : `${days} 天前`;
-  }
-
-  const ICON = {
-    home: '<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/>',
-    body: '<circle cx="12" cy="4.8" r="2.2"/><path d="M7 9h10M12 9v6m0 0-3 6m3-6 3 6M7 9l-1.5 5M17 9l1.5 5"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>',
-    dumbbell: '<path d="M3 10v4M6 7.5v9M18 7.5v9M21 10v4M6 12h12"/>',
-    user: '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-3.6 4-5.2 7.5-5.2s6.3 1.6 7.5 5.2"/>',
-    chevron: '<path d="m9 6 6 6-6 6"/>',
-    back: '<path d="m15 6-6 6 6 6"/>',
-    camera: '<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.4-2h6.2l1.4 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.4"/>',
-    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
-    trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 13h8l1-13"/>',
-    check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
-    warn: '<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17.2v.3"/>',
-    calendar: '<rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
-    food: '<path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5M9 3v5M16.5 21V3c-2 1-3.5 3.5-3.5 7s1.5 4 3.5 4"/>',
-    ruler: '<path d="M3.5 15.5 15.5 3.5l5 5-12 12z"/><path d="m7 12 2 2M10 9l2 2M13 6l2 2"/>',
-    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6"/>',
-    chart: '<path d="M4 19h16"/><path d="m5 15 4.5-5 4 3L19 7"/>',
-    list: '<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.8" cy="6.5" r=".8"/><circle cx="4.8" cy="12" r=".8"/><circle cx="4.8" cy="17.5" r=".8"/>',
-    image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="m20.5 16-5-5-8.5 8.5"/>',
-    close: '<path d="M6 6l12 12M18 6 6 18"/>',
-    download: '<path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/>',
-    refresh: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4h-4"/>',
-    logout: '<path d="M14 4.5H6.5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1H14M10.5 12H20m0 0-3.5-3.5M20 12l-3.5 3.5"/>',
-    link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-    sparkle: '<path d="M12 3.5 13.8 10l6.7 2-6.7 2L12 20.5 10.2 14 3.5 12l6.7-2z"/>',
-  };
-  const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n] || ''}</svg>`;
-
-  function toast(msg, type = '') {
-    const t = document.createElement('div');
-    t.className = 'toast ' + type;
-    t.textContent = msg;
-    document.body.appendChild(t);
-    requestAnimationFrame(() => t.classList.add('show'));
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2600);
-  }
-
-  function sheet(html, onMount) {
-    const wrap = document.createElement('div');
-    wrap.className = 'sheet-wrap';
-    wrap.innerHTML = `<div class="sheet-bg"></div><div class="sheet"><div class="sheet-grip"></div>${html}</div>`;
-    document.body.appendChild(wrap);
-    requestAnimationFrame(() => wrap.classList.add('show'));
-    const close = () => { wrap.classList.remove('show'); setTimeout(() => wrap.remove(), 260); };
-    $('.sheet-bg', wrap).onclick = close;
-    onMount && onMount(wrap, close);
-    return close;
-  }
-
-  function confirmSheet(title, text, okLabel, danger) {
-    return new Promise((resolve) => {
-      let done = false;
-      const close = sheet(`<div class="sheet-body">
-          <h3>${esc(title)}</h3><p class="muted">${esc(text)}</p>
-          <div class="btn-row"><button class="btn ghost" data-a="no">取消</button>
-          <button class="btn ${danger ? 'danger' : 'primary'}" data-a="yes">${esc(okLabel)}</button></div></div>`,
-        (w, cl) => {
-          $$('[data-a]', w).forEach((b) => (b.onclick = () => { done = true; resolve(b.dataset.a === 'yes'); cl(); }));
-          $('.sheet-bg', w).addEventListener('click', () => { if (!done) resolve(false); });
-        });
-    });
-  }
-
-  function busy(on, text) {
-    let el = $('#busy');
-    if (on) {
-      if (!el) {
-        el = document.createElement('div');
-        el.id = 'busy';
-        el.innerHTML = '<div class="busy-card"><div class="spinner"></div><div class="busy-text"></div></div>';
-        document.body.appendChild(el);
-      }
-      $('.busy-text', el).textContent = text || '處理中…';
-      requestAnimationFrame(() => el.classList.add('show'));
-    } else if (el) {
-      el.classList.remove('show');
-      setTimeout(() => el && el.remove(), 200);
-    }
-  }
-
-  async function guard(fn) {
-    try { return await fn(); } catch (e) {
-      busy(false);
-      if (e.code === 'AUTH' || e.code === 'PENDING') { logout(); toast(e.message, 'err'); return; }
-      toast(e.message || '發生錯誤', 'err');
-      throw e;
-    }
-  }
-
-  /* ---------------- 資料 ---------------- */
-  async function loadRecords(force) {
-    if (S.loaded && !force) return S.records;
-    const list = await call('inbody.list');
-    setRecords(list || []);
-    S.loaded = true;
-    return S.records;
-  }
-  const latest = () => S.records[S.records.length - 1];
+  const setRecords = (list) => W.setCol('inbody', list);
+  const latest = () => W.latestInbody();
   const prevOf = (rec) => {
     const i = S.records.findIndex((r) => r.id === rec.id);
     return i > 0 ? S.records[i - 1] : null;
   };
-
-  function logout() {
-    LS.del('wo.session');
-    S.session = null; S.records = []; S.loaded = false;
-    location.hash = '#/login';
-    render();
-  }
-
-  /* ---------------- Router ---------------- */
-  const routes = [
-    [/^#\/login$/, viewLogin, { auth: false, tab: false }],
-    [/^#\/home$/, viewHome, { tab: 'home' }],
-    [/^#\/inbody$/, viewInbody, { tab: 'inbody' }],
-    [/^#\/inbody\/r\/([\w-]+)$/, viewDetail, { tab: 'inbody', sub: true }],
-    [/^#\/inbody\/scan$/, viewScan, { tab: false, sub: true }],
-    [/^#\/inbody\/new$/, viewNew, { tab: false, sub: true }],
-    [/^#\/inbody\/edit\/([\w-]+)$/, viewEdit, { tab: false, sub: true }],
-    [/^#\/inbody\/review$/, viewReview, { tab: false, sub: true }],
-    [/^#\/training$/, viewTraining, { tab: 'training' }],
-    [/^#\/me$/, viewMe, { tab: 'me' }],
-  ];
-
-  let renderSeq = 0;
-  async function render() {
-    const seq = ++renderSeq;
-    let hash = location.hash || '#/home';
-    if (!S.session && hash !== '#/login') { location.replace('#/login'); return; }
-    if (S.session && hash === '#/login') { location.replace('#/home'); return; }
-    if (S.session && !S.loaded && !S.syncing) {
-      S.syncing = true;
-      syncThenRefresh().finally(() => (S.syncing = false));
-    }
-    let match = null;
-    for (const [re, fn, opt] of routes) {
-      const m = hash.match(re);
-      if (m) { match = { fn, opt, args: m.slice(1) }; break; }
-    }
-    if (!match) { location.replace('#/home'); return; }
-    const view = $('#view');
-    const tabbar = $('#tabbar');
-    tabbar.hidden = match.opt.tab === false;
-    document.body.classList.toggle('no-tab', match.opt.tab === false);
-    $$('#tabbar [data-tab]').forEach((a) => a.classList.toggle('on', a.dataset.tab === match.opt.tab));
-    const html = await match.fn(...match.args);
-    if (seq !== renderSeq || html == null) return;
-    view.innerHTML = html;
-    view.classList.remove('enter');
-    void view.offsetWidth;
-    view.classList.add('enter');
-    window.scrollTo(0, 0);
-    const mount = match.fn.mount;
-    if (mount) mount(view, ...match.args);
-  }
-
-  // 在背景同步資料後重繪目前頁面（不重設捲動）
-  async function syncThenRefresh() {
-    try {
-      const before = JSON.stringify(S.records);
-      await loadRecords(true);
-      if (JSON.stringify(S.records) === before) return;
-      const h = location.hash;
-      if (/^#\/(home|inbody)(\/r\/.*)?$/.test(h) || h === '') render();
-    } catch (e) {
-      if (e.code === 'AUTH' || e.code === 'PENDING') { logout(); toast(e.message, 'err'); }
+  const loadRecords = () => W.sync();
+  async function guard(fn) {
+    try { return await fn(); } catch (e) {
+      busy(false);
+      if (e.code === 'AUTH' || e.code === 'PENDING') { W.logout(); toast(e.message, 'err'); return; }
+      toast(e.message || '發生錯誤', 'err');
+      throw e;
     }
   }
-
-  const back = (to) => `<a class="nav-back" href="${to}" data-back>${icon('back')}</a>`;
-
-  /* =========================================================
-   * 登入 / 註冊
-   * ========================================================= */
-  function viewLogin() {
-    return `<div class="auth">
-      <div class="auth-top">
-        <div class="brand-mark">${brandSvg()}</div>
-        <h1 class="auth-title">Workout</h1>
-        <p class="auth-sub">身體數據・訓練・教練課，一個地方記錄</p>
-      </div>
-      <div class="auth-card card">
-        <div class="seg" role="tablist">
-          <button class="on" data-mode="login">登入</button>
-          <button data-mode="register">註冊</button>
-        </div>
-        <form id="authForm" autocomplete="on">
-          <label class="field"><span>帳號</span>
-            <input name="account" autocomplete="username" autocapitalize="off" spellcheck="false" required minlength="3"></label>
-          <label class="field"><span>密碼</span>
-            <input name="password" type="password" autocomplete="current-password" required minlength="4"></label>
-          <button class="btn primary block" type="submit">登入</button>
-        </form>
-        <div id="authMsg"></div>
-      </div>
-      ${isDemo() ? `<p class="auth-foot">目前為<b>示範模式</b>（尚未連接後端），資料只存在此裝置。</p>` : ''}
-    </div>`;
-  }
-  viewLogin.mount = (v) => {
-    let mode = 'login';
-    const form = $('#authForm', v);
-    const msg = $('#authMsg', v);
-    $$('.seg button', v).forEach((b) => (b.onclick = () => {
-      mode = b.dataset.mode;
-      $$('.seg button', v).forEach((x) => x.classList.toggle('on', x === b));
-      $('button[type=submit]', form).textContent = mode === 'login' ? '登入' : '建立帳號';
-      form.password.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
-      msg.innerHTML = '';
-    }));
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const account = form.account.value.trim();
-      const password = form.password.value;
-      const btn = $('button[type=submit]', form);
-      btn.disabled = true;
-      msg.innerHTML = '';
-      try {
-        if (mode === 'register') {
-          await call('register', { account, password });
-          msg.innerHTML = isDemo()
-            ? `<div class="notice ok">${icon('check')}<div><b>註冊成功</b><br>示範模式自動通過審核，可以直接登入。</div></div>`
-            : `<div class="notice">${icon('check')}<div><b>註冊成功，等待審核</b><br>到 Google Sheets 的 <code>account</code> 工作頁，在該帳號的 C 欄輸入 <code>V</code> 後即可登入。</div></div>`;
-          $$('.seg button', v)[0].click();
-          form.account.value = account;
-          form.password.value = '';
-        } else {
-          const data = await call('login', { account, password });
-          S.session = { account: data.account, token: data.token };
-          LS.set('wo.session', S.session);
-          S.records = LS.get(cacheKey(), []);
-          S.loaded = false;
-          location.hash = '#/home';
-        }
-      } catch (err) {
-        const pending = err.code === 'PENDING';
-        msg.innerHTML = `<div class="notice ${pending ? '' : 'err'}">${icon(pending ? 'calendar' : 'warn')}<div>${esc(err.message)}${pending ? '<br><span class="muted">請到 Google Sheets 的 account 工作頁 C 欄輸入 V</span>' : ''}</div></div>`;
-      } finally {
-        btn.disabled = false;
-      }
-    };
-  };
-
-  function brandSvg() {
-    return `<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="var(--ink)"/>
-      <path d="M12 18v12M16.5 14.5v19M31.5 14.5v19M36 18v12M16.5 24h15" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/></svg>`;
-  }
-
-  /* =========================================================
-   * 首頁
-   * ========================================================= */
-  async function viewHome() {
-    const now = new Date();
-    const hr = now.getHours();
-    const hello = hr < 5 ? '夜深了' : hr < 11 ? '早安' : hr < 14 ? '午安' : hr < 18 ? '午安' : '晚安';
-    const r = latest();
-    const first = S.records[0];
-    let hero = '';
-    if (r) {
-      const p = prevOf(r);
-      const dW = p && has(r.weight) && has(p.weight) ? r.weight - p.weight : null;
-      const target = r.target_weight;
-      let progress = '';
-      if (has(target) && has(r.weight)) {
-        const start = Math.max(first.weight ?? r.weight, r.weight);
-        const total = start - target;
-        const doneKg = start - r.weight;
-        const pct = total > 0 ? Math.max(0, Math.min(doneKg / total, 1)) * 100 : 100;
-        const left = r.weight - target;
-        progress = `<div class="goal">
-          <div class="goal-row"><span>目標體重 <b>${num(target, 1)}</b> kg</span><span>${left > 0 ? `還差 <b>${num(left, 1)}</b> kg` : '已達成 🎯'}</span></div>
-          <div class="goal-bar"><i style="width:${Math.max(pct, 2)}%"></i></div>
-          <div class="goal-row sub"><span>起點 ${num(start, 1)}</span><span>已減 ${num(Math.max(doneKg, 0), 1)} kg</span></div>
-        </div>`;
-      }
-      hero = `<a class="card hero" href="#/inbody/r/${r.id}">
-        <div class="hero-top"><span class="eyebrow">最新身體組成</span><span class="hero-date">${fmtDate(r.date, 'day')}・${relDays(r.date)}</span></div>
-        <div class="hero-main">
-          <div><div class="big">${num(r.weight, 1)}<small>kg</small></div>
-            <div class="delta ${dW == null ? '' : dW <= 0 ? 'good' : 'bad'}">${dW == null ? '第一次量測' : `較上次 ${signed(dW)} kg`}</div></div>
-          ${C.ring(r.score, 100, 'InBody')}
-        </div>
-        <div class="stat3">
-          <div><span>骨骼肌</span><b>${num(r.smm, 1)}<small>kg</small></b></div>
-          <div><span>體脂率</span><b>${num(r.pbf, 1)}<small>%</small></b></div>
-          <div><span>內臟脂肪</span><b>${num(r.vfl, 0)}<small>級</small></b></div>
-        </div>
-        ${progress}
-      </a>`;
-    } else {
-      hero = `<div class="card hero empty">
-        <span class="eyebrow">身體組成</span>
-        <h3>還沒有 InBody 紀錄</h3>
-        <p class="muted">拍下報告照片，AI 會讀出所有數值讓你確認後匯入。</p>
-        <div class="btn-row"><a class="btn primary" href="#/inbody/scan">${icon('camera')}拍照匯入</a><a class="btn ghost" href="#/inbody/new">手動輸入</a></div>
-      </div>`;
-    }
-
-    const seedCard = !S.records.some((x) => String(x.date).startsWith('2026-11-09')) && window.SEED_INBODY && S.session
-      ? `<div class="card seed">
-          <div class="seed-ic">${icon('sparkle')}</div>
-          <div class="seed-txt"><b>11/09 教練課的 InBody 已轉錄好</b><span>共 ${Object.keys(window.SEED_INBODY).length} 項數值，確認無誤即可匯入</span></div>
-          <button class="btn sm primary" id="seedBtn">檢查並匯入</button>
-        </div>` : '';
-
-    const tiles = [
-      { href: '#/inbody', ic: 'body', t: '身體組成', d: S.records.length ? `${S.records.length} 筆 InBody` : 'InBody 紀錄', on: true },
-      { href: '#/training', ic: 'dumbbell', t: '訓練日誌', d: '即將推出' },
-      { href: '#/training', ic: 'calendar', t: '教練課程', d: '即將推出' },
-      { href: '#/training', ic: 'food', t: '飲食紀錄', d: '即將推出' },
-      { href: '#/training', ic: 'ruler', t: '身體圍度', d: '即將推出' },
-      { href: '#/training', ic: 'target', t: '目標設定', d: '即將推出' },
-    ];
-
-    return `<header class="page-head">
-        <div class="eyebrow">${now.getMonth() + 1}月${now.getDate()}日 星期${WD[now.getDay()]}</div>
-        <h1>${hello}，${esc(S.session.account)}</h1>
-      </header>
-      ${seedCard}
-      ${hero}
-      <div class="sec-head"><h2>功能</h2></div>
-      <div class="tiles">${tiles.map((x) => `<a class="tile ${x.on ? '' : 'soon'}" href="${x.href}">
-          <span class="tile-ic">${icon(x.ic)}</span><b>${x.t}</b><span>${x.d}</span></a>`).join('')}</div>
-      ${r ? insightCard(r) : ''}
-      <div class="foot-space"></div>`;
-  }
-  viewHome.mount = (v) => {
-    const b = $('#seedBtn', v);
-    if (b) b.onclick = () => {
-      S.draft = { record: Object.assign({}, window.SEED_INBODY), photo: null, notes: '', source: 'seed' };
-      location.hash = '#/inbody/review';
-    };
-  };
-
-  function insightCard(r) {
-    const items = [];
-    if (has(r.fat_ctrl) && r.fat_ctrl < 0) items.push(['脂肪', `建議減少 <b>${num(-r.fat_ctrl, 1)} kg</b> 體脂肪`]);
-    if (has(r.muscle_ctrl)) items.push(['肌肉', r.muscle_ctrl > 0 ? `建議增加 <b>${num(r.muscle_ctrl, 1)} kg</b> 肌肉` : '肌肉量已達標準，<b>維持</b>即可']);
-    if (has(r.vfl)) items.push(['內臟脂肪', r.vfl >= 10 ? `級別 <b>${r.vfl}</b>，已超過標準 (≤9)` : `級別 <b>${r.vfl}</b>，標準 ≤ 9${r.vfl >= 8 ? '，接近上限' : ''}`]);
-    if (has(r.kcal_rec)) items.push(['熱量', `建議每日攝取 <b>${num(r.kcal_rec, 0)} kcal</b>・基礎代謝 ${num(r.bmr, 0)}`]);
-    if (!items.length) return '';
-    return `<div class="sec-head"><h2>重點</h2><span class="muted sm">依 ${fmtDate(r.date, 'short')} 量測</span></div>
-      <div class="card list-card">${items.map(([k, t]) => `<div class="li"><span class="li-k">${k}</span><span class="li-v">${t}</span></div>`).join('')}</div>`;
-  }
+  const bodySeg = (k) => W.segNav([['#/weight', '體重', 'weight'], ['#/inbody', 'InBody', 'inbody']], k);
 
   /* =========================================================
    * InBody 總覽：趨勢 + 歷程
    * ========================================================= */
   async function viewInbody() {
     const recs = S.records;
-    const head = `<header class="page-head row">
+    W.LS.set('wo.bodyTab', '#/inbody');
+    const head = bodySeg('inbody') + `<header class="page-head row">
         <div class="grow"><div class="eyebrow">InBody</div><h1>身體組成</h1></div>
         <button class="icon-btn solid" id="addBtn" aria-label="新增">${icon('plus')}</button>
       </header>`;
@@ -505,11 +141,9 @@
 
   function openAddSheet() {
     sheet(`<div class="sheet-body">
-      <h3>新增紀錄</h3>
+      <h3>新增 InBody</h3>
       <a class="act" href="#/inbody/scan"><span class="act-ic">${icon('camera')}</span><div><b>拍照匯入 InBody</b><span>AI 讀取報告，確認後匯入</span></div>${icon('chevron', 'chev')}</a>
-      <a class="act" href="#/inbody/new"><span class="act-ic">${icon('edit')}</span><div><b>手動輸入 InBody</b><span>逐欄填寫</span></div>${icon('chevron', 'chev')}</a>
-      <a class="act soon" href="#/training"><span class="act-ic">${icon('dumbbell')}</span><div><b>訓練紀錄</b><span>即將推出</span></div>${icon('chevron', 'chev')}</a>
-    </div>`, (w, close) => $$('a', w).forEach((a) => a.addEventListener('click', close)));
+      <a class="act" href="#/inbody/new"><span class="act-ic">${icon('edit')}</span><div><b>手動輸入 InBody</b><span>逐欄填寫</span></div>${icon('chevron', 'chev')}</a>    </div>`, (w, close) => $$('a', w).forEach((a) => a.addEventListener('click', close)));
   }
 
   /* =========================================================
@@ -519,7 +153,7 @@
     const r = S.records.find((x) => x.id === id);
     if (!r) {
       if (!S.loaded) { await guard(() => loadRecords()); return viewDetail(id); }
-      return `<header class="page-head">${back('#/inbody')}<h1>找不到紀錄</h1></header>`;
+      return `<header class="page-head row">${back('#/inbody')}<h1>找不到紀錄</h1></header>`;
     }
     const p = prevOf(r);
     const d = (k, dec = 1, better = 'down') => {
@@ -622,7 +256,7 @@
       <div class="card">
         <div class="card-h"><h3>評估</h3></div>
         <div class="evals">
-          <div><span>BMI</span><b>${num(r.bmi, 1)}</b>${evalPill(r.bmi_eval)}</div>
+          <div><span>BMI<small class="block">國健署標準 18.5–24</small></span><b>${num(r.bmi, 1)}</b>${evalPill(r.bmi_eval)}</div>
           <div><span>體脂率 PBF</span><b>${num(r.pbf, 1)}%</b>${evalPill(r.pbf_eval)}</div>
           <div><span>上半身平衡</span><b></b>${evalPill(r.bal_upper)}</div>
           <div><span>下半身平衡</span><b></b>${evalPill(r.bal_lower)}</div>
@@ -634,7 +268,7 @@
         <div class="card-h"><h3>腰臀圍比・內臟脂肪</h3></div>
         <div class="mrows">
           ${has(r.whr) ? `<div class="mrow"><div class="mrow-top"><span>腰臀圍比</span><span><b>${num(r.whr, 2)}</b>${has(r.whr_hi) ? ` <span class="pill ${r.whr > r.whr_hi ? 'high' : r.whr < r.whr_lo ? 'low' : 'ok'}">${r.whr > r.whr_hi ? '高' : r.whr < r.whr_lo ? '低' : '標準'}</span>` : ''}</span></div>${C.rangeBar(r.whr, r.whr_lo, r.whr_hi, { scale: [0.7, 1.05] })}</div>` : ''}
-          ${has(r.vfl) ? `<div class="mrow"><div class="mrow-top"><span>內臟脂肪級別</span><span><b>${num(r.vfl, 0)}</b> 級 <span class="pill ${r.vfl >= 10 ? 'high' : 'ok'}">${r.vfl >= 10 ? '高' : '標準'}</span></span></div>${C.rangeBar(r.vfl, 1, 9, { scale: [1, 20] })}</div>` : ''}
+          ${has(r.vfl) ? `<div class="mrow"><div class="mrow-top"><span>內臟脂肪級別</span><span><b>${num(r.vfl, 0)}</b> 級 <span class="pill ${r.vfl >= 15 ? 'high' : r.vfl >= 10 ? 'warn' : 'ok'}">${r.vfl >= 15 ? '過高' : r.vfl >= 10 ? '偏高' : '標準'}</span></span></div>${C.rangeBar(r.vfl, 1, 9, { scale: [1, 20] })}<p class="hint">InBody 標準：1–9 正常・10–14 偏高・15 以上過高</p></div>` : ''}
         </div>
       </div>
 
@@ -643,7 +277,7 @@
         <div class="params">
           <div><span>除脂體重</span><b>${num(r.ffm, 1)}<small>kg</small></b></div>
           <div><span>基礎代謝率</span><b>${num(r.bmr, 0)}<small>kcal</small></b>${has(r.bmr_lo) ? `<em class="${r.bmr < r.bmr_lo ? 'bad' : ''}">標準 ${r.bmr_lo}–${r.bmr_hi}</em>` : ''}</div>
-          <div><span>SMI</span><b>${num(r.smi, 1)}<small>kg/m²</small></b></div>
+          <div><span>SMI</span><b>${num(r.smi, 1)}<small>kg/m²</small></b>${has(r.smi) ? `<em class="${r.smi < (r.sex === '女' ? 5.7 : 7) ? 'bad' : ''}">${r.sex === '女' ? '女性' : '男性'}參考 ≥ ${r.sex === '女' ? 5.7 : 7.0}</em>` : ''}</div>
           <div><span>建議熱量攝取</span><b>${num(r.kcal_rec, 0)}<small>kcal</small></b></div>
         </div>
       </div>
@@ -674,8 +308,10 @@
     if (del) del.onclick = async () => {
       if (!(await confirmSheet('刪除這筆紀錄？', `${fmtDate(r.date)} 的 InBody 資料將從 Google Sheets 移除，無法復原。`, '刪除', true))) return;
       busy(true, '刪除中…');
-      await guard(() => call('inbody.delete', { id }));
+      const res = await guard(() => call('inbody.delete', { id })).catch(() => null);
       busy(false);
+      if (!res) return;
+      if (res.weight) W.setCol('weight', res.weight);
       setRecords(S.records.filter((x) => x.id !== id));
       toast('已刪除');
       location.hash = '#/inbody';
@@ -1002,102 +638,21 @@
       })).catch(() => null);
       busy(false);
       if (!saved) return;
-      const list = S.records.filter((x) => x.id !== saved.id);
-      list.push(saved);
-      setRecords(list);
+      const savedRec = saved.record || saved;
+      if (saved.weight) W.setCol('weight', saved.weight);
+      setRecords(S.records.filter((x) => x.id !== savedRec.id).concat([savedRec]));
       S.draft = null;
       toast('已儲存', 'ok');
-      location.replace('#/inbody/r/' + saved.id);
+      location.replace('#/inbody/r/' + savedRec.id);
     };
   }
 
-  /* =========================================================
-   * 訓練（預留）
-   * ========================================================= */
-  function viewTraining() {
-    const plan = [
-      ['dumbbell', '訓練日誌', '動作、組數、重量、RPE，自動計算訓練量'],
-      ['calendar', '教練課程', '課表、剩餘堂數、每堂課重點筆記'],
-      ['food', '飲食紀錄', '依 InBody 建議熱量追蹤蛋白質與熱量'],
-      ['ruler', '身體圍度', '腰圍、臀圍、手臂等，搭配進度照片'],
-      ['target', '目標設定', '體重、體脂率目標與預估達成日期'],
-    ];
-    return `<header class="page-head"><div class="eyebrow">Coming soon</div><h1>訓練</h1></header>
-      <div class="card soon-hero"><p>InBody 先上線，下面這些功能會陸續加入。</p></div>
-      <div class="card list-card">${plan.map(([ic, t, d]) => `<div class="act static"><span class="act-ic">${icon(ic)}</span><div><b>${t}</b><span>${d}</span></div><span class="pill">規劃中</span></div>`).join('')}</div>
-      <div class="foot-space"></div>`;
-  }
 
-  /* =========================================================
-   * 我的
-   * ========================================================= */
-  function viewMe() {
-    const url = apiUrl();
-    return `<header class="page-head"><div class="eyebrow">帳號</div><h1>我的</h1></header>
-      <div class="card me">
-        <div class="avatar">${esc((S.session.account || '?').slice(0, 1).toUpperCase())}</div>
-        <div><b>${esc(S.session.account)}</b><span class="muted sm">${isDemo() ? '示範模式・資料存在此裝置' : '已連線 Google Sheets'}</span></div>
-      </div>
-      <div class="sec-head"><h2>資料</h2></div>
-      <div class="card list-card">
-        <button class="act" id="syncBtn"><span class="act-ic">${icon('refresh')}</span><div><b>重新同步</b><span>從 Google Sheets 重新載入</span></div></button>
-        <button class="act" id="csvBtn"><span class="act-ic">${icon('download')}</span><div><b>匯出 CSV</b><span>${S.records.length} 筆 InBody 紀錄</span></div></button>
-      </div>
-      <div class="sec-head"><h2>後端連線</h2></div>
-      <div class="card">
-        <label class="field"><span>GAS 網頁應用程式網址</span>
-          <input id="apiInp" value="${esc(LS.get('wo.apiUrl', '') || '')}" placeholder="${esc((window.APP_CONFIG.API_URL) || 'https://script.google.com/macros/s/…/exec')}" autocapitalize="off" spellcheck="false"></label>
-        <p class="muted sm">留空會使用 config.js 的設定${window.APP_CONFIG.API_URL ? '' : '（目前也是空的 → 示範模式）'}。目前：${url ? '<code>…' + esc(url.slice(-24)) + '</code>' : '示範模式'}</p>
-        <button class="btn ghost sm" id="apiSave">${icon('link')}儲存並重新登入</button>
-      </div>
-      <div class="card list-card">
-        <button class="act" id="logoutBtn"><span class="act-ic">${icon('logout')}</span><div><b>登出</b></div></button>
-      </div>
-      <p class="muted sm center">Workout v${esc(window.APP_CONFIG.VERSION)}</p>
-      <div class="foot-space"></div>`;
-  }
-  viewMe.mount = (v) => {
-    $('#logoutBtn', v).onclick = async () => { if (await confirmSheet('登出？', '下次需要重新輸入帳號密碼。', '登出')) logout(); };
-    $('#syncBtn', v).onclick = async () => {
-      busy(true, '同步中…');
-      await guard(() => loadRecords(true)).catch(() => {});
-      busy(false);
-      toast(`已同步 ${S.records.length} 筆`, 'ok');
-    };
-    $('#csvBtn', v).onclick = exportCsv;
-    $('#apiSave', v).onclick = () => {
-      const val = $('#apiInp', v).value.trim();
-      if (val && !/^https:\/\/script\.google(usercontent)?\.com\//.test(val)) { toast('網址看起來不是 GAS 網頁應用程式', 'err'); return; }
-      LS.set('wo.apiUrl', val);
-      toast('已更新，請重新登入');
-      logout();
-    };
-  };
-
-  function exportCsv() {
-    if (!S.records.length) { toast('沒有資料'); return; }
-    const keys = allKeys();
-    const lines = [keys.join(',')].concat(S.records.map((r) => keys.map((k) => {
-      const v = r[k] ?? '';
-      return /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
-    }).join(',')));
-    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `inbody_${S.session.account}.csv`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  }
-
-  /* ---------------- 啟動 ---------------- */
-  function boot() {
-    $('#tabAdd').onclick = (e) => { e.preventDefault(); openAddSheet(); };
-    window.addEventListener('hashchange', render);
-    render();
-    if ('serviceWorker' in navigator && location.protocol === 'https:') {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else boot();
+  W.route(/^#\/inbody$/, viewInbody, { tab: 'body' });
+  W.route(/^#\/inbody\/r\/([\w-]+)$/, viewDetail, { tab: 'body' });
+  W.route(/^#\/inbody\/scan$/, viewScan, { tab: false });
+  W.route(/^#\/inbody\/new$/, viewNew, { tab: false });
+  W.route(/^#\/inbody\/edit\/([\w-]+)$/, viewEdit, { tab: false });
+  W.route(/^#\/inbody\/review$/, viewReview, { tab: false });
+  W.inbodyChecks = checks;
 })();
