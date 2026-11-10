@@ -3,5 +3,5 @@
    也可以在 App 的「我的 → 後端連線」裡暫時覆寫。 */
 window.APP_CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbx5q7ozabBq-jzDZG-HHXfGQfzlLB0MP9yY76zc5-5S_qzQ8fpu7ZPRyeaea024fkV-/exec',
-  VERSION: '2.5.0',
+  VERSION: '2.6.0',
 };

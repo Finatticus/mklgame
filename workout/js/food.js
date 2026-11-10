@@ -335,7 +335,7 @@
       </div>
       <div class="add3">
         <button type="button" id="addSearch">${icon('search')}<b>搜尋食物</b><span>資料庫・常吃</span></button>
-        <button type="button" id="addAI">${icon('sparkle')}<b>AI 估算</b><span>打字或拍照</span></button>
+        <button type="button" id="addAI">${icon('camera')}<b>拍照估算</b><span>便當・營養標示</span></button>
         <button type="button" id="addCombo">${icon('copy')}<b>常吃組合</b><span>一次加入</span></button>
         <button type="button" id="addManual">${icon('edit')}<b>手動輸入</b><span>看包裝填</span></button>
       </div>
@@ -383,18 +383,19 @@
       if (b.dataset.del != null) { D.items.splice(+b.dataset.del, 1); draw(); }
     });
     $('#addManual', v).onclick = () => { D.items.push({ name: '', amount: '', kcal: '', protein: '', carb: '', fat: '', fiber: '', src: '' }); draw(); const ins = $$('.fi-name', v); ins[ins.length - 1].focus(); };
-    $('#addSearch', v).onclick = () => searchFood((it) => { D.items.push(it); draw(); });
+    const onAi = (res) => {
+      res.items.forEach((it) => D.items.push(Object.assign({}, it, { src: 'AI' })));
+      D.aiNotes = res.notes || '';
+      showAiNote(); draw();
+    };
+    $('#addSearch', v).onclick = () => searchFood((it) => { D.items.push(it); draw(); }, onAi);
     $('#addCombo', v).onclick = () => pickCombo((c) => { c.items.forEach((i) => D.items.push(Object.assign({}, i))); draw(); });
     $('#saveCombo', v).onclick = () => {
       const items = D.items.filter((i) => (i.name || '').trim());
       if (!items.length) { toast('先加入品項', 'err'); return; }
       saveCombo(items, D.meal);
     };
-    $('#addAI', v).onclick = () => aiEstimate((res) => {
-      res.items.forEach((it) => D.items.push(Object.assign({}, it, { src: 'AI' })));
-      D.aiNotes = res.notes || '';
-      showAiNote(); draw();
-    });
+    $('#addAI', v).onclick = () => aiEstimate(onAi);
     const del = $('#fDel', v);
     if (del) del.onclick = async () => {
       if (!(await confirmSheet('刪除這筆飲食紀錄？', '刪除後無法復原。', '刪除', true))) return;
@@ -415,8 +416,15 @@
     };
   };
 
+  /** 搜尋比對：空白分隔的每個詞都要出現在名稱、別名或分類 */
+  function match(f, ql) {
+    if (!ql) return true;
+    const hay = (f.name + ' ' + (f.kw || '') + ' ' + (f.cat || '')).toLowerCase();
+    return ql.split(/\s+/).every((t) => hay.includes(t));
+  }
+
   /** 搜尋：常吃 + 資料庫 */
-  function searchFood(onPick) {
+  function searchFood(onPick, onAi) {
     const hist = {};
     foods().forEach((f) => (f.items || []).forEach((i) => {
       const k = i.name;
@@ -437,11 +445,13 @@
         const ql = q.trim().toLowerCase();
         const all = frequent.concat(DB.filter((f) => !hist[f.name]));
         const pool = ql ? all : cat === '常吃' ? frequent : cat ? DB.filter((f) => f.cat === cat) : all;
-        const items = pool.filter((f) => !ql || f.name.toLowerCase().includes(ql)).slice(0, 80);
+        const items = pool.filter((f) => match(f, ql)).slice(0, 150);
         list.innerHTML = items.length ? items.map((f, i) => `<div class="fpick" data-i="${i}">
             <button class="fp-main"><b>${esc(f.name)}</b><span>${esc(f.amount || '')}・${Math.round(f.kcal)} kcal・P ${r1(f.protein)} C ${r1(f.carb)} F ${r1(f.fat)}${f.times ? `・吃過 ${f.times} 次` : ''}</span></button>
             <div class="fp-qty">${[0.5, 1, 1.5, 2].map((m) => `<button data-m="${m}" class="${m === 1 ? 'on' : ''}">${m === 0.5 ? '½' : m === 1.5 ? '1½' : m}</button>`).join('')}<button class="fp-add">加入</button></div>
-          </div>`).join('') : `<p class="muted sm pad">找不到「${esc(q)}」。可以改用 AI 估算或手動輸入。</p>`;
+          </div>`).join('') : `<div class="pad"><p class="muted sm">資料庫沒有「${esc(q)}」。</p><button class="btn sm" id="fAi">${icon('sparkle')}用 AI 估算「${esc(q)}」</button></div>`;
+        const aiB = $('#fAi', list);
+        if (aiB) aiB.onclick = () => { close(); aiEstimate((res) => onAi && onAi(res), q.trim()); };
         $$('.fpick', list).forEach((row) => {
           const f = items[+row.dataset.i];
           let mult = 1;
@@ -461,34 +471,48 @@
     }, { tall: true });
   }
 
-  /** AI 估算（文字 / 照片） */
-  function aiEstimate(onDone) {
-    let photo = null;
+  /** AI 估算（照片 / 文字）：最多 4 張，可拍便當或營養標示 */
+  function aiEstimate(onDone, preset) {
+    const photos = [];
     sheet(`<div class="sheet-body">
         <h3>${icon('sparkle')} AI 估算</h3>
-        <label class="field"><span>描述這餐（越具體越準）</span>
-          <textarea id="aiText" rows="3" class="inp" placeholder="例如：自助餐，白飯半碗、滷雞腿、高麗菜、番茄炒蛋，一杯無糖綠茶"></textarea></label>
-        <label class="ai-photo" id="aiPhotoLbl"><input type="file" accept="image/*" hidden id="aiPhoto">${icon('camera')}<span>附上照片（選填）</span><img hidden id="aiPrev" alt=""></label>
-        <p class="muted sm">AI 會參考台灣食品營養成分資料庫與常見份量估算，結果可以再修改。</p>
+        <div class="ai-shots" id="aiShots"></div>
+        <div class="ai-src">
+          <label class="btn"><input type="file" accept="image/*" capture="environment" hidden id="aiCam">${icon('camera')}拍照</label>
+          <label class="btn"><input type="file" accept="image/*" multiple hidden id="aiLib">${icon('image')}相簿</label>
+        </div>
+        <label class="field"><span>補充說明（選填，越具體越準）</span>
+          <textarea id="aiText" rows="2" class="inp" placeholder="例如：飯只吃一半、雞腿去皮、飲料半糖。沒照片也可以直接打字描述"></textarea></label>
+        <p class="muted sm">可以拍整個便當、自助餐盤，或包裝背面的營養標示（會直接讀標示數字）。最多 4 張。</p>
         <div class="btn-row"><button class="btn primary" id="aiGo">${icon('sparkle')}開始估算</button></div>
       </div>`, (w, close) => {
-      $('#aiPhoto', w).onchange = async (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
-        photo = await W.compressImage(f, 1280, 0.8);
-        const img = $('#aiPrev', w);
-        img.src = photo.preview; img.hidden = false;
-        $('#aiPhotoLbl span', w).textContent = '更換照片';
+      if (preset) $('#aiText', w).value = preset;
+      const drawShots = () => {
+        $('#aiShots', w).innerHTML = photos.map((p, i) => `<div class="ai-shot"><img src="${p.preview}" alt=""><button type="button" data-rm="${i}" aria-label="移除">×</button></div>`).join('');
+        $$('[data-rm]', w).forEach((b) => (b.onclick = () => { photos.splice(+b.dataset.rm, 1); drawShots(); }));
+        $('.ai-src', w).hidden = photos.length >= 4;
       };
+      const add = async (e) => {
+        const files = [...e.target.files].slice(0, 4 - photos.length);
+        e.target.value = '';
+        for (const f of files) {
+          try { photos.push(await W.compressImage(f, 1024, 0.8)); } catch (err) { toast('這張照片讀不到', 'err'); }
+        }
+        drawShots();
+      };
+      $('#aiCam', w).onchange = add;
+      $('#aiLib', w).onchange = add;
       $('#aiGo', w).onclick = async () => {
         const text = $('#aiText', w).value.trim();
-        if (!text && !photo) { toast('請輸入描述或附上照片', 'err'); return; }
-        const res = await act('AI 估算中…', () => call('food.estimate', { text, image: photo ? { data: photo.data, mimeType: photo.mimeType } : null }));
+        if (!text && !photos.length) { toast('請拍照或輸入描述', 'err'); return; }
+        const images = photos.map((p) => ({ data: p.data, mimeType: p.mimeType }));
+        const res = await act('AI 估算中…', () => call('food.estimate', { text, images, image: images[0] || null }));
         if (!res) return;
-        if (!res.items || !res.items.length) { toast('AI 沒有辨識出食物，請描述得更具體', 'err'); return; }
+        if (!res.items || !res.items.length) { toast('AI 沒有辨識出食物，請補充描述', 'err'); return; }
         close();
         onDone(res);
       };
+      drawShots();
     });
   }
 

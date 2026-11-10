@@ -1,5 +1,5 @@
 /* Service worker：快取 App 外殼，API 一律走網路 */
-const CACHE = 'workout-v2.5.0';
+const CACHE = 'workout-v2.6.0';
 const SHELL = [
   './', './index.html', './css/app.css', './css/v2.css', './css/compact.css', './css/tone.css',
   './js/config.js', './js/schema.js', './js/seed.js', './js/data/exercises.js', './js/data/foods.js', './js/api.js', './js/charts.js',
@@ -52,7 +52,7 @@ self.addEventListener('push', (e) => {
   // 週日 20 點後的推播 = 每週回顧
   if (wd === 'Sun' && h >= 20) {
     e.waitUntil(self.registration.showNotification('本週回顧出爐了', {
-      body: '體重變化、訓練次數、蛋白質達標天數，一頁看完，也可以分享給教練。',
+      body: '體重變化、訓練次數、蛋白質達標天數，一頁看完，還能存成圖片。',
       icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'weekly-review',
       data: { url: './#/review' },
     }));
