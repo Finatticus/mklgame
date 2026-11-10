@@ -201,13 +201,16 @@ window.W = (function () {
 
   /** 呼叫 API 並統一處理錯誤；失敗回傳 null */
   async function act(text, fn) {
-    if (text) busy(true, text);
+    // 超過 300ms 才顯示轉圈，本機立即完成的動作不會閃一下
+    let shown = false;
+    const t = text ? setTimeout(() => { shown = true; busy(true, text); }, 300) : null;
+    const end = () => { clearTimeout(t); if (shown) busy(false); };
     try {
       const r = await fn();
-      busy(false);
+      end();
       return r;
     } catch (e) {
-      busy(false);
+      end();
       if (e.code === 'AUTH' || e.code === 'PENDING') { logout(); toast(e.message, 'err'); return null; }
       if (e.code === 'UNKNOWN_ACTION') { toast('後端需要更新到新版本（見 README）', 'err'); return null; }
       toast(e.message || '發生錯誤', 'err');
@@ -394,26 +397,33 @@ window.W = (function () {
     return { kcal, protein, fat, carb, fiber, custom: has(st.kcal) };
   }
 
-  /* ---------------- 離線佇列：沒網路時先存在手機，連線後自動上傳 ---------------- */
+  /* ---------------- 本機優先：先存在手機、立刻顯示，背景再上傳（沒網路時等連線） ---------------- */
   const QKEY = () => 'wo.queue.' + (S.session ? S.session.account : '');
   const queue = () => LS.get(QKEY(), []);
   const setQueue = (q) => { LS.set(QKEY(), q); updateBanner(); };
   const isLocal = (id) => String(id || '').startsWith('local-');
   const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
   const offline = () => navigator.onLine === false;
-  const COL_NAME = { weight: '體重', workout: '訓練', food: '飲食' };
+  const COL_NAME = { weight: '體重', workout: '訓練', food: '飲食', settings: '設定' };
+  const STALE = 10000; // 超過 10 秒還沒上傳才顯示提示列
+  let flushFailed = false;
+  let bannerTimer = null;
 
   function updateBanner() {
-    const n = S.session ? queue().length : 0;
+    const q = S.session ? queue() : [];
+    const now = Date.now();
+    const stale = q.filter((x) => offline() || flushFailed || now - (x.ts || 0) > STALE);
     let el = document.getElementById('offlineBar');
-    if (!n) { if (el) el.remove(); return; }
+    clearTimeout(bannerTimer);
+    if (q.length && !stale.length) bannerTimer = setTimeout(updateBanner, STALE);
+    if (!stale.length) { if (el) el.remove(); return; }
     if (!el) {
       el = document.createElement('button');
       el.id = 'offlineBar';
       el.onclick = () => flush(true);
       document.body.appendChild(el);
     }
-    el.innerHTML = `${icon('refresh')}${offline() ? '離線中・' : ''}${n} 筆待上傳${offline() ? '' : '・點此重試'}`;
+    el.innerHTML = `${icon('refresh')}${offline() ? '離線中・' : ''}${q.length} 筆待上傳${offline() ? '' : '・點此重試'}`;
   }
 
   function applyQueue() {
@@ -421,85 +431,122 @@ window.W = (function () {
       if (it.op === 'save') {
         S.data[it.col] = S.data[it.col].filter((x) => x.id !== it.rec.id && !(it.col === 'weight' && x.date === it.rec.date && x.source !== 'InBody'));
         S.data[it.col].push(it.rec);
+      } else if (it.op === 'settings') {
+        S.data.settings = Object.assign({}, S.data.settings, it.patch);
       } else S.data[it.col] = S.data[it.col].filter((x) => x.id !== it.id);
     });
     COLS.forEach((c) => S.data[c].sort((a, b) => sortKey(a).localeCompare(sortKey(b))));
   }
 
-  /** 儲存（體重 / 訓練 / 飲食）：失敗於網路時改存佇列 */
+  /** 儲存（體重 / 訓練 / 飲食）：立刻存在手機並回傳，背景上傳 */
   async function save(col, rec) {
     const action = col === 'weight' ? 'weight.save' : 'data.save';
-    if (!isLocal(rec.id) && !offline()) {
-      try { return await call(action, { col, record: rec }); } catch (e) { if (e.code !== 'NETWORK') throw e; }
-    }
     const local = Object.assign({}, rec, { id: rec.id || 'local-' + uid(), _pending: true, updatedAt: ymd(new Date()) + ' ' + nowHM() });
-    const q = queue().filter((x) => !(x.op === 'save' && x.rec.id === local.id));
-    q.push({ qid: uid(), op: 'save', col, action, rec: local });
+    // 同一筆還沒上傳的修改直接覆蓋（正在上傳中的那筆不動，傳完會再傳新版）
+    const q = queue().filter((x) => !(x.op === 'save' && x.rec.id === local.id && x.qid !== inflight));
+    q.push({ qid: uid(), op: 'save', col, action, rec: local, ts: Date.now() });
     setQueue(q);
-    toast(offline() || !isLocal(rec.id) ? '目前沒有網路，已先存在手機，連線後自動上傳' : '已更新（等待上傳）');
-    if (!offline()) setTimeout(() => flush(), 500);
+    if (offline()) toast('目前沒有網路，已先存在手機，連線後自動上傳');
+    kick();
     return local;
   }
 
   async function del(col, id) {
-    if (isLocal(id)) { setQueue(queue().filter((x) => !(x.rec && x.rec.id === id))); return { id }; }
-    if (!offline()) {
-      try { return await call('data.delete', { col, id }); } catch (e) { if (e.code !== 'NETWORK') throw e; }
-    }
-    setQueue(queue().filter((x) => !(x.op === 'save' && x.rec.id === id)).concat([{ qid: uid(), op: 'delete', col, id }]));
-    toast('目前沒有網路，連線後會自動刪除');
+    const q = queue();
+    const pendingNew = isLocal(id) && !q.some((x) => x.qid === inflight && x.rec && x.rec.id === id);
+    if (pendingNew) { setQueue(q.filter((x) => !(x.rec && x.rec.id === id))); return { id }; }
+    setQueue(q.filter((x) => !(x.op === 'save' && x.rec.id === id && x.qid !== inflight)).concat([{ qid: uid(), op: 'delete', col, id, ts: Date.now() }]));
+    if (offline()) toast('目前沒有網路，連線後會自動刪除');
+    kick();
     return { id };
   }
 
+  /** 設定：立刻套用，背景上傳（連續修改會合併成一次） */
+  async function saveSettings(patch) {
+    if (S.backendOld) { toast('後端需要更新才能儲存設定', 'err'); return null; }
+    setSettings(Object.assign({}, S.data.settings, patch));
+    const q = queue();
+    const prev = q.find((x) => x.op === 'settings' && x.qid !== inflight);
+    if (prev) { Object.assign(prev.patch, patch); prev.ts = Date.now(); setQueue(q); }
+    else setQueue(q.concat([{ qid: uid(), op: 'settings', patch, ts: Date.now() }]));
+    kick();
+    return S.data.settings;
+  }
+
+  let kickTimer = null;
+  function kick() { clearTimeout(kickTimer); if (!offline()) kickTimer = setTimeout(() => flush(), 150); }
+
+  // 正在編輯的頁面不要因為背景同步被重畫（會洗掉輸入中的內容）
+  const isEditing = () => /\/(new|e\/|edit)/.test(location.hash) || !!document.querySelector('.sheet');
+
   let flushing = false;
+  let inflight = null;
   async function flush(manual) {
     if (flushing || !S.session || !queue().length) { updateBanner(); return; }
     if (offline()) { if (manual) toast('還沒有網路'); updateBanner(); return; }
     flushing = true;
-    let done = 0;
+    let done = 0, wasStale = false;
+    const idMap = {}; // local id → 伺服器 id
     try {
-      for (const it of queue()) {
+      let it;
+      while ((it = queue()[0])) {
+        if (Date.now() - (it.ts || 0) > STALE || flushFailed) wasStale = true;
+        inflight = it.qid;
         try {
           if (it.op === 'save') {
             const rec = Object.assign({}, it.rec);
             delete rec._pending;
+            if (idMap[rec.id]) rec.id = idMap[rec.id];
             if (isLocal(rec.id)) rec.id = '';
             const saved = await call(it.action, { col: it.col, record: rec });
-            S.data[it.col] = S.data[it.col].filter((x) => x.id !== it.rec.id && x.id !== saved.id && !(it.col === 'weight' && x.date === saved.date && x.source !== 'InBody'));
-            put(it.col, saved);
-            if (location.hash.includes(it.rec.id)) location.replace(location.hash.replace(it.rec.id, saved.id));
+            const oldId = it.rec.id;
+            if (oldId !== saved.id) idMap[oldId] = saved.id;
+            const later = queue().filter((x) => x.qid !== it.qid);
+            const editedAgain = later.some((x) => x.op === 'save' && x.rec.id === oldId);
+            const deletedMeanwhile = later.some((x) => x.op === 'delete' && x.id === oldId);
+            // 之後排隊的同一筆（再次修改或刪除）：換成伺服器 id
+            later.forEach((x) => { if (x.rec && x.rec.id === oldId) x.rec.id = saved.id; if (x.op === 'delete' && x.id === oldId) x.id = saved.id; });
+            LS.set(QKEY(), [it].concat(later));
+            if (editedAgain || deletedMeanwhile) {
+              S.data[it.col].forEach((x) => { if (x.id === oldId) x.id = saved.id; });
+              saveCache();
+            } else {
+              S.data[it.col] = S.data[it.col].filter((x) => x.id !== oldId && x.id !== saved.id && !(it.col === 'weight' && x.date === saved.date && x.source !== 'InBody'));
+              put(it.col, saved);
+            }
+            if (oldId !== saved.id && location.hash.includes(oldId)) location.replace(location.hash.replace(oldId, saved.id));
+          } else if (it.op === 'settings') {
+            const r = await call('settings', { data: it.patch });
+            const later = queue().filter((x) => x.qid !== it.qid);
+            // 還有更新的設定在排隊：先套用伺服器結果，再疊上排隊中的修改
+            setSettings(Object.assign({}, r, ...later.filter((x) => x.op === 'settings').map((x) => x.patch)));
           } else {
             await call('data.delete', { col: it.col, id: it.id }).catch((e) => { if (e.code !== 'NOT_FOUND') throw e; });
           }
           done++;
+          flushFailed = false;
         } catch (e) {
-          if (e.code === 'NETWORK' || e.code === 'AUTH' || e.code === 'PENDING') break;
+          if (e.code === 'NETWORK') { flushFailed = true; break; }
+          if (e.code === 'AUTH' || e.code === 'PENDING') { flushFailed = true; break; }
           // 資料本身有問題（例如當天已有 InBody）：放棄這筆並告知
-          toast(`一筆${COL_NAME[it.col] || ''}紀錄無法上傳：${e.message}`, 'err');
+          toast(`一筆${COL_NAME[it.col || 'settings'] || ''}紀錄無法上傳：${e.message}`, 'err');
           if (it.op === 'save' && isLocal(it.rec.id)) drop(it.col, it.rec.id);
         }
-        setQueue(queue().filter((x) => x.qid !== it.qid));
+        LS.set(QKEY(), queue().filter((x) => x.qid !== it.qid));
       }
     } finally {
       flushing = false;
+      inflight = null;
       updateBanner();
     }
     if (done) {
-      toast(`已上傳 ${done} 筆離線紀錄`, 'ok');
-      render.keepScroll = true;
-      render();
+      if (wasStale) toast(`已上傳 ${done} 筆紀錄`, 'ok');
+      if (!isEditing()) { render.keepScroll = true; render(); }
     }
   }
-  window.addEventListener('online', () => { updateBanner(); flush(); });
+  window.addEventListener('online', () => { flushFailed = false; updateBanner(); flush(); });
   window.addEventListener('offline', updateBanner);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') flush(); });
-
-  async function saveSettings(patch) {
-    if (S.backendOld) { toast('後端需要更新才能儲存設定', 'err'); return null; }
-    const r = await act('儲存中…', () => call('settings', { data: patch }));
-    if (r) setSettings(r);
-    return r;
-  }
 
   function compressImage(file, maxDim, quality) {
     return new Promise((resolve, reject) => {
