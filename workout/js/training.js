@@ -27,11 +27,13 @@
   const woSets = (w) => W.sum(w.exercises || [], (e) => (e.sets || []).length);
 
   /* ---------------- 熱量消耗估算 ----------------
-   * 方法：2024 Adult Compendium of Physical Activities 的 MET 值，
-   * 以「校正 MET」概念用個人靜態代謝率取代 1 MET = 3.5 ml/kg/min 的通用值：
-   *   每分鐘消耗 = MET × (BMR ÷ 1440)
-   * BMR 優先用 InBody 實測值；沒有就用 Mifflin-St Jeor 公式估算。
-   * 跑步/走路有距離與時間時，改用 ACSM 代謝公式依速度計算 VO2。 */
+   * 運動耗氧量依「當天體重」計算（負重運動的能量成本跟體重成正比）：
+   *   每分鐘消耗 kcal = VO2(ml/kg/min) × 體重 × 5 kcal/L ÷ 1000
+   * 每組有氧依可取得的資料選最準的方法：
+   *   1. 有平均心率 → Keytel 2005 心率公式（依性別、年齡、體重）
+   *   2. 跑步/走路有距離 → ACSM 代謝公式（速度＋坡度）
+   *   3. 其他 → 2024 Adult Compendium MET（依 RPE 取強度）
+   * 淨消耗 = 總消耗 − 同時段的靜態代謝（BMR 優先用 InBody 實測值）。 */
   const CARDIO_MET = {
     '飛輪': [5.5, 7.0, 8.8], '滑步機': [4.6, 5.0, 6.5], '划船機': [4.8, 7.0, 8.5], '樓梯機': [6.8, 9.0, 9.0],
     '跳繩': [8.8, 11.8, 12.3], '游泳': [5.8, 7.0, 9.8], '跑步機': [4.3, 8.0, 9.8], '戶外跑步': [6.0, 8.0, 9.8], '快走': [3.5, 4.3, 5.0],
@@ -41,49 +43,69 @@
     const ibs = W.S.data.inbody.filter((r) => W.dayOf(r.date) <= date);
     const ib = ibs[ibs.length - 1] || W.latestInbody();
     const bw = ws.length ? ws[ws.length - 1].value : ib && ib.weight;
+    // 年齡：InBody 量測時的年齡＋之後經過的年數
+    const age = ib && has(ib.age) ? +ib.age + Math.max(0, Math.floor(W.daysBetween(W.dayOf(ib.date), date) / 365.25)) : null;
+    const male = !ib || ib.sex !== '女';
     let bmr = ib && has(ib.bmr) ? ib.bmr : null, src = 'InBody 實測 BMR';
     if (!bmr && bw) {
-      const h = ib && ib.height ? ib.height : 175, a = ib && ib.age ? ib.age : 30, male = !ib || ib.sex !== '女';
-      bmr = 10 * bw + 6.25 * h - 5 * a + (male ? 5 : -161);
-      src = 'Mifflin-St Jeor 估算 BMR';
+      const h = ib && ib.height ? ib.height : 175;
+      bmr = 10 * bw + 6.25 * h - 5 * (age || 30) + (male ? 5 : -161);
+      src = ib && ib.height && age ? 'Mifflin-St Jeor 估算 BMR' : 'Mifflin-St Jeor 估算 BMR（缺身高/年齡，用預設值）';
     }
-    return { bw, bmr, src };
+    return { bw, bmr, src, age, male };
   }
+  const WALK_RE = /快走|走路|健走|散步|爬坡|登山/;
+  const LEG_RE = /跑步|跑步機|快走|走路|健走|散步|爬坡|登山/;
   function burn(w) {
-    const { bw, bmr, src } = bodyAt(w.date);
+    const { bw, bmr, src, age, male } = bodyAt(w.date);
     if (!bmr || !bw) return null;
-    const perMet = bmr / 1440; // kcal / 分鐘 / MET
+    const rest = bmr / 1440; // 靜態代謝 kcal / 分鐘
+    const vo2Kcal = (vo2) => (vo2 * bw) / 200; // ml/kg/min → kcal/min
     const rpe = +w.rpe || 6;
     const level = rpe >= 8 ? 2 : rpe >= 6 ? 1 : 0;
     let cardioMin = 0, cardioKcal = 0;
+    const methods = new Set();
     (w.exercises || []).forEach((e) => {
       const k = e.kind || exInfo(e.name).k;
       if (k !== 'c') return;
       (e.sets || []).forEach((s) => {
         const m = n(s.m);
         if (!m) return;
-        let met;
+        let perMin;
         const speed = n(s.d) ? (n(s.d) * 1000) / m : 0; // m/min
-        if (speed && /跑步|快走/.test(e.name)) {
-          // ACSM：走路 VO2 = 3.5 + 0.1×速度；跑步（> 8 km/h）VO2 = 3.5 + 0.2×速度（平地）
-          met = (speed > 134 ? 3.5 + 0.2 * speed : 3.5 + 0.1 * speed) / 3.5;
-        } else met = (CARDIO_MET[e.name] || [4.5, 6.0, 8.0])[level];
+        const G = Math.min(Math.max(n(s.g), 0), 40) / 100; // 坡度
+        const hr = n(s.hr);
+        if (hr >= 90 && hr <= 210 && age) {
+          // Keytel et al. 2005：依心率、體重、年齡、性別（總消耗）
+          perMin = male ? (-55.0969 + 0.6309 * hr + 0.1988 * bw + 0.2017 * age) / 4.184
+            : (-20.4022 + 0.4472 * hr - 0.1263 * bw + 0.074 * age) / 4.184;
+          perMin = Math.max(perMin, rest * 1.5);
+          methods.add('心率');
+        } else if (speed && LEG_RE.test(e.name)) {
+          // ACSM：走路 VO2 = 3.5 + 0.1S + 1.8SG；跑步 VO2 = 3.5 + 0.2S + 0.9SG（S = m/min，G = 坡度）
+          const run = !WALK_RE.test(e.name) && speed > 134;
+          perMin = vo2Kcal(run ? 3.5 + 0.2 * speed + 0.9 * speed * G : 3.5 + 0.1 * speed + 1.8 * speed * G);
+          methods.add(G ? '速度＋坡度' : '速度');
+        } else {
+          perMin = vo2Kcal(3.5 * (CARDIO_MET[e.name] || [4.5, 6.0, 8.0])[level]);
+          methods.add('MET');
+        }
         cardioMin += m;
-        cardioKcal += met * perMet * m;
+        cardioKcal += perMin * m;
       });
     });
     const strengthSets = W.sum((w.exercises || []).filter((e) => (e.kind || exInfo(e.name).k) !== 'c'), (e) => (e.sets || []).length);
     let strengthMin = has(w.duration) ? Math.max(+w.duration - cardioMin, 0) : strengthSets * 2.5;
     if (!strengthSets) strengthMin = has(w.duration) ? Math.max(+w.duration - cardioMin, 0) : 0;
     const strengthMet = [3.5, 5.0, 6.0][level]; // Compendium：阻力訓練 輕度/中等/高強度
-    const strengthKcal = strengthMet * perMet * strengthMin;
+    const strengthKcal = vo2Kcal(3.5 * strengthMet) * strengthMin;
     const total = strengthKcal + cardioKcal;
     const minutes = strengthMin + cardioMin;
-    return { total: Math.round(total), net: Math.round(total - perMet * minutes), strength: Math.round(strengthKcal), cardio: Math.round(cardioKcal), minutes, strengthMin: Math.round(strengthMin), cardioMin: Math.round(cardioMin), strengthMet, src, bmr: Math.round(bmr) };
+    return { total: Math.round(total), net: Math.round(total - rest * minutes), strength: Math.round(strengthKcal), cardio: Math.round(cardioKcal), minutes, strengthMin: Math.round(strengthMin), cardioMin: Math.round(cardioMin), strengthMet, src, bmr: Math.round(bmr), bw, methods: [...methods] };
   }
   function setStr(s, k) {
     if (k === 't') return `${n(s.t)} 秒`;
-    if (k === 'c') return [n(s.m) ? `${n(s.m)} 分` : '', n(s.d) ? `${n(s.d)} km` : ''].filter(Boolean).join('・') || '–';
+    if (k === 'c') return [n(s.m) ? `${n(s.m)} 分` : '', n(s.d) ? `${n(s.d)} km` : '', n(s.g) ? `坡度 ${n(s.g)}%` : '', n(s.hr) ? `心率 ${n(s.hr)}` : ''].filter(Boolean).join('・') || '–';
     if (k === 'b') return n(s.w) ? `+${num(s.w)}kg × ${n(s.r)}` : `${n(s.r)} 下`;
     return `${num(s.w)}kg × ${n(s.r)}`;
   }
@@ -322,10 +344,10 @@
     return `<details class="card fold tone-train burn"><summary><h3>熱量消耗 ≈ ${bn.total} kcal</h3><span class="muted sm">淨增加 ${bn.net}</span>${icon('chevron', 'chev')}</summary>
       <div class="ana">
         <div><span>重量訓練</span><b>${bn.strength}<small>kcal</small></b><em>MET ${bn.strengthMet}・${bn.strengthMin} 分</em></div>
-        <div><span>有氧</span><b>${bn.cardio}<small>kcal</small></b><em>${bn.cardioMin} 分</em></div>
+        <div><span>有氧</span><b>${bn.cardio}<small>kcal</small></b><em>${bn.cardioMin} 分${bn.methods.length ? '・' + bn.methods.join('/') : ''}</em></div>
         <div><span>淨增加</span><b>${bn.net}<small>kcal</small></b><em>扣除靜態代謝</em></div>
       </div>
-      <p class="hint">算法：2024 運動代謝當量表（Compendium）MET × 你的基礎代謝率 ${bn.bmr} kcal ÷ 1440 × 分鐘（${bn.src}）。重訓依整體 RPE 取 MET 3.5／5.0／6.0；跑步、走路有填距離時改用 ACSM 速度公式。沒有心率資料，誤差約 ±20%。「淨增加」是扣掉你就算休息也會消耗的熱量，適合拿來跟飲食比較。</p>
+      <p class="hint">依當天體重 ${num(bn.bw, 1)} kg 計算。有氧：有填平均心率用 Keytel 心率公式（依性別、年齡、體重，誤差約 ±10–15%）；跑步、走路有填距離用 ACSM 公式（速度＋坡度）；其他用 2024 Compendium MET 依 RPE 取強度（約 ±20%）。重訓依整體 RPE 取 MET 3.5／5.0／6.0。「淨增加」扣掉同時段的靜態代謝（${bn.src} ${bn.bmr} kcal），適合跟飲食比較。扶著跑步機扶手時實際消耗會少 20–30%。</p>
     </details>`;
   }
 
@@ -554,8 +576,8 @@
     const k = e.kind || exInfo(e.name).k;
     const lp = lastPerf(e.name, D.id);
     const ls = lp ? lp.e.sets : [];
-    const cols = k === 'w' ? [['w', 'kg'], ['r', '次']] : k === 'b' ? [['w', '+kg'], ['r', '次']] : k === 't' ? [['t', '秒']] : [['m', '分鐘'], ['d', 'km']];
-    return `<div class="card ex-card" data-i="${i}">
+    const cols = k === 'w' ? [['w', 'kg'], ['r', '次']] : k === 'b' ? [['w', '+kg'], ['r', '次']] : k === 't' ? [['t', '秒']] : [['m', '分鐘'], ['d', 'km'], ['g', '坡度%'], ['hr', '心率']];
+    return `<div class="card ex-card${k === 'c' ? ' cardio' : ''}" data-i="${i}">
       <div class="ex-h"><div><b>${esc(e.name)}</b><span class="muted sm">${esc(e.cat || '')}・${KIND_LABEL[k]}</span></div>
         <div class="ex-tools">${i > 0 ? `<button type="button" data-up="${i}" aria-label="上移">${icon('back', 'rot90')}</button>` : ''}<button type="button" data-delex="${i}" aria-label="移除">${icon('trash')}</button></div></div>
       ${lp ? `<div class="ex-last"><span>上次 ${W.fmtDate(lp.w.date, 'short')}：${ls.map((s) => setStr(s, k)).join('、')}</span><button type="button" data-fill="${i}">照上次</button></div>` : ''}
@@ -563,6 +585,7 @@
       ${e.sets.map((s, j) => `<tr><td class="si">${j + 1}</td>${cols.map(([f]) => `<td><input class="inp num" inputmode="decimal" data-j="${j}" data-f="${f}" value="${has(s[f]) ? s[f] : ''}" placeholder="${ls[j] && has(ls[j][f]) ? ls[j][f] : ls.length && has(ls[ls.length - 1][f]) ? ls[ls.length - 1][f] : ''}"></td>`).join('')}
         <td><button type="button" class="x" data-delset="${i}:${j}">${icon('close')}</button></td></tr>`).join('')}
       </tbody></table>
+      ${k === 'c' ? '<p class="muted sm">坡度、心率可留空。有填手錶的平均心率最準；跑步機請填距離和坡度。</p>' : ''}
       <div class="ex-f"><button type="button" class="btn ghost sm" data-addset="${i}">${icon('plus')}加一組</button>
         <input class="inp sm grow" data-en="${i}" value="${esc(e.note || '')}" placeholder="備註：座椅高度、握法…"></div>
     </div>`;
@@ -607,7 +630,7 @@
     if (!D.date) { toast('請選日期', 'err'); return; }
     const exercises = D.exercises.map((e) => ({
       name: e.name, cat: e.cat, kind: e.kind, note: (e.note || '').trim(),
-      sets: e.sets.filter((s) => ['w', 'r', 't', 'm', 'd'].some((f) => has(s[f]))),
+      sets: e.sets.filter((s) => ['w', 'r', 't', 'm', 'd', 'g', 'hr'].some((f) => has(s[f]))),
     })).filter((e) => e.sets.length || e.note);
     if (!exercises.length && !D.isCoach && !D.note) { toast('至少新增一個動作', 'err'); return; }
     const tags = D.tags.length ? D.tags : [...new Set(exercises.map((e) => e.cat).filter((c) => c && c !== '其他'))];

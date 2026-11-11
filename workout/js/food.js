@@ -39,11 +39,18 @@
    * 缺口 = 攝取 − 消耗；7700 kcal ≈ 1 kg 體脂肪 */
   const NEAT = [[1.2, '久坐', '辦公室、多半坐著'], [1.3, '輕度活動', '常走動、通勤走路'], [1.45, '活動量大', '站立工作、勞動']];
   const neat = () => +((W.S.data.settings || {}).neat) || 1.2;
+  /** 當天運動「額外」消耗：總消耗扣掉那段時間本來就會算進 BMR × 活動係數的部分（避免重複計算） */
+  function exExtra(d) {
+    return W.sum(W.S.data.workout.filter((w) => w.date === d), (w) => {
+      const bn = W.T && W.T.burn(w);
+      return bn ? Math.max(0, bn.total - (bn.bmr * neat() / 1440) * bn.minutes) : 0;
+    });
+  }
   function dayBalance(d) {
     const t = dayTotals(d);
     const b = W.T.bodyAt(d);
     if (!b.bmr) return null;
-    const ex = W.sum(W.S.data.workout.filter((w) => w.date === d), (w) => (W.T.burn(w) || {}).net || 0);
+    const ex = exExtra(d);
     const base = b.bmr * neat();
     return { date: d, logged: t.count > 0, intake: t.kcal, base, ex, out: base + ex, bal: t.kcal - (base + ex) };
   }
@@ -67,7 +74,24 @@
     };
   }
 
-  W.F = { dayTotals, MEALS, dayBalance, weekBalance, neat };
+  /** 用自己的資料反推實際每日消耗：近 28 天平均攝取 −（7 日平均體重變化 × 7700 ÷ 天數） */
+  function calibrate() {
+    const end = W.addDays(W.today(), -1), start = W.addDays(end, -27);
+    const days = Array.from({ length: 28 }, (_, i) => W.addDays(start, i));
+    const logged = days.map(dayBalance).filter((b) => b && b.logged);
+    const a = maAt(start), z = maAt(end);
+    if (logged.length < 14 || !a || !z) return { need: 14 - logged.length };
+    const span = W.daysBetween(a.date, z.date);
+    if (span < 14) return { need: 0, short: true };
+    const avgIn = W.sum(logged, (b) => b.intake) / logged.length;
+    const avgEx = W.sum(logged, (b) => b.ex) / logged.length;
+    const tdee = avgIn - ((z.value - a.value) * 7700) / span;
+    const bmr = W.T.bodyAt(end).bmr;
+    const factor = Math.min(1.9, Math.max(1.05, (tdee - avgEx) / bmr));
+    return { tdee: Math.round(tdee), factor: Math.round(factor * 100) / 100, logged: logged.length, span, dw: z.value - a.value, avgIn: Math.round(avgIn) };
+  }
+
+  W.F = { dayTotals, MEALS, dayBalance, weekBalance, neat, calibrate };
 
   /* =========================================================
    * 每日總覽
@@ -78,7 +102,7 @@
     const tg = W.nutritionTargets();
     const tot = dayTotals(day);
     const entries = dayEntries(day);
-    const exBurn = W.sum(W.S.data.workout.filter((w) => w.date === day), (w) => ((W.T && W.T.burn(w)) || {}).net || 0);
+    const exBurn = Math.round(exExtra(day));
     const remain = tg.kcal - tot.kcal;
     const pct = Math.min(tot.kcal / tg.kcal, 1.2);
     const ring = (() => {
@@ -257,8 +281,10 @@
       <div class="card tone-food">
         <div class="card-h"><h3>日常活動量</h3><span class="muted sm">不含運動</span></div>
         <div class="neat">${NEAT.map(([f, l, d]) => `<button class="${neat() === f ? 'on' : ''}" data-f="${f}"><b>${l}</b><span>${d}</span><em>BMR × ${f}</em></button>`).join('')}</div>
-        <p class="hint">每日消耗 = 基礎代謝 ${b.bmr ? Math.round(b.bmr) : '–'} kcal × 活動係數 ＋ 當天訓練淨消耗。7,700 kcal ≈ 1 kg 體脂肪。只計算有記錄飲食的日子。</p>
+        ${NEAT.some(([f]) => f === neat()) ? '' : `<p class="muted sm">目前使用個人校正係數 <b>BMR × ${neat()}</b></p>`}
+        <p class="hint">每日消耗 = 基礎代謝 ${b.bmr ? Math.round(b.bmr) : '–'} kcal × 活動係數 ＋ 當天訓練額外消耗。7,700 kcal ≈ 1 kg 體脂肪。只計算有記錄飲食的日子。</p>
       </div>
+      ${calCard()}
       ${shown.length >= 2 ? `<div class="card chart-card tone-food"><div class="chart-head"><div><span class="muted">累積體重變化：預估 vs 實際</span></div></div>
         ${C.timeChart({ series: [{ points: pP, line: true, dots: true, cls: 'pred' }, { points: pA, line: true, dots: true, cls: 'act' }], height: 150 })}
         <div class="legend center"><span><i style="background:var(--t-food)"></i>依熱量缺口預估</span><span><i style="background:var(--t-weight)"></i>實際（7 日平均）</span></div>
@@ -271,10 +297,26 @@
         </tbody></table><p class="hint">單位：kcal/天、kg/週。</p>` : '<p class="muted sm">記錄幾天飲食後就會出現。</p>'}
       </div><div class="foot-space"></div>`;
   }
+  function calCard() {
+    const c = calibrate();
+    const body = c.tdee
+      ? `<div class="stat3 tight"><div><span>實際每日消耗</span><b>${c.tdee.toLocaleString()}<small>kcal</small></b></div>
+          <div><span>平均攝取</span><b>${c.avgIn.toLocaleString()}<small>kcal</small></b></div>
+          <div><span>體重變化</span><b>${W.signed(c.dw, 1)}<small>kg</small></b></div></div>
+        <p class="hint">用你近 ${c.span} 天的 7 日平均體重變化和 ${c.logged} 天的飲食紀錄反推，換算活動係數約 <b>×${c.factor}</b>（扣掉運動後）。前提是飲食有完整記錄；漏記會讓這個數字偏低。</p>
+        ${Math.abs(c.factor - neat()) >= 0.03 ? `<button class="btn primary block" id="calApply">${icon('check')}套用個人係數 ×${c.factor}</button>` : '<p class="muted sm">目前的係數已經跟你的實際資料一致。</p>'}`
+      : `<p class="hint">${c.short ? '體重紀錄的時間跨度還不夠，' : `再記錄 ${c.need} 天飲食，`}累積 2 週以上的飲食和體重後，就能用你自己的資料反推實際每日消耗，比公式更準。</p>`;
+    return `<div class="card tone-food"><div class="card-h"><h3>個人化校正</h3><span class="muted sm">近 4 週</span></div>${body}</div>`;
+  }
   viewBalance.mount = (v) => {
     $$('.neat button', v).forEach((b) => (b.onclick = async () => {
       if (await W.saveSettings({ neat: +b.dataset.f })) { W.render.keepScroll = true; W.render(); }
     }));
+    const ca = $('#calApply', v);
+    if (ca) ca.onclick = async () => {
+      const c = calibrate();
+      if (c.factor && (await W.saveSettings({ neat: c.factor }))) { toast(`已套用個人係數 ×${c.factor}`, 'ok'); W.render.keepScroll = true; W.render(); }
+    };
   };
 
   /** 營養分析：三大營養素比例、蛋白質每日、各餐分佈 */
