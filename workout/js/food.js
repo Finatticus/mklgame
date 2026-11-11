@@ -128,7 +128,6 @@
         <button class="link-btn" id="goalBtn">${icon('target')}調整目標${tg.custom ? '' : '（目前依 InBody 建議）'}</button>
       </div>
       ${mealHtml}
-      ${combosRow(day)}
       ${balanceCard(day)}
       <div class="sec-head"><h2>近 7 天</h2><span class="muted sm">${logged.length} 天有紀錄</span></div>
       <div class="card chart-card tone-food">
@@ -140,44 +139,70 @@
       ${foodAnalysis(days7, totals7, tg)}
       <div class="foot-space"></div>`;
   }
-  /* ---------------- 常吃組合 ---------------- */
+  /* ---------------- 常用組合（在新增飲食頁面裡選，依餐別分類） ---------------- */
   const combos = () => ((W.S.data.settings || {}).combos || []);
-  function combosRow(day) {
-    const list = combos();
-    if (!list.length) return '';
-    return `<div class="combo-row">${list.map((c) => `<button class="combo" data-combo="${c.id}"><b>${esc(c.name)}</b><span>${esc(c.meal || '')}・${Math.round(W.sum(c.items, (i) => i.kcal))} kcal</span></button>`).join('')}</div>`;
-  }
-  async function quickAdd(day, id) {
-    const c = combos().find((x) => x.id === id);
-    if (!c) return;
-    const isToday = day === W.today();
-    const meal = c.meal || mealByTime(W.nowHM());
-    const rec = buildRecord(c.items, { date: day, time: isToday ? W.nowHM() : '', meal, note: '' });
-    const saved = await act('加入中…', () => W.save('food', rec));
-    if (!saved) return;
-    W.put('food', saved);
-    toast(`已把「${c.name}」加到${meal}`, 'ok');
-    W.render.keepScroll = true;
-    W.render();
-  }
-  function pickCombo(onPick) {
-    sheet(`<div class="sheet-body"><h3>常吃組合</h3><div id="cbList"></div>
-      <p class="muted sm">在新增飲食畫面加好品項後，按「存成常吃組合」就會出現在這裡。</p></div>`, (w, close) => {
+  const comboKcal = (c) => Math.round(W.sum(c.items, (i) => i.kcal));
+  const setCombos = (list) => W.saveSettings({ combos: list });
+  /** 選常用：預設顯示目前餐別，可切換其他餐別或全部；可修改、刪除 */
+  function pickCombo(onPick, meal, current) {
+    let cat = meal || '全部';
+    sheet(`<div class="sheet-body"><h3>常用組合</h3>
+      <div class="chips" id="cbCats"></div>
+      <div id="cbList" class="cb-list"></div>
+      <p class="muted sm">在新增飲食畫面加好品項後，按「存成常用組合」就會出現在這裡。點組合加入這餐，點鉛筆可修改。</p></div>`, (w, close) => {
       const draw = () => {
-        const list = combos();
+        const all = combos();
+        const count = (m) => (m === '全部' ? all.length : all.filter((c) => c.meal === m).length);
+        $('#cbCats', w).innerHTML = MEALS.concat(['全部']).map((m) => `<button type="button" class="chip sm ${m === cat ? 'on' : ''}" data-cat="${m}">${m}${count(m) ? ` <small>${count(m)}</small>` : ''}</button>`).join('');
+        const list = cat === '全部' ? all : all.filter((c) => c.meal === cat);
         $('#cbList', w).innerHTML = list.length ? list.map((c) => `<div class="cb-item"><button class="cb-main" data-id="${c.id}"><b>${esc(c.name)}</b>
-            <span>${esc(c.meal || '')}・${c.items.map((i) => esc(i.name)).join('、')}・${Math.round(W.sum(c.items, (i) => i.kcal))} kcal</span></button>
-            <button class="x" data-del="${c.id}">${icon('trash')}</button></div>`).join('') : '<p class="muted sm pad">還沒有組合</p>';
+            <span>${cat === '全部' ? esc(c.meal || '未分類') + '・' : ''}${comboKcal(c)} kcal・${c.items.map((i) => esc(i.name)).join('、')}</span></button>
+            <button class="x" data-edit="${c.id}" aria-label="修改">${icon('edit')}</button>
+            <button class="x" data-del="${c.id}" aria-label="刪除">${icon('trash')}</button></div>`).join('')
+          : `<p class="muted sm pad">${cat === '全部' ? '還沒有常用組合' : `${cat}還沒有常用組合，可以切到其他餐別看看`}</p>`;
+        $$('[data-cat]', w).forEach((b) => (b.onclick = () => { cat = b.dataset.cat; draw(); }));
         $$('.cb-main', w).forEach((b) => (b.onclick = () => { onPick(combos().find((c) => c.id === b.dataset.id)); close(); }));
+        $$('[data-edit]', w).forEach((b) => (b.onclick = () => editCombo(combos().find((c) => c.id === b.dataset.edit), current, draw)));
         $$('[data-del]', w).forEach((b) => (b.onclick = async () => {
-          if (await W.saveSettings({ combos: combos().filter((c) => c.id !== b.dataset.del) })) draw();
+          const c = combos().find((x) => x.id === b.dataset.del);
+          if (!c || !(await confirmSheet(`刪除「${c.name}」？`, '只會刪掉這個常用組合，已記錄的飲食不受影響。', '刪除', true))) return;
+          if (await setCombos(combos().filter((x) => x.id !== c.id))) { toast('已刪除'); draw(); }
         }));
       };
       draw();
+    }, { tall: true });
+  }
+  /** 修改常用：名稱、餐別、移除品項，或換成目前畫面上的品項 */
+  function editCombo(c, current, onDone) {
+    if (!c) return;
+    const E = { meal: c.meal || '', items: JSON.parse(JSON.stringify(c.items || [])) };
+    const cur = (current ? current() : []).filter((i) => (i.name || '').trim());
+    sheet(`<div class="sheet-body"><h3>修改常用組合</h3>
+      <label class="field"><span>名稱</span><input name="cn" value="${esc(c.name)}"></label>
+      <div class="chips wrap" id="ceMeal">${MEALS.map((m) => `<button type="button" class="chip sm ${m === E.meal ? 'on' : ''}" data-m="${m}">${m}</button>`).join('')}</div>
+      <div id="ceItems" class="cb-list"></div>
+      ${cur.length ? `<button type="button" class="link-btn" data-a="replace">${icon('refresh')}換成目前畫面上的 ${cur.length} 個品項</button>` : ''}
+      <div class="btn-row"><button class="btn primary" data-a="save">儲存修改</button></div></div>`, (w, close) => {
+      const drawItems = () => {
+        $('#ceItems', w).innerHTML = (E.items.length ? E.items.map((i, n) => `<div class="cb-item"><div class="cb-main"><b>${esc(i.name || '未命名')}</b>
+            <span>${i.amount ? esc(i.amount) + '・' : ''}${Math.round(+i.kcal || 0)} kcal・P ${r1(+i.protein || 0)}</span></div>
+            <button class="x" data-rm="${n}" aria-label="移除">${icon('close')}</button></div>`).join('') : '<p class="muted sm pad">沒有品項</p>')
+          + `<p class="muted sm">共 ${Math.round(W.sum(E.items, (i) => +i.kcal || 0))} kcal</p>`;
+        $$('[data-rm]', w).forEach((b) => (b.onclick = () => { E.items.splice(+b.dataset.rm, 1); drawItems(); }));
+      };
+      drawItems();
+      $$('#ceMeal .chip', w).forEach((b) => (b.onclick = () => { E.meal = b.dataset.m; $$('#ceMeal .chip', w).forEach((x) => x.classList.toggle('on', x === b)); }));
+      const rep = $('[data-a=replace]', w);
+      if (rep) rep.onclick = () => { E.items = buildRecord(cur, {}).items.map((i) => { const o = Object.assign({}, i); delete o.src; return o; }); drawItems(); toast('已換成目前的品項，按儲存生效'); };
+      $('[data-a=save]', w).onclick = async () => {
+        if (!E.items.length) { toast('至少要有一個品項', 'err'); return; }
+        const upd = Object.assign({}, c, { name: $('[name=cn]', w).value.trim() || c.name, meal: E.meal, items: E.items });
+        if (await setCombos(combos().map((x) => (x.id === c.id ? upd : x)))) { toast('已更新', 'ok'); close(); onDone && onDone(); }
+      };
     });
   }
   function saveCombo(items, meal) {
-    sheet(`<div class="sheet-body"><h3>存成常吃組合</h3>
+    sheet(`<div class="sheet-body"><h3>存成常用組合</h3>
       <label class="field"><span>名稱</span><input name="cn" value="${esc(meal)}固定"></label>
       <div class="chips wrap" id="cbMeal">${MEALS.map((m) => `<button type="button" class="chip sm ${m === meal ? 'on' : ''}" data-m="${m}">${m}</button>`).join('')}</div>
       <p class="muted sm">${items.map((i) => esc(i.name)).join('、')}・共 ${Math.round(W.sum(items, (i) => i.kcal))} kcal</p>
@@ -187,7 +212,7 @@
       $('[data-a=save]', w).onclick = async () => {
         const name = $('[name=cn]', w).value.trim() || m + '固定';
         const clean = buildRecord(items, {}).items.map((i) => { const o = Object.assign({}, i); delete o.src; return o; });
-        if (await W.saveSettings({ combos: combos().concat([{ id: W.uid(), name, meal: m, items: clean }]) })) { toast('已存成組合', 'ok'); close(); }
+        if (await setCombos(combos().concat([{ id: W.uid(), name, meal: m, items: clean }]))) { toast(`已存到「${m}」常用`, 'ok'); close(); }
       };
     });
   }
@@ -278,8 +303,6 @@
   viewFood.mount = (v) => {
     $('#dayPick', v).onchange = (e) => { if (e.target.value) location.hash = '#/food?d=' + e.target.value; };
     $('#goalBtn', v).onclick = editGoals;
-    const day = W.query().d || W.today();
-    $$('[data-combo]', v).forEach((b) => (b.onclick = () => quickAdd(day, b.dataset.combo)));
   };
 
   function editGoals() {
@@ -352,12 +375,12 @@
       <div class="add3">
         <button type="button" id="addSearch">${icon('search')}<b>搜尋食物</b><span>資料庫・常吃</span></button>
         <button type="button" id="addAI">${icon('camera')}<b>拍照估算</b><span>便當・營養標示</span></button>
-        <button type="button" id="addCombo">${icon('copy')}<b>常吃組合</b><span>一次加入</span></button>
+        <button type="button" id="addCombo">${icon('copy')}<b>常用</b><span>依餐別選</span></button>
         <button type="button" id="addManual">${icon('edit')}<b>手動輸入</b><span>看包裝填</span></button>
       </div>
       <div id="aiNote"></div>
       <div id="items"></div>
-      <button type="button" class="link-btn save-combo" id="saveCombo">${icon('copy')}把這些品項存成常吃組合</button>
+      <button type="button" class="link-btn save-combo" id="saveCombo">${icon('copy')}把這些品項存成常用組合</button>
       <div class="card form-card"><div class="frow col"><label>備註</label><textarea class="inp" rows="2" data-k="note" placeholder="例如：外食、聚餐、訓練後">${esc(D.note || '')}</textarea></div></div>
       ${id ? `<button class="btn ghost block danger-text" id="fDel">${icon('trash')}刪除這筆</button>` : ''}
       <div class="sticky-cta"><div class="tot-bar" id="totBar"></div><button class="btn primary block" id="fSave">${icon('check')}儲存</button></div>`;
@@ -406,7 +429,7 @@
       showAiNote(); draw();
     };
     $('#addSearch', v).onclick = () => searchFood((it) => { D.items.push(it); draw(); }, onAi);
-    $('#addCombo', v).onclick = () => pickCombo((c) => { c.items.forEach((i) => D.items.push(Object.assign({}, i))); draw(); });
+    $('#addCombo', v).onclick = () => pickCombo((c) => { c.items.forEach((i) => D.items.push(Object.assign({}, i))); draw(); toast(`已加入「${c.name}」`); }, D.meal, () => D.items);
     $('#saveCombo', v).onclick = () => {
       const items = D.items.filter((i) => (i.name || '').trim());
       if (!items.length) { toast('先加入品項', 'err'); return; }
