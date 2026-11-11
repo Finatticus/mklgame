@@ -327,6 +327,22 @@
       D = { id: '', date: day, time: day === W.today() ? t : '', meal: q.meal || mealByTime(t), items: [], note: '' };
     }
     D.aiNotes = '';
+    // 匯入連結：#/food/new?import=<base64url JSON>，預先填好品項，按儲存才會寫入
+    if (!id && q.import) {
+      try {
+        const b64 = q.import.replace(/-/g, '+').replace(/_/g, '/');
+        const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
+        const im = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+        ['date', 'time', 'meal', 'note'].forEach((k) => { if (im[k]) D[k] = String(im[k]); });
+        if (D.date > W.today()) D.date = W.today();
+        D.items = (im.items || []).map((it) => {
+          const o = { name: String(it.name || ''), amount: String(it.amount || ''), src: it.src || 'AI' };
+          NUT.forEach(([k]) => (o[k] = +it[k] || 0));
+          return o;
+        });
+        D.aiNotes = String(im.notes || '');
+      } catch (e) { toast('匯入連結格式不正確', 'err'); }
+    }
     return W.pageHead(id ? '編輯飲食' : '新增飲食', W.fmtDate(D.date, 'mdw'), { back: '#/food?d=' + D.date }) + `
       <div class="card form-card">
         <div class="chips wrap" id="mealChips">${MEALS.map((m) => `<button type="button" class="chip ${D.meal === m ? 'on' : ''}" data-meal="${m}">${m}</button>`).join('')}</div>
@@ -367,6 +383,7 @@
     };
     draw();
     const showAiNote = () => { $('#aiNote', v).innerHTML = D.aiNotes ? `<div class="notice">${icon('sparkle')}<div><b>AI 估算說明</b><br>${esc(D.aiNotes)}<br><span class="muted sm">數值為估計，可直接修改。</span></div></div>` : ''; };
+    showAiNote();
     v.addEventListener('input', (e) => {
       const t = e.target;
       if (t.dataset.k) D[t.dataset.k] = t.value;
