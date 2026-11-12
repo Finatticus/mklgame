@@ -1,0 +1,1571 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>峇里島聖誕獨旅</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: 單欄行程手冊。簡約版 → 包車表 → 每天時間軸＋三餐選項卡，時間與價格用等寬字 */
+:root{
+  --bg:#F2F3EE;--paper:#FFFFFF;--ink:#1D231F;--muted:#5D6862;--line:#D7DBD3;
+  --leaf:#2E6A4E;--leaf-soft:#E2EDE6;
+  --canang:#B8325F;--canang-soft:#F7E3EA;
+  --gold:#94701F;--gold-soft:#F4EBD5;--water:#4C8DB8;
+  --f-display:"Noto Serif TC","Songti TC",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111613;--paper:#1A201C;--ink:#E5EAE4;--muted:#9CA8A0;--line:#2E3832;
+  --leaf:#78C49C;--leaf-soft:#1E3127;--canang:#F07AA2;--canang-soft:#3A1D28;
+  --gold:#E2B85E;--gold-soft:#33291A;--water:#6FB3DE;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111613;--paper:#1A201C;--ink:#E5EAE4;--muted:#9CA8A0;--line:#2E3832;
+  --leaf:#78C49C;--leaf-soft:#1E3127;--canang:#F07AA2;--canang-soft:#3A1D28;
+  --gold:#E2B85E;--gold-soft:#33291A;--water:#6FB3DE;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding-block:28px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:clamp(30px,7vw,44px);font-weight:900;letter-spacing:.01em}
+h2{font-size:clamp(23px,5vw,28px);font-weight:900}
+h3{font-size:19px;font-weight:600}
+p{margin:0}
+a{color:var(--leaf);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--canang);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--leaf);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+section{display:flex;flex-direction:column;gap:16px;padding-top:40px;scroll-margin-top:64px}
+
+.hero{display:flex;flex-direction:column;gap:14px;padding-bottom:8px}
+.flight{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.leg{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;display:flex;flex-direction:column}
+.leg .code{font-family:var(--f-mono);font-weight:600;font-size:13px;color:var(--muted)}
+.leg .t{font-family:var(--f-mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.leg .d{font-size:14px;color:var(--muted)}
+.verdict{background:var(--leaf);color:var(--bg);border-radius:12px;padding:18px}
+.verdict strong{font-family:var(--f-display);font-size:22px;display:block;margin-bottom:6px}
+.verdict ul{margin:8px 0 0;padding-left:1.2em}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-top:24px;
+  border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+nav.toc .row{display:flex;gap:6px;padding:10px 0}
+nav.toc a{font-size:14px;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--paper);padding:5px 12px;border-radius:999px;flex:0 0 auto}
+nav.toc a.day{border-color:var(--leaf);color:var(--leaf);font-weight:700}
+nav.toc a.key{background:var(--leaf);color:var(--bg);border-color:var(--leaf);font-weight:700}
+
+.note{border-radius:10px;padding:14px 16px;font-size:15px;display:flex;flex-direction:column;gap:6px}
+.note b.k{font-size:13px;letter-spacing:.06em}
+.warn{background:var(--canang-soft);border:1px solid color-mix(in srgb,var(--canang) 35%,transparent)}
+.warn b.k{color:var(--canang)}
+.tip{background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 30%,transparent)}
+.tip b.k{color:var(--gold)}
+.info{background:var(--leaf-soft);border:1px solid color-mix(in srgb,var(--leaf) 30%,transparent)}
+.info b.k{color:var(--leaf)}
+ul.clean{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:540px}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:700;background:color-mix(in srgb,var(--leaf-soft) 60%,var(--paper))}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:700;background:color-mix(in srgb,var(--leaf-soft) 45%,var(--paper))}
+
+/* 簡約版 */
+.brief{display:flex;flex-direction:column;gap:12px}
+.bday{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.bday-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px}
+.bday-h h3{font-size:18px}
+.bday-h .car{font-family:var(--f-mono);font-size:12.5px;color:var(--canang);font-weight:600}
+.bline{display:grid;grid-template-columns:52px 1fr;gap:10px;font-size:15px}
+.bline .t{font-family:var(--f-mono);font-size:13.5px;color:var(--leaf);font-weight:600;padding-top:1px}
+.bline.food .x::before{content:"食 ";color:var(--gold);font-family:var(--f-display);font-weight:600}
+.bline.night .x::before{content:"夜 ";color:var(--canang);font-family:var(--f-display);font-weight:600}
+.bline.ex .x::before{content:"動 ";color:var(--leaf);font-family:var(--f-display);font-weight:600}
+.rating{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+/* 每日 */
+.dayhead{display:flex;flex-direction:column;gap:4px;border-top:3px solid var(--leaf);padding-top:14px}
+.dayhead .date{font-family:var(--f-mono);font-weight:600;color:var(--canang);font-size:14px}
+.base{font-size:14px;color:var(--muted)}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tl > li{display:grid;grid-template-columns:62px 1fr;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.tl > li:last-child{border-bottom:0}
+.tl .time{font-family:var(--f-mono);font-weight:600;font-size:14px;color:var(--leaf);padding-top:2px;font-variant-numeric:tabular-nums}
+.tl .body{min-width:0;display:flex;flex-direction:column;gap:6px}
+.tl .what{font-weight:700;font-size:16.5px}
+.tl .meta{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;padding:1px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--paper);white-space:nowrap}
+.chip.go{border-color:var(--leaf);color:var(--leaf)}
+.chip.cost{font-family:var(--f-mono)}
+.chip.leave{border-color:var(--canang);color:var(--canang)}
+.tl .desc{font-size:15px}
+.tl li.move .what{font-weight:500;color:var(--muted);font-size:15px}
+
+/* 餐點選項 */
+.meal{border:1px solid color-mix(in srgb,var(--gold) 35%,var(--line));background:var(--gold-soft);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.meal-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.meal-h b{font-family:var(--f-display);font-size:17px;color:var(--gold)}
+.meal-h span{font-size:13px;color:var(--muted)}
+.opts{display:grid;gap:8px}
+.opt{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;font-size:14.5px}
+.opt-top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.opt-top b{font-size:15.5px}
+.price{font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--leaf);white-space:nowrap}
+.opt .must{color:var(--ink)}
+.opt .must::before{content:"必點　";color:var(--canang);font-weight:700}
+.opt .where{color:var(--muted);font-size:13.5px}
+.opt.pick{border-color:var(--leaf);box-shadow:inset 3px 0 0 var(--leaf)}
+.badge{font-size:11.5px;font-weight:700;color:var(--leaf);letter-spacing:.06em}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;font-size:15px}
+.card .tag{font-family:var(--f-mono);font-size:12px;color:var(--leaf);font-weight:600;letter-spacing:.08em}
+
+.check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.check li{display:grid;grid-template-columns:96px 1fr;gap:10px;font-size:15px}
+.check .when{font-family:var(--f-mono);font-size:13px;color:var(--canang);font-weight:600;padding-top:2px}
+
+.msg{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.msg-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+.msg pre{margin:0;padding:12px;font-family:var(--f-mono);font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.copy{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--leaf);color:var(--leaf);background:transparent;border-radius:999px;padding:3px 12px;cursor:pointer}
+.copy:hover{background:var(--leaf-soft)}
+
+/* 雨天備案 */
+.rains{display:flex;flex-direction:column;gap:14px}
+.rday{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;scroll-margin-top:64px}
+.rday-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.rday-h h3{font-size:18px}
+.rday-h .trig{font-size:13px;color:var(--canang);font-weight:600}
+.rrow{display:grid;grid-template-columns:88px 1fr;gap:10px;font-size:15px}
+.rrow .lab{font-size:13px;font-weight:700;color:var(--leaf);padding-top:2px}
+.rrow .lab.alt{color:var(--canang)}
+.rrow ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+.rainlink{font-size:13.5px;font-weight:700;color:var(--canang);text-decoration:none;align-self:flex-start;border:1px solid var(--canang);border-radius:999px;padding:2px 12px;margin-top:4px}
+@media (max-width:480px){.rrow{grid-template-columns:1fr;gap:2px}}
+footer{margin-top:48px;font-size:13.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+footer ul{margin:0;padding-left:1.2em}
+
+@media (min-width:640px){.opts{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
+@media (max-width:480px){
+  .flight{grid-template-columns:1fr}
+  .tl > li{grid-template-columns:52px 1fr;gap:10px}
+  .check li{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+/* 導覽按鈕與視窗 */
+.what-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.guide-btn{font:inherit;font-size:13px;font-weight:700;line-height:1.5;color:var(--bg);background:var(--leaf);border:0;border-radius:999px;padding:3px 12px;cursor:pointer;white-space:nowrap}
+.guide-btn::after{content:" ›"}
+.guide-btn:hover{filter:brightness(1.08)}
+.meal-h .guide-btn{margin-left:6px;vertical-align:middle}
+body.modal-open{overflow:hidden}
+dialog.guide{position:fixed;inset:0;margin:auto;padding:0;border:0;background:var(--paper);color:var(--ink);width:min(720px,calc(100% - 32px));max-width:720px;height:min(88dvh,900px);max-height:none;border-radius:14px;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden}
+dialog.guide[open]{display:flex;flex-direction:column}
+dialog.guide::backdrop{background:rgba(8,12,10,.6)}
+.g-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px 12px;border-bottom:1px solid var(--line);background:var(--paper)}
+.g-titles{display:flex;flex-direction:column;gap:2px;min-width:0}
+.g-head h2{font-size:clamp(20px,5vw,24px)}
+.g-close{flex:0 0 auto;font:inherit;font-size:18px;line-height:1;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.g-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:16px 18px 28px;display:flex;flex-direction:column;gap:14px;font-size:15.5px}
+.g-body h3{font-size:17px;padding-top:6px;color:var(--leaf)}
+.g-body ol,.g-body ul{margin:0;padding-left:1.35em;display:flex;flex-direction:column;gap:7px}
+.g-lead{font-size:16.5px;font-weight:500;line-height:1.8;border-left:3px solid var(--canang);padding-left:12px}
+.g-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px;margin:0}
+.g-facts div{background:var(--leaf-soft);border-radius:8px;padding:8px 10px;min-width:0}
+.g-facts dt{font-size:12px;color:var(--leaf);font-weight:700;letter-spacing:.06em}
+.g-facts dd{margin:0;font-size:14.5px}
+.g-diagram{overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg)}
+.g-diagram svg{display:block;width:100%;min-width:320px;height:auto}
+.dg-ground{fill:var(--leaf-soft)}
+.dg-edge{fill:none;stroke:var(--leaf);stroke-width:2}
+.dg-house{fill:var(--gold-soft);stroke:var(--gold);stroke-width:1.2}
+.dg-water{fill:var(--water)}
+.dg-bridge{stroke:var(--ink);stroke-width:2.5}
+.dg-walk{fill:none;stroke:var(--canang);stroke-width:2;stroke-dasharray:5 4}
+.dg-text{fill:var(--ink);font-size:11.5px;font-family:var(--f-body)}
+.dg-small{fill:var(--muted);font-size:10.5px;font-family:var(--f-body)}
+.dg-b{font-weight:700}
+.dg-box{fill:var(--paper);stroke:var(--leaf);stroke-width:1.5}
+.dg-holy{fill:var(--leaf-soft)}
+.dg-spouts circle{fill:var(--water)}
+.g-foot{display:flex;justify-content:space-between;gap:10px;padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper)}
+.g-nav{font:inherit;font-size:14px;font-weight:700;color:var(--leaf);background:transparent;border:1px solid var(--leaf);border-radius:999px;padding:6px 14px;cursor:pointer;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-nav:disabled{opacity:.35;cursor:default}
+@media (max-width:640px){
+  dialog.guide{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0}
+  .g-head{padding-top:calc(14px + env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .g-body{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">Bali · Solo · 12/24 – 12/27 · 4天3夜</span>
+  <h1>峇里島聖誕獨旅</h1>
+  <p class="muted">星宇直飛，烏布 2 晚＋金巴蘭 1 晚。每天包車、看完就走的緊湊節奏，三餐以峇里與印尼在地料理為主。峇里島與台北同時區（UTC+8）。</p>
+  <div class="flight">
+    <div class="leg"><span class="code">去程 JX765 · 12/24 週四</span><span class="t">10:10 → 15:40</span><span class="d">桃園 TPE → 峇里島 DPS</span></div>
+    <div class="leg"><span class="code">回程 JX766 · 12/27 週日</span><span class="t">16:40 → 22:05</span><span class="d">峇里島 DPS → 桃園 TPE</span></div>
+  </div>
+  <div class="verdict">
+    <strong>結論：獨旅可行，包車是關鍵</strong>
+    <ul>
+      <li>峇里島治安普遍不錯、英文通，單人吃飯很常見。</li>
+      <li>沒有大眾運輸，你選的「接機＋每天包車」是最省時的做法，總車資約 NT$4,600–6,800。</li>
+      <li>12/24 是入境最高峰、12/25–26 是聖誕車潮高峰，行程避開長谷與水明漾。</li>
+      <li>12 月是雨季，戶外點排早上，午後陣雨時移動或吃飯。</li>
+    </ul>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章節">
+  <div class="row">
+    <a class="key" href="#brief">簡約版</a>
+    <a class="key" href="#car">包車時數</a>
+    <a class="key" href="#night">晚上做什麼</a>
+    <a href="#prep">行前必辦</a>
+    <a href="#stay">住哪裡</a>
+    <a class="day" href="#d1">D1</a>
+    <a class="day" href="#d2">D2</a>
+    <a class="day" href="#d3">D3</a>
+    <a class="day" href="#d4">D4</a>
+    <a href="#budget">預算</a>
+    <a href="#solo">獨旅細節</a>
+    <a href="#plan-b">雨天備案</a>
+  </div>
+</nav>
+
+<!-- ===== 簡約版 ===== -->
+<section id="brief">
+  <span class="eyebrow">At a glance</span>
+  <h2>簡約版行程</h2>
+  <p class="muted small">一眼看完 4 天。每餐列出首選，其他選擇、價格與必點在下方詳細版。詳細版每個景點旁都有綠色「導覽」按鈕，點開是完整的歷史、構造、走法和注意事項。</p>
+  <div class="brief">
+    <div class="bday">
+      <div class="bday-h"><h3>D1 12/24 週四　抵達烏布</h3><span class="car">接機 16:30 → 約 19:00</span></div>
+      <div class="bline"><span class="t">15:40</span><span class="x">落地，出關約 45–75 分</span></div>
+      <div class="bline"><span class="t">16:30</span><span class="x">司機舉牌接機，直奔烏布（聖誕高峰約 2–2.5 小時）</span></div>
+      <div class="bline food"><span class="t">19:30</span><span class="x">Hujan Locale 現代印尼菜（步行）</span></div>
+      <div class="bline night"><span class="t">21:00</span><span class="x">皇宮夜景散步 → 21:15 按摩 60 分（步行）</span></div>
+    </div>
+    <div class="bday">
+      <div class="bday-h"><h3>D2 12/25 週五　烏布全日＋兩個市集</h3><span class="car">包車 07:30–19:15 · 約 12 小時</span></div>
+      <div class="bline food"><span class="t">06:15</span><span class="x">烏布傳統早市，吃峇里糕點當早餐（步行）</span></div>
+      <div class="bline"><span class="t">07:50</span><span class="x">德格拉朗梯田 → Sebatu 水廟 → 聖泉寺 → 象窟</span></div>
+      <div class="bline food"><span class="t">12:00</span><span class="x">Ibu Oka 烤乳豬飯</span></div>
+      <div class="bline"><span class="t">12:45</span><span class="x">烏布皇宮＋藝術市場 → 聖猴森林 → 山脊步道</span></div>
+      <div class="bline"><span class="t">16:10</span><span class="x">蘇卡瓦提藝術市場</span></div>
+      <div class="bline food"><span class="t">17:30</span><span class="x">吉亞尼雅夜市，在地小吃吃一輪</span></div>
+      <div class="bline night"><span class="t">19:30</span><span class="x">烏布皇宮 Legong 舞蹈 → 21:15 按摩（可略）</span></div>
+    </div>
+    <div class="bday">
+      <div class="bday-h"><h3>D3 12/26 週六　一路往南看火舞</h3><span class="car">包車 08:00–19:45 · 約 12 小時</span></div>
+      <div class="bline"><span class="t">08:50</span><span class="x">塔曼阿雲皇家寺廟 → 海神廟</span></div>
+      <div class="bline food"><span class="t">11:30</span><span class="x">Pak Malen 烤乳豬飯</span></div>
+      <div class="bline"><span class="t">12:30</span><span class="x">金巴蘭飯店入住、休息</span></div>
+      <div class="bline"><span class="t">14:45</span><span class="x">Melasti 斷崖海灘 → 烏魯瓦圖斷崖寺 → 18:00 Kecak 火舞</span></div>
+      <div class="bline food"><span class="t">19:45</span><span class="x">Menega 金巴蘭海灘海鮮燒烤（包車在此結束）</span></div>
+      <div class="bline night"><span class="t">21:00</span><span class="x">沿沙灘走回飯店 → 21:30 按摩 60 分</span></div>
+    </div>
+    <div class="bday">
+      <div class="bday-h"><h3>D4 12/27 週日　魚市場、巨像、送機</h3><span class="car">包車 07:00–14:00 · 約 7 小時</span></div>
+      <div class="bline ex"><span class="t">06:00</span><span class="x">（選配）金巴蘭沙灘晨跑 40 分</span></div>
+      <div class="bline"><span class="t">07:00</span><span class="x">退房，行李上車，Kedonganan 魚市場</span></div>
+      <div class="bline food"><span class="t">07:45</span><span class="x">Ibu Oki 雞肉飯</span></div>
+      <div class="bline"><span class="t">09:00</span><span class="x">GWK 文化公園 → Pandawa 海灘</span></div>
+      <div class="bline food"><span class="t">11:45</span><span class="x">Karya Rebo 烤乳豬飯（離機場 10–15 分）</span></div>
+      <div class="bline"><span class="t">13:15</span><span class="x">出發去機場，約 13:45 抵達，16:40 起飛</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 包車 ===== -->
+<section id="car">
+  <span class="eyebrow">Driver plan</span>
+  <h2>包車與接送：時數與費用</h2>
+  <p>行情是一般轎車全日（10 小時）約 IDR 60–100 萬（≈NT$1,100–1,800），超過 10 小時每小時約 IDR 5 萬（≈NT$90），按車計價不按人頭，含油錢與停車，不含門票和餐費。聖誕週偏高，下表抓偏高的範圍。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>日期</th><th>服務</th><th>起訖</th><th>時數</th><th>預估費用</th><th>備註</th></tr></thead>
+    <tbody>
+      <tr><td>12/24 週四</td><td>機場接機</td><td class="num">16:30–19:00</td><td class="num">單趟</td><td class="num">IDR 35–60 萬<br>≈ NT$630–1,100</td><td>機場 → 烏布飯店，司機會追蹤航班</td></tr>
+      <tr><td>12/25 週五</td><td>全日包車</td><td class="num">07:30–19:15</td><td class="num">約 12 hr</td><td class="num">IDR 80–110 萬<br>≈ NT$1,400–2,000</td><td>全日價＋超時約 2 小時。終點是烏布皇宮（接著看舞蹈）</td></tr>
+      <tr><td>12/26 週六</td><td>全日包車</td><td class="num">08:00–19:45</td><td class="num">約 12 hr</td><td class="num">IDR 80–110 萬<br>≈ NT$1,400–2,000</td><td>全日價＋超時約 2 小時。12:30–14:15 司機休息。送你到 Menega 吃晚餐就結束，飯後走回飯店（住在 Menega 步行範圍內才適用）</td></tr>
+      <tr><td>12/27 週日</td><td>全日包車＋送機</td><td class="num">07:00–14:00</td><td class="num">約 7 hr</td><td class="num">IDR 60–100 萬<br>≈ NT$1,100–1,800</td><td>未滿 10 小時仍算全日價。有些司機有 8 小時方案可以問</td></tr>
+      <tr class="total"><td colspan="4">合計（不含小費）</td><td class="num">IDR 255–380 萬</td><td>約 NT$4,600–6,800</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note tip"><b class="k">最省事的做法：一位司機包到底</b><p>找一位司機（或同一家車行）一次包下 12/24 接機到 12/27 送機。好處是只要談一次價、只要聯絡一個人，他第一天就知道你的節奏。D4 從金巴蘭出發，請他前一晚住附近或確認 07:00 能到。小費每天 IDR 5–10 萬（≈NT$90–180），最後一天一起給也可以。</p></div>
+  <div class="note warn"><b class="k">談價時一定要確認</b><ul class="clean">
+    <li>總價是否含油錢、停車費、過路費（機場收費道路）。</li>
+    <li>超時怎麼算（每小時多少），D3 中午司機休息的時間算不算在內。</li>
+    <li>車內有沒有冷氣、能不能放 1 個行李箱整天。</li>
+    <li>付款方式：現金 IDR 或平台預付。</li>
+  </ul></div>
+
+  <div class="msg">
+    <div class="msg-h"><span>WhatsApp 詢價範本（英文，可直接複製）</span><button class="copy" type="button" id="copy-msg">複製</button></div>
+<pre id="driver-msg">Hi! I'm a solo traveler from Taiwan. I'd like to book a private car with an English-speaking driver for the following. Could you quote one total price (including fuel, parking and toll)?
+
+Dec 24 (Thu): Airport pickup. Flight JX765 lands 15:40 at DPS. Drop at my hotel in central Ubud.
+Dec 25 (Fri): Full day 07:30-19:15 from Ubud hotel. Tegallalang, Gunung Kawi Sebatu, Tirta Empul, Goa Gajah, Ubud center, Campuhan Ridge, Sukawati Art Market, Gianyar Night Market, then drop me at Ubud Palace around 19:15.
+Dec 26 (Sat): Full day 08:00-19:45. Ubud hotel - Taman Ayun - Tanah Lot - lunch on Sunset Road - Jimbaran hotel (break 12:30-14:15) - Melasti Beach - Uluwatu Temple - Kecak 18:00 - drop me at Menega Cafe, Jimbaran for dinner (end of day).
+Dec 27 (Sun): 07:00-14:00 from Jimbaran hotel. Kedonganan fish market, GWK, Pandawa Beach, lunch in Kedonganan, then drop at airport (international departure, flight 16:40).
+
+I'll carry 1 suitcase. What is your overtime rate per hour? Thank you!</pre>
+  </div>
+</section>
+
+<!-- ===== 行前 ===== -->
+<section id="prep">
+  <span class="eyebrow">Before you fly</span>
+  <h2>行前必辦：一簽、一稅、一卡</h2>
+  <p>台灣護照入境印尼需要簽證。三樣東西分別在三個官方網站辦，網址都以 <span class="mono">.go.id</span> 結尾，其他網站多收錢的都是代辦或詐騙。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>費用</th><th>在哪辦</th><th>什麼時候辦</th></tr></thead>
+    <tbody>
+      <tr><td><b>電子落地簽 e-VOA</b><br><span class="muted">停留 30 天</span></td><td class="num">IDR 500,000<br>≈ NT$900</td><td>evisa.imigrasi.go.id</td><td>出發前 1–2 週。有 e-VOA 才能走自動通關閘門</td></tr>
+      <tr><td><b>峇里島旅遊稅</b></td><td class="num">IDR 150,000<br>≈ NT$270</td><td>lovebali.baliprov.go.id 或 Love Bali App</td><td>出發前線上繳，存好 QR Code</td></tr>
+      <tr><td><b>All Indonesia 入境卡</b></td><td class="num">免費</td><td>allindonesia.imigrasi.go.id</td><td>抵達前 72 小時內，也就是 12/21 之後</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">護照效期 6 個月以上（從 12/24 算）、至少 2 頁空白頁、不能破損。帶回程機票證明。三個 QR Code 截圖存在相簿。</p>
+  <h3>倒數清單</h3>
+  <ul class="check">
+    <li><span class="when">本週內</span><span>訂兩間飯店、12/24 與 12/25 晚餐訂位（Hujan Locale、Nusantara）、用上方範本找司機。</span></li>
+    <li><span class="when">12/1 前</span><span>買 12/26 18:00 場 Kecak 票、旅平險（含醫療）、辦 e-VOA。</span></li>
+    <li><span class="when">12/10 前</span><span>買 eSIM（Telkomsel 訊號最好），下載 WhatsApp、Grab、Google 離線地圖。</span></li>
+    <li><span class="when">12/21–23</span><span>填入境卡、繳旅遊稅、跟司機確認接機時間與航班號。</span></li>
+  </ul>
+</section>
+
+<!-- ===== 住宿 ===== -->
+<section id="stay">
+  <span class="eyebrow">Where to stay</span>
+  <h2>住哪裡：烏布 2 晚＋金巴蘭 1 晚</h2>
+  <p>每晚的晚餐、表演、按摩、早市都排在走路範圍內，所以住宿的<b>位置比等級重要</b>。用 Google 地圖搜尋下面的中心點，看飯店到它的步行時間。</p>
+  <div class="cards">
+    <div class="card">
+      <span class="tag">烏布 2 晚 · 12/24–26</span>
+      <h3>以「烏布皇宮 Puri Saren Ubud」為中心，步行 10 分鐘內</h3>
+      <p><b>最理想的街：</b>Jl. Raya Ubud（皇宮前後一段）、Monkey Forest Rd 北段（皇宮到足球場之間）、Jl. Hanoman 北段、Jl. Dewisita、Jl. Goutama、Jl. Suweta 南段。</p>
+      <p><b>為什麼：</b>早市、Legong 舞蹈在皇宮；Ibu Oka、Bu Rus、Hujan Locale 在皇宮北側；DaLa Spa、Bebek Bengil、Nusantara 在 Jl. Hanoman 與 Jl. Dewisita；聖猴森林在 Monkey Forest Rd 南端。住這一塊，四個方向都在 10 分鐘內。</p>
+      <p><b>避開：</b>Jl. Bisma 南段、Penestanan、Sayan、Pengosekan、Tegallalang、Keliki。景色好，但晚上出門都要叫車，而市中心叫車常被拒。</p>
+    </div>
+    <div class="card">
+      <span class="tag">金巴蘭 1 晚 · 12/26–27</span>
+      <h3>以「Menega Cafe」為中心，步行 10 分鐘內</h3>
+      <p><b>最理想的範圍：</b>Muaya 海灘一帶，也就是 Jl. Raya Uluwatu 上 InterContinental 前後一段，往南到 Four Seasons 入口之間靠海的部分。</p>
+      <p><b>為什麼：</b>D3 包車在 Menega 晚餐就結束，飯後走回去，省約 1 小時超時費；Angelina Spa 約 7 分鐘。D4 到魚市場、GWK、機場都在 10–20 分鐘車程。</p>
+      <p><b>次選：</b>金巴蘭北端 Kedonganan（魚市場附近），選擇多、通常較便宜、離機場最近。代價是離 Menega 約 2–2.5 公里，D3 要請司機飯後送回飯店（多約 1 小時超時費），晚上按摩也要叫車。</p>
+      <p><b>避開：</b>Jl. Bypass Ngurah Rai 大馬路旁（吵、離海遠），以及往山上的 Ungasan、Pecatu 斷崖區，離晚餐和機場都更遠。</p>
+    </div>
+  </div>
+  <div class="note tip"><b class="k">訂房前確認這 5 件事</b><ul class="clean">
+    <li><b>車能開到門口或 50 公尺內</b>：烏布很多住宿在步行巷（例如 Jl. Kajeng）或稻田小路裡，車進不去。你每天早上包車、還要拖兩次行李，會很麻煩。可以傳訊息問：Can a car drop off at your entrance?</li>
+    <li><b>早餐幾點開</b>：12/26 要 07:00 吃早餐、08:00 出發，06:30 或 07:00 開的才來得及；不行就問能不能打包。</li>
+    <li><b>退房與寄放行李</b>：12/26 早上 8 點前、12/27 早上 7 點前退房；12/26 中午到金巴蘭要能寄行李或提早入住。</li>
+    <li><b>評論裡的噪音</b>：Monkey Forest Rd 有酒吧放音樂到深夜，在評論搜「noise」、「bar」、「rooster」（公雞）。</li>
+    <li><b>冷氣、熱水、可免費取消</b>：雨季濕氣重，冷氣很重要。聖誕週價格浮動大，選可免費取消的方案。</li>
+  </ul></div>
+</section>
+
+<!-- ===== 晚上 ===== -->
+<section id="night">
+  <span class="eyebrow">After dinner</span>
+  <h2>晚上做什麼：表演、按摩、散步、運動</h2>
+  <p>峇里島的熱鬧夜生活在長谷、水明漾，這趟不住那裡。烏布和金巴蘭晚上比較安靜，但有三件事很值得排：烏布皇宮的傳統舞蹈、走路就到的高評價按摩、清晨的運動。每晚都排了一個方案，全部走路可到。</p>
+
+  <div class="rains">
+    <div class="rday">
+      <div class="rday-h"><h3>D1 12/24 週四　散步＋按摩</h3><span class="trig">21:00–22:30</span></div>
+      <div class="rrow"><span class="lab">21:00</span><span>吃完沿 Jl. Raya Ubud 走到烏布皇宮，晚上有燈光、門前人少，很好拍。</span></div>
+      <div class="rrow"><span class="lab">21:15</span><span>往南走 Jl. Hanoman 到 DaLa Spa（開到 23:00）做 60 分鐘峇里按摩，消掉飛行的疲勞。晚餐 20:45 前吃完的話，皇宮旁小巷的 Sundih Family Spa（開到 22:00）更近。</span></div>
+      <div class="rrow"><span class="lab">22:30</span><span>沿 Monkey Forest Rd 走回飯店，路上還有店開著、有人走動。</span></div>
+      <div class="rrow"><span class="lab alt">不建議</span><span>每週四 19:30 Pura Puseh 有 Kecak 火舞，但你 19:00 才到飯店，而且 D3 會在烏魯瓦圖看更經典的日落場。</span></div>
+    </div>
+    <div class="rday">
+      <div class="rday-h"><h3>D2 12/25 週五　宮廷舞＋按摩</h3><span class="trig">19:15–22:30</span></div>
+      <div class="rrow"><span class="lab">19:15</span><span>司機從夜市直接送到烏布皇宮，包車結束。</span></div>
+      <div class="rrow"><span class="lab">19:30</span><span>皇宮庭院的 Legong 舞蹈，每晚 19:30、約 1.5 小時、IDR 10 萬（≈NT$180），現場或線上買同價，只收現金。座位不對號，露天沒冷氣。</span></div>
+      <div class="rrow"><span class="lab">21:00</span><span>走 10 分鐘到 DaLa Spa，21:15 開始 60 分鐘。累了就沿 Monkey Forest Rd 逛回飯店。</span></div>
+    </div>
+    <div class="rday">
+      <div class="rday-h"><h3>D3 12/26 週六　沙灘散步＋按摩</h3><span class="trig">21:00–22:30</span></div>
+      <div class="rrow"><span class="lab">21:00</span><span>Menega 吃完走回飯店（住在建議範圍內約 5–10 分鐘），沙灘上都是餐廳燈光，不暗。</span></div>
+      <div class="rrow"><span class="lab">21:30</span><span>飯店附近的 Angelina Spa（開到 23:30）按摩 60 分鐘。這天是 12 小時的長天，最需要。不想按摩就在飯店泳池邊喝一杯。</span></div>
+    </div>
+    <div class="rday">
+      <div class="rday-h"><h3>D4 12/27 週日　沙灘晨跑（選配）</h3><span class="trig">06:00–06:40</span></div>
+      <div class="rrow"><span class="lab">06:00</span><span>從飯店走幾分鐘到金巴蘭沙灘，沙灘又長又平，清晨涼、看得到漁船回港。06:40 回房沖澡，07:00 退房上車。</span></div>
+    </div>
+  </div>
+
+  <h3>晚上走路可到的高評價按摩</h3>
+  <p class="small muted">評分與營業時間來自 Google 地圖（2026/11/12 查詢），聖誕週可能調整。前一天用 WhatsApp 或官網預約，問清楚最後一個預約時段（通常是打烊前 1 小時）與 60 分鐘價格。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>店名</th><th>位置</th><th>營業</th><th>Google</th><th>適合</th></tr></thead>
+    <tbody>
+      <tr><td><b>DaLa Spa Ubud</b></td><td>烏布 Jl. Hanoman，皇宮步行約 10 分</td><td class="num">09:00–23:00</td><td class="num">4.9（1,000+）</td><td>D1、D2，最晚打烊</td></tr>
+      <tr><td><b>Sang Spa and Yoga Centre</b></td><td>烏布 Jl. Jembawan，皇宮東南約 8 分</td><td class="num">09:00–22:00</td><td class="num">4.8（3,100+）</td><td>D1，晚餐早吃完時</td></tr>
+      <tr><td><b>Sundih Family Spa</b></td><td>烏布 Jl. Goutama，皇宮旁小巷約 4 分</td><td class="num">09:00–22:00</td><td class="num">4.7（570）</td><td>D1，離餐廳最近</td></tr>
+      <tr><td><b>Jaens Spa Center Ubud</b></td><td>烏布南邊 Pengosekan，離中心約 2 公里，要叫車</td><td class="num">09:00–22:00</td><td class="num">4.9（7,000）</td><td>評價最高，但不在步行範圍</td></tr>
+      <tr><td><b>Angelina Spa – Jimbaran</b></td><td>金巴蘭 Jl. Raya Uluwatu No.23，Menega 步行約 7 分</td><td class="num">10:00–23:30</td><td class="num">4.7（890+）</td><td>D3，最順、最晚</td></tr>
+      <tr><td><b>The Calma Spa – Jimbaran Beach</b></td><td>金巴蘭 Jl. Uluwatu II，Menega 步行約 11 分</td><td class="num">10:00–22:00</td><td class="num">4.9（6,100+）</td><td>評價最高，但要 21:00 前開始</td></tr>
+      <tr><td><b>Avisha Wellness &amp; Spa</b></td><td>金巴蘭，Menega 約 1.5 公里，叫車 5 分</td><td class="num">11:00–23:00</td><td class="num">4.9（830+）</td><td>Angelina 客滿時的備選</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>想運動</h3>
+  <div class="cards">
+    <div class="card"><span class="tag">最省時</span><h3>飯店健身房＋泳池</h3><p>不用移動。訂房前確認有健身房與開放時間，D2、D3 早上出發前或晚上都能用。</p></div>
+    <div class="card"><span class="tag">烏布 · 開到 23:00</span><h3>Rendezvous Fitness Bali</h3><span class="rating">Google 4.9（970+ 則）</span><p>烏布北邊 Jl. Sri Wedari，05:30–23:00，健身房之外還有三溫暖與泳池。離市中心約 3.5 公里，叫車約 10–15 分鐘，適合 D1 晚上取代按摩。單次入場費現場問。</p></div>
+    <div class="card"><span class="tag">烏布 · 晨跑</span><h3>Campuhan 山脊步道</h3><p>日出前後幾乎沒人、最涼快，是烏布最好的跑步路線。想跑就把 D2 的早市換成晨跑，下午的步道行程就可以拿掉，多出時間逛市集。</p></div>
+    <div class="card"><span class="tag">金巴蘭 · 晨跑</span><h3>金巴蘭沙灘</h3><p>D4 06:00 從飯店走到沙灘，沙面平、路線長，跑 30–40 分鐘剛好。</p></div>
+  </div>
+</section>
+
+<!-- ===== D1 ===== -->
+<section id="d1">
+  <div class="dayhead">
+    <span class="date">D1 · 12/24 週四 · 平安夜</span>
+    <h2>落地直奔烏布</h2>
+    <span class="base">住：烏布市中心　|　車：接機 16:30 → 約 19:00</span>
+    <a class="rainlink" href="#rain-d1">D1 雨天／延誤備案</a>
+  </div>
+  <div class="note warn"><b class="k">今天是入境最高峰</b><p>當地預估 12/24 是全年入境最擠的一天。機場到烏布平常約 1.5 小時，今天抓 2–2.5 小時。</p></div>
+  <ul class="tl">
+    <li><span class="time">10:10</span><div class="body"><span class="what">桃園起飛 JX765</span><p class="desc">飛約 5.5 小時，機上吃午餐。穿薄長褲、帶薄外套。</p></div></li>
+    <li><span class="time">15:40</span><div class="body"><div class="what-row"><span class="what">抵達峇里島機場</span><button type="button" class="guide-btn" data-guide="arrival">導覽</button></div>
+      <div class="meta"><span class="chip">出關約 45–75 分</span></div>
+      <p class="desc">e-VOA 自動閘門 → 領行李 → 海關掃入境卡 QR Code → 出關。在機場內銀行 ATM（BNI、Mandiri、BCA）領 IDR 100 萬（≈NT$1,800）現金，夜市、門票、小吃都要現金。</p></div></li>
+    <li class="move"><span class="time">16:30</span><div class="body"><span class="what">司機在入境大廳舉牌，前往烏布</span><div class="meta"><span class="chip go">接機</span><span class="chip">2–2.5 小時</span></div></div></li>
+    <li><span class="time">19:00</span><div class="body"><span class="what">入住，放行李，走路出門</span></div></li>
+    <li><span class="time">19:30</span><div class="body">
+      <div class="meal">
+        <div class="meal-h"><b>平安夜晚餐</b><span>都在烏布市中心，步行可到</span></div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="badge">首選・吃好一點</span>
+            <div class="opt-top"><b>Hujan Locale</b><span class="price">中高價位</span></div>
+            <p>名廚 Will Meyrick 的現代印尼菜，把各地街頭菜做得精緻，二樓用餐、雞尾酒也好。單人坐吧台自在。平安夜務必訂位。</p>
+            <p class="must">Bali Aga 烤豬（源自古老的 Tenganan 村食譜）、黃薑蒸魚 Ikan Bumbu Kuning、巴東香料牛肉沙嗲</p>
+            <p class="where">Jl. Sri Wedari No.5 · 價格以官網菜單為準</p>
+          </div>
+          <div class="opt">
+            <span class="badge">吃一次就懂印尼菜</span>
+            <div class="opt-top"><b>Nusantara by Locavore</b><span class="price">套餐約 IDR 45 萬／人（≈NT$810）</span></div>
+            <p>Locavore 團隊做印尼群島各地的傳統菜。套餐一次上約 10 道招牌，很適合想一頓吃遍各地風味的人。晚餐 18:00–21:30，要訂位。</p>
+            <p class="must">Nusantara 套餐；單點選 Babi Kepayang（黑果仁香料燉豬肋排與五花）</p>
+            <p class="where">Jl. Dewisita No.09C · 套餐價為參考，可能已調整</p>
+          </div>
+          <div class="opt">
+            <span class="badge">平價在地</span>
+            <div class="opt-top"><b>Warung Makan Bu Rus</b><span class="price">IDR 3.5–7.5 萬（≈NT$63–140）</span></div>
+            <p>皇宮旁的家常小館，開到 22:00，臨時起意也吃得到。適合累了想簡單吃。</p>
+            <p class="must">雞肉什錦飯 Nasi Campur Ayam（約 3.5 萬 ≈ NT$63）、炸鴨 Bebek Goreng（約 7.5 萬 ≈ NT$140）</p>
+            <p class="where">Jl. Suweta No.9 · 10:30–22:00</p>
+          </div>
+        </div>
+      </div></div></li>
+    <li><span class="time">21:00</span><div class="body"><div class="what-row"><span class="what">皇宮夜景散步＋按摩 60 分鐘</span><button type="button" class="guide-btn" data-guide="palace">導覽</button></div>
+      <div class="meta"><span class="chip go">步行</span><span class="chip">前一天預約</span></div>
+      <p class="desc">吃完繞到皇宮看夜景，再走 Jl. Hanoman 到 DaLa Spa（開到 23:00，Google 4.9）21:15 按摩，消掉飛行的疲勞。晚餐 20:45 前吃完的話，皇宮旁小巷的 Sundih Family Spa（開到 22:00）更近。其他選擇見<a href="#night">晚上做什麼</a>。</p></div></li>
+  </ul>
+</section>
+
+<!-- ===== D2 ===== -->
+<section id="d2">
+  <div class="dayhead">
+    <span class="date">D2 · 12/25 週五 · 聖誕節</span>
+    <h2>烏布全日：梯田、聖泉、象窟、兩個市集</h2>
+    <span class="base">住：烏布　|　車：包車 07:30–19:15（約 12 小時）</span>
+    <a class="rainlink" href="#rain-d2">D2 雨天備案</a>
+  </div>
+  <p>北邊景點趁早跑完，中午回市中心步行，下午往南順路接蘇卡瓦提市集和吉亞尼雅夜市，最後回烏布，整天不走回頭路。</p>
+  <ul class="tl">
+    <li><span class="time">06:15</span><div class="body"><div class="what-row"><span class="what">烏布傳統早市</span><button type="button" class="guide-btn" data-guide="ubudmarket">導覽</button></div>
+      <div class="meta"><span class="chip go">步行</span><span class="chip cost">免費</span><span class="chip leave">40 分鐘就走</span></div>
+      <p class="desc">就在烏布皇宮對面的市場建築。天亮前到 09:00 是當地人的菜市場，賣蔬果、香料、供花材料和現做糕點；09:00 以後才變成觀光紀念品市場。你喜歡市集，這是最生活的一段。</p>
+      <div class="meal">
+        <div class="meal-h"><b>早餐</b><span>二選一</span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選</span><div class="opt-top"><b>早市峇里糕點 Jaja Bali</b><span class="price">很便宜，帶小鈔</span></div>
+            <p>用米、椰子、棕櫚糖做的彩色小點心，用香蕉葉包著，邊逛邊吃。</p>
+            <p class="must">Klepon（咬開會爆棕櫚糖漿的綠色糯米球）、Dadar Gulung（椰絲班蘭捲餅）</p></div>
+          <div class="opt"><div class="opt-top"><b>飯店早餐</b><span class="price">多含在房價</span></div>
+            <p>逛完回飯店 07:00 快速吃，07:30 上車。</p></div>
+        </div>
+      </div></div></li>
+    <li class="move"><span class="time">07:30</span><div class="body"><span class="what">司機飯店接，包車開始</span></div></li>
+    <li><span class="time">07:50</span><div class="body"><div class="what-row"><span class="what">德格拉朗梯田 Tegallalang</span><button type="button" class="guide-btn" data-guide="tegallalang">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 20 分</span><span class="chip cost">IDR 2.5–5 萬（≈NT$45–90）</span><span class="chip leave">40 分鐘</span></div>
+      <p class="desc">峇里島最有名的梯田，早上光線好、旅行團未到。走到谷底再上來約 30 分鐘。鞦韆、鳥巢拍照台另收費，可略過。田埂上偶爾有人收小額過路費。</p></div></li>
+    <li><span class="time">08:45</span><div class="body"><div class="what-row"><span class="what">Gunung Kawi Sebatu 水廟</span><button type="button" class="guide-btn" data-guide="sebatu">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 15 分</span><span class="chip cost">IDR 5 萬（≈NT$90）</span><span class="chip leave">30 分鐘</span></div>
+      <p class="desc">比聖泉寺安靜的泉水寺廟，錦鯉池與苔綠石雕。08:00 開，紗籠附在門票。</p></div></li>
+    <li><span class="time">09:30</span><div class="body"><div class="what-row"><span class="what">聖泉寺 Tirta Empul</span><button type="button" class="guide-btn" data-guide="tirtaempul">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 15 分</span><span class="chip cost">IDR 7.5 萬（≈NT$140）</span><span class="chip leave">看 30 分／下水 1 小時</span></div>
+      <p class="desc">千年聖泉，當地人在池中逐一沐浴淨化。只看 30 分鐘；想下水體驗要租沐浴紗籠與置物櫃，多抓 30 分鐘、帶換洗衣物。</p></div></li>
+    <li><span class="time">11:00</span><div class="body"><div class="what-row"><span class="what">象窟 Goa Gajah</span><button type="button" class="guide-btn" data-guide="goagajah">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 25 分，往回程方向</span><span class="chip cost">IDR 5 萬（≈NT$90）</span><span class="chip leave">45 分鐘</span></div>
+      <p class="desc">千年古蹟，洞口刻著巨大的鬼面石雕，洞內有象頭神像，外面有古代沐浴池。剛好在回烏布的路上。紗籠附在門票，可刷卡。</p></div></li>
+    <li><span class="time">12:00</span><div class="body"><span class="what">回到烏布市中心吃午餐</span>
+      <p class="desc">司機在市中心放你下車，約 14:20 在聖猴森林主入口（Monkey Forest Rd 南端）接你，中間都用走的。</p>
+      <div class="meal">
+        <div class="meal-h"><b>午餐</b><span>三選一</span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選・最經典</span><div class="opt-top"><b>Warung Babi Guling Ibu Oka 3</b><span class="price">套餐 IDR 7.5 萬（≈NT$140）</span></div>
+            <p>烏布最有名的烤乳豬飯老店，在皇宮附近的小巷內。乳豬早上烤好，中午最好吃。</p>
+            <p class="must">套餐（香料豬肉、血腸、脆皮、豬骨湯、白飯）；脆皮不夠可加點一份（約 6 萬 ≈ NT$110，5 大片）。脆皮配一點綠辣椒解膩</p>
+            <p class="where">Jl. Tegal Sari No.2 · 11:00–18:00 · 車進不去，最後一段步行</p></div>
+          <div class="opt"><span class="badge">稻田景觀</span><div class="opt-top"><b>Bebek Bengil 髒鴨餐</b><span class="price">每人約 IDR 17–33 萬（≈NT$310–590）</span></div>
+            <p>烏布老字號鴨料理，開放式座位旁就是稻田，空間大、不用等。</p>
+            <p class="must">招牌脆皮鴨 Crispy Duck、峇里式燜鴨 Bebek Betutu、鴨肉沙嗲</p>
+            <p class="where">Jl. Hanoman No.68 · 從皇宮步行約 10 分</p></div>
+          <div class="opt"><span class="badge">在地人愛去</span><div class="opt-top"><b>Babi Guling Gung Cung</b><span class="price">平價</span></div>
+            <p>份量大、香料偏傳統口味，比 Ibu Oka 更在地，觀光客少。</p>
+            <p class="must">烤乳豬飯，配他們評價很好的豬骨湯</p>
+            <p class="where">Jl. Suweta No.23 · 皇宮北邊步行數分鐘</p></div>
+        </div>
+      </div></div></li>
+    <li><span class="time">12:45</span><div class="body"><div class="what-row"><span class="what">烏布皇宮＋烏布藝術市場</span><button type="button" class="guide-btn" data-guide="palace">導覽</button></div>
+      <div class="meta"><span class="chip go">步行</span><span class="chip cost">免費</span><span class="chip leave">45 分鐘</span></div>
+      <p class="desc">皇宮看門庭建築 15 分鐘。對面就是早上那棟市場，這時變成藝術市場：紗籠、藤編包、木雕、手工皂。開價可以砍到 4–5 成，不喜歡就笑著走開。</p></div></li>
+    <li><span class="time">13:30</span><div class="body"><div class="what-row"><span class="what">沿 Monkey Forest Rd 走到聖猴森林</span><button type="button" class="guide-btn" data-guide="monkey">導覽</button></div>
+      <div class="meta"><span class="chip go">步行 10 分</span><span class="chip cost">IDR 10–13 萬（≈NT$180–230）</span><span class="chip leave">50 分鐘</span></div>
+      <p class="desc">古木森林、苔石寺廟與數百隻長尾獼猴。墨鏡、帽子、手機收進拉鍊包，不帶食物。從主入口出來和司機會合。</p></div></li>
+    <li><span class="time">14:30</span><div class="body"><div class="what-row"><span class="what">Campuhan Ridge 山脊步道</span><button type="button" class="guide-btn" data-guide="campuhan">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 10 分</span><span class="chip cost">免費</span><span class="chip leave">來回 50–60 分</span></div>
+      <p class="desc">兩側是山谷的草坡步道，入口在 Warwick Ibah 飯店旁的小寺廟，走到覺得夠了就折返。下雨就跳過，直接去下一個市集。</p></div></li>
+    <li><span class="time">16:10</span><div class="body"><div class="what-row"><span class="what">蘇卡瓦提藝術市場 Pasar Seni Sukawati</span><button type="button" class="guide-btn" data-guide="sukawati">導覽</button></div>
+      <div class="meta"><span class="chip go">車程約 40 分，往南</span><span class="chip cost">免費</span><span class="chip leave">50 分鐘</span></div>
+      <p class="desc">峇里島最大的傳統工藝市場，兩層樓擠滿攤位，比烏布市場便宜、選擇更多，在地人也來批貨。逛到 17:00 前離開，攤位傍晚陸續收。</p></div></li>
+    <li><span class="time">17:30</span><div class="body"><div class="what-row"><span class="what">吉亞尼雅夜市 Gianyar Night Market</span><button type="button" class="guide-btn" data-guide="gianyar">導覽</button></div>
+      <div class="meta"><span class="chip go">車程約 20 分</span><span class="chip">小吃攤 16:00 起</span><span class="chip leave">1 小時 15 分</span></div>
+      <p class="desc">峇里島最大的在地夜市，幾乎都是當地人。攤位價格都標好，不用議價，只收現金，準備小鈔。20:30 前到選擇最多，你 17:30 到正好。</p>
+      <div class="meal">
+        <div class="meal-h"><b>晚餐</b><span>夜市邊走邊吃，或改在烏布吃</span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選・夜市吃一輪</span><div class="opt-top"><b>吉亞尼雅夜市</b><span class="price">每樣多在數萬盾內</span></div>
+            <p>吉亞尼雅這一區本來就以烤乳豬聞名，夜市裡能一次吃到好幾樣峇里招牌。</p>
+            <p class="must">烤乳豬 Babi Guling、燜鴨 Bebek Betutu、沙嗲、雞肉丸麵湯 Bakso、甜點 Es Campur（椰奶刨冰）</p>
+            <p class="where">吉亞尼雅市區 · 離烏布約 10 公里</p></div>
+          <div class="opt"><span class="badge">想坐下好好吃</span><div class="opt-top"><b>Nusantara by Locavore</b><span class="price">套餐約 IDR 45 萬／人（≈NT$810）</span></div>
+            <p>D1 沒去的話放今天。跳過夜市，蘇卡瓦提逛完直接回烏布，包車約 17:45 結束（約 10 小時，省超時費）。</p>
+            <p class="must">Nusantara 套餐</p>
+            <p class="where">Jl. Dewisita No.09C · 18:00 起</p></div>
+          <div class="opt"><span class="badge">峇里小盤菜</span><div class="opt-top"><b>Warung Biah Biah</b><span class="price">一盤 IDR 0.8–3.3 萬（≈NT$14–59）</span></div>
+            <p>峇里版的小盤菜，一次點 4–5 樣，一個人也能吃到很多種。開到 23:00。</p>
+            <p class="must">甜醬油豬肉炒飯 Nasi Goreng Babi Kecap、生香茅辣醬雞 Ayam Sambal Matah、馬鈴薯餅 Bregedil</p>
+            <p class="where">Jl. Goutama Selatan No.13 · 11:00–23:00</p></div>
+        </div>
+      </div></div></li>
+    <li class="move"><span class="time">18:45</span><div class="body"><span class="what">回烏布，約 19:15 司機直接送到烏布皇宮，包車結束</span><div class="meta"><span class="chip">約 30 分</span></div></div></li>
+    <li><span class="time">19:30</span><div class="body"><div class="what-row"><span class="what">烏布皇宮 Legong 舞蹈</span><button type="button" class="guide-btn" data-guide="legong">導覽</button></div>
+      <div class="meta"><span class="chip go">下車即到</span><span class="chip cost">IDR 10 萬（≈NT$180）</span><span class="chip">約 1.5 小時</span><span class="chip">只收現金</span></div>
+      <p class="desc">每晚 19:30 在皇宮庭院演出的峇里經典宮廷舞，甘美朗樂團現場伴奏。現場或線上買同價。座位不對號，露天沒冷氣，穿涼快一點。看夠了中途離場也可以。</p></div></li>
+    <li><span class="time">21:00</span><div class="body"><span class="what">按摩 60 分鐘，或散步回飯店</span>
+      <div class="meta"><span class="chip go">步行約 10 分</span></div>
+      <p class="desc">走 Jl. Hanoman 到 DaLa Spa（開到 23:00）21:15 開始，前一天先預約。不想按摩就沿 Monkey Forest Rd 逛回飯店。</p></div></li>
+  </ul>
+</section>
+
+<!-- ===== D3 ===== -->
+<section id="d3">
+  <div class="dayhead">
+    <span class="date">D3 · 12/26 週六</span>
+    <h2>皇家寺廟、海神廟、斷崖、火舞、海鮮</h2>
+    <span class="base">住：金巴蘭　|　車：包車 08:00–19:45（約 12 小時，中午司機休息）</span>
+    <a class="rainlink" href="#rain-d3">D3 雨天備案</a>
+  </div>
+  <ul class="tl">
+    <li><span class="time">07:00</span><div class="body"><span class="what">飯店早餐、退房</span><p class="desc">烏布早上 10 點前在地小館多半還沒開，今天早餐就在飯店吃。行李放上車。</p></div></li>
+    <li class="move"><span class="time">08:00</span><div class="body"><span class="what">烏布出發往西南</span><div class="meta"><span class="chip">約 50 分</span></div></div></li>
+    <li><span class="time">08:50</span><div class="body"><div class="what-row"><span class="what">塔曼阿雲寺 Pura Taman Ayun</span><button type="button" class="guide-btn" data-guide="tamanayun">導覽</button></div>
+      <div class="meta"><span class="chip cost">IDR 5 萬（≈NT$90）</span><span class="chip leave">40 分鐘</span></div>
+      <p class="desc">17 世紀的皇家寺廟，被護城河圍住，裡面一排排層層疊疊的茅草塔，是峇里島世界遺產的一部分。剛好在去海神廟的路上，早上人很少。</p></div></li>
+    <li><span class="time">09:55</span><div class="body"><div class="what-row"><span class="what">海神廟 Tanah Lot</span><button type="button" class="guide-btn" data-guide="tanahlot">導覽</button></div>
+      <div class="meta"><span class="chip go">車程約 25 分</span><span class="chip cost">IDR 7.5 萬（≈NT$140）</span><span class="chip leave">45 分鐘</span></div>
+      <p class="desc">建在海中礁岩上的寺廟。大家都擠傍晚，上午人少一半。退潮可走到岩石底部，查一下當天潮汐。入口商店街可以順便逛。</p></div></li>
+    <li class="move"><span class="time">10:40</span><div class="body"><span class="what">往南走 Sunset Road</span><div class="meta"><span class="chip">約 45–60 分</span></div><p class="desc">請司機走外環避開長谷、水明漾。</p></div></li>
+    <li><span class="time">11:30</span><div class="body">
+      <div class="meal">
+        <div class="meal-h"><b>午餐</b><span>都在往金巴蘭的路上</span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選・順路</span><div class="opt-top"><b>Babi Guling Pak Malen</b><span class="price">一盤約 IDR 2.5–6 萬（≈NT$45–110）</span></div>
+            <p>南部最有名的烤乳豬飯，就在 Sunset Road 上，出餐快。D2 吃過 Ibu Oka 剛好比較兩家。</p>
+            <p class="must">烤乳豬飯，重點吃脆皮、多汁豬肉和紅色炸豬肉</p>
+            <p class="where">Jl. Sunset Road No.554</p></div>
+          <div class="opt"><span class="badge">金巴蘭在地</span><div class="opt-top"><b>Babi Guling Karya Rebo</b><span class="price">平價</span></div>
+            <p>金巴蘭 Kedonganan 的乳豬店，環境乾淨、可以坐著吃。若 D2 已吃兩次豬，就把這間留到 D4 午餐。</p>
+            <p class="must">脆皮乳豬飯</p>
+            <p class="where">Jl. Toyaning No.1, Kedonganan · 午餐尖峰前到</p></div>
+          <div class="opt"><span class="badge">不想再吃豬</span><div class="opt-top"><b>Nasi Ayam Kedewatan Ibu Mangku</b><span class="price">一份約 IDR 4 萬（≈NT$72）</span></div>
+            <p>烏布 Kedewatan 起家的峇里雞肉飯，水明漾有分店，庭院小涼亭座位。需要繞進水明漾，聖誕車多，先問司機。</p>
+            <p class="must">招牌雞肉飯（蒸雞、雞肉沙嗲、雞湯、蔬菜、花生、辣醬），配薑黃飲 Jamu</p>
+            <p class="where">Jl. Kayu Jati No.12, Petitenget（水明漾分店）</p></div>
+        </div>
+      </div></div></li>
+    <li><span class="time">12:30</span><div class="body"><span class="what">金巴蘭飯店入住或寄放行李，休息</span>
+      <div class="meta"><span class="chip">約 1 小時 45 分</span></div>
+      <p class="desc">中午最熱也最常下雨，這段先休息、洗個澡。訂房時備註提早入住。司機也休息。</p></div></li>
+    <li><span class="time">14:15</span><div class="body"><div class="what-row"><span class="what">司機接，前往 Melasti 海灘</span><button type="button" class="guide-btn" data-guide="melasti">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 30 分</span><span class="chip cost">IDR 1 萬（≈NT$18）</span><span class="chip leave">1 小時</span></div>
+      <p class="desc">從石灰岩斷崖切出來的下坡路很上鏡，下面白沙藍海。想下水就游一下，紅旗不下水。</p></div></li>
+    <li><span class="time">16:00</span><div class="body"><div class="what-row"><span class="what">烏魯瓦圖斷崖寺 Uluwatu</span><button type="button" class="guide-btn" data-guide="uluwatu">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 20 分</span><span class="chip cost">IDR 6 萬（≈NT$110）</span><span class="chip">只收現金或 QRIS</span></div>
+      <p class="desc">70 公尺海崖頂的寺廟，沿崖邊步道看浪拍斷崖。門票不收信用卡。這裡的猴子最會搶東西，眼鏡、手機、拖鞋都要顧好。</p></div></li>
+    <li><span class="time">18:00</span><div class="body"><div class="what-row"><span class="what">Kecak 火舞（日落場）</span><button type="button" class="guide-btn" data-guide="kecak">導覽</button></div>
+      <div class="meta"><span class="chip cost">約 IDR 13.5–15 萬（≈NT$240–270）</span><span class="chip">約 1 小時</span><span class="chip leave">一定要先買票</span></div>
+      <p class="desc">數十位男子圍圈以人聲吟唱演出《羅摩衍那》，背景是海上日落（約 18:30），結尾踢火球。週六由 Karang Boma 團演出，售票亭 16:30 開，聖誕週常完售，先在 Klook 等平台買 18:00 場。座位不對號，17:15 前進場坐面海高處。</p></div></li>
+    <li class="move"><span class="time">19:05</span><div class="body"><span class="what">散場直接上車</span><div class="meta"><span class="chip">到金巴蘭 30–45 分</span></div><p class="desc">散場時停車場很擠，事先跟司機約好會合點。</p></div></li>
+    <li><span class="time">19:45</span><div class="body">
+      <div class="meal">
+        <div class="meal-h"><b>晚餐</b><span>金巴蘭海灘海鮮<button type="button" class="guide-btn" data-guide="jimbaran">導覽</button></span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選・沙灘上吃</span><div class="opt-top"><b>Menega Café</b><span class="price">單人約 IDR 65–70 萬（≈NT$1,200–1,300）</span></div>
+            <p>金巴蘭海灘燒烤的代表店。在冰台上挑海鮮、選做法，桌子擺在沙灘上。有部落客一個人點了下面這些花約 63 澳幣。點之前先問每公斤價格並看過秤。</p>
+            <p class="must">炭烤大蝦（半公斤）、炭烤蛤蜊、蒜味奶油蒸螃蟹，配白飯、炒空心菜、現開椰子</p>
+            <p class="where">金巴蘭海灘中段</p></div>
+          <div class="opt"><span class="badge">更在地</span><div class="opt-top"><b>Kedonganan 魚市場旁燒烤攤</b><span class="price">現場問價</span></div>
+            <p>在魚市場挑海鮮秤重買下，再交給旁邊的攤子代烤，比餐廳便宜。晚上營業狀況請先問司機，他通常知道哪家好。</p>
+            <p class="must">當天現撈的魚或蝦，用金巴蘭醬料炭烤</p>
+            <p class="where">金巴蘭北端 Kedonganan · 選這個要請司機延長、飯後送回飯店</p></div>
+        </div>
+      </div></div></li>
+    <li><span class="time">21:00</span><div class="body"><span class="what">沿沙灘走回飯店，按摩 60 分鐘</span>
+      <div class="meta"><span class="chip go">步行 5–8 分</span><span class="chip">前一天預約</span></div>
+      <p class="desc">包車在送你到 Menega 時就結束（比送回飯店省約 1 小時超時費）。飯後走回飯店（住在建議範圍內約 5–10 分鐘），21:30 到 Angelina Spa（開到 23:30）按摩。住得比較遠的話，請司機等你吃完再送回去。</p></div></li>
+  </ul>
+</section>
+
+<!-- ===== D4 ===== -->
+<section id="d4">
+  <div class="dayhead">
+    <span class="date">D4 · 12/27 週日</span>
+    <h2>魚市場、GWK 巨像、送機</h2>
+    <span class="base">車：包車 07:00–14:00（約 7 小時，最後直接送機）</span>
+    <a class="rainlink" href="#rain-d4">D4 雨天備案</a>
+  </div>
+  <div class="note warn"><b class="k">回程倒推</b><p>16:40 起飛，建議 14:10 前到機場。今天所有點都在機場 30 分鐘車程內，13:15 從最後一站出發，約 13:45 到，留了半小時緩衝給聖誕車潮。</p></div>
+  <ul class="tl">
+    <li><span class="time">06:00</span><div class="body"><span class="what">（選配）金巴蘭沙灘晨跑</span>
+      <div class="meta"><span class="chip go">走到沙灘幾分鐘</span><span class="chip leave">40 分鐘</span></div>
+      <p class="desc">清晨涼、沙面平，可以看漁船回港。06:40 回房沖澡，07:00 退房上車。</p></div></li>
+    <li><span class="time">07:00</span><div class="body"><div class="what-row"><span class="what">退房，行李上車，Kedonganan 魚市場</span><button type="button" class="guide-btn" data-guide="kedonganan">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 5–10 分</span><span class="chip cost">免費</span><span class="chip leave">40 分鐘</span></div>
+      <p class="desc">漁船卸貨、攤商喊價，地上濕滑，穿防水的鞋。不買也能逛，是很生活的峇里島早晨。</p></div></li>
+    <li><span class="time">07:45</span><div class="body">
+      <div class="meal">
+        <div class="meal-h"><b>早餐</b><span>早點去，菜最熱</span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選</span><div class="opt-top"><b>Warung Nasi Ayam Ibu Oki</b><span class="price">一盤約 IDR 3.5 萬（≈NT$63）</span></div>
+            <p>金巴蘭在地人的早餐雞肉飯，Google 有數千則評論。沒有菜單，選普通或特別份（全部配菜都有），也可選辣或不辣。下午去菜會變溫，早上最好。</p>
+            <p class="must">特別份雞肉飯，加一串香料魚肉沙嗲 Sate Lilit</p>
+            <p class="where">Jl. Celagi Basur No.3Y, Jimbaran · 07:00–18:00</p></div>
+          <div class="opt"><div class="opt-top"><b>飯店早餐</b><span class="price">多含在房價</span></div>
+            <p>想吃飽一點就 06:30 先在飯店吃，魚市場後直接去 GWK。</p></div>
+        </div>
+      </div></div></li>
+    <li><span class="time">09:00</span><div class="body"><div class="what-row"><span class="what">GWK 文化公園 Garuda Wisnu Kencana</span><button type="button" class="guide-btn" data-guide="gwk">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 20 分</span><span class="chip cost">IDR 15 萬（≈NT$270）</span><span class="chip leave">1 小時</span></div>
+      <p class="desc">山頂上一尊騎著神鳥的毗濕奴巨像，高度超過百公尺，站在腳下才感受得到尺寸。園區很大，直接走到巨像和石灰岩切出的廣場，拍完就走。出發前查一下官網當天開放時間。</p></div></li>
+    <li><span class="time">10:30</span><div class="body"><div class="what-row"><span class="what">Pandawa 海灘</span><button type="button" class="guide-btn" data-guide="pandawa">導覽</button></div>
+      <div class="meta"><span class="chip go">車程 20 分</span><span class="chip cost">IDR 2.5 萬（≈NT$45）</span><span class="chip leave">45 分鐘</span></div>
+      <p class="desc">下坡路兩旁的崖壁刻著《摩訶婆羅多》五兄弟神像，海灘寬、浪較平。跟 D3 的 Melasti 風格不同。覺得重複就跳過，提早吃午餐。</p></div></li>
+    <li><span class="time">11:45</span><div class="body">
+      <div class="meal">
+        <div class="meal-h"><b>最後一餐</b><span>都在機場附近</span></div>
+        <div class="opts">
+          <div class="opt pick"><span class="badge">首選</span><div class="opt-top"><b>Babi Guling Karya Rebo</b><span class="price">平價</span></div>
+            <p>Kedonganan 的乳豬店，離機場 10–15 分鐘，吃完直接去機場最安心。</p>
+            <p class="must">脆皮乳豬飯</p>
+            <p class="where">Jl. Toyaning No.1, Kedonganan</p></div>
+          <div class="opt"><div class="opt-top"><b>Ibu Oki 再吃一次</b><span class="price">約 IDR 3.5 萬（≈NT$63）</span></div>
+            <p>早上吃飯店早餐的話，中午換這間。</p>
+            <p class="must">雞肉飯＋Sate Lilit</p></div>
+        </div>
+      </div></div></li>
+    <li class="move"><span class="time">13:15</span><div class="body"><span class="what">出發去機場，約 13:45 抵達，包車結束</span><div class="meta"><span class="chip">平常 10–15 分，抓 30 分</span></div><p class="desc">剩下的印尼盾給司機當小費，或在機場用掉。</p></div></li>
+    <li><span class="time">16:40</span><div class="body"><span class="what">JX766 起飛，22:05 抵達桃園</span></div></li>
+  </ul>
+</section>
+
+<!-- ===== 預算 ===== -->
+<section id="budget">
+  <span class="eyebrow">Budget · 單人 · 不含機票</span>
+  <h2>預算</h2>
+  <p class="muted small">本頁所有台幣約當價都以 1 台幣 ≈ 555 印尼盾（IDR 10 萬 ≈ NT$180，2026/11/12 匯率）換算，出發前看即時匯率。住宿依你自己訂的等級另計。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>內容</th><th>約台幣</th></tr></thead>
+    <tbody>
+      <tr><td>入境</td><td>e-VOA＋旅遊稅</td><td class="num">1,200</td></tr>
+      <tr><td>住宿</td><td>烏布 2 晚＋金巴蘭 1 晚</td><td class="num">另計</td></tr>
+      <tr><td>交通</td><td>接機＋包車 3 天（含超時、送機）</td><td class="num">4,600–6,800</td></tr>
+      <tr><td>門票</td><td>12 個景點＋Kecak＋Legong 舞蹈，約 IDR 98 萬<br>≈ NT$1,800</td><td class="num">1,800</td></tr>
+      <tr><td>夜間按摩</td><td>1–3 次，價格依店家，預約時問</td><td class="num">依選擇</td></tr>
+      <tr><td>餐飲</td><td>在地餐廳、夜市、一頓海鮮、一頓套餐</td><td class="num">3,600–6,300</td></tr>
+      <tr><td>小費、紀念品雜支</td><td>司機每天 IDR 5–10 萬（≈NT$90–180）等</td><td class="num">1,000–3,000</td></tr>
+      <tr class="total"><td>合計</td><td>不含住宿與按摩</td><td class="num">約 12,000–19,000</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted small">機票：星宇官網顯示非旺季來回經濟艙最低約 NT$14,000 起，聖誕週會更高。餐廳標價後的「++」代表另加稅與服務費，約多 15–21%。</p>
+</section>
+
+<!-- ===== 獨旅細節 ===== -->
+<section id="solo">
+  <span class="eyebrow">Solo notes</span>
+  <h2>一個人去要注意的細節</h2>
+  <div class="cards">
+    <div class="card"><h3>錢</h3><ul class="clean">
+      <li>飯店、中高價餐廳可刷卡；寺廟門票、市集、夜市、小館多半只收現金。</li>
+      <li>身上隨時帶 IDR 50 萬（≈NT$900）左右，含 2 萬（≈NT$36）、5 萬（≈NT$90）小鈔。</li>
+      <li>用銀行 ATM 領最安全。換匯只去有「Authorized Money Changer」標示的店，當面點清。</li>
+      <li>付錢前多看一次是 50,000 還是 500,000。</li>
+    </ul></div>
+    <div class="card"><h3>市集殺價</h3><ul class="clean">
+      <li>工藝品、衣服可以議價，從開價 4–5 成開始談。</li>
+      <li>吃的東西是標價，不議價。</li>
+      <li>早上第一筆生意（當地叫「開市」）通常比較好談。</li>
+    </ul></div>
+    <div class="card"><h3>安全</h3><ul class="clean">
+      <li>整體安全，主要風險是交通事故與偷竊。</li>
+      <li>手機包包靠內側，偶有機車搶劫。</li>
+      <li>只在正規店點酒，私釀酒（arak）有甲醇中毒案例。</li>
+      <li>護照放飯店保險箱，身上帶照片頁截圖。</li>
+    </ul></div>
+    <div class="card"><h3>健康</h3><ul class="clean">
+      <li>只喝瓶裝水。夜市飲料可點瓶裝或現開椰子。</li>
+      <li>帶止瀉藥與腸胃藥，「峇里肚」很常見。</li>
+      <li>雨季蚊子多，有登革熱風險，防蚊液每天噴。</li>
+    </ul></div>
+    <div class="card"><h3>寺廟禮儀</h3><ul class="clean">
+      <li>遮肩、圍紗籠，多數門票附紗籠或門口可租。</li>
+      <li>不要踩到地上的供花，不要摸別人的頭。</li>
+      <li>經期中的女性傳統上不進寺廟內殿。</li>
+    </ul></div>
+    <div class="card"><h3>網路與電</h3><ul class="clean">
+      <li>eSIM 選 Telkomsel 網路。</li>
+      <li>必裝 WhatsApp、Grab、Google 離線地圖。</li>
+      <li>插座是歐規雙圓孔，230V，帶轉接頭。</li>
+    </ul></div>
+  </div>
+  <div class="note tip"><b class="k">打包清單</b><p>折傘或輕便雨衣、薄長袖、好走的涼鞋或防水鞋、泳衣、拉鍊小包（防猴子）、防蚊液、防曬、轉接頭、現金收納袋。</p></div>
+</section>
+
+<!-- ===== 雨天備案 ===== -->
+<section id="plan-b">
+  <span class="eyebrow">Plan B · 每天一套</span>
+  <h2>雨天備案</h2>
+  <p>12 月是雨季，但多半是午後 1–2 小時的大陣雨，很少整天下。你包的是整天的車，換順序不用多付錢，所以備案的原則很簡單：<b>下雨就把室內點或吃飯往前挪，雨停再補戶外點；真的補不了就跳過，不硬撐</b>。</p>
+  <div class="note info"><b class="k">每天怎麼判斷</b><ul class="clean">
+    <li>前一晚 21:00 看隔天逐時預報（Google 天氣或 Windy），出發前再看一次雷達圖。</li>
+    <li>預報下雨機率高不代表整天下，以「每小時」的雨量來決定，看到哪個時段紅就避開哪個時段。</li>
+    <li>出門前跟司機說：「If it rains, we switch to plan B.」他會依路況幫你調順序。</li>
+    <li>隨身：折傘、輕便雨衣、防水鞋或涼鞋、手機防水袋、一件替換上衣。</li>
+  </ul></div>
+
+  <div class="rains">
+
+    <div class="rday" id="rain-d1">
+      <div class="rday-h"><h3>D1 12/24　抵達日</h3><span class="trig">影響：車程、晚餐步行</span></div>
+      <div class="rrow"><span class="lab">下雨時</span><ul>
+        <li>機場到烏布可能再多 30–60 分鐘，到飯店可能接近 20:00。</li>
+        <li>晚餐改選離飯店最近的那一間，三個選項都在市中心步行範圍內。訂位時說可能晚到。</li>
+        <li>大雨不想出門：請飯店櫃台叫車送到餐廳（送過去沒問題），回程請餐廳幫忙叫車；或直接吃飯店餐廳。</li>
+        <li>按摩在室內，下雨照去。雨大就跳過皇宮散步，直接請飯店叫車到 spa。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab alt">航班延誤</span><ul>
+        <li>司機會追蹤航班，延誤不用另外通知，但落地後用 WhatsApp 傳一句「Landed, at baggage claim」。</li>
+        <li>延誤超過 1.5 小時、21:00 後才到烏布：取消餐廳訂位，改吃 Warung Makan Bu Rus（開到 22:00）或飯店客房服務。</li>
+      </ul></div>
+    </div>
+
+    <div class="rday" id="rain-d2">
+      <div class="rday-h"><h3>D2 12/25　烏布全日</h3><span class="trig">最怕下雨的一天：戶外點最多</span></div>
+      <div class="rrow"><span class="lab">清晨下雨</span><ul>
+        <li>烏布早市在有屋頂的市場建築內，照逛。</li>
+        <li>梯田下雨很滑：不要走到谷底，在路邊觀景點看 10 分鐘拍完就走。</li>
+        <li>水廟、聖泉寺下雨照常開，撐傘即可；不建議下雨天下池淨化，衣服很難乾。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab">中午到下午</span><ul>
+        <li>先吃午餐等雨，三間餐廳都有屋頂。</li>
+        <li>聖猴森林小雨可以去（樹多、石階滑，穿防滑鞋），大雨就跳過。</li>
+        <li>山脊步道下雨一律跳過，草坡步道泥濘又沒遮蔽。</li>
+        <li>空出的時間改去 <b>ARMA 美術館</b>（約 IDR 15 萬 ≈ NT$270），收藏峇里傳統與近代繪畫，在烏布往南的路上，剛好順路接蘇卡瓦提。</li>
+        <li>蘇卡瓦提藝術市場是有屋頂的兩層樓建築，下雨照逛，可以提早到、逛久一點。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab">傍晚到晚上</span><ul>
+        <li>夜市小雨照逛，部分攤位有棚子；大雨時座位少、地上積水，買幾樣在車上或回飯店吃。</li>
+        <li>大雨不去夜市：蘇卡瓦提逛完直接回烏布，改吃 Nusantara（要先訂位）或 Warung Biah Biah，包車約 17:45 結束，還能省超時費。</li>
+        <li>皇宮舞蹈在露天庭院，大雨可能暫停或取消。改成直接去按摩，spa 是室內的不受影響。</li>
+      </ul></div>
+    </div>
+
+    <div class="rday" id="rain-d3">
+      <div class="rday-h"><h3>D3 12/26　往南、火舞、海鮮</h3><span class="trig">關鍵：火舞與海灘晚餐</span></div>
+      <div class="rrow"><span class="lab">上午下雨</span><ul>
+        <li>塔曼阿雲寺是露天寺廟，撐傘看 20 分鐘就走；大雨直接跳過，提早去海神廟。</li>
+        <li>海神廟大雨時浪大，不要靠近岩石底部，在上方步道拍完就走。入口商店街有屋頂可以躲雨、逛紀念品。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab">下午下雨</span><ul>
+        <li>中午在飯店休息的時段延長，Melasti 海灘跳過。</li>
+        <li>雨停就 15:30 出發直接去烏魯瓦圖寺，邊等日落邊看雨後的海。</li>
+        <li>南部大雨時部分低窪路段會積水塞車，提早 30 分鐘出發。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab">傍晚到晚上</span><ul>
+        <li>Kecak 火舞是露天劇場，小雨照演（部分票附雨衣），大雨可能延後或取消。買可以免費取消的票，到場前用 WhatsApp 問售票方。</li>
+        <li>火舞取消：19:00 前就到金巴蘭，海鮮晚餐提早吃。</li>
+        <li>海灘座位下雨會沒辦法坐，訂位時先問有沒有屋頂的座位，雨大就坐室內，海鮮照樣挑、照樣烤。</li>
+        <li>下雨不走沙灘回飯店：請司機等你吃完再送回去（多約 1 小時超時），或請餐廳叫車，車程約 5 分鐘。按摩照去。</li>
+      </ul></div>
+    </div>
+
+    <div class="rday" id="rain-d4">
+      <div class="rday-h"><h3>D4 12/27　回程日</h3><span class="trig">第一優先：準時到機場</span></div>
+      <div class="rrow"><span class="lab">早上下雨</span><ul>
+        <li>晨跑改成飯店健身房。</li>
+        <li>魚市場是有屋頂的市場，照逛，穿防水鞋。</li>
+        <li>早餐 Ibu Oki 是室內座位，不受影響。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab">上午下雨</span><ul>
+        <li>GWK 巨像與廣場都是露天的，小雨撐傘看 30 分鐘；大雨跳過。</li>
+        <li>Pandawa 海灘下雨一律跳過。</li>
+        <li>空出的時間改去伴手禮店（請司機帶去最近的大型峇里特產店，室內、冷氣、可以買零食與咖啡），或提早吃午餐。</li>
+      </ul></div>
+      <div class="rrow"><span class="lab alt">大雨或塞車</span><ul>
+        <li>把出發去機場的時間從 13:15 提早到 12:45，午餐吃完直接走。</li>
+        <li>機場有餐廳與商店，早到不會無聊，誤機的代價大很多。</li>
+      </ul></div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <p>資料查核日期：2026/11/12。航班時刻、門票、餐廳價格與營業時間都可能調整，出發前以官方網站為準。部分餐廳價格來自旅遊網站的用餐紀錄，僅供參考。</p>
+  <p>參考來源：</p>
+  <ul>
+    <li><a href="https://www.cna.com.tw/business/chinese/430170" target="_blank" rel="noopener">中央社：星宇直飛峇里島</a></li>
+    <li><a href="https://www.aeroroutes.com/eng/260902-jxnw26dps" target="_blank" rel="noopener">AeroRoutes：Starlux NW26 Denpasar</a></li>
+    <li><a href="https://www.boca.gov.tw/sp-foof-countrycp-01-12-c23b0-1.html" target="_blank" rel="noopener">外交部領事事務局：印尼簽證</a></li>
+    <li><a href="https://tripprof.com/uk/blog/bali-entry-requirements-australians-2026/" target="_blank" rel="noopener">TripProf：峇里島 2026 入境要求</a></li>
+    <li><a href="https://bali.live/p/december-24-balis-busiest-day-of-the-year" target="_blank" rel="noopener">Bali.live：12/24 最忙的一天</a></li>
+    <li><a href="https://www.balitouristic.com/bali-driver-for-a-day/" target="_blank" rel="noopener">Bali Touristic：包車一日價格</a></li>
+    <li><a href="https://mollontrans.pages.dev/blog/private-driver-bali-guide" target="_blank" rel="noopener">Mollon Trans：包車超時費</a></li>
+    <li><a href="https://www.baliholidaysecrets.com/bali-entrance-fees/" target="_blank" rel="noopener">Bali Holiday Secrets：2026 景點門票</a></li>
+    <li><a href="https://www.baliholidaysecrets.com/goa-gajah/" target="_blank" rel="noopener">Bali Holiday Secrets：象窟</a></li>
+    <li><a href="https://www.baliholidaysecrets.com/babi-guling/" target="_blank" rel="noopener">Bali Holiday Secrets：烤乳豬指南</a></li>
+    <li><a href="https://heybali.info/news/uluwatu-temple-guide-2026-entry-fickets-kecak/" target="_blank" rel="noopener">Hey Bali：烏魯瓦圖寺與 Kecak</a></li>
+    <li><a href="https://eatbook.sg/ubud-food-guide/amp/" target="_blank" rel="noopener">Eatbook：烏布美食指南</a></li>
+    <li><a href="https://eatbook.sg/warung-babi-guling-ibu-oka-3/" target="_blank" rel="noopener">Eatbook：Ibu Oka 3</a></li>
+    <li><a href="https://whatsnewindonesia.com/ultimate-guide/bali/food-and-drink/tracking-down-best-babi-guling-suckling-pig-bali" target="_blank" rel="noopener">What's New Indonesia：烤乳豬名店</a></li>
+    <li><a href="https://www.thebalibible.com/guides/hujan-locale-exploring-indonesia’s-regional-flavours-in-the-heart-of-ubud" target="_blank" rel="noopener">The Bali Bible：Hujan Locale</a></li>
+    <li><a href="https://www.indonesia.travel/kr-en/travel-ideas/gastronomy/nusantara-by-locavore-a-refined-indonesian-ethno-culinary-exploration-in-ubud" target="_blank" rel="noopener">Indonesia Travel：Nusantara by Locavore</a></li>
+    <li><a href="https://www.enprimeurclub.com/restaurants/bebek-bengil-dirty-duck-diner-gianyar-restaurant" target="_blank" rel="noopener">En Primeur Club：Bebek Bengil</a></li>
+    <li><a href="https://bali.live/places/nasi-ayam-kedewatan-ibu-mangku" target="_blank" rel="noopener">Bali.live：Nasi Ayam Kedewatan Ibu Mangku</a></li>
+    <li><a href="https://finnsbeachclub.com/gianyar-night-market" target="_blank" rel="noopener">Finns：吉亞尼雅夜市</a></li>
+    <li><a href="https://www.chocolatesuze.com/2025/09/30/menega-cafe-jimbaran-beach-bali/" target="_blank" rel="noopener">Chocolatesuze：Menega Café</a></li>
+    <li><a href="https://wanderlog.com/place/details/495559/warung-nasi-ayam-ibu-oki" target="_blank" rel="noopener">Wanderlog：Warung Nasi Ayam Ibu Oki</a></li>
+    <li><a href="https://vilondo.com/bali-travel-guide/ubud-morning-market/" target="_blank" rel="noopener">Vilondo：烏布早市</a></li>
+    <li><a href="https://www.baliholidaysecrets.com/ubud-palace-legong-dance/" target="_blank" rel="noopener">Bali Holiday Secrets：烏布皇宮 Legong 舞蹈</a></li>
+    <li>飯店、按摩店、健身房的評分與營業時間：Google 地圖（2026/11/12 查詢）</li>
+  </ul>
+</footer>
+
+</div>
+
+
+<!-- ===== 導覽視窗 ===== -->
+<dialog class="guide" id="guide" aria-labelledby="g-title">
+  <header class="g-head">
+    <div class="g-titles"><span class="eyebrow" id="g-sub"></span><h2 id="g-title"></h2></div>
+    <button type="button" class="g-close" id="g-close" aria-label="關閉導覽">✕</button>
+  </header>
+  <div class="g-body" id="g-body"></div>
+  <footer class="g-foot">
+    <button type="button" class="g-nav" id="g-prev">‹</button>
+    <button type="button" class="g-nav" id="g-next">›</button>
+  </footer>
+</dialog>
+
+<!-- D1 機場 -->
+<template id="t-arrival" data-title="峇里島機場入境全流程" data-sub="D1 · 12/24 · 15:40" data-short="機場入境">
+  <p class="g-lead">從下飛機到坐上接機的車，大約 45–75 分鐘。照下面的順序走，手上隨時準備好護照和三個 QR Code，就不會卡關。</p>
+  <dl class="g-facts">
+    <div><dt>機場</dt><dd>伍拉・賴國際機場 DPS</dd></div>
+    <div><dt>要準備</dt><dd>護照、e-VOA、旅遊稅 QR、入境卡 QR</dd></div>
+    <div><dt>現金</dt><dd>機場 ATM 領 IDR 100 萬（≈NT$1,800）</dd></div>
+    <div><dt>接機點</dt><dd>國際線入境大廳出口</dd></div>
+  </dl>
+  <h3>一步一步走</h3>
+  <ol>
+    <li><b>下飛機</b>：跟著「Arrival」和「Immigration」的指標走，走道有點長，沿路的免稅店先不用停。</li>
+    <li><b>入境審查</b>：有 e-VOA 的人排「Autogate」自動閘門。把護照照片頁放上掃描器、看鏡頭拍照，閘門打開就過了。閘門讀不到，就排人工櫃台，出示 e-VOA 頁面。</li>
+    <li><b>旅遊稅抽查</b>：過完移民後可能有人查 Love Bali 旅遊稅，打開相簿裡的 QR Code 給他看。</li>
+    <li><b>領行李</b>：看螢幕上 JX765 的轉盤號碼。</li>
+    <li><b>海關</b>：把 All Indonesia 入境卡的 QR Code 給海關掃，行李過 X 光，沒有要申報的東西就走綠色通道。</li>
+    <li><b>領錢</b>：出口附近有銀行 ATM，選 BNI、Mandiri、BCA 這種銀行自己的機器。畫面問要不要「轉換成台幣扣款」時選不要（以印尼盾扣款，匯率比較好）。</li>
+    <li><b>找司機</b>：走出大廳會看到一整排舉牌的人，找寫著你名字的牌子。先用 WhatsApp 傳「I'm out at the arrival exit, wearing a black shirt」，司機會來找你。</li>
+  </ol>
+  <h3>要小心的事</h3>
+  <ul>
+    <li>出關後會有人主動要幫你推行李、帶你去找車，推完會要小費。說「No, thank you」繼續走，不要讓陌生人碰行李。</li>
+    <li>有人問要不要坐計程車，一樣婉拒，你已經有預約接機。</li>
+    <li>落地前先開好 eSIM 數據，並確認台灣門號的漫遊已關，避免高額漫遊費。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>在飛機上就把三個 QR Code 截圖放在相簿最上面。只帶一件登機行李的話，可以跳過等行李，省 15–20 分鐘。12/24 是入境高峰，出關時間抓長一點，告訴司機「可能 17:00 才出來」。</p></div>
+</template>
+
+<!-- 烏布皇宮 -->
+<template id="t-palace" data-title="烏布皇宮 Puri Saren Agung" data-sub="D1 夜晚散步 · D2 12:45" data-short="烏布皇宮">
+  <p class="g-lead">烏布王室的後代到今天仍住在這裡。烏布會成為峇里島的藝術重鎮，起點就是這座宮殿。</p>
+  <dl class="g-facts">
+    <div><dt>白天</dt><dd>08:00–18:00，免費</dd></div>
+    <div><dt>晚上</dt><dd>19:30 舞蹈，IDR 10 萬（≈NT$180）</dd></div>
+    <div><dt>服裝</dt><dd>不是寺廟，不用紗籠，仍建議遮肩</dd></div>
+    <div><dt>停留</dt><dd>白天 15–20 分鐘</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>皇宮建於 1800 年代初，國王 Tjokorda Putu Kandel 在位期間。之後兩百年它一直是烏布的政治與文化中心。1920–30 年代，王室邀請西方畫家到烏布定居、和當地藝術家合作，烏布從此變成峇里島的藝術之都。現在烏布到處是畫廊、舞蹈表演和手工藝，都和這段歷史有關。</p>
+  <h3>看什麼</h3>
+  <ul>
+    <li><b>正門</b>：紅磚和淺灰色砂岩一層層疊成的峇里式門樓，上面雕滿花草和守護神的臉，門扇常貼金箔。</li>
+    <li><b>第一進庭院</b>：晚上舞蹈的舞台就在這裡，舞者身後那道層層雕刻的門就是天然布景。</li>
+    <li><b>兩側庭院</b>：可以走進去看峇里式的亭子（bale）和石雕守護像。</li>
+    <li><b>內院</b>：王室住所，看到繩子或門擋著就不要進去。</li>
+  </ul>
+  <h3>順路一起逛</h3>
+  <ul>
+    <li><b>烏布藝術市場</b>：就在皇宮正對面。早上是當地人的傳統市場，09:00 以後變成紀念品市場：紗籠、藤編包、手工皂、木雕、彩繪風箏。開價砍到 4–5 成再談，同樣的東西多問幾攤。</li>
+    <li><b>蓮花池水神廟 Pura Taman Saraswati</b>：往西走 5 分鐘。參道兩側整片蓮花池，盡頭是供奉智慧女神的寺廟，從參道正面拍門樓最好看，10 分鐘就夠。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>D1 晚上：路過看燈光打在門樓上的夜景，5 分鐘。D2 中午：門樓、第一二進庭院 15 分鐘，對面市場 30 分鐘，想去蓮花池再加 10 分鐘。</p></div>
+  <div class="note warn"><b class="k">注意</b><p>皇宮前的路口是烏布最塞的地方，機車很多，過馬路要小心。</p></div>
+</template>
+
+<!-- 烏布早市 -->
+<template id="t-ubudmarket" data-title="烏布傳統早市 Pasar Ubud" data-sub="D2 · 12/25 · 06:15" data-short="烏布早市">
+  <p class="g-lead">天亮前到早上九點，這裡是當地人的菜市場；九點以後才變成觀光紀念品市場。想看真正的峇里日常，就是這兩個多小時。</p>
+  <dl class="g-facts">
+    <div><dt>時間</dt><dd>天亮前～約 09:00</dd></div>
+    <div><dt>位置</dt><dd>烏布皇宮正對面</dd></div>
+    <div><dt>花費</dt><dd>點心一塊幾千盾</dd></div>
+    <div><dt>停留</dt><dd>30–40 分鐘</dd></div>
+  </dl>
+  <h3>看什麼</h3>
+  <ul>
+    <li><b>供品材料區</b>：峇里人每天都要做供品（canang sari，用椰葉折成小盒子，裡面放花瓣和米）。市場裡有一整區在賣椰葉、雞蛋花、萬壽菊和各色花瓣，常看到婦女坐在地上一邊聊天一邊編。這是整個市場最有峇里味的角落。</li>
+    <li><b>蔬果攤</b>：蛇皮果（salak）、山竹、紅毛丹等熱帶水果，堆得像小山。</li>
+    <li><b>香料攤</b>：薑黃、南薑、香茅、辣椒，峇里料理的味道都從這裡來。</li>
+  </ul>
+  <h3>早餐必吃：峇里糕點 jaja Bali</h3>
+  <ul>
+    <li><b>Klepon</b>：綠色糯米球滾椰絲，咬下去裡面的棕櫚糖漿會爆出來，一口一顆。</li>
+    <li><b>Dadar Gulung</b>：班蘭葉染綠的薄餅，捲著棕櫚糖煮過的椰絲。</li>
+    <li><b>Laklak</b>：小圓米餅，淋棕櫚糖漿、撒椰絲。</li>
+    <li>其他看起來好吃的都可以指著買，一塊幾千盾，失敗了也不心痛。</li>
+  </ul>
+  <h3>怎麼逛</h3>
+  <ol>
+    <li>從皇宮對面的入口進去，先整圈走一遍看熱鬧，不急著買。</li>
+    <li>回頭再買點心和水果，邊走邊吃。</li>
+    <li>拍攤販或正在編供品的婦女前，先舉手機問一句「Photo?」。</li>
+  </ol>
+  <div class="note warn"><b class="k">注意</b><p>地上濕滑、走道窄，偶爾有機車穿過，穿防滑鞋。不要踩到地上的供品。帶 IDR 1 萬（≈NT$18）、2 萬（≈NT$36）的小鈔。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>06:15 進、06:50 出，回飯店再吃一點飯店早餐，07:30 上車。</p></div>
+</template>
+
+<!-- 梯田 -->
+<template id="t-tegallalang" data-title="德格拉朗梯田 Tegallalang" data-sub="D2 · 12/25 · 07:50" data-short="梯田">
+  <p class="g-lead">它不是峇里島最大的梯田，但是最「陡」、最「深」的一座：一條窄窄的 V 形山谷，兩側梯田一層層往下切到谷底，再被一排排椰子樹框住。這種叢林峽谷的感覺，別的梯田沒有。</p>
+  <dl class="g-facts">
+    <div><dt>入場</dt><dd>各入口 IDR 1–5 萬（≈NT$18–90），地主收</dd></div>
+    <div><dt>最佳時間</dt><dd>06:00–08:30</dd></div>
+    <div><dt>停留</dt><dd>40 分鐘</dd></div>
+    <div><dt>鞋子</dt><dd>防滑鞋，不要夾腳拖</dd></div>
+  </dl>
+  <h3>跟其他梯田哪裡不一樣</h3>
+  <ul>
+    <li><b>Tegallalang（今天去的）</b>：在烏布北邊 20 分鐘。山谷窄而深，兩側梯田面對面，椰子樹很多。路邊有咖啡店、鞦韆，比較商業化，但很好到達。</li>
+    <li><b>Jatiluwih（世界遺產）</b>：在西部山區，離烏布約 2 小時。地勢開闊平緩，一望無際，很安靜。景色完全不同，但這趟沒時間去。</li>
+    <li><b>共同點：Subak 灌溉制度</b>。峇里人用了上千年的水利系統：水從山上的水廟一路分流到每塊田，由村民共同管理、輪流分配。這套制度連同水廟在 2012 年被列為世界遺產。你今天要去的聖泉寺、明天的塔曼阿雲寺，都在這份名單裡。</li>
+  </ul>
+  <h3>地形：谷底在哪裡</h3>
+  <div class="g-diagram">
+    <svg viewBox="0 0 360 210" role="img" aria-label="梯田剖面圖：西側山脊是主路與咖啡店，往下到谷底的小溪與小橋，再往上到東側高處的拍照點">
+      <polygon class="dg-ground" points="10,48 45,48 45,66 70,66 70,84 95,84 95,102 120,102 120,120 145,120 145,138 165,138 172,162 188,162 195,138 215,138 215,120 240,120 240,102 265,102 265,84 290,84 290,66 315,66 315,52 350,52 350,205 10,205"/>
+      <polyline class="dg-edge" points="10,48 45,48 45,66 70,66 70,84 95,84 95,102 120,102 120,120 145,120 145,138 165,138 172,162 188,162 195,138 215,138 215,120 240,120 240,102 265,102 265,84 290,84 290,66 315,66 315,52 350,52"/>
+      <rect class="dg-house" x="14" y="34" width="12" height="14"/><rect class="dg-house" x="30" y="30" width="12" height="18"/>
+      <rect class="dg-house" x="322" y="40" width="16" height="12"/>
+      <ellipse class="dg-water" cx="180" cy="164" rx="12" ry="4"/>
+      <line class="dg-bridge" x1="164" y1="156" x2="196" y2="156"/>
+      <polyline class="dg-walk" points="40,40 65,58 90,76 115,94 140,112 160,130 168,150 192,150 210,130 235,112 260,94 285,76 305,58"/>
+      <text class="dg-text" x="8" y="18">① 西側山脊：主路、咖啡店、入口</text>
+      <text class="dg-text" x="352" y="30" text-anchor="end">⑤ 東側高處拍照點</text>
+      <text class="dg-text" x="16" y="172">② 往下 10–15 分，石階陡</text>
+      <text class="dg-text" x="180" y="190" text-anchor="middle">③ 谷底：小溪＋小橋</text>
+      <text class="dg-text" x="250" y="150">④ 往上爬回頭拍</text>
+      <text class="dg-small" x="14" y="200">西</text>
+      <text class="dg-small" x="346" y="200" text-anchor="end">東</text>
+    </svg>
+  </div>
+  <h3>怎麼走（40 分鐘版）</h3>
+  <ol>
+    <li><b>下車</b>：司機會停在 Jl. Raya Tegallalang 主路旁。這條路就在山谷的西側山脊上，路邊一整排咖啡店、餐廳和鞦韆業者，每家都有自己的入口往下走。</li>
+    <li><b>選入口</b>：找有「Rice Terrace」或「Trekking」標示的入口，付入場費。沒有統一的售票處，是各家地主自己收。最常用的是 Ceking 一帶的入口。路線常常變動，先問司機「今天哪個入口開著、能走到谷底」。</li>
+    <li><b>往下走</b>：石階和泥土小徑沿著梯田邊往下，約 10–15 分鐘到谷底。台階陡、高低不平，雨後很滑，扶著走。</li>
+    <li><b>谷底</b>：一條小溪和灌溉水渠，周圍是椰子樹和香蕉樹，比上面涼快很多。這裡有小橋可以過到對面（東側）。中間那座主要的橋曾被報導損壞，如果過不去，就在谷底拍完往回走。</li>
+    <li><b>東側往上爬</b>：爬到一半回頭，就是整片梯田加上對面山脊的經典畫面。最上方有遮陽傘和小木屋的高處，就是網路上最紅的拍照點，部分區域地主會另收約 IDR 2–5 萬（≈NT$36–90）。</li>
+    <li><b>回程</b>：原路回西側主路，上坡約 15–20 分鐘，是最累的一段。</li>
+  </ol>
+  <h3>路上的錢</h3>
+  <ul>
+    <li>沿路有農民或地主擺小桌收「donation」，一次 IDR 1–2 萬（≈NT$18–36）。</li>
+    <li>有人會遞斗笠、竹籃讓你拍照，拍完要給小費。不想拍就笑著說不用。</li>
+    <li>主路旁的鞦韆一次約 IDR 25–40 萬（≈NT$450–720），禮服另外收錢，不建議。</li>
+    <li>準備 IDR 1 萬（≈NT$18）、2 萬（≈NT$36）的小鈔，攤販常找不開 10 萬（≈NT$180）。</li>
+  </ul>
+  <h3>12 月的梯田長什麼樣子</h3>
+  <p>每塊田的種植進度都不一樣，可能是一片翠綠，也可能剛插秧（水田倒映天空），或剛收割成黃褐色。想先知道，前一天問司機，或看 Google 地圖上最新的照片。</p>
+  <div class="note tip"><b class="k">你的節奏</b><p>下到谷底 15 分 → 過橋往東側爬 5–10 分回頭拍 → 原路回去 15–20 分。不想爬，就在主路旁的觀景點拍 10 分鐘直接走，多出來的時間給後面的寺廟。</p></div>
+</template>
+
+<!-- Sebatu -->
+<template id="t-sebatu" data-title="Gunung Kawi Sebatu 水廟" data-sub="D2 · 12/25 · 08:45" data-short="Sebatu 水廟">
+  <p class="g-lead">跟聖泉寺同一個傳說、同一種泉水信仰，但安靜得多，像一座有神廟的水花園。</p>
+  <dl class="g-facts">
+    <div><dt>開放</dt><dd>08:00–18:00</dd></div>
+    <div><dt>門票</dt><dd>IDR 5 萬（≈NT$90），含紗籠</dd></div>
+    <div><dt>停留</dt><dd>30 分鐘</dd></div>
+    <div><dt>付款</dt><dd>現金，附近沒什麼 ATM</dd></div>
+  </dl>
+  <h3>傳說</h3>
+  <p>暴君 Mayadenawa 自封為神、禁止人民祭拜，還在泉水裡下毒，毒倒了天神 Indra 的軍隊。Indra 用法杖敲擊地面，湧出能解毒的聖泉。這座寺廟供奉掌管水與守護的毗濕奴（Vishnu）。村名 Sebatu 據說和信徒逃難時在濕石頭上滑倒的故事有關。</p>
+  <h3>怎麼走</h3>
+  <ol>
+    <li>入口領紗籠圍好（綁在腰上）。</li>
+    <li><b>水花園</b>：第一區是大片的錦鯉池，池中央立著智慧女神 Saraswati 的雕像，四周石雕出水口不停流出泉水。地面平坦，是拍照重點。</li>
+    <li><b>淨化沐浴區</b>：側邊有男女分開的沐浴池，當地人在這裡沐浴祈福。觀光客也能自己體驗（約 IDR 5 萬 ≈ NT$90），但你接著要去聖泉寺，這裡看就好。</li>
+    <li><b>內院</b>：再往裡走是有神龕和石雕的庭院，有些祭拜區要脫鞋。</li>
+    <li>原路出來。</li>
+  </ol>
+  <h3>禮儀</h3>
+  <ul>
+    <li>不要站得比祭司或正在祈禱的人高。</li>
+    <li>不要踩到地上的供品，說話放輕。</li>
+    <li>經期中的女性傳統上不進入，入口有告示。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>錦鯉池和雕像拍完、內院看一圈，30 分鐘就走。</p></div>
+</template>
+
+<!-- 聖泉寺 -->
+<template id="t-tirtaempul" data-title="聖泉寺 Tirta Empul" data-sub="D2 · 12/25 · 09:30" data-short="聖泉寺">
+  <p class="g-lead">西元 962 年建在一處從地底湧出的泉水上。一千多年來，峇里人都來這裡淨化身心：你會看到一整排人在池裡排隊，在一個個出水口下把頭伸進去。</p>
+  <dl class="g-facts">
+    <div><dt>開放</dt><dd>07:00–18:00</dd></div>
+    <div><dt>門票</dt><dd>IDR 7.5 萬（≈NT$140），現金</dd></div>
+    <div><dt>停留</dt><dd>只看 30 分／下水約 1 小時</dd></div>
+    <div><dt>紗籠</dt><dd>入口免費提供</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>和 Sebatu 水廟同一個故事：暴君在泉水下毒，天神 Indra 擊地湧出聖泉救活軍隊，這處泉水就是傳說中的那一個。暴君逃跑時用腳側走路想掩蓋足跡，留下傾斜的腳印，所在地「Tampaksiring」的地名就是這樣來的。寺廟供奉毗濕奴。</p>
+  <h3>構造：三進庭院</h3>
+  <div class="g-diagram">
+    <svg viewBox="0 0 360 170" role="img" aria-label="聖泉寺平面示意：外院、中院淨化池、內院聖泉，由左往右">
+      <text class="dg-small" x="10" y="26">入口 →</text>
+      <text class="dg-small" x="350" y="26" text-anchor="end">山坡上：總統府（不開放）</text>
+      <rect class="dg-box" x="10" y="36" width="100" height="96" rx="8"/>
+      <rect class="dg-box" x="126" y="36" width="110" height="96" rx="8"/>
+      <rect class="dg-box dg-holy" x="252" y="36" width="98" height="96" rx="8"/>
+      <text class="dg-text dg-b" x="60" y="58" text-anchor="middle">外院</text>
+      <text class="dg-small" x="60" y="80" text-anchor="middle">大門、守門像</text>
+      <text class="dg-small" x="60" y="98" text-anchor="middle">錦鯉池</text>
+      <text class="dg-text dg-b" x="181" y="58" text-anchor="middle">中院・淨化池</text>
+      <text class="dg-small" x="181" y="80" text-anchor="middle">一整排出水口</text>
+      <text class="dg-small" x="181" y="98" text-anchor="middle">由左往右逐一沖</text>
+      <g class="dg-spouts"><circle cx="138" cy="116" r="3"/><circle cx="150" cy="116" r="3"/><circle cx="162" cy="116" r="3"/><circle cx="174" cy="116" r="3"/><circle cx="186" cy="116" r="3"/><circle cx="198" cy="116" r="3"/><circle cx="210" cy="116" r="3"/><circle cx="222" cy="116" r="3"/></g>
+      <text class="dg-text dg-b" x="301" y="58" text-anchor="middle">內院</text>
+      <text class="dg-small" x="301" y="80" text-anchor="middle">泉水湧出的</text>
+      <text class="dg-small" x="301" y="98" text-anchor="middle">大水池、神龕</text>
+      <text class="dg-small" x="180" y="156" text-anchor="middle">出口：走入口旁的在地出口，不要跟「Tourist exit」</text>
+    </svg>
+  </div>
+  <ul>
+    <li><b>外院</b>：磚造大門、兩尊守門石像、錦鯉池。</li>
+    <li><b>中院</b>：淨化池。主池一整排石雕出水口（一般說是 13 個），旁邊還有較小的池子。</li>
+    <li><b>內院</b>：最神聖的地方，有神龕和一個大水池，可以看到泉水從池底不斷湧上來。</li>
+    <li><b>山坡上</b>：抬頭會看到一座建築，是 1950 年代為蘇卡諾總統建的 Tampaksiring 總統府，不對外開放。</li>
+  </ul>
+  <h3>想下水：淨化儀式（melukat）怎麼做</h3>
+  <ol>
+    <li>租綠色的淨化紗籠（約 IDR 1 萬 ≈ NT$18）和置物櫃（約 1.5 萬 ≈ NT$27），裡面穿泳衣。</li>
+    <li>準備一份供品（canang sari，入口有賣），上面放一點錢，在池邊神龕前放好、合掌祈禱。</li>
+    <li>從最左邊的出水口開始，一個一個往右。每個出水口：先合掌許願 → 用手接水漱口三次（不建議喝下）→ 洗臉三次 → 把頭伸進水柱下沖。</li>
+    <li>有出水口是專門給喪禮淨化用的，要跳過。看前面的當地人跳哪個你就跳哪個，或問嚮導。</li>
+    <li>不能用肥皂洗髮精、不能在水裡吐口水；經期中的女性不參加。</li>
+    <li>嚮導不是必要的，約 IDR 10 萬（≈NT$180）起可議價，好處是會教步驟、幫你拍照。</li>
+  </ol>
+  <h3>小技巧</h3>
+  <ul>
+    <li>「Tourist exit」的指標會帶你穿過一長串紀念品攤，直接走入口旁的出口比較快。</li>
+    <li>停車場附近有人拉你去 Luwak 咖啡園，多半是抽佣的行程，婉拒就好。</li>
+    <li>滿月是當地人來淨化的大日子，人會非常多。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>12 月濕冷又趕時間，建議只看不下水：外院 → 中院站在池邊高處看人淨化、拍照 → 內院看泉水湧出 → 30 分鐘出來。真的想下水，就多抓 30 分鐘，帶毛巾和換洗衣物。</p></div>
+</template>
+
+<!-- 象窟 -->
+<template id="t-goagajah" data-title="象窟 Goa Gajah" data-sub="D2 · 12/25 · 11:00" data-short="象窟">
+  <p class="g-lead">洞口是一張瞪眼張嘴的巨臉，你從它的嘴裡走進去。這是峇里島最古老的宗教遺址之一，印度教和佛教的遺跡在同一個山谷裡。</p>
+  <dl class="g-facts">
+    <div><dt>開放</dt><dd>08:00–18:00</dd></div>
+    <div><dt>門票</dt><dd>IDR 5 萬（≈NT$90），可刷卡</dd></div>
+    <div><dt>紗籠</dt><dd>附在門票裡</dd></div>
+    <div><dt>停留</dt><dd>45 分鐘</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>一般認為建於 9–11 世紀，是僧侶修行的聖所。後來被荒廢掩埋，1923 年荷蘭考古學家重新發現洞窟，洞前的古代浴池直到 1950 年代才被挖出來。叫「象窟」的原因說法不一，可能來自洞裡的象頭神，或附近古稱「象河」的河流。</p>
+  <h3>怎麼走</h3>
+  <ol>
+    <li>從入口往下走一段階梯，到谷地的平台。</li>
+    <li><b>古代浴池</b>：左手邊，分成男女兩池，池邊一排捧著水瓶的仙女石像，水從瓶口流出來。</li>
+    <li><b>洞窟</b>：洞口周圍的岩壁雕滿森林、動物和怪獸，正中間是一張大臉，洞口就是它的嘴。進去是很短的 T 字形通道，昏暗潮濕：一邊是象頭神 Ganesha，另一邊是代表三大神的石柱（lingga）。5 分鐘就看完。</li>
+    <li><b>河谷（時間夠再去）</b>：沿階梯往下走到 Petanu 河谷，有小瀑布、竹林，還有殘存的佛教石雕（佛陀坐像和佛塔碎片），整個谷地很涼。來回約 20 分鐘。</li>
+  </ol>
+  <div class="note warn"><b class="k">注意</b><p>往河谷的階梯又陡又濕，下雨後不要下去。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>浴池＋洞窟 25 分鐘；想下河谷再加 20 分鐘。45 分鐘一定離開，回市中心吃午餐。</p></div>
+</template>
+
+<!-- 聖猴森林 -->
+<template id="t-monkey" data-title="聖猴森林 Monkey Forest" data-sub="D2 · 12/25 · 13:30" data-short="聖猴森林">
+  <p class="g-lead">一片由村落守護的古老森林，住著 1,200 多隻長尾獼猴，林子裡藏著三座仍在使用的寺廟。猴子是主角，但古樹、苔石和峽谷才是讓人印象最深的地方。</p>
+  <dl class="g-facts">
+    <div><dt>開放</dt><dd>09:00–18:00，17:00 最後入場</dd></div>
+    <div><dt>門票</dt><dd>IDR 13 萬（≈NT$230，2026）</dd></div>
+    <div><dt>入口</dt><dd>Monkey Forest Rd 南端主入口</dd></div>
+    <div><dt>停留</dt><dd>50–60 分鐘</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>森林由 Padangtegal 村管理，依照峇里人「人、自然、神三者和諧」（Tri Hita Karana）的理念保護至今。林中有三座寺廟，內部都不開放，從外面看：</p>
+  <ul>
+    <li><b>Pura Dalem Agung Padangtegal</b>：主廟，約 14 世紀，供奉濕婆，是村子的「死亡之廟」。</li>
+    <li><b>Pura Beji</b>：聖泉廟，用來淨化。</li>
+    <li><b>Pura Prajapati</b>：火葬廟，旁邊就是村子的墓地。</li>
+  </ul>
+  <h3>怎麼走</h3>
+  <ol>
+    <li>從主入口進去，沿主步道往前就是大廟 Pura Dalem Agung，石門上爬滿青苔和雕刻，猴子最多。</li>
+    <li>約 7–10 分鐘處有官方「Monkey Moment」拍照亭：IDR 5 萬（≈NT$90），工作人員幫你和猴子拍照，名額會賣完，想拍就早點買。</li>
+    <li>跟著指標往聖泉的方向：步道往下進入一條小峽谷，有雕著長龍的石橋與階梯，大榕樹的氣根垂到溪邊。這是整座森林最漂亮的地方。</li>
+    <li>回到主步道，繞往火葬廟和墓地的方向，再回到入口。主步道走一圈不到一小時。</li>
+  </ol>
+  <h3>猴子安全守則</h3>
+  <ul>
+    <li>墨鏡、帽子、耳環、手機全部收好，瓶裝水也收進包包。塑膠袋最容易被搶。</li>
+    <li>不要餵食、不要摸、不要盯著牠們的眼睛看，也不要露齒笑，猴子會當成挑釁。</li>
+    <li>猴子跳到身上：不要尖叫、不要跑，站著不動，牠會自己下去，附近的工作人員會來幫忙。</li>
+    <li>被咬或抓傷：馬上找工作人員處理傷口，當天去診所。峇里島有狂犬病案例，需要醫生評估要不要打疫苗。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>50 分鐘：大廟 → 峽谷石橋 → 回入口。出來在主入口跟司機會合。雨天步道很滑，穿防滑鞋。</p></div>
+</template>
+
+<!-- 山脊步道 -->
+<template id="t-campuhan" data-title="Campuhan 山脊步道" data-sub="D2 · 12/25 · 14:30" data-short="山脊步道">
+  <p class="g-lead">Campuhan 是「兩條河交會的地方」。步道沿著兩條河中間一道細長的山脊往北走，兩邊都是山谷。這是烏布最好走、不用門票的風景。</p>
+  <dl class="g-facts">
+    <div><dt>費用</dt><dd>免費，沒有開放時間</dd></div>
+    <div><dt>距離</dt><dd>到盡頭約 2 公里，原路折返</dd></div>
+    <div><dt>路面</dt><dd>水泥小路，部分不平</dd></div>
+    <div><dt>遮蔭</dt><dd>幾乎沒有</dd></div>
+  </dl>
+  <h3>怎麼走</h3>
+  <ol>
+    <li><b>下車</b>：沿 Jl. Raya Ubud 往西，司機在 Warwick Ibah 飯店的路牌旁放你下車。</li>
+    <li>走進 Ibah 的車道，跟著指標靠左，看到「going to the hill」的牌子往下走。</li>
+    <li><b>過橋、上寺廟階梯</b>：下到谷底過橋，橋後的石階就在 Pura Gunung Lebah 旁邊，這是建在兩河交會處的古老寺廟。沿著寺廟圍牆往上爬，是步道最有氣氛的一段。</li>
+    <li><b>山脊</b>：上去後是一條緩緩起伏的水泥小路，兩側是長草、樹林和深谷。前面約 1.2 公里是最純粹的自然景色。</li>
+    <li><b>兩棵椰子樹</b>：中段有兩棵並排的椰子樹，是最多人拍照的地方。回程從北往南看這兩棵樹，角度比較好。</li>
+    <li><b>盡頭</b>：走到底是 Bangkiang Sidem 村，有幾間小餐館和咖啡店，那裡才有廁所。</li>
+  </ol>
+  <div class="note warn"><b class="k">注意</b><p>下午很曬，帶帽子、防曬和水。沒有路燈，天黑不要走。下雨就跳過，直接去下一站。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>走到兩棵椰子樹，再往前 5–10 分鐘就回頭，來回約 50 分鐘。司機在原地等你。</p></div>
+</template>
+
+<!-- 蘇卡瓦提 -->
+<template id="t-sukawati" data-title="蘇卡瓦提藝術市場 Pasar Seni Sukawati" data-sub="D2 · 12/25 · 16:10" data-short="蘇卡瓦提市場">
+  <p class="g-lead">峇里島最大的傳統工藝市場，很多烏布小店的貨就是從這裡批的。同樣的東西，這裡通常比烏布便宜。</p>
+  <dl class="g-facts">
+    <div><dt>營業</dt><dd>約 06:00–18:00，攤位 09:00 後陸續開</dd></div>
+    <div><dt>位置</dt><dd>烏布南方約 10 公里</dd></div>
+    <div><dt>停留</dt><dd>50 分鐘</dd></div>
+    <div><dt>付款</dt><dd>只收現金，A 棟有 ATM</dd></div>
+  </dl>
+  <h3>市場構造</h3>
+  <ul>
+    <li>三棟多層樓的公有市場建築，賣的東西大同小異。全室內，有電梯，每層樓都有廁所。</li>
+    <li><b>A 棟</b>：最熱鬧、攤位最多，大部分人從這裡開始。</li>
+    <li><b>B 棟</b>：比較小、比較安靜。</li>
+    <li><b>C 棟</b>：在 A 棟對面，入口很氣派，人更少，適合比價。</li>
+  </ul>
+  <h3>買什麼</h3>
+  <p>峇里畫作、木雕、蠟染布與紗籠、面具、藤編包（大約是烏布小店的一半價）、串珠飾品、捕夢網、家飾、木製玩具和樂器、大包裝的小紀念品。</p>
+  <h3>殺價技巧</h3>
+  <ol>
+    <li>先整圈看一遍行情，不要第一攤就買。</li>
+    <li>開價直接砍一半，態度友善，隨時準備走開。</li>
+    <li>不要表現得太想要。</li>
+    <li>手上別提購物袋，看起來像剛買過會被抬價。</li>
+    <li>結帳時確認沒被多塞你沒要的東西。</li>
+    <li>很多標「手工」的其實是工廠貨，不要付藝術品的價格。</li>
+  </ol>
+  <div class="note tip"><b class="k">你的節奏</b><p>傍晚人少，店家想收攤也比較好談。50 分鐘：A 棟一、二樓各一圈，看中的東西到 C 棟比價，17:00 前離開去夜市。</p></div>
+</template>
+
+<!-- 夜市 -->
+<template id="t-gianyar" data-title="吉亞尼雅夜市 Gianyar Night Market" data-sub="D2 · 12/25 · 17:30" data-short="吉亞尼雅夜市">
+  <p class="g-lead">吉亞尼雅是峇里島烤乳豬的故鄉。這個市場白天賣雜貨，傍晚整片換成小吃攤，客人幾乎都是當地人。</p>
+  <dl class="g-facts">
+    <div><dt>地點</dt><dd>Jl. Ngurah Rai-Gianyar No.38</dd></div>
+    <div><dt>小吃時間</dt><dd>約 16:00–23:00，20:30 前選擇最多</dd></div>
+    <div><dt>入場</dt><dd>免費</dd></div>
+    <div><dt>付款</dt><dd>只收現金，帶小鈔</dd></div>
+  </dl>
+  <h3>一個人怎麼吃最多樣</h3>
+  <ol>
+    <li>先不要買，整圈走一遍，看哪攤排最多當地人。</li>
+    <li>每樣點最小份，一次買 4–6 樣分著吃。</li>
+    <li>用手指或 Google 翻譯點餐。食物價格都標好了，不用殺價。</li>
+    <li>腸胃比較敏感就優先挑現做的熱食。烤乳豬、燜鴨在當地習慣常溫吃，這是正常的。</li>
+  </ol>
+  <h3>必吃清單</h3>
+  <ul>
+    <li><b>Babi Guling 烤乳豬</b>：吉亞尼雅的招牌。夜市的拼盤通常是血腸、豬皮、豆子多，肉比較少。</li>
+    <li><b>Bebek Betutu 峇里燜鴨</b>：香料塞滿整隻鴨慢慢烤透。</li>
+    <li><b>Nasi Campur</b>：白飯配各種小菜、豆腐、蛋、辣醬，便宜又飽。</li>
+    <li><b>Bakso Ayam</b>：熱騰騰的雞肉丸麵湯。</li>
+    <li><b>Sate</b>：沙嗲串，夜市多是雞肉配花生醬。</li>
+    <li><b>Gorengan</b>：炸豆腐、炸天貝、炸蔬菜餅。</li>
+    <li><b>Jajan / Kue</b>：各種米糕、香蕉、椰子做的點心。把盤子交給攤販，說好預算讓他幫你配。</li>
+    <li><b>Es Campur</b>：椰奶、煉乳、果凍、碎冰，吃完辣的來一碗。</li>
+    <li><b>飲料</b>：Temulawak 汽水（印尼本土的薑黃系汽水，喝起來偏柑橘味）或 Bintang 啤酒。</li>
+  </ul>
+  <h3>實用</h3>
+  <ul>
+    <li>廁所只有一間，沒什麼指標，要問人。</li>
+    <li>停車場傍晚很快滿，下車前跟司機約好上車地點。</li>
+    <li>人多的地方注意手機錢包。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>1 小時 15 分鐘吃 4–6 樣剛好。18:45 上車，回烏布皇宮看舞蹈。</p></div>
+</template>
+
+<!-- Legong -->
+<template id="t-legong" data-title="烏布皇宮 Legong 舞蹈" data-sub="D2 · 12/25 · 19:30" data-short="Legong 舞蹈">
+  <p class="g-lead">Legong 是峇里最精緻的宮廷舞，由年輕女舞者表演。眼神、手指、頭頸的每個小動作都是舞蹈的一部分。</p>
+  <dl class="g-facts">
+    <div><dt>時間</dt><dd>每晚 19:30</dd></div>
+    <div><dt>票價</dt><dd>IDR 10 萬（≈NT$180），現場或線上同價</dd></div>
+    <div><dt>長度</dt><dd>約 1.5 小時，以節目單為準</dd></div>
+    <div><dt>座位</dt><dd>露天、不對號、沒冷氣</dd></div>
+  </dl>
+  <h3>看什麼</h3>
+  <ul>
+    <li><b>舞者</b>：穿金箔裝飾的織錦舞衣，頭戴插滿雞蛋花的金冠，手持扇子。動作又快又準，眼睛會隨音樂左右急轉。峇里舞蹈最有名的，就是這雙「會說話的眼睛」。</li>
+    <li><b>音樂</b>：現場甘美朗（gamelan）樂團，以銅鑼、鐵琴和鼓組成。速度和強弱變化非常大，舞者和樂手互相帶動，聽起來像一陣陣浪。</li>
+    <li><b>故事</b>：常演的 Legong Keraton 講國王 Lasem 擄走公主 Rangkesari，出兵前遇到一隻預示不祥的鳥，最後戰死。通常只演片段，看不懂劇情也沒關係，重點是動作和音樂。</li>
+    <li><b>節目</b>：一晚通常不只一支舞，可能穿插迎賓舞、武士舞等，以入口拿到的節目單為準。</li>
+  </ul>
+  <h3>怎麼看</h3>
+  <ol>
+    <li>19:15 到就好，挑中間前段的位子；坐靠走道的位子方便中途離開。</li>
+    <li>不要開閃光燈，表演中少講話、少滑手機。</li>
+    <li>帶防蚊液，露天庭院晚上很悶。</li>
+    <li>散場後舞者常留在舞台前讓觀眾拍照。</li>
+  </ol>
+  <div class="note tip"><b class="k">你的節奏</b><p>看到覺得夠了，就從側邊安靜離場去按摩，不用撐到最後。</p></div>
+</template>
+
+<!-- 塔曼阿雲 -->
+<template id="t-tamanayun" data-title="塔曼阿雲寺 Pura Taman Ayun" data-sub="D3 · 12/26 · 08:50" data-short="塔曼阿雲寺">
+  <p class="g-lead">1634 年梅格威（Mengwi）王國的國王為王室建的宗廟，四周被護城河圍繞，裡面一排高低不同的茅草塔，是峇里島最優雅的寺廟之一。</p>
+  <dl class="g-facts">
+    <div><dt>門票</dt><dd>IDR 5 萬（≈NT$90）</dd></div>
+    <div><dt>停留</dt><dd>40 分鐘</dd></div>
+    <div><dt>紗籠</dt><dd>入口可租</dd></div>
+    <div><dt>世界遺產</dt><dd>2012 年 Subak 文化景觀</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>Taman Ayun 的意思是「美麗的花園」。由梅格威王國的 I Gusti Agung Putu 在 1634 年興建，是王室的宗廟，也象徵王國的國力。寺廟的水道和 Subak 灌溉系統相連，所以被列進世界遺產。1937 年經過大規模整修。王國在 19 世紀滅亡，寺廟卻完整保存到今天。</p>
+  <h3>怎麼走</h3>
+  <ol>
+    <li><b>過護城河</b>：從石橋跨過護城河，進入外院。大草坪、樹和池塘，早上非常安靜。外院有一座開放式的大亭子（wantilan），過去用來集會和鬥雞。</li>
+    <li><b>第二進</b>：有一座高噴泉，代表守護九個方位的神。</li>
+    <li><b>最內院</b>：最神聖的區域，只在祭典時開放。但它的矮牆外有一條步道可以繞一圈，從牆外就能看到裡面一排排的 meru，也就是多層茅草塔。塔的層數越多，供奉的神等級越高，最高是 11 層。</li>
+    <li>沿著牆外步道繞一圈，從轉角拍 meru 一字排開的畫面，再原路出來。</li>
+  </ol>
+  <div class="note tip"><b class="k">你的節奏</b><p>外院 10 分鐘 → 繞內院牆外一圈 20 分鐘 → 出口，總共 40 分鐘。早上的斜光拍 meru 最好看。</p></div>
+</template>
+
+<!-- 海神廟 -->
+<template id="t-tanahlot" data-title="海神廟 Tanah Lot" data-sub="D3 · 12/26 · 09:55" data-short="海神廟">
+  <p class="g-lead">峇里島最有名的海上寺廟。16 世紀高僧 Nirartha 在海邊的岩石上靜坐，建議漁民在這裡建廟供奉海神。漲潮時，寺廟就像漂在海上。</p>
+  <dl class="g-facts">
+    <div><dt>門票</dt><dd>IDR 7.5 萬（≈NT$140）</dd></div>
+    <div><dt>停留</dt><dd>45 分鐘</dd></div>
+    <div><dt>寺廟本體</dt><dd>不開放外人進入</dd></div>
+    <div><dt>潮汐</dt><dd>退潮才能走到岩石底下</dd></div>
+  </dl>
+  <h3>由來與傳說</h3>
+  <p>高僧 Dang Hyang Nirartha 是塑造峇里印度教最重要的人物之一（下午要去的烏魯瓦圖寺也和他有關）。傳說他把自己的腰帶變成海蛇來守護寺廟，所以岩石下的洞裡至今住著被視為神聖的海蛇。</p>
+  <h3>怎麼走</h3>
+  <ol>
+    <li><b>停車場 → 商店街</b>：下車後是一長條紀念品商店街，走 5–10 分鐘。直接穿過，回程再逛。</li>
+    <li><b>草坪 → 海灘</b>：穿過草坪公園就到面對寺廟的海灘。</li>
+    <li><b>退潮時：聖泉祈福</b>：走過岩床到寺廟岩石的底部，那裡有一處淡水聖泉，是海中岩石卻湧出淡水。祭司會幫你淨化：用聖水洗手洗臉，在額頭貼幾粒米、耳後插一朵花，你放一點捐款（IDR 1–2 萬 ≈ NT$18–36）。這是唯一能「接近」海神廟的方式。</li>
+    <li><b>聖蛇洞</b>：在對岸的崖邊岩洞裡，付小額捐款可以看被供奉的黑白條紋海蛇。</li>
+    <li><b>崖邊觀景台</b>：沿崖邊步道往高處走，能拍到寺廟立在海上的全景。</li>
+    <li><b>Pura Batu Bolong（時間夠）</b>：往北走 5–10 分鐘，是一座蓋在海蝕拱門岩石上的小寺廟，人少很多。</li>
+  </ol>
+  <div class="note warn"><b class="k">注意</b><p>岩床長滿青苔很滑。浪大時工作人員會封鎖，不要硬闖。出發前用潮汐 App 查 12/26 上午的潮位。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>穿過商店街 5 分 → 海灘，退潮就去聖泉 15 分 → 崖邊觀景 15 分 → 回程 10 分。漲潮時直接去崖邊觀景，看完就走。</p></div>
+</template>
+
+<!-- Melasti -->
+<template id="t-melasti" data-title="Melasti 海灘" data-sub="D3 · 12/26 · 14:45" data-short="Melasti 海灘">
+  <p class="g-lead">一條從石灰岩斷崖切出來的路一路往下到海灘，白色崖壁夾著柏油路，盡頭是淺藍色的海。車子開下坡的那一刻，就是這裡的亮點。</p>
+  <dl class="g-facts">
+    <div><dt>入場</dt><dd>IDR 1 萬（≈NT$18），另付停車</dd></div>
+    <div><dt>停留</dt><dd>1 小時</dd></div>
+    <div><dt>設施</dt><dd>廁所、淋浴、更衣室、躺椅（偏貴）</dd></div>
+    <div><dt>交通</dt><dd>叫車只能下車不能上車，你有包車沒問題</dd></div>
+  </dl>
+  <h3>怎麼玩</h3>
+  <ol>
+    <li><b>崖壁路拍照</b>：請司機在下坡路最上面的彎道讓你下車，拍兩側白色崖壁夾著道路、遠方是海的畫面，再上車開下去。</li>
+    <li><b>海灘</b>：白沙，風浪平靜時海水淺，像天然泳池。看救生旗：綠旗可以游、黃旗小心、紅旗不下水。</li>
+    <li><b>海灘俱樂部</b>：沙灘邊有幾家餐廳和海灘俱樂部，價格偏高。想坐一下就點顆椰子。</li>
+    <li><b>沖洗</b>：有淋浴間可以沖掉沙子，記得帶毛巾。</li>
+  </ol>
+  <div class="note warn"><b class="k">注意</b><p>雨季的浪可能比較大；白沙和崖壁反光很強，防曬要擦夠。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>崖壁路拍照 10 分 → 海灘走走或游泳 35 分 → 沖洗 10 分 → 上車去烏魯瓦圖（約 20 分鐘）。</p></div>
+</template>
+
+<!-- 烏魯瓦圖 -->
+<template id="t-uluwatu" data-title="烏魯瓦圖斷崖寺 Pura Luhur Uluwatu" data-sub="D3 · 12/26 · 16:00" data-short="烏魯瓦圖寺">
+  <p class="g-lead">寺廟蓋在 70 公尺高的斷崖邊，正下方是印度洋的大浪。峇里人相信這裡守護著全島的西南方，也是峇里看日落最戲劇性的地方。</p>
+  <dl class="g-facts">
+    <div><dt>開放</dt><dd>07:00–19:00</dd></div>
+    <div><dt>門票</dt><dd>IDR 6 萬（≈NT$110），只收現金或 QRIS</dd></div>
+    <div><dt>紗籠</dt><dd>入口提供紗籠和腰帶</dd></div>
+    <div><dt>停留</dt><dd>1 小時＋火舞</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>相傳 11 世紀由爪哇高僧 Mpu Kuturan 建立。16 世紀，早上海神廟的那位高僧 Nirartha 加以擴建，傳說他最後就在這座斷崖上得道。峇里印度教徒相信，梵天、毗濕奴、濕婆三神的力量在這裡交會。</p>
+  <h3>怎麼走</h3>
+  <ol>
+    <li>買票、圍好紗籠和腰帶，穿過一段有猴子出沒的樹林步道。</li>
+    <li>寺廟的內院只給祭拜者進入，觀光客在外圍參觀。</li>
+    <li><b>崖邊步道</b>：沿著崖邊圍牆有步道往兩個方向延伸。走到對面的岬角回頭看，就是寺廟立在崖尖、下面白浪拍岸的經典畫面。整段慢慢走約 1 小時，你選一側走就好。</li>
+    <li>17:15 前往崖邊的 Kecak 圓形劇場進場。</li>
+  </ol>
+  <h3>這裡的猴子特別會搶</h3>
+  <ul>
+    <li>眼鏡、帽子、手機、拖鞋都可能被搶走，牠們會拿東西去跟管理員「交換」水果。</li>
+    <li>眼鏡收進包包、手機用掛繩、不要帶塑膠袋和食物。</li>
+    <li>真的被搶了不要追，找穿制服的工作人員，他們會用水果把東西換回來，給一點小費。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>16:00–17:10 走一側崖邊步道、拍寺廟 → 17:15 進劇場搶面海的位子。</p></div>
+</template>
+
+<!-- Kecak -->
+<template id="t-kecak" data-title="Kecak 火舞" data-sub="D3 · 12/26 · 18:00" data-short="Kecak 火舞">
+  <p class="g-lead">沒有任何樂器。幾十個男人圍坐成圓，用「恰、恰、恰」的人聲當伴奏，演出印度史詩《羅摩衍那》，背景是海上落日，最後舞者赤腳踢散燃燒的椰殼。</p>
+  <dl class="g-facts">
+    <div><dt>場次</dt><dd>18:00 日落場（另有 19:00 場）</dd></div>
+    <div><dt>票價</dt><dd>約 IDR 13.5–15 萬（≈NT$240–270）</dd></div>
+    <div><dt>長度</dt><dd>約 1 小時</dd></div>
+    <div><dt>週六演出</dt><dd>Karang Boma 團</dd></div>
+  </dl>
+  <h3>由來</h3>
+  <p>Kecak 源自峇里的 sanghyang 驅邪儀式，原本是讓人進入出神狀態的祭典，由男聲合唱伴隨。1930 年代，住在峇里的德國畫家 Walter Spies 和舞者 Wayan Limbak 把它改編成以《羅摩衍那》為劇情的表演，並帶到海外巡演，從此成為峇里最有名的舞蹈之一。</p>
+  <h3>看懂劇情</h3>
+  <p>圍坐的男人扮演兩支軍隊：羅摩的猴子大軍和魔王的妖魔軍。中間的角色演出故事，順序大致是：</p>
+  <ol>
+    <li>王子羅摩（Rama）、妻子悉多（Sita）和弟弟被流放到森林。</li>
+    <li>一隻金鹿出現，羅摩去追，留下悉多。</li>
+    <li>魔王羅波那（Ravana）趁機擄走悉多。</li>
+    <li>神鳥 Jatayu 想救人，被魔王打敗。</li>
+    <li>神猴哈奴曼（Hanuman）找到悉多，帶來羅摩的戒指當信物。</li>
+    <li>哈奴曼被抓、被放火燒。這就是火的段落：舞者進入出神狀態，在火堆中把燃燒的椰殼踢向四周。</li>
+    <li>羅摩大軍和魔王決戰，救回悉多。</li>
+  </ol>
+  <p>烏魯瓦圖這一場的哈奴曼常跑進觀眾席搞笑、和觀眾互動，坐前排可能會被「點名」。</p>
+  <h3>座位</h3>
+  <ul>
+    <li>圓形劇場不對號，17:15 前進場。</li>
+    <li>挑面海、中高排的位子，表演時背景就是落日。</li>
+    <li>坐在靠出口那一側，散場時比較快離開。</li>
+    <li>踢火時前排會有火星飛過來，小心衣物。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>不用等謝幕拍照，最後一幕結束就起身往出口走，避開散場人潮，到停車場和司機會合。</p></div>
+</template>
+
+<!-- 金巴蘭海鮮 -->
+<template id="t-jimbaran" data-title="金巴蘭海灘海鮮晚餐" data-sub="D3 · 12/26 · 19:45" data-short="金巴蘭海鮮">
+  <p class="g-lead">整條金巴蘭灣的沙灘上擺滿餐桌，點著蠟燭、聽著浪聲吃炭烤海鮮，還能看到飛機的燈從海上降落機場。這是峇里島最經典的一頓晚餐。</p>
+  <dl class="g-facts">
+    <div><dt>三個區段</dt><dd>北 Kedonganan・中段・南 Muaya</dd></div>
+    <div><dt>Menega</dt><dd>在南邊 Muaya 區</dd></div>
+    <div><dt>一人預算</dt><dd>約 IDR 65–70 萬（≈NT$1,200–1,300，點得很豐盛）</dd></div>
+    <div><dt>下雨</dt><dd>改坐有屋頂的位子</dd></div>
+  </dl>
+  <h3>怎麼點（Menega 這類店）</h3>
+  <ol>
+    <li>先讓店員帶你入座，再回到門口的冰台挑海鮮。</li>
+    <li>每樣都問清楚「每 100 克或每公斤多少錢」，看店員過秤，記下重量。</li>
+    <li>選做法：最經典的是金巴蘭式炭烤，刷上甜醬油、辣椒、蒜頭做的香料醬；螃蟹可以選蒜味奶油或辣醬。</li>
+    <li>配菜：白飯、炒空心菜、Sambal Matah（生香茅辣醬）。</li>
+    <li>結帳時對一下單據上的重量和你記的一不一樣。</li>
+  </ol>
+  <h3>一個人點多少</h3>
+  <p>大蝦半公斤、一份蛤蜊、一隻螃蟹，配白飯、空心菜和一顆椰子，就很豐盛。</p>
+  <h3>現場會遇到</h3>
+  <ul>
+    <li>樂手會走到桌邊演奏，想聽就給點小費（IDR 2–5 萬 ≈ NT$36–90），不想聽微笑揮手就好。</li>
+    <li>沙灘上會有小販賣紀念品，不買直接說不用。</li>
+  </ul>
+  <div class="note tip"><b class="k">你的節奏</b><p>包車在你下車吃飯時結束。吃完沿沙灘走回飯店，再去按摩。</p></div>
+</template>
+
+<!-- 魚市場 -->
+<template id="t-kedonganan" data-title="Kedonganan 魚市場" data-sub="D4 · 12/27 · 07:00" data-short="魚市場">
+  <p class="g-lead">峇里島最熱鬧的海鮮市場。漁船清晨四到六點靠岸，魚貨直接從沙灘搬進攤位。</p>
+  <dl class="g-facts">
+    <div><dt>營業</dt><dd>約 07:00 起</dd></div>
+    <div><dt>停留</dt><dd>40 分鐘</dd></div>
+    <div><dt>鞋子</dt><dd>包鞋或防水鞋，地上濕滑</dd></div>
+    <div><dt>付款</dt><dd>現金小鈔</dd></div>
+  </dl>
+  <h3>看什麼</h3>
+  <ul>
+    <li>海灘邊排著彩色的峇里木造漁船，漁民在搬貨。</li>
+    <li>攤位上冰著鮪魚、紅鯛、鬼頭刀、龍蝦、螃蟹、魷魚，攤販當場刮鱗、剖魚。</li>
+    <li>參考價（每公斤）：鮪魚 IDR 8–12 萬（≈NT$140–220）、紅鯛 9–14 萬（≈NT$160–250）、大蝦 12–20 萬（≈NT$220–360）、螃蟹 15–25 萬（≈NT$270–450）、龍蝦 30–60 萬（≈NT$540–1,100）。每天都會變動。</li>
+  </ul>
+  <h3>想現場吃</h3>
+  <p>買好海鮮拿去旁邊的小吃攤代烤，代工費每公斤約 IDR 2–3 萬（≈NT$36–54），通常附白飯和辣醬。早上 7 點不一定已經開火，看現場狀況。殺價可以從開價的 7–8 成開始談。</p>
+  <div class="note warn"><b class="k">注意</b><p>腥味重、蒼蠅多、地上有血水和冰水。不要穿夾腳拖。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>整圈走一遍、看漁船卸貨，40 分鐘就去吃 Ibu Oki 雞肉飯當早餐。</p></div>
+</template>
+
+<!-- GWK -->
+<template id="t-gwk" data-title="GWK 文化公園 Garuda Wisnu Kencana" data-sub="D4 · 12/27 · 09:00" data-short="GWK 巨像">
+  <p class="g-lead">一座總高 121 公尺的巨像：毗濕奴騎在神鳥迦樓羅（Garuda）的背上，用銅和黃銅片拼成，前後花了將近 30 年才完成。</p>
+  <dl class="g-facts">
+    <div><dt>一般票</dt><dd>IDR 15 萬（≈NT$270）</dd></div>
+    <div><dt>含接駁車</dt><dd>IDR 16 萬（≈NT$290，單程到巨像）</dd></div>
+    <div><dt>巨像內部導覽</dt><dd>IDR 40 萬（≈NT$720），時段現場確認</dd></div>
+    <div><dt>停留</dt><dd>1 小時</dd></div>
+  </dl>
+  <h3>神話</h3>
+  <p>神鳥 Garuda 的母親被奴役，牠要取得長生不老的甘露（amrita）才能救她。毗濕奴答應讓 Garuda 使用甘露，條件是 Garuda 成為祂的坐騎。這座像就是兩者結盟的那一刻。Garuda 也是印尼國徽和國家航空公司的名字由來。</p>
+  <h3>巨像本身</h3>
+  <ul>
+    <li>雕塑家 Nyoman Nuarta 設計，巨像 75 公尺高，加上底座共 121 公尺。</li>
+    <li>1990 年代動工，遇上亞洲金融風暴停工，2013 年復工，2018 年 7 月完工，同年 9 月由佐科威總統揭幕。</li>
+    <li>外層是銅和黃銅片，內部是鋼骨結構。</li>
+  </ul>
+  <h3>怎麼走</h3>
+  <ol>
+    <li>入口進去後沿著石灰岩開鑿出的步道走。園區建在舊採石場上，兩側是一根根被切出來的巨大石灰岩柱。</li>
+    <li><b>Lotus Pond</b>：四周被高聳的石灰岩柱牆包圍的大廣場，是園區最壯觀的空間之一。</li>
+    <li>搭接駁車（或走上坡）到巨像底下的廣場，站在腳下抬頭看最震撼。</li>
+    <li>原路或搭車回入口。</li>
+  </ol>
+  <div class="note warn"><b class="k">注意</b><p>園區很大、遮蔭少。開放時間請出發前查官網。日間表演 11:00 才開始，你看不到，不用等。巨像內部導覽時段不固定，以你的時間不建議。</p></div>
+  <div class="note tip"><b class="k">你的節奏</b><p>入口 → 石灰岩步道 → Lotus Pond → 接駁車到巨像 → 回程，1 小時。</p></div>
+</template>
+
+<!-- Pandawa -->
+<template id="t-pandawa" data-title="Pandawa 海灘" data-sub="D4 · 12/27 · 10:30" data-short="Pandawa 海灘">
+  <p class="g-lead">和 Melasti 一樣是從石灰岩崖壁切出來的路，不同的是這裡的崖壁上刻著史詩《摩訶婆羅多》裡般度五兄弟的巨大神像。</p>
+  <dl class="g-facts">
+    <div><dt>入場</dt><dd>外國成人 IDR 2.5 萬（≈NT$45），另付停車</dd></div>
+    <div><dt>停留</dt><dd>45 分鐘</dd></div>
+    <div><dt>設施</dt><dd>躺椅陽傘、獨木舟、海邊按摩</dd></div>
+    <div><dt>位置</dt><dd>Kutuh 村，GWK 車程約 20 分</dd></div>
+  </dl>
+  <h3>五兄弟是誰</h3>
+  <p>般度五兄弟（Pandawa Lima）是印度史詩《摩訶婆羅多》的英雄：長兄堅戰代表正直，怖軍代表力量，阿周那是神射手，最小的無種和偕天是一對雙胞胎。峇里的皮影戲和舞蹈常常演他們的故事。</p>
+  <h3>怎麼走</h3>
+  <ol>
+    <li><b>崖壁神像</b>：下坡路兩側的崖壁鑿出一個個壁龕，五兄弟的神像就站在裡面。請司機在崖壁旁停一下讓你拍照。</li>
+    <li><b>海灘</b>：長長的白沙灘，浪通常比較平緩，可以下水，也可以租獨木舟。</li>
+    <li>沙灘上遮蔭不多，不用久留。</li>
+  </ol>
+  <div class="note tip"><b class="k">你的節奏</b><p>崖壁神像 10 分 → 海灘走走 25 分 → 走。跟 Melasti 很像，覺得重複就跳過，提早吃午餐、提早去機場。</p></div>
+</template>
+
+<script>
+(function(){
+  var btn=document.getElementById('copy-msg'), pre=document.getElementById('driver-msg');
+  if(!btn||!pre) return;
+  btn.addEventListener('click',function(){
+    var text=pre.textContent;
+    function selectIt(){var r=document.createRange();r.selectNodeContents(pre);var s=window.getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='已選取，請手動複製';}
+    try{
+      navigator.clipboard.writeText(text).then(function(){btn.textContent='已複製';setTimeout(function(){btn.textContent='複製';},2000);},selectIt);
+    }catch(e){selectIt();}
+  });
+})();
+
+(function(){
+  var dlg=document.getElementById('guide'); if(!dlg) return;
+  var body=document.getElementById('g-body'), title=document.getElementById('g-title'), sub=document.getElementById('g-sub');
+  var prev=document.getElementById('g-prev'), next=document.getElementById('g-next');
+  var order=[];
+  document.querySelectorAll('.guide-btn').forEach(function(b){var id=b.getAttribute('data-guide'); if(order.indexOf(id)<0 && document.getElementById('t-'+id)) order.push(id);});
+  var cur=-1;
+  function tpl(id){return document.getElementById('t-'+id);}
+  function show(id){
+    var t=tpl(id); if(!t) return;
+    cur=order.indexOf(id);
+    title.textContent=t.getAttribute('data-title');
+    sub.textContent=t.getAttribute('data-sub');
+    body.innerHTML=''; body.appendChild(t.content.cloneNode(true)); body.scrollTop=0;
+    var p=cur>0?tpl(order[cur-1]):null, n=cur<order.length-1?tpl(order[cur+1]):null;
+    prev.disabled=!p; next.disabled=!n;
+    prev.textContent=p?'‹ '+p.getAttribute('data-short'):'‹';
+    next.textContent=n?n.getAttribute('data-short')+' ›':'›';
+    if(!dlg.open){ if(typeof dlg.showModal==='function'){ try{dlg.showModal();}catch(e){dlg.setAttribute('open','');} } else { dlg.setAttribute('open',''); } }
+    document.body.classList.add('modal-open');
+  }
+  function hide(){ if(typeof dlg.close==='function' && dlg.open){ dlg.close(); } else { dlg.removeAttribute('open'); } document.body.classList.remove('modal-open'); }
+  document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.guide-btn'); if(b){ e.preventDefault(); show(b.getAttribute('data-guide')); } });
+  document.getElementById('g-close').addEventListener('click',hide);
+  prev.addEventListener('click',function(){ if(cur>0) show(order[cur-1]); });
+  next.addEventListener('click',function(){ if(cur<order.length-1) show(order[cur+1]); });
+  dlg.addEventListener('click',function(e){ if(e.target===dlg) hide(); });
+  dlg.addEventListener('close',function(){ document.body.classList.remove('modal-open'); });
+  document.addEventListener('keydown',function(e){ if(!dlg.open) return; if(e.key==='Escape'){hide();} else if(e.key==='ArrowRight'){next.click();} else if(e.key==='ArrowLeft'){prev.click();} });
+})();
+</script>
+
+</body>
+</html>
