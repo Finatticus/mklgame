@@ -381,7 +381,7 @@ const bar=L&&ed?`<span class="lf">因為「${nm(L.a)}」→ 所以「${nm(L.b)}�
 :lf?`<span class="lf">「${esc(lf.text)}」要解決哪一張？請點那張便條</span><button class="btn sm" data-a="linkCancel">取消</button>`
 :ss&&ed?`<b class="selname">「${esc(ss.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${ss.id}">要解決哪一張 →</button><button class="btn sm" data-a="editSol" data-id="${ss.id}">編輯</button><button class="btn sm danger" data-a="delSol" data-id="${ss.id}">刪除</button>`
 :linkFrom&&A.st[linkFrom]?`<span class="lf">因為「${nm(linkFrom)}」所以… 請點結果的便條</span><button class="btn sm" data-a="linkCancel">取消</button>`
-:sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm sb" data-a="addBSol" data-id="${sn.id}">＋ 解決方式</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button>`
+:sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm sb" data-a="addBSol" data-id="${sn.id}">＋ 解決方式</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm" data-a="noteBack" data-id="${sn.id}">↩ 退回意見</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button>`
 :ed?`<button class="btn pri sm" data-a="addNote">＋ 影響因素</button><button class="btn sm sb" data-a="addBSol">＋ 解決方式</button><span class="hint">拖曳移動・點便條畫箭頭・點箭頭可刪除</span>`:'';
 const main=`<div class="zhost zb">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="note" data-lk="link"><svg id="svg"></svg>
 ${A.ns.map(n=>{const g=A.tag[n.id];return `<div class="note ${g?g.c:''} ${sel===n.id?'sel':''}" data-id="${n.id}" style="left:${n.x||0}px;top:${n.y||0}px">${g?`<span class="tg">${g.l}</span>`:''}${esc(n.text)}</div>`}).join('')}
@@ -612,6 +612,7 @@ const ACT={
  addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
  zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
  guide:showGuide,
+ noteBack:d=>{const n=get(d.id,'note');if(!n.text||!confirm('把「'+n.text+'」退回意見箱？它身上的箭頭會一起移除。'))return;put({id:uid('g'),k:'sug',o:Date.now(),stage:1,type:'note',text:n.text,by:n.by||S.name||'編輯者退回',st:'new'});delNote(d.id)},
  sugDel:d=>del(d.id),
  sugClear:()=>{const l=all('sug').filter(x=>x.stage===S.stage&&x.st!=='new');if(l.length&&confirm('刪除這個階段全部 '+l.length+' 則已處理的意見？已採用進作業區的內容不會受影響。'))l.forEach(x=>del(x.id))},
  zm:d=>{const k=Number(d.d),z=ZM[S.stage]||1;ZM[S.stage]=k?Math.min(4,Math.max(.5,Math.round((z+k*.25)*100)/100)):1;render()},
@@ -635,7 +636,7 @@ const ACT={
  sugSend:()=>{const t=$('#sugText'),v=t.value.trim();if(!v)return;const ty=($('#sugType')||{}).value||SUG[S.stage][0][0];t.value='';put({id:uid('g'),k:'sug',o:Date.now(),stage:S.stage,type:ty,text:v,by:S.name,st:'new'})},
  sugNo:d=>setF(d.id,'sug','st','no'),
  sugOk:d=>{const g=get(d.id,'sug'),ok=()=>setF(g.id,'sug','st','ok');
-  ({idea:ok,note:()=>editNote(null,{text:g.text},ok),sol:()=>editSol(null,{text:g.text},ok),opt:()=>editOpt(null,{name:g.text},ok),crit:()=>editCrit(null,{name:g.text},ok),step:()=>editStep(null,{text:g.text},ok),risk:()=>editRisk(null,{risk:g.text},ok)}[g.type]||ok)()},
+  ({idea:ok,note:()=>editNote(null,{text:g.text,by:g.by},ok),sol:()=>editSol(null,{text:g.text},ok),opt:()=>editOpt(null,{name:g.text},ok),crit:()=>editCrit(null,{name:g.text},ok),step:()=>editStep(null,{text:g.text},ok),risk:()=>editRisk(null,{risk:g.text},ok)}[g.type]||ok)()},
  exportAll:()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S.db)],{type:'application/json'}));a.download='psboard-backup.json';a.click()},
  importAll:()=>{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const db=JSON.parse(r.result);
    Object.keys(db).forEach(pid=>Object.values(db[pid]).forEach(e=>{e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1}));save();closeSheet();render();kick()}catch(e){alert('檔案格式不正確')}};r.readAsText(i.files[0])};i.click()}
