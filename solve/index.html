@@ -224,6 +224,8 @@ label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
 .note.bsol{background:var(--b)}
 .note.bsol .tg{background:var(--blue);display:inline-block}
 .btn.sb{background:var(--b);border-color:#8db6e6}
+.sugtoggle{display:none;width:100%;margin-top:6px}
+@media(max-width:899px){.sugmore:not(.open){display:none}.sugtoggle{display:block}}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -315,7 +317,7 @@ function vEntry(){return `<div class="entry"><div class="wrap" style="width:100%
 <p class="mute">題目 → 關聯圖 → 魚骨圖 → 決策分析 → 流程圖</p>
 <div class="card"><label class="f"><span>你的名字（顯示在你提出的意見上）</span><input type="text" id="nm" value="${esc(S.name)}" placeholder="例：小明"></label>
 <div class="mute">選擇身分</div><div class="roles">
-<button data-a="role" data-r="editor"><b>編輯者</b><small>可新增、修改、採用意見</small></button>
+<button data-a="role" data-r="editor"><b>編輯者</b><small>可新增、修改內容</small></button>
 <button data-a="role" data-r="viewer"><b>觀看者</b><small>即時觀看，可提出意見</small></button></div></div>
 <button class="btn" data-a="help">這套流程怎麼做？看專案說明</button></div></div>`}
 
@@ -463,9 +465,10 @@ return{bar,main,side}}
 /* 意見箱 */
 function vSug(s){const l=all('sug').filter(x=>x.stage===s),nw=l.filter(x=>x.st==='new'),dn=l.filter(x=>x.st!=='new'),ty=SUG[s],lab=t=>(ty.find(x=>x[0]===t)||['',''])[1];
 return `<div class="card sugbox"><div class="sugin">${ty.length>1?`<select id="sugType" aria-label="意見類型">${ty.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select>`:''}
-<input type="text" id="sugText" placeholder="提出${ty.map(t=>t[1]).join('或')}…（由編輯者決定是否採用）" maxlength="200"><button class="btn pri sm" data-a="sugSend">送出</button></div>
-${nw.map(x=>`<div class="sug"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}・${lab(x.type)}</span></span>
-${isEd()?`<button class="btn sm pri" data-a="sugOk" data-id="${x.id}">採用</button><button class="btn sm" data-a="sugNo" data-id="${x.id}">略過</button>`:'<span class="tag">待決定</span>'}</div>`).join('')}
+<input type="text" id="sugText" placeholder="提出${ty.map(t=>t[1]).join('或')}…" maxlength="200"><button class="btn pri sm" data-a="sugSend">送出</button></div>
+${(()=>{const it=x=>`<div class="sug"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}・${lab(x.type)}</span></span>
+${isEd()?`<button class="btn sm pri" data-a="sugOk" data-id="${x.id}">採用</button><button class="btn sm" data-a="sugNo" data-id="${x.id}">略過</button>`:'<span class="tag">待決定</span>'}</div>`;
+return nw.slice(0,3).map(it).join('')+(nw.length>3?`<div class="sugmore ${OD.sugall?'open':''}">${nw.slice(3).map(it).join('')}</div><button class="btn sm sugtoggle" data-a="sugToggle">${OD.sugall?`收合（共 ${nw.length} 則意見）▴`:`展開全部 ${nw.length} 則意見 ▾`}</button>`:'')})()}
 ${dn.length?`<details data-d="sugdone" ${OD.sugdone?'open':''} style="margin-top:6px"><summary class="mute">已處理 ${dn.length} 則意見</summary>${dn.map(x=>`<div class="sug done"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}</span></span><span class="tag">${x.st==='ok'?'已採用':'已略過'}</span></div>`).join('')}</details>`:''}</div>`}
 
 /* ===== 表單（底部彈出） ===== */
@@ -554,8 +557,8 @@ function showHelp(){const m=$('#modal');m.innerHTML=`<div class="mask" data-a="c
 <p>整套流程對應課程圓盤的四個象限：<b>狀況評估 → 問題分析 → 決策分析 → 機會分析</b>。每一階段的產出，都是下一階段的輸入，所以請依序進行。</p>
 ${ST.map((s,i)=>`<h4>${i}　${s.n}<span class="mute">　${s.q}</span></h4><p>${s.what}</p><ol>${s.rules.map(r=>`<li>${r}</li>`).join('')}</ol>`).join('')}
 <h4>各階段怎麼串起來</h4><ul><li>關聯圖找到的<b>主因／問題</b> → 魚骨圖發想對策時的對象。</li><li>魚骨圖的解決方式按「列入決策」→ 變成決策分析的<b>方案</b>。</li><li>決策分析的<b>結論</b> → 顯示在流程圖最上方，據此展開步驟。</li></ul>
-<h4>怎麼使用這個網站</h4><ul><li><b>編輯者</b>：可新增、修改、刪除所有內容，並決定是否採用意見。多位編輯者可同時操作。</li>
-<li><b>觀看者</b>：畫面每幾秒自動更新；每一階段下方的「意見箱」可以提出想法，編輯者按「採用」就會加進主要作業區。</li>
+<h4>怎麼使用這個網站</h4><ul><li><b>編輯者</b>：可新增、修改、刪除所有內容。多位編輯者可同時操作。</li>
+<li><b>觀看者</b>：畫面每幾秒自動更新；每一階段下方的「意見箱」可以提出想法；大家討論後，由編輯者按「採用」加進主要作業區。</li>
 <li><b>分岔</b>：做到一個斷點想試另一條路時，按「從這裡分岔」（或專案列表的「複製分岔」），會複製出一個獨立的新專案，原專案不受影響。</li><li>便條數量、方案數、檢核點數、分數級距都可以自由增減。</li><li>右上角圓點：綠色＝已同步、灰色＝離線模式（資料只在本機）、紅色＝連線失敗。</li></ul></div>`;m.hidden=false}
 
 function showSettings(){sheet({title:'設定',
@@ -580,6 +583,7 @@ const ACT={
  addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
  zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
  guide:showGuide,
+ sugToggle:()=>{OD.sugall=!OD.sugall;render()},
  selLink:d=>{selL=selL===d.id?null:d.id;sel=null;linkFrom=null;render()},
  delSelLink:()=>{const id=selL;selL=null;if(id)del(id)},
  linkStart:d=>{linkFrom=d.id;render()},linkCancel:()=>{linkFrom=null;render()},
@@ -604,7 +608,7 @@ const ACT={
  importAll:()=>{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const db=JSON.parse(r.result);
    Object.keys(db).forEach(pid=>Object.values(db[pid]).forEach(e=>{e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1}));save();closeSheet();render();kick()}catch(e){alert('檔案格式不正確')}};r.readAsText(i.files[0])};i.click()}
 };
-const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','guide','exportAll','importAll'];
+const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','guide','sugToggle','exportAll','importAll'];
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(!ACT[a])return;
   if(!isEd()&&S.role&&!VIEWER_OK.includes(a))return;
   const ae=document.activeElement;if(a!=='sugSend'&&a!=='role'&&a!=='addLink'&&a!=='addEdge'&&ae&&ae.matches&&ae.matches('#app input,#app textarea'))ae.blur();
