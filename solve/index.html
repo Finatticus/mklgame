@@ -226,6 +226,8 @@ label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
 .btn.sb{background:var(--b);border-color:#8db6e6}
 .sugtoggle{display:none;width:100%;margin-top:6px}
 @media(max-width:899px){.sugmore:not(.open){display:none}.sugtoggle{display:block}}
+.fhead{align-items:start}
+@media(max-width:600px){.fhead{grid-template-columns:1fr!important;gap:6px}}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -413,8 +415,8 @@ const solH=s=>{const tn=s.target&&A.st[s.target];const g=tn&&A.tag[s.target];ret
 ${tn?`<span class="tag">${g?g.l:'對應'}：${esc(tn.n.text)}</span>`:''}${opts.some(o=>o.src===s.id)?'<span class="tag">已列入決策</span>':''}</div>`};
 const bar=ed?`<button class="btn pri sm" data-a="addSol">＋ 解決方式</button><button class="btn sm" data-a="addCat">＋ 類別</button><span class="hint">點綠色便條可編輯、排序、列入決策</span>`:'';
 const main=`<div class="card"><div class="fhead">
-<label class="f"><span>魚頭｜方式（打算怎麼做）</span><input type="text" data-f="fish:fish:method" value="${esc(f.method)}" ${dis()}></label>
-<label class="f"><span>魚頭｜期望結果（要達到什麼）</span><input type="text" data-f="fish:fish:goal" value="${esc(f.goal)}" ${dis()}></label></div></div>
+<label class="f"><span>魚頭｜方式（打算怎麼做）</span><textarea rows="1" data-f="fish:fish:method" ${dis()}>${esc(f.method)}</textarea></label>
+<label class="f"><span>魚頭｜期望結果（要達到什麼）</span><textarea rows="1" data-f="fish:fish:goal" ${dis()}>${esc(f.goal)}</textarea></label></div></div>
 <div class="card"><h3>魚骨 <span class="mute">藍色＝類別，編號＝先後順序；綠色＝解決方式</span></h3>
 ${cats.length||orphan.length?`<div class="fish">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
 ${ed?`<button class="ib" data-a="editCat" data-id="${c.id}" aria-label="編輯類別">✎</button><button class="ib" data-a="addSol" data-cat="${c.id}" aria-label="在這一類新增解決方式">＋</button>`:''}</div>
