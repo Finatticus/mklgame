@@ -183,6 +183,44 @@ label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
 .sheet{padding:14px 12px calc(14px + env(safe-area-inset-bottom))}
 .rk{padding:5px 8px}
 }
+.wrap{max-width:1280px}
+.entry .wrap,main.plist{max-width:720px}
+main{padding:10px 0 28px}
+.card{padding:10px 12px;margin-bottom:10px}
+.card>h3{font-size:14px;margin-bottom:6px}
+.card h3 .mute{font-weight:400;font-size:12px}
+input[type=text],input[type=number],textarea,select{padding:6px 8px}
+textarea{min-height:38px}
+label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
+.foot{display:none}
+.tbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;min-height:32px}
+.tbar .hint{font-size:12px;color:var(--mute)}
+.tbar .selname{max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbar .lf{background:var(--ink);color:#fff;border-radius:6px;padding:4px 10px;font-size:13px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;grid-template-areas:"main sug" "main side";grid-template-rows:auto 1fr;gap:0 12px;align-items:start}
+.sugbox{grid-area:sug}.pri{grid-area:main;min-width:0}.side{grid-area:side;min-width:0}
+@media(max-width:899px){.cols{display:block}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.fhead{grid-template-columns:1fr 1fr!important}.fhead{align-items:end}
+@media(max-width:600px){.tbar .hint{display:none}}.fhead label.f{margin:0}
+@media(max-width:600px){.g2{grid-template-columns:1fr}}
+.boardwrap{overflow:hidden;max-height:none;position:relative}
+.board{transform-origin:0 0}
+.note{font-size:var(--fs,13px);touch-action:auto;cursor:default}
+.ed .note{touch-action:none;cursor:grab}
+.note .tg{font-size:.82em;line-height:1.5;top:-.9em}
+.fn small{font-size:.78em}
+.legend{position:absolute;right:6px;top:6px;z-index:2;margin:0;font-size:11px;opacity:.9}
+.sugin{flex-wrap:nowrap}.sugin input{min-width:0}.sugin select{flex:none}
+.sug{padding:5px 8px;font-size:13px;margin:6px 0 0}
+.fish{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px;align-items:start}
+.fish .bone{padding:0}.fish .bone:before{display:none}
+.fish .sol{margin:4px 0 0;padding:6px 8px;font-size:13px}
+.fish .cat{padding:4px 6px;font-size:13px}
+.rk{padding:5px 8px;margin-bottom:4px;font-size:13px}
+.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;font-size:13px}
+.lk{font-size:13px;padding:4px 0}
+.riskc{font-size:13px;padding:6px 10px}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -264,7 +302,7 @@ function render(){const a=document.activeElement;if(drag||(a&&a.matches&&a.match
   const app=$('#app');
   if(!S.role)app.innerHTML=vEntry();else if(!S.pid||!S.db._index[S.pid]||S.db._index[S.pid].d)app.innerHTML=vProjects();else app.innerHTML=vWork();
   const nb=$('.boardwrap');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}
-  document.querySelectorAll('#app textarea').forEach(grow);drawLinks();setSync(gasUrl()?(syncSt==='off'?'ok':syncSt):'off')}
+  document.querySelectorAll('#app textarea').forEach(grow);fitBoard();drawLinks();setSync(gasUrl()?(syncSt==='off'?'ok':syncSt):'off')}
 document.addEventListener('toggle',e=>{const t=e.target;if(t.dataset&&t.dataset.d)OD[t.dataset.d]=t.open},true);
 function grow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'}
 document.addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA')grow(e.target)});
@@ -292,38 +330,47 @@ ${isEd()?`<button class="btn sm" data-a="renProj" data-id="${p.id}">改名</butt
 ${gasUrl()?'':'<p class="mute">目前是離線模式：資料只存在這台裝置。</p>'}</main>`}
 
 function vWork(){const proj=S.db._index[S.pid],s=S.stage,cnt=i=>all('sug').filter(x=>x.stage===i&&x.st==='new').length;
+const B=[v0,v1,v2,v3,v4][s]();
 return topbar(proj.name||'未命名專案',true)+`<div class="nav"><div class="wrap">${ST.map((x,i)=>`<button class="${i===s?'on':''}" data-a="stage" data-i="${i}"><span class="n">${i}</span>${x.n}${cnt(i)?`<span class="badge">${cnt(i)}</span>`:''}</button>`).join('')}</div></div>
-<main class="wrap"><div class="stagehead row"><div class="sp"><h2>${s}　${ST[s].n}</h2><div class="q">${ST[s].q}</div></div>${isEd()?'<button class="btn sm" data-a="copyProj">⑂ 從這裡分岔</button>':''}</div>
-<details class="guide" data-d="guide" ${OD.guide?'open':''}><summary>這一階段要做什麼？</summary><p style="margin:8px 0 0">${ST[s].what}</p><ol>${ST[s].rules.map(r=>`<li>${r}</li>`).join('')}</ol></details>
-${[v0,v1,v2,v3,v4][s]()}${vSug(s)}</main>
-<div class="foot"><div class="wrap"><button class="btn" data-a="stage" data-i="${s-1}" ${s===0?'disabled':''}>‹ 上一階段</button><button class="btn pri" data-a="stage" data-i="${s+1}" ${s===4?'disabled':''}>下一階段 ›</button></div></div>`}
+<main class="wrap ${isEd()?'ed':''}"><div class="tbar">${B.bar||''}<span class="sp"></span><button class="btn sm" data-a="guide">？做法</button>${isEd()?'<button class="btn sm" data-a="copyProj">⑂ 分岔</button>':''}</div>
+<div class="cols">${vSug(s)}<div class="pri">${B.main}</div>${B.side?`<aside class="side">${B.side}</aside>`:''}</div></main>`}
+function showGuide(){const i=S.stage,s=ST[i],m=$('#modal');m.innerHTML=`<div class="mask" data-a="closeSheet"></div><div class="sheet help"><div class="row"><h3 class="sp" style="margin:0">${i}　${s.n}<span class="mute">　${s.q}</span></h3><button class="btn sm" data-a="closeSheet">關閉</button></div>
+<p style="margin-top:10px">${s.what}</p><ol>${s.rules.map(r=>`<li>${r}</li>`).join('')}</ol><p class="mute">完整流程請看右上角「說明」。</p></div>`;m.hidden=false}
 
 /* 0 題目 */
-function v0(){const t=get('topic','topic');const f=(k,l,ph,area)=>`<label class="f"><span>${l}</span>${area?`<textarea data-f="topic:topic:${k}" placeholder="${ph}" ${dis()}>${esc(t[k])}</textarea>`:`<input type="text" data-f="topic:topic:${k}" value="${esc(t[k])}" placeholder="${ph}" ${dis()}>`}</label>`;
-return `<div class="card">${f('title','題目（一句話：現象 ＋ 影響）','例：○○ 分散各處，導致 ○○ 無法有效進行，影響 ○○',1)}
-${f('now','現況描述（看到了什麼事實？）','誰、在哪裡、發生什麼、多常發生',1)}
-${f('goal','期望達成的狀態','問題解決之後，應該變成什麼樣子？',1)}
-${f('scope','範圍與限制（選填）','例：只討論某部門、時間、預算、法規限制')}</div>`}
+function v0(){const t=get('topic','topic');const f=(k,l,ph)=>`<label class="f"><span>${l}</span><textarea data-f="topic:topic:${k}" placeholder="${ph}" ${dis()}>${esc(t[k])}</textarea></label>`;
+return{main:`<div class="card g2">${f('title','題目（一句話：現象 ＋ 影響）','例：○○ 分散各處，導致 ○○ 無法有效進行，影響 ○○')}
+${f('now','現況描述（看到了什麼事實？）','誰、在哪裡、發生什麼、多常發生')}
+${f('goal','期望達成的狀態','問題解決之後，應該變成什麼樣子？')}
+${f('scope','範圍與限制（選填）','例：只討論某部門、時間、預算、法規限制')}</div>`}}
 
 /* 1 關聯圖 */
-function v1(){const A=analyze(),ed=isEd();const W=Math.max(340,...A.ns.map(n=>(n.x||0)+150)),H=Math.max(300,...A.ns.map(n=>(n.y||0)+110));
-const nm=id=>esc((A.st[id]||{n:{}}).n.text||'');const sn=sel&&A.st[sel]?A.st[sel].n:null;
-return `${linkFrom&&A.st[linkFrom]?`<div class="banner"><span class="sp">因為「${nm(linkFrom)}」，所以… 請點選結果的便條</span><button class="btn sm" data-a="linkCancel">取消</button></div>`:''}
-${ed?`<div class="row" style="margin-bottom:8px"><button class="btn pri" data-a="addNote">＋ 新增影響因素</button><span class="mute">拖曳可移動；點一下便條可編輯或畫箭頭</span></div>`:''}
-${zoomBar()}<div class="boardwrap"><div class="board" id="board" data-nk="note" data-lk="link" style="${bstyle(W,H)}"><svg id="svg"></svg>
+function v1(){const A=analyze(),ed=isEd();const nm=id=>esc((A.st[id]||{n:{}}).n.text||'');const sn=sel&&A.st[sel]?A.st[sel].n:null;
+const bar=linkFrom&&A.st[linkFrom]?`<span class="lf">因為「${nm(linkFrom)}」所以… 請點結果的便條</span><button class="btn sm" data-a="linkCancel">取消</button>`
+:sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button>`
+:ed?`<button class="btn pri sm" data-a="addNote">＋ 影響因素</button><span class="hint">拖曳移動・點便條畫箭頭</span>`:'';
+const main=`<div class="boardwrap"><div class="board" id="board" data-nk="note" data-lk="link"><svg id="svg"></svg>
 ${A.ns.map(n=>{const g=A.tag[n.id];return `<div class="note ${g?g.c:''} ${sel===n.id?'sel':''}" data-id="${n.id}" style="left:${n.x||0}px;top:${n.y||0}px">${g?`<span class="tg">${g.l}</span>`:''}${esc(n.text)}</div>`}).join('')}
-${A.ns.length?'':'<div class="empty" style="padding-top:120px">還沒有便條。先把所有想得到的影響因素都寫出來。</div>'}</div></div>
-${sn&&ed?`<div class="card" style="margin-top:10px"><div class="row"><b class="sp">「${esc(sn.text)}」</b>
-<button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button></div></div>`:''}
-<div class="card" style="margin-top:14px"><h3>分析結果（自動計算）</h3><div class="rank">
-<div><h4 style="color:var(--red)">主因（只出不進，至少 2 條）</h4>${A.causes.map((s,i)=>`<div class="rk c"><b>主因${i+1}</b><span>${esc(s.n.text)}</span><small>出 ${s.out}・進 ${s.in}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}</div>
-<div><h4 style="color:var(--blue)">問題（只進不出，至少 2 條）</h4>${A.probs.map((s,i)=>`<div class="rk p"><b>問題${i+1}</b><span>${esc(s.n.text)}</span><small>進 ${s.in}・出 ${s.out}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}</div></div></div>
-<details class="card" data-d="links" ${OD.links?'open':''}><summary><b>因果清單（共 ${A.ls.length} 條箭頭）</b></summary>
+${A.ns.length?'':'<div class="empty" style="padding-top:70px">還沒有便條。先把所有想得到的影響因素都寫出來。</div>'}</div></div>`;
+const o=A.ns.map(n=>`<option value="${n.id}">${esc(n.text)}</option>`).join('');
+const side=`<div class="card"><h3 style="color:var(--red)">主因 <span class="mute">只出不進・至少 2 條</span></h3>
+${A.causes.map((s,i)=>`<div class="rk c"><b>${i+1}</b><span>${esc(s.n.text)}</span><small>出 ${s.out}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}
+<h3 style="color:var(--blue);margin-top:8px">問題 <span class="mute">只進不出・至少 2 條</span></h3>
+${A.probs.map((s,i)=>`<div class="rk p"><b>${i+1}</b><span>${esc(s.n.text)}</span><small>進 ${s.in}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}</div>
+<details class="card" data-d="links" ${OD.links?'open':''}><summary><b>因果清單（${A.ls.length} 條箭頭）</b></summary>
 ${A.ls.map(l=>`<div class="lk"><span>因為「${nm(l.a)}」→ 所以「${nm(l.b)}」</span>${ed?`<button class="ib" data-a="delLink" data-id="${l.id}" aria-label="刪除箭頭">✕</button>`:''}</div>`).join('')||'<div class="mute">尚無箭頭</div>'}
-${ed&&A.ns.length>1?`<div class="row" style="margin-top:10px"><select id="la" style="flex:1;min-width:120px"><option value="">因為…</option>${A.ns.map(n=>`<option value="${n.id}">${esc(n.text)}</option>`).join('')}</select>
-<select id="lb" style="flex:1;min-width:120px"><option value="">所以…</option>${A.ns.map(n=>`<option value="${n.id}">${esc(n.text)}</option>`).join('')}</select><button class="btn" data-a="addLink">加箭頭</button></div>`:''}</details>
-<details class="card" data-d="stat" ${OD.stat?'open':''}><summary><b>箭頭統計（每張便條的進出數）</b></summary><div class="tw"><table class="dm"><thead><tr><th>影響因素</th><th>出去</th><th>進來</th></tr></thead><tbody>
-${Object.values(A.st).map(s=>`<tr><td style="background:#fff">${esc(s.n.text)}</td><td>${s.out}</td><td>${s.in}</td></tr>`).join('')}</tbody></table></div></details>`}
+${ed&&A.ns.length>1?`<div class="row" style="margin-top:8px"><select id="la" style="flex:1;min-width:90px"><option value="">因為…</option>${o}</select><select id="lb" style="flex:1;min-width:90px"><option value="">所以…</option>${o}</select><button class="btn sm" data-a="addLink">加箭頭</button></div>`:''}</details>
+<details class="card" data-d="stat" ${OD.stat?'open':''}><summary><b>每張便條的箭頭數</b></summary><div class="tw"><table class="dm"><thead><tr><th>影響因素</th><th>出去</th><th>進來</th></tr></thead><tbody>
+${Object.values(A.st).map(s=>`<tr><td style="background:#fff">${esc(s.n.text)}</td><td>${s.out}</td><td>${s.in}</td></tr>`).join('')}</tbody></table></div></details>`;
+return{bar,main,side}}
+let BZ=1;
+function fitBoard(){const b=$('#board');if(!b)return;const w=b.parentElement,ns=[...b.querySelectorAll('.note')],cap=b.dataset.nk==='step'?16:19;
+  const fs=z=>b.style.setProperty('--fs',Math.min(cap,Math.max(13,10.5/z))+'px');
+  const W=Math.max(320,...ns.map(n=>n.offsetLeft+n.offsetWidth+14));let z=Math.min(1,w.clientWidth/W);fs(z);
+  const H=Math.max(190,...ns.map(n=>n.offsetTop+n.offsetHeight+14));
+  if(innerWidth>=900){const mh=innerHeight*.78;if(H*z>mh){z=mh/H;fs(z)}}
+  BZ=z;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${z})`;w.style.height=(H*z)+'px'}
+addEventListener('resize',()=>{fitBoard();drawLinks()});
 function zoomV(W){const fit=(Math.min(innerWidth,860)-36)/W;if(Z==='fit')return Math.min(1,fit);if(Z==null)return innerWidth<600?Math.min(1,Math.max(.7,fit)):1;return Z}
 function bstyle(W,H){lastW=W;const z=zoomV(W);return `width:${W}px;height:${H}px;transform:scale(${z});transform-origin:0 0;margin:0 ${-W*(1-z)}px ${-H*(1-z)}px 0`}
 function zoomBar(){return `<div class="zoom"><button class="ib" data-a="zoom" data-d="-1" aria-label="縮小">－</button><span>${Math.round(zoomV(lastW)*100)}%</span><button class="ib" data-a="zoom" data-d="1" aria-label="放大">＋</button><button class="ib" data-a="zoom" data-d="0">全覽</button></div>`}
@@ -335,7 +382,7 @@ function drawLinks(){const b=$('#board'),svg=$('#svg');if(!b||!svg)return;const 
     return `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="#23262b" stroke-width="1.8" marker-end="url(#ah)"/>`+
     (l.label?`<text x="${p.x+(q.x-p.x)*.42}" y="${p.y+(q.y-p.y)*.42}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" font-weight="700" fill="#b3261e" stroke="#fffdf7" stroke-width="6" paint-order="stroke">${esc(l.label)}</text>`:'')}).join('')}
 document.addEventListener('pointerdown',e=>{const n=e.target.closest&&e.target.closest('#board .note');if(!n||!isEd())return;
-  drag={id:n.dataset.id,n,z:zoomV(lastW),nk:$('#board').dataset.nk,sx:e.clientX,sy:e.clientY,ox:n.offsetLeft,oy:n.offsetTop,moved:false};try{n.setPointerCapture(e.pointerId)}catch(_){}} );
+  drag={id:n.dataset.id,n,z:BZ,nk:$('#board').dataset.nk,sx:e.clientX,sy:e.clientY,ox:n.offsetLeft,oy:n.offsetTop,moved:false};try{n.setPointerCapture(e.pointerId)}catch(_){}} );
 document.addEventListener('pointermove',e=>{if(!drag)return;let dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(!drag.moved&&Math.hypot(dx,dy)<6)return;drag.moved=true;dx/=drag.z;dy/=drag.z;
   drag.n.style.left=Math.max(0,drag.ox+dx)+'px';drag.n.style.top=Math.max(0,drag.oy+dy)+'px';drawLinks()});
 document.addEventListener('pointerup',()=>{if(!drag)return;const d=drag;drag=null;
@@ -352,34 +399,36 @@ function tapNote(id){const lk=$('#board').dataset.lk;if(linkFrom){const f=linkFr
 function v2(){const f=get('fish','fish'),cats=all('cat'),sols=all('sol'),A=analyze(),ed=isEd(),opts=all('opt');
 const orphan=sols.filter(s=>!cats.some(c=>c.id===s.cat));
 const solH=s=>{const tn=s.target&&A.st[s.target];const g=tn&&A.tag[s.target];return `<div class="sol" ${ed?`data-a="editSol" data-id="${s.id}" role="button" tabindex="0"`:''}><span class="tx">${esc(s.text)}</span>
-${tn?`<span class="tag">對應${g?g.l:''}：${esc(tn.n.text)}</span>`:''}${opts.some(o=>o.src===s.id)?'<span class="tag">已列入決策</span>':''}</div>`};
-return `<div class="card"><h3>魚頭</h3><div class="fhead">
-<label class="f"><span>方式（我們打算怎麼做）</span><input type="text" data-f="fish:fish:method" value="${esc(f.method)}" ${dis()}></label>
-<label class="f"><span>期望結果（做完要達到什麼）</span><input type="text" data-f="fish:fish:goal" value="${esc(f.goal)}" ${dis()}></label></div>
-${A.causes.length||A.probs.length?`<div class="mute">要解決的對象：${[...A.causes.map((s,i)=>`主因${i+1}「${esc(s.n.text)}」`),...A.probs.map((s,i)=>`問題${i+1}「${esc(s.n.text)}」`)].join('、')}</div>`:'<div class="mute">提醒：先在關聯圖找出主因與問題，對策才有對象。</div>'}</div>
-${ed?`<div class="row" style="margin-bottom:10px"><button class="btn pri" data-a="addSol">＋ 解決方式</button><button class="btn" data-a="addCat">＋ 類別</button></div>`:''}
-<div class="card"><h3>魚骨（由上到下 ＝ 執行先後順序）</h3>${ed?'<div class="mute" style="margin-bottom:6px">點一下綠色便條可以編輯、移動順序、列入決策。</div>':''}
-${cats.length||orphan.length?`<div class="spine">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
-${ed?`<button class="ib" data-a="editCat" data-id="${c.id}">編輯</button><button class="ib" data-a="addSol" data-cat="${c.id}" aria-label="在這一類新增解決方式">＋</button>`:''}</div>
-${sols.filter(s=>s.cat===c.id).map(s=>solH(s)).join('')||'<div class="mute" style="margin:6px 0 0 14px">這一類還沒有解決方式</div>'}</div>`).join('')}
-${orphan.length?`<div class="bone"><div class="cat" style="background:#e8e6df"><span class="nm">尚未分類</span></div>${orphan.map(s=>solH(s)).join('')}</div>`:''}</div><div class="tail">▼ 魚尾</div>`
-:'<div class="empty">先盡量發想解決方式，再把相近的歸成一類。</div>'}</div>`}
+${tn?`<span class="tag">${g?g.l:'對應'}：${esc(tn.n.text)}</span>`:''}${opts.some(o=>o.src===s.id)?'<span class="tag">已列入決策</span>':''}</div>`};
+const bar=ed?`<button class="btn pri sm" data-a="addSol">＋ 解決方式</button><button class="btn sm" data-a="addCat">＋ 類別</button><span class="hint">點綠色便條可編輯、排序、列入決策</span>`:'';
+const main=`<div class="card"><div class="fhead">
+<label class="f"><span>魚頭｜方式（打算怎麼做）</span><input type="text" data-f="fish:fish:method" value="${esc(f.method)}" ${dis()}></label>
+<label class="f"><span>魚頭｜期望結果（要達到什麼）</span><input type="text" data-f="fish:fish:goal" value="${esc(f.goal)}" ${dis()}></label></div></div>
+<div class="card"><h3>魚骨 <span class="mute">藍色＝類別，編號＝先後順序；綠色＝解決方式</span></h3>
+${cats.length||orphan.length?`<div class="fish">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
+${ed?`<button class="ib" data-a="editCat" data-id="${c.id}" aria-label="編輯類別">✎</button><button class="ib" data-a="addSol" data-cat="${c.id}" aria-label="在這一類新增解決方式">＋</button>`:''}</div>
+${sols.filter(s=>s.cat===c.id).map(solH).join('')||'<div class="mute" style="margin-top:4px">尚無解決方式</div>'}</div>`).join('')}
+${orphan.length?`<div class="bone"><div class="cat" style="background:#e8e6df"><span class="nm">尚未分類</span></div>${orphan.map(solH).join('')}</div>`:''}</div>`
+:'<div class="empty">先盡量發想解決方式，再把相近的歸成一類。</div>'}</div>`;
+const side=`<div class="card"><h3>要解決的對象 <span class="mute">來自關聯圖</span></h3>
+${A.causes.map((s,i)=>`<div class="rk c"><b>主因${i+1}</b><span>${esc(s.n.text)}</span></div>`).join('')}${A.probs.map((s,i)=>`<div class="rk p"><b>問題${i+1}</b><span>${esc(s.n.text)}</span></div>`).join('')}
+${A.causes.length||A.probs.length?'':'<div class="mute">先在關聯圖找出主因與問題，對策才有對象。</div>'}</div>`;
+return{bar,main,side}}
 
 /* 3 決策分析 */
 function v3(){const cr=all('crit'),op=all('opt'),d=get('dec','dec',{max:5}),ed=isEd(),mx=Number(d.max)||5;
 const tots=op.map(o=>total(o,cr)),best=Math.max(0,...tots);const rank=t=>t>0?[...new Set(tots)].sort((a,b)=>b-a).indexOf(t)+1:'';
-return `${ed?`<div class="row" style="margin-bottom:10px"><button class="btn pri" data-a="addOpt">＋ 方案</button><button class="btn" data-a="addCrit">＋ 檢核點</button><span class="sp"></span>
-<span class="mute">分數 1–</span><input type="number" style="width:64px" min="2" max="10" data-f="dec:dec:max" value="${mx}"></div>`:''}
-<div class="card"><h3>決策矩陣</h3>${cr.length||op.length?`<div class="tw"><table class="dm"><thead><tr><th>方案 ＼ 檢核點</th>
+const bar=ed?`<button class="btn pri sm" data-a="addOpt">＋ 方案</button><button class="btn sm" data-a="addCrit">＋ 檢核點</button><span class="hint">分數 1–</span><input type="number" style="width:54px" min="2" max="10" data-f="dec:dec:max" value="${mx}" aria-label="分數上限">`:'';
+const main=`<div class="card"><h3>決策矩陣 <span class="mute">分數越高越好；權重越大越重要</span></h3>${cr.length||op.length?`<div class="tw"><table class="dm"><thead><tr><th>方案 ＼ 檢核點</th>
 ${cr.map((c,i)=>`<th class="c${i%4}">${ed?`<button class="hb" data-a="editCrit" data-id="${c.id}">${esc(c.name)||'（未命名）'} ✎</button>`:esc(c.name)}</th>`).join('')}<th>加權總分</th></tr></thead><tbody>
 ${op.map((o,r)=>`<tr class="${tots[r]>0&&tots[r]===best?'best':''}"><td>${ed?`<button class="hb" data-a="editOpt" data-id="${o.id}">${esc(o.name)||'（未命名）'} ✎</button>`:esc(o.name)}</td>
 ${cr.map((c,i)=>`<td class="c${i%4}"><input type="number" inputmode="numeric" min="1" max="${mx}" data-sc="${o.id}:${c.id}" value="${(o.sc||{})[c.id]??''}" ${dis()} aria-label="${esc(o.name)} 的 ${esc(c.name)} 分數"></td>`).join('')}
-<td class="tot" id="tot-${o.id}">${tots[r]}${rank(tots[r])?` <small class="mute">第${rank(tots[r])}</small>`:''}</td></tr>`).join('')}</tbody>
-<tfoot><tr><td>權重</td>${cr.map(c=>`<td><input type="number" inputmode="numeric" min="0" data-f="${c.id}:crit:w" value="${c.w??1}" ${dis()} aria-label="${esc(c.name)} 權重"></td>`).join('')}<td class="mute">Σ 分數×權重</td></tr></tfoot></table></div>
-${op.length&&best>0?`<div style="margin-top:12px"><b>加權總分排名</b>${op.map((o,r)=>({o,t:tots[r]})).sort((x,y)=>y.t-x.t).map(x=>`<div class="rk ${x.t===best?'c':'p'}" style="margin:6px 0 0"><b>第${rank(x.t)||'–'}</b><span>${esc(x.o.name)}</span><b>${x.t} 分</b></div>`).join('')}</div>`:''}
-<p class="mute" style="margin:8px 0 0">每個檢核點都是「分數越高越好」。權重數字越大代表越重要。★ 為最高分。</p>`
-:'<div class="empty">從魚骨圖把方案「列入決策」，或直接新增方案與檢核點。</div>'}</div>
-<div class="card"><label class="f" style="margin:0"><span>結論：最優方案是什麼？為什麼？</span><textarea data-f="dec:dec:concl" ${dis()} placeholder="全組確認分數結果合理後，寫下決定與理由">${esc(d.concl)}</textarea></label></div>`}
+<td class="tot" id="tot-${o.id}">${tots[r]}${rank(tots[r])?`<small class="mute">第${rank(tots[r])}</small>`:''}</td></tr>`).join('')}</tbody>
+<tfoot><tr><td>權重</td>${cr.map(c=>`<td><input type="number" inputmode="numeric" min="0" data-f="${c.id}:crit:w" value="${c.w??1}" ${dis()} aria-label="${esc(c.name)} 權重"></td>`).join('')}<td class="mute">Σ 分數×權重</td></tr></tfoot></table></div>`
+:'<div class="empty">從魚骨圖把方案「列入決策」，或直接新增方案與檢核點。</div>'}</div>`;
+const side=`<div class="card"><h3>加權總分排名</h3>${op.length&&best>0?op.map((o,r)=>({o,t:tots[r]})).sort((x,y)=>y.t-x.t).map(x=>`<div class="rk ${x.t===best?'c':'p'}"><b>${rank(x.t)||'–'}</b><span>${esc(x.o.name)}</span><b>${x.t} 分</b></div>`).join(''):'<div class="mute">填入分數與權重後自動排名</div>'}</div>
+<div class="card"><label class="f" style="margin:0"><span>結論：最優方案是什麼？為什麼？</span><textarea data-f="dec:dec:concl" ${dis()} placeholder="全組確認分數結果合理後，寫下決定與理由">${esc(d.concl)}</textarea></label></div>`;
+return{bar,main,side}}
 function patchTotals(){const cr=all('crit');all('opt').forEach(o=>{const el=$('#tot-'+o.id);if(el)el.textContent=total(o,cr)})}
 
 /* 4 流程圖 */
@@ -388,36 +437,32 @@ function spos(x,i){return{x:x.x??110,y:x.y??16+i*110}}
 function v4(){const st=all('step'),fl=get('flow','flow',{unit:'天'}),rk=all('risk'),ed=isEd(),d=get('dec','dec'),u=esc(fl.unit||'天');
 const ids={};st.forEach(x=>ids[x.id]=x);const eg=all('edge').filter(l=>ids[l.a]&&ids[l.b]);
 const sum=st.reduce((s,x)=>s+(Number(x.dur)||0),0),nm=id=>esc(ids[id].text),sn=sel&&ids[sel];
-const W=Math.max(340,...st.map((x,i)=>spos(x,i).x+190)),H=Math.max(300,...st.map((x,i)=>spos(x,i).y+130));
 const opt=st.map(x=>`<option value="${x.id}">${esc(x.text)}</option>`).join('');
-return `${d.concl?`<div class="card"><span class="mute">最優方案結論</span><div>${esc(d.concl)}</div></div>`:''}
-${linkFrom&&ids[linkFrom]?`<div class="banner"><span class="sp">從「${nm(linkFrom)}」接到… 請點選下一個圖形</span><button class="btn sm" data-a="linkCancel">取消</button></div>`:''}
-${ed?`<div class="row" style="margin-bottom:8px"><button class="btn pri" data-a="addStep">＋ 新增圖形</button><span class="sp"></span><span class="mute">時間單位</span><input type="text" style="width:72px" data-f="flow:flow:unit" value="${u}"></div>
-<div class="mute" style="margin-bottom:8px">拖曳可移動；點一下圖形可以接線、編輯。</div>`:''}
-<div class="legend"><span class="lg s">開始／結束</span><span class="lg p">步驟</span><span class="lg d">◆ 判斷</span></div>
-${zoomBar()}<div class="boardwrap"><div class="board" id="board" data-nk="step" data-lk="edge" style="${bstyle(W,H)}"><svg id="svg"></svg>
+const bar=linkFrom&&ids[linkFrom]?`<span class="lf">從「${nm(linkFrom)}」接到… 請點下一個圖形</span><button class="btn sm" data-a="linkCancel">取消</button>`
+:sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">接到下一個 →</button><button class="btn sm" data-a="editStep" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delStep" data-id="${sn.id}">刪除</button>`
+:ed?`<button class="btn pri sm" data-a="addStep">＋ 圖形</button><span class="hint">拖曳移動・點圖形接線</span>`:'';
+const main=`<div class="boardwrap"><div class="board" id="board" data-nk="step" data-lk="edge"><svg id="svg"></svg>
 ${st.map((x,i)=>{const p=spos(x,i),meta=[x.who?esc(x.who):'',Number(x.dur)?x.dur+' '+u:''].filter(Boolean).join('・');
  return `<div class="note fn f-${x.type||'p'} ${x.type==='d'?'dia':''} ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${p.x}px;top:${p.y}px"><div>${esc(x.text)}</div>${meta?`<small>${meta}</small>`:''}</div>`}).join('')}
-${st.length?'':'<div class="empty" style="padding-top:120px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div>
-${sn&&ed?`<div class="card" style="margin-top:10px"><div class="row"><b class="sp">「${esc(sn.text)}」</b>
-<button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">接到下一個 →</button><button class="btn sm" data-a="editStep" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delStep" data-id="${sn.id}">刪除</button></div></div>`:''}
-<details class="card" style="margin-top:10px" data-d="edges" ${OD.edges?'open':''}><summary><b>連線清單（共 ${eg.length} 條）</b></summary>
+${st.length?'':'<div class="empty" style="padding-top:70px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div>`;
+const side=`${d.concl?`<div class="card"><h3>最優方案結論</h3><div class="clamp">${esc(d.concl)}</div></div>`:''}
+<div class="card"><div class="row"><b class="sp">各步驟時間合計：${sum} ${u}</b>${ed?`<span class="mute">單位</span><input type="text" style="width:60px" data-f="flow:flow:unit" value="${u}" aria-label="時間單位">`:''}</div><div class="mute">所有分支都算進去，實際時間依走的路徑而定</div></div>
+<details class="card" data-d="edges" ${OD.edges?'open':''}><summary><b>連線清單（${eg.length} 條）</b></summary>
 ${eg.map(l=>`<div class="lk"><span>「${nm(l.a)}」${l.label?` ─ <b style="color:#b3261e">${esc(l.label)}</b> → `:' → '}「${nm(l.b)}」</span>${ed?`<button class="ib" data-a="editEdge" data-id="${l.id}">條件</button><button class="ib" data-a="delLink" data-id="${l.id}" aria-label="刪除連線">✕</button>`:''}</div>`).join('')||'<div class="mute">尚無連線</div>'}
-${ed&&st.length>1?`<div class="row" style="margin-top:10px"><select id="fa" style="flex:1;min-width:110px"><option value="">從…</option>${opt}</select><select id="fb" style="flex:1;min-width:110px"><option value="">接到…</option>${opt}</select>
-<input type="text" id="fl" placeholder="條件（選填）" style="flex:1;min-width:100px"><button class="btn" data-a="addEdge">加連線</button></div>`:''}
-</details><div class="card"><b>各步驟時間合計：${sum} ${u}</b> <span class="mute">（所有分支都算進去，實際時間依走的路徑而定）</span></div>
-<div class="card"><div class="row" style="margin-bottom:8px"><h3 class="sp" style="margin:0">預防與應變（選填）</h3>${ed?'<button class="btn sm" data-a="addRisk">＋ 潛在風險</button>':''}</div>
+${ed&&st.length>1?`<div class="row" style="margin-top:8px"><select id="fa" style="flex:1;min-width:90px"><option value="">從…</option>${opt}</select><select id="fb" style="flex:1;min-width:90px"><option value="">接到…</option>${opt}</select>
+<input type="text" id="fl" placeholder="條件（選填）" style="flex:1;min-width:90px"><button class="btn sm" data-a="addEdge">加連線</button></div>`:''}</details>
+<div class="card"><div class="row" style="margin-bottom:6px"><h3 class="sp" style="margin:0">預防與應變 <span class="mute">選填</span></h3>${ed?'<button class="btn sm" data-a="addRisk">＋ 風險</button>':''}</div>
 ${rk.map(r=>`<div class="riskc"><div class="row"><b class="sp">${esc(r.risk)}</b>${ed?`<button class="ib" data-a="editRisk" data-id="${r.id}">編輯</button>`:''}</div>
-${r.prev?`<div><span class="mute">預防：</span>${esc(r.prev)}</div>`:''}${r.react?`<div><span class="mute">應變：</span>${esc(r.react)}</div>`:''}</div>`).join('')||'<div class="mute">執行時哪裡可能出錯？事前怎麼預防、發生了怎麼應變？</div>'}</div>`}
+${r.prev?`<div><span class="mute">預防：</span>${esc(r.prev)}</div>`:''}${r.react?`<div><span class="mute">應變：</span>${esc(r.react)}</div>`:''}</div>`).join('')||'<div class="mute">哪裡可能出錯？事前怎麼預防、發生了怎麼應變？</div>'}</div>`;
+return{bar,main,side}}
 
 /* 意見箱 */
 function vSug(s){const l=all('sug').filter(x=>x.stage===s),nw=l.filter(x=>x.st==='new'),dn=l.filter(x=>x.st!=='new'),ty=SUG[s],lab=t=>(ty.find(x=>x[0]===t)||['',''])[1];
-return `<div class="card sugbox"><h3>意見箱 <span class="mute">任何人都能提出，由編輯者決定是否採用</span></h3>
-<div class="sugin">${ty.length>1?`<select id="sugType">${ty.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select>`:''}
-<input type="text" id="sugText" placeholder="提出一個${ty.map(t=>t[1]).join('或')}…" maxlength="200"><button class="btn pri" data-a="sugSend">送出</button></div>
-<div style="margin-top:10px">${nw.map(x=>`<div class="sug"><span class="tx">${esc(x.text)} <span class="tag">${lab(x.type)}</span> <span class="mute">${esc(x.by||'匿名')}</span></span>
-${isEd()?`<button class="btn sm pri" data-a="sugOk" data-id="${x.id}">採用</button><button class="btn sm" data-a="sugNo" data-id="${x.id}">略過</button>`:'<span class="tag">待決定</span>'}</div>`).join('')||'<div class="mute">目前沒有待處理的意見</div>'}</div>
-${dn.length?`<details style="margin-top:8px"><summary class="mute">已處理 ${dn.length} 則</summary>${dn.map(x=>`<div class="sug done"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}</span></span><span class="tag">${x.st==='ok'?'已採用':'已略過'}</span></div>`).join('')}</details>`:''}</div>`}
+return `<div class="card sugbox"><div class="sugin">${ty.length>1?`<select id="sugType" aria-label="意見類型">${ty.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select>`:''}
+<input type="text" id="sugText" placeholder="提出${ty.map(t=>t[1]).join('或')}…（由編輯者決定是否採用）" maxlength="200"><button class="btn pri sm" data-a="sugSend">送出</button></div>
+${nw.map(x=>`<div class="sug"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}・${lab(x.type)}</span></span>
+${isEd()?`<button class="btn sm pri" data-a="sugOk" data-id="${x.id}">採用</button><button class="btn sm" data-a="sugNo" data-id="${x.id}">略過</button>`:'<span class="tag">待決定</span>'}</div>`).join('')}
+${dn.length?`<details data-d="sugdone" ${OD.sugdone?'open':''} style="margin-top:6px"><summary class="mute">已處理 ${dn.length} 則意見</summary>${dn.map(x=>`<div class="sug done"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}</span></span><span class="tag">${x.st==='ok'?'已採用':'已略過'}</span></div>`).join('')}</details>`:''}</div>`}
 
 /* ===== 表單（底部彈出） ===== */
 let sheetCb=null;
@@ -530,6 +575,7 @@ const ACT={
  delProj:d=>{if(confirm('確定刪除這個專案？所有人都會看不到它。'))put({id:d.id,k:'proj',d:1},'_index')},
  addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
  zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
+ guide:showGuide,
  linkStart:d=>{linkFrom=d.id;render()},linkCancel:()=>{linkFrom=null;render()},
  addLink:()=>{const a=$('#la').value,b=$('#lb').value;if(a&&b&&a!==b&&!all('link').some(l=>l.a===a&&l.b===b))toggleLink(a,b)},
  delLink:d=>del(d.id),
@@ -549,7 +595,7 @@ const ACT={
  importAll:()=>{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const db=JSON.parse(r.result);
    Object.keys(db).forEach(pid=>Object.values(db[pid]).forEach(e=>{e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1}));save();closeSheet();render();kick()}catch(e){alert('檔案格式不正確')}};r.readAsText(i.files[0])};i.click()}
 };
-const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','exportAll','importAll'];
+const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','guide','exportAll','importAll'];
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(!ACT[a])return;
   if(!isEd()&&S.role&&!VIEWER_OK.includes(a))return;
   const ae=document.activeElement;if(a!=='sugSend'&&a!=='role'&&a!=='addLink'&&a!=='addEdge'&&ae&&ae.matches&&ae.matches('#app input,#app textarea'))ae.blur();
