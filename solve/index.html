@@ -487,7 +487,7 @@ return `<div class="card sugbox"><div class="sugin">${ty.length>1?`<select id="s
 ${(()=>{const it=x=>`<div class="sug"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}・${lab(x.type)}</span></span>
 ${isEd()?`<button class="btn sm pri" data-a="sugOk" data-id="${x.id}">採用</button><button class="btn sm" data-a="sugNo" data-id="${x.id}">略過</button>`:'<span class="tag">待決定</span>'}</div>`;
 return nw.slice(0,3).map(it).join('')+(nw.length>3?`<div class="sugmore ${OD.sugall?'open':''}">${nw.slice(3).map(it).join('')}</div><button class="btn sm sugtoggle" data-a="sugToggle">${OD.sugall?`收合（共 ${nw.length} 則意見）▴`:`展開全部 ${nw.length} 則意見 ▾`}</button>`:'')})()}
-${dn.length?`<details data-d="sugdone" ${OD.sugdone?'open':''} style="margin-top:6px"><summary class="mute">已處理 ${dn.length} 則意見</summary>${dn.map(x=>`<div class="sug done"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}</span></span><span class="tag">${x.st==='ok'?'已採用':'已略過'}</span></div>`).join('')}</details>`:''}</div>`}
+${dn.length?`<details data-d="sugdone" ${OD.sugdone?'open':''} style="margin-top:6px"><summary class="mute">已處理 ${dn.length} 則意見</summary>${dn.map(x=>`<div class="sug done"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}</span></span><span class="tag">${x.st==='ok'?'已採用':'已略過'}</span>${isEd()?`<button class="ib" data-a="sugDel" data-id="${x.id}" aria-label="刪除這則意見">✕</button>`:''}</div>`).join('')}${isEd()&&dn.length>1?`<button class="btn sm danger" style="margin-top:6px;width:100%" data-a="sugClear">刪除全部 ${dn.length} 則已處理意見</button>`:''}</details>`:''}</div>`}
 
 /* ===== 表單（底部彈出） ===== */
 let sheetCb=null;
@@ -603,6 +603,8 @@ const ACT={
  addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
  zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
  guide:showGuide,
+ sugDel:d=>del(d.id),
+ sugClear:()=>{const l=all('sug').filter(x=>x.stage===S.stage&&x.st!=='new');if(l.length&&confirm('刪除這個階段全部 '+l.length+' 則已處理的意見？已採用進作業區的內容不會受影響。'))l.forEach(x=>del(x.id))},
  zm:d=>{const k=Number(d.d),z=ZM[S.stage]||1;ZM[S.stage]=k?Math.min(4,Math.max(.5,Math.round((z+k*.25)*100)/100)):1;render()},
  sugToggle:()=>{OD.sugall=!OD.sugall;render()},
  selLink:d=>{selL=selL===d.id?null:d.id;sel=null;linkFrom=null;render()},
