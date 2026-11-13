@@ -319,7 +319,7 @@ function render(){const a=document.activeElement;if(drag||(a&&a.matches&&a.match
   pend=false;const bw=$('.boardwrap'),sc=bw?[bw.scrollLeft,bw.scrollTop]:null;
   const app=$('#app');
   if(!S.role)app.innerHTML=vEntry();else if(!S.pid||!S.db._index[S.pid]||S.db._index[S.pid].d)app.innerHTML=vProjects();else app.innerHTML=vWork();
-  const nb=$('.boardwrap');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}
+  BSC=(sc&&RS===S.stage)?sc:null;RS=S.stage;
   document.querySelectorAll('#app textarea').forEach(grow);fitBoard();drawLinks();setSync(gasUrl()?(syncSt==='off'?'ok':syncSt):'off')}
 document.addEventListener('toggle',e=>{const t=e.target;if(t.dataset&&t.dataset.d)OD[t.dataset.d]=t.open},true);
 function grow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'}
@@ -382,14 +382,15 @@ ${A.causes.map((s,i)=>`<div class="rk c"><b>${i+1}</b><span>${esc(s.n.text)}</sp
 ${A.probs.map((s,i)=>`<div class="rk p"><b>${i+1}</b><span>${esc(s.n.text)}</span><small>進 ${s.in}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}</div>
 `;
 return{bar,main,side}}
-let BZ=1;
-function fitBoard(){const b=$('#board');if(!b)return;const w=b.parentElement,ns=[...b.querySelectorAll('.note')],cap=b.dataset.nk==='step'?16:19;
+let BZ=1,BSC=null,RS=-1;
+function fitBoard(){const b=$('#board');if(!b)return;const w=b.parentElement,keep=BSC||[w.scrollLeft,w.scrollTop],ns=[...b.querySelectorAll('.note')],cap=b.dataset.nk==='step'?16:19;
   const fs=z=>b.style.setProperty('--fs',Math.min(cap,Math.max(13,10.5/z))+'px');
   const W=Math.max(320,...ns.map(n=>n.offsetLeft+n.offsetWidth+14));let z=Math.min(1,w.clientWidth/W);fs(z);
   const H=Math.max(190,...ns.map(n=>n.offsetTop+n.offsetHeight+14));
   if(innerWidth>=900){const mh=innerHeight*.78;if(H*z>mh){z=mh/H;fs(z)}}
   const zm=ZM[S.stage]||1,zz=z*zm;BZ=zz;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${zz})`;
-  w.style.overflow=zm>1?'auto':'hidden';w.style.height=(zm>1?Math.min(H*zz,innerHeight*.72):H*zz)+'px'}
+  w.style.overflow=zm>1?'auto':'hidden';w.style.height=(zm>1?Math.min(H*zz,innerHeight*.72):H*zz)+'px';
+  BSC=null;if(zm>1){w.scrollLeft=keep[0];w.scrollTop=keep[1]}else{w.scrollLeft=0;w.scrollTop=0}}
 addEventListener('resize',()=>{fitBoard();drawLinks()});
 function zoomV(W){const fit=(Math.min(innerWidth,860)-36)/W;if(Z==='fit')return Math.min(1,fit);if(Z==null)return innerWidth<600?Math.min(1,Math.max(.7,fit)):1;return Z}
 function bstyle(W,H){lastW=W;const z=zoomV(W);return `width:${W}px;height:${H}px;transform:scale(${z});transform-origin:0 0;margin:0 ${-W*(1-z)}px ${-H*(1-z)}px 0`}
