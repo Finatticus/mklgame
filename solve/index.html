@@ -267,7 +267,7 @@ const ST=[
  {n:'決策分析',q:'決策分析｜模擬・抉擇',what:'從魚骨圖挑出最可行的幾個方案，用同一把尺打分數，選出最優方案。',
   rules:['從魚骨圖挑出最有可能的方案（課堂上是 4 個，可增減）。','訂出檢核點（課堂上是 4 個）。每個檢核點都要「分數越高越好」，所以要寫成「風險（低）」「效益（高）」「時間成本（短）」這種形式。','每個方案在每個檢核點打分數（預設 1–5 分）。','替檢核點訂權重：越重要數字越大。','加權總分 ＝ 各檢核點（分數 × 權重）相加，最高分就是最優方案。','最後全組再看一次結果合不合理，把結論寫下來。']},
  {n:'流程圖',q:'機會分析｜確認・預防・應變',what:'把最優方案畫成可以照著做的流程，並估出時間。',
-  rules:['用「開始」「步驟」「判斷」「結束」四種圖形畫出最優方案的執行流程，再用箭頭接起來；拖曳可以排版。','判斷用菱形：一個判斷可以分出很多條路，每條線標上條件（例：是／否、達標／未達標）。','不同的路可以各自走向不同的處理方式，也可以再接回同一個步驟，或回到前面重做。','每個步驟寫上負責人與預計花費時間。']}
+  rules:['用「開始」「步驟」「判斷」「結束」四種圖形畫出最優方案的執行流程，再用箭頭接起來；拖曳可以排版。','判斷用菱形：一個判斷可以分出很多條路，每條線標上條件（例：是／否、達標／未達標）。','不同的路可以各自走向不同的處理方式，也可以再接回同一個步驟，或回到前面重做。','每個步驟可以寫上負責人（選填）。']}
 ];
 const SUG=[[['idea','意見']],[['note','影響因素']],[['sol','解決方式']],[['opt','方案'],['crit','檢核點']],[['step','步驟']]];
 
@@ -452,11 +452,10 @@ const bar=linkFrom&&ids[linkFrom]?`<span class="lf">從「${nm(linkFrom)}」接�
 :sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">接到下一個 →</button><button class="btn sm" data-a="editStep" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delStep" data-id="${sn.id}">刪除</button>`
 :ed?`<button class="btn pri sm" data-a="addStep">＋ 圖形</button><span class="hint">拖曳移動・點圖形接線</span>`:'';
 const main=`<div class="boardwrap"><div class="board" id="board" data-nk="step" data-lk="edge"><svg id="svg"></svg>
-${st.map((x,i)=>{const p=spos(x,i),meta=[x.who?esc(x.who):'',Number(x.dur)?x.dur+' '+u:''].filter(Boolean).join('・');
+${st.map((x,i)=>{const p=spos(x,i),meta=x.who?esc(x.who):'';
  return `<div class="note fn f-${x.type||'p'} ${x.type==='d'?'dia':''} ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${p.x}px;top:${p.y}px"><div>${esc(x.text)}</div>${meta?`<small>${meta}</small>`:''}</div>`}).join('')}
 ${st.length?'':'<div class="empty" style="padding-top:70px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div>`;
 const side=`${d.concl?`<div class="card"><h3>最優方案結論</h3><div class="clamp">${esc(d.concl)}</div></div>`:''}
-<div class="card"><div class="row"><b class="sp">各步驟時間合計：${sum} ${u}</b>${ed?`<span class="mute">單位</span><input type="text" style="width:60px" data-f="flow:flow:unit" value="${u}" aria-label="時間單位">`:''}</div><div class="mute">所有分支都算進去，實際時間依走的路徑而定</div></div>
 <details class="card" data-d="edges" ${OD.edges?'open':''}><summary><b>連線清單（${eg.length} 條）</b></summary>
 ${eg.map(l=>`<div class="lk"><span>「${nm(l.a)}」${l.label?` ─ <b style="color:#b3261e">${esc(l.label)}</b> → `:' → '}「${nm(l.b)}」</span>${ed?`<button class="ib" data-a="editEdge" data-id="${l.id}">條件</button><button class="ib" data-a="delLink" data-id="${l.id}" aria-label="刪除連線">✕</button>`:''}</div>`).join('')||'<div class="mute">尚無連線</div>'}
 ${ed&&st.length>1?`<div class="row" style="margin-top:8px"><select id="fa" style="flex:1;min-width:90px"><option value="">從…</option>${opt}</select><select id="fb" style="flex:1;min-width:90px"><option value="">接到…</option>${opt}</select>
@@ -510,7 +509,7 @@ sheet({title:id?'編輯方案':'新增方案',fields:[{key:'name',label:'方案�
 function editStep(id,preset,after){const st=all('step'),last=st[st.length-1],lp=last?spos(last,st.length-1):null;
 const e=id?get(id,'step'):{id:uid('t'),k:'step',o:Date.now(),text:'',type:st.length?'p':'s',who:'',dur:'',x:lp?lp.x:110,y:lp?lp.y+110:16,...preset};
 sheet({title:id?'編輯圖形':'新增圖形',fields:[{key:'type',label:'類型',type:'select',value:e.type,options:Object.entries(TY)},
-{key:'text',label:'內容',value:e.text,ph:'步驟寫要做什麼；判斷寫成一個問句'},{key:'who',label:'負責人／單位（選填）',value:e.who},{key:'dur',label:'預計花費時間（數字，選填）',type:'num',value:e.dur}],
+{key:'text',label:'內容',value:e.text,ph:'步驟寫要做什麼；判斷寫成一個問句'},{key:'who',label:'負責人／單位（選填）',value:e.who}],
 onSave:v=>{if(!v.text)return;put({...e,...v});after&&after()},onDelete:id?()=>delStep(id):null})}
 function delStep(id){all('edge').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));if(sel===id)sel=null;del(id)}
 function editRisk(id,preset,after){const e=id?get(id,'risk'):{id:uid('r'),k:'risk',o:Date.now(),risk:'',prev:'',react:'',...preset};
