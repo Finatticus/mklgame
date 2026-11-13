@@ -2,7 +2,10 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="問題解決">
 <meta name="theme-color" content="#1f3a6e">
 <title>問題分析與解決 工作板</title>
 <style>
@@ -228,6 +231,7 @@ label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
 @media(max-width:899px){.sugmore:not(.open){display:none}.sugtoggle{display:block}}
 .fhead{align-items:start}
 @media(max-width:600px){.fhead{grid-template-columns:1fr!important;gap:6px}}
+html,body{touch-action:pan-x pan-y;overscroll-behavior-x:none}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -619,6 +623,9 @@ document.addEventListener('change',e=>{const el=e.target;if(!isEd())return;
   if(el.dataset.f){const[id,k,f]=el.dataset.f.split(':');setF(id,k,f,el.type==='number'?(el.value===''?'':Number(el.value)):el.value)}
   else if(el.dataset.sc){const[oid,cid]=el.dataset.sc.split(':');const o={...get(oid,'opt')};o.sc={...(o.sc||{}),[cid]:el.value===''?'':Number(el.value)};put(o)}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='sugText'){e.preventDefault();ACT.sugSend()}if(e.key==='Escape'&&!$('#modal').hidden)closeSheet()});
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+let lastTap=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lastTap<300&&!e.target.closest('input,textarea,select,button,[data-a],.note'))e.preventDefault();lastTap=n},{passive:false});
 render();sync();
 </script>
 </body>
