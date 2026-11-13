@@ -259,6 +259,7 @@ if(!S.db._index)S.db._index={};
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
 const gasUrl=()=>(CONFIG_GAS_URL||'').trim();
 if(S.gasKey!==gasUrl()){S.gasKey=gasUrl();S.rev=0}
+const DU=()=>(S.fz||1)*(S.dfz||1);
 const applyU=()=>document.documentElement.style.setProperty('--u',S.fz||1);applyU();
 const OD=innerWidth>=600?{links:1,stat:1,edges:1}:{};let Z=null,lastW=700;const ZM={};
 function zctl(){const z=ZM[S.stage]||1;return `<div class="zctl"><button class="ib" data-a="zm" data-d="-1" aria-label="縮小">－</button><button class="ib pct" data-a="zm" data-d="0" title="回到預設大小">${Math.round(z*100)}%</button><button class="ib" data-a="zm" data-d="1" aria-label="放大">＋</button></div>`}
@@ -387,11 +388,11 @@ ${A.probs.map((s,i)=>`<div class="rk p"><b>${i+1}</b><span>${esc(s.n.text)}</spa
 return{bar,main,side}}
 let BZ=1,BSC=null,RS=-1;
 function fitBoard(){const b=$('#board');if(!b)return;const w=b.parentElement,keep=BSC||[w.scrollLeft,w.scrollTop],ns=[...b.querySelectorAll('.note')],cap=b.dataset.nk==='step'?16:19;
-  const fs=z=>b.style.setProperty('--fs',Math.min(cap,Math.max(13,10.5/z))+'px');
+  const fs=z=>b.style.setProperty('--fs',Math.min(cap,Math.max(13,10.5/z))*Math.min(S.dfz||1,1.2)+'px');
   const W=Math.max(320,...ns.map(n=>n.offsetLeft+n.offsetWidth+14));let z=Math.min(1,w.clientWidth/W);fs(z);
   const H=Math.max(190,...ns.map(n=>n.offsetTop+n.offsetHeight+14));
   if(innerWidth>=900){const mh=innerHeight*.78;if(H*z>mh){z=mh/H;fs(z)}}
-  const zm=ZM[S.stage]||1,zz=z*zm;BZ=zz;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${zz})`;
+  const zm=(ZM[S.stage]||1)*Math.max(1,(S.dfz||1)/1.2),zz=z*zm;BZ=zz;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${zz})`;
   w.style.overflow=zm>1?'auto':'hidden';w.style.height=(zm>1?Math.min(H*zz,innerHeight*.72):H*zz)+'px';
   BSC=null;if(zm>1){w.scrollLeft=keep[0];w.scrollTop=keep[1]}else{w.scrollLeft=0;w.scrollTop=0}}
 addEventListener('resize',()=>{fitBoard();drawLinks()});
@@ -434,7 +435,7 @@ const main=`<div class="card"><div class="fhead">
 <label class="f"><span>魚頭｜方式（打算怎麼做）</span><textarea rows="1" data-f="fish:fish:method" ${dis()}>${esc(f.method)}</textarea></label>
 <label class="f"><span>魚頭｜期望結果（要達到什麼）</span><textarea rows="1" data-f="fish:fish:goal" ${dis()}>${esc(f.goal)}</textarea></label></div></div>
 <div class="card zhost">${zctl()}<h3>魚骨 <span class="mute">藍色＝類別，編號＝先後順序；綠色＝解決方式</span></h3>
-${cats.length||orphan.length?`<div data-zoom style="overflow:auto"><div class="fish" data-zt style="zoom:${ZM[2]||1}">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
+${cats.length||orphan.length?`<div data-zoom style="overflow:auto"><div class="fish" data-zt style="zoom:${ZM[2]||1};--u:${DU()}">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
 ${ed?`<button class="ib" data-a="editCat" data-id="${c.id}" aria-label="編輯類別">✎</button><button class="ib" data-a="addSol" data-cat="${c.id}" aria-label="在這一類新增解決方式">＋</button>`:''}</div>
 ${sols.filter(s=>s.cat===c.id).map(solH).join('')||'<div class="mute" style="margin-top:4px">尚無解決方式</div>'}</div>`).join('')}
 ${orphan.length?`<div class="bone"><div class="cat" style="background:#e8e6df"><span class="nm">尚未分類</span></div>${orphan.map(solH).join('')}</div>`:''}</div></div>`
@@ -448,7 +449,7 @@ return{bar,main,side}}
 function v3(){const cr=all('crit'),op=all('opt'),d=get('dec','dec',{max:5}),ed=isEd(),mx=Number(d.max)||5;
 const tots=op.map(o=>total(o,cr)),best=Math.max(0,...tots);const rank=t=>t>0?[...new Set(tots)].sort((a,b)=>b-a).indexOf(t)+1:'';
 const bar=ed?`<button class="btn pri sm" data-a="addOpt">＋ 方案</button><button class="btn sm" data-a="addCrit">＋ 檢核點</button><span class="hint">分數 1–</span><input type="number" style="width:54px" min="2" max="10" data-f="dec:dec:max" value="${mx}" aria-label="分數上限">`:'';
-const main=`<div class="card zhost">${zctl()}<h3>決策矩陣 <span class="mute">分數越高越好；權重越大越重要</span></h3>${cr.length||op.length?`<div class="tw" data-zoom><table class="dm" data-zt style="zoom:${ZM[3]||1}"><thead><tr><th>方案 ＼ 檢核點</th>
+const main=`<div class="card zhost">${zctl()}<h3>決策矩陣 <span class="mute">分數越高越好；權重越大越重要</span></h3>${cr.length||op.length?`<div class="tw" data-zoom><table class="dm" data-zt style="zoom:${ZM[3]||1};--u:${DU()}"><thead><tr><th>方案 ＼ 檢核點</th>
 ${cr.map((c,i)=>`<th class="c${i%4}">${ed?`<button class="hb" data-a="editCrit" data-id="${c.id}">${esc(c.name)||'（未命名）'} ✎</button>`:esc(c.name)}</th>`).join('')}<th>加權總分</th></tr></thead><tbody>
 ${op.map((o,r)=>`<tr class="${tots[r]>0&&tots[r]===best?'best':''}"><td>${ed?`<button class="hb" data-a="editOpt" data-id="${o.id}">${esc(o.name)||'（未命名）'} ✎</button>`:esc(o.name)}</td>
 ${cr.map((c,i)=>`<td class="c${i%4}"><input type="number" inputmode="numeric" min="1" max="${mx}" data-sc="${o.id}:${c.id}" value="${(o.sc||{})[c.id]??''}" ${dis()} aria-label="${esc(o.name)} 的 ${esc(c.name)} 分數"></td>`).join('')}
@@ -580,10 +581,11 @@ ${ST.map((s,i)=>`<h4>${i}　${s.n}<span class="mute">　${s.q}</span></h4><p>${s
 <li><b>分岔</b>：做到一個斷點想試另一條路時，按「從這裡分岔」（或專案列表的「複製分岔」），會複製出一個獨立的新專案，原專案不受影響。</li><li>便條數量、方案數、檢核點數、分數級距都可以自由增減。</li><li>右上角圓點：綠色＝已同步、灰色＝離線模式（資料只在本機）、紅色＝連線失敗。</li></ul></div>`;m.hidden=false}
 
 function showSettings(){sheet({title:'設定',
-note:'字體大小只影響你自己這台裝置，不會改到其他組員的畫面。關聯圖和流程圖裡的字請用圖右上角的放大縮小。',
+note:'這兩個大小都只影響你自己這台裝置，不會改到其他組員的畫面。',
 fields:[{key:'name',label:'你的名字',value:S.name},{key:'role',label:'身分',type:'select',value:S.role,options:[['editor','編輯者'],['viewer','觀看者']]},
-{key:'fz',label:'字體大小（只影響自己）',type:'select',value:String(S.fz||1),options:[['0.9','小'],['1','標準'],['1.15','大'],['1.3','特大'],['1.5','最大']]}],
-onSave:v=>{S.name=v.name;S.role=v.role;S.fz=Number(v.fz)||1;applyU();save();render();sync()}});
+{key:'fz',label:'介面字體大小（只影響自己）',type:'select',value:String(S.fz||1),options:[['0.9','小'],['1','標準'],['1.15','大'],['1.3','特大'],['1.5','最大']]},
+{key:'dfz',label:'圖內文字大小：關聯圖／魚骨圖／決策矩陣／流程圖（只影響自己）',type:'select',value:String(S.dfz||1),options:[['0.85','小'],['1','標準'],['1.2','大'],['1.4','特大'],['1.7','最大']]}],
+onSave:v=>{S.name=v.name;S.role=v.role;S.fz=Number(v.fz)||1;S.dfz=Number(v.dfz)||1;applyU();save();render();sync()}});
 $('#sf').insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><span class="mute sp">備份</span><button type="button" class="btn sm" data-a="exportAll">匯出 JSON</button><button type="button" class="btn sm" data-a="importAll">匯入 JSON</button></div>`)}
 
 /* ===== 事件 ===== */
