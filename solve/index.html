@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f3a6e">
+<title>問題分析與解決 工作板</title>
+<style>
+:root{--bg:#f4f2ec;--card:#fff;--ink:#23262b;--mute:#767b84;--line:#e3dfd4;--pri:#1f3a6e;--pri2:#e9eef7;
+--y:#fff2a6;--o:#ffc988;--g:#bfe89a;--b:#abcdf3;--p:#ffbcc7;--red:#d6453d;--blue:#2f6fd0;--r:12px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;line-height:1.35}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+.top{position:sticky;top:0;z-index:20;background:var(--pri);color:#fff}
+.top .wrap{display:flex;align-items:center;gap:8px;height:52px}
+.top .ttl{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top button{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:8px;padding:6px 10px;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:#aaa;flex:none}
+.dot.ok{background:#6fdc8c}.dot.err{background:#ff7b72}.dot.off{background:#c9c9c9}
+.chip{font-size:12px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.2);white-space:nowrap}
+.nav{position:sticky;top:52px;z-index:19;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:8px;padding-bottom:8px;scrollbar-width:none}
+.nav .wrap::-webkit-scrollbar{display:none}
+.nav button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:6px 12px;display:flex;gap:6px;align-items:center}
+.nav button.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.nav .n{font-size:12px;opacity:.7}
+.badge{background:var(--red);color:#fff;border-radius:99px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 5px}
+main{padding:16px 0 90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.card>h3{font-size:15px;margin-bottom:8px}
+.stagehead h2{font-size:20px}
+.stagehead .q{color:var(--mute);font-size:13px}
+details.guide{background:var(--pri2);border-radius:var(--r);padding:10px 14px;margin:10px 0 14px}
+details.guide summary{cursor:pointer;font-weight:600;color:var(--pri)}
+details.guide ol,details.guide ul{margin:8px 0 2px;padding-left:20px}
+details.guide li{margin:3px 0}
+label.f{display:block;margin-bottom:12px}
+label.f>span{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+input[type=text],input[type=number],input[type=url],textarea,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:#fff;font-size:16px}
+textarea{min-height:84px;resize:vertical}
+input:disabled,textarea:disabled,select:disabled{background:#faf9f5;color:var(--ink);opacity:1;-webkit-text-fill-color:var(--ink)}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.danger{color:var(--red);border-color:#f0c4c1}
+.btn.ghost{background:transparent}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+.mute{color:var(--mute);font-size:13px}
+.empty{color:var(--mute);text-align:center;padding:18px 8px;font-size:14px}
+/* entry */
+.entry{min-height:100vh;display:flex;align-items:center}
+.entry h1{font-size:24px;color:var(--pri)}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.roles button{border:2px solid var(--line);background:#fff;border-radius:var(--r);padding:18px 10px;text-align:center}
+.roles b{display:block;font-size:17px}
+.roles small{color:var(--mute)}
+.plist .card{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.plist .nm{flex:1;min-width:140px;font-weight:600;font-size:16px}
+/* board */
+.boardwrap{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fffdf7;max-height:66vh;-webkit-overflow-scrolling:touch}
+.board{position:relative}
+.board svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.note{position:absolute;width:112px;min-height:54px;padding:7px 8px;background:var(--o);border-radius:3px;box-shadow:1px 2px 4px rgba(0,0,0,.18);font-size:13px;line-height:1.35;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;word-break:break-word;border:2px solid transparent}
+.note.c{border-color:var(--red)}.note.p{border-color:var(--blue)}
+.note.sel{outline:3px solid var(--ink);outline-offset:2px}
+.note .tg{position:absolute;top:-11px;right:-6px;font-size:11px;color:#fff;border-radius:99px;padding:0 7px;line-height:18px}
+.note.c .tg{background:var(--red)}.note.p .tg{background:var(--blue)}
+.banner{background:var(--ink);color:#fff;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.banner .btn{color:var(--ink)}
+.rank{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.rank{grid-template-columns:1fr}}
+.rank h4{font-size:14px;margin-bottom:6px}
+.rk{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;margin-bottom:6px;border-left:4px solid}
+.rk.c{border-color:var(--red);background:#fdf0ef}.rk.p{border-color:var(--blue);background:#eef4fd}
+.rk b{flex:none}.rk span{flex:1}.rk small{color:var(--mute);white-space:nowrap}
+.lk{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.lk span{flex:1}
+table{border-collapse:collapse;width:100%}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* fish */
+.fhead{display:grid;gap:8px;grid-template-columns:1fr 1fr}
+@media(max-width:560px){.fhead{grid-template-columns:1fr}}
+.spine{border-left:4px solid var(--ink);margin-left:14px;padding:6px 0 6px 0}
+.bone{position:relative;padding:0 0 14px 22px}
+.bone:before{content:"";position:absolute;left:0;top:18px;width:18px;border-top:3px solid var(--ink)}
+.cat{display:flex;gap:6px;align-items:center;background:var(--b);border-radius:6px;padding:6px 10px;font-weight:600}
+.cat .no{background:var(--ink);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.cat .nm{flex:1}
+.sol{background:var(--g);border-radius:4px;padding:7px 10px;margin:6px 0 0 14px;display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;box-shadow:1px 1px 3px rgba(0,0,0,.12)}
+.sol .tx{flex:1;min-width:120px}
+.tag{font-size:11.5px;background:rgba(0,0,0,.09);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.ib{border:0;background:rgba(0,0,0,.08);border-radius:6px;min-width:28px;height:28px;padding:0 6px;cursor:pointer;font-size:13px}
+.tail{margin-left:2px;color:var(--mute);font-size:13px}
+/* decision */
+.dm th,.dm td{border:1px solid var(--line);padding:5px;text-align:center;min-width:64px}
+.dm th:first-child,.dm td:first-child{position:sticky;left:0;min-width:92px;max-width:140px;text-align:left;z-index:1}
+.dm thead th{background:#faf8f2;font-weight:600;font-size:13px}
+.dm td:first-child{background:var(--g)}
+.dm tfoot td{background:#faf8f2}
+.dm tfoot td:first-child{background:#faf8f2;font-weight:600}
+.dm input{width:50px;text-align:center;padding:6px 2px}
+.dm .hb{border:0;background:none;padding:0;text-align:inherit;cursor:pointer;width:100%;font-weight:inherit}
+.dm .tot{font-weight:700;font-size:17px;background:#f3faea}
+.dm tr.best .tot{background:var(--g)}
+.dm tr.best td:first-child:after{content:" ★"}
+.c0{background:var(--p)!important}.c1{background:var(--b)!important}.c2{background:var(--y)!important}.c3{background:var(--o)!important}
+/* flow */
+.step{background:var(--y);border-radius:6px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;box-shadow:1px 1px 3px rgba(0,0,0,.12)}
+.step.t-se{border-radius:99px;background:#e8e6df}
+.step.t-d{background:var(--o);border-left:6px solid var(--ink)}
+.step .bd{flex:1;min-width:0}
+.step .ty{font-size:11.5px;color:#555}
+.arrow{text-align:center;color:var(--mute);line-height:1.2;padding:2px 0}
+.riskc{border-left:4px solid var(--red);padding:8px 12px;background:#fdf7f6;border-radius:6px;margin-bottom:8px}
+.fn{width:150px;min-height:48px;text-align:center;background:var(--y);border-radius:6px;display:flex;flex-direction:column;justify-content:center;border:1.5px solid #23262b}
+.fn small{display:block;font-size:11px;color:#555;margin-top:2px}
+.fn.f-s,.fn.f-e{border-radius:99px;background:#e2dfd6;font-weight:600}
+.fn.dia{width:176px;min-height:112px;padding:26px 36px;border:0;box-shadow:none;filter:drop-shadow(1px 2px 2px rgba(0,0,0,.2));font-weight:600;
+background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='50,1 99,50 50,99 1,50' fill='%23ffc988' stroke='%2323262b' stroke-width='1.5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.fn.dia.sel{outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpolygon points='50,2 98,50 50,98 2,50' fill='%23ffc988' stroke='%2323262b' stroke-width='5' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")}
+.legend{display:flex;gap:8px;margin-bottom:8px;font-size:12px;flex-wrap:wrap}
+.lg{padding:2px 10px;border:1.5px solid #23262b;background:var(--y);border-radius:4px}.lg.s{border-radius:99px;background:#e2dfd6}.lg.d{background:var(--o)}
+/* suggestions */
+.sug{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:var(--y);border-radius:6px;margin-bottom:6px;flex-wrap:wrap}
+.sug .tx{flex:1;min-width:150px}
+.sug.done{background:#f3f1ea;color:var(--mute)}
+.sugin{display:flex;gap:6px;flex-wrap:wrap}
+.sugin input{flex:1;min-width:160px}
+.sugin select{width:auto}
+/* modal */
+#modal{position:fixed;inset:0;z-index:50}
+#modal[hidden]{display:none}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:#fff;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
+@media(min-width:700px){.sheet{bottom:auto;top:8vh;border-radius:16px}}
+.sheet h3{margin-bottom:12px;font-size:17px}
+.help h4{margin:16px 0 4px;color:var(--pri);font-size:15px}
+.help p{margin:4px 0}.help ol,.help ul{margin:4px 0;padding-left:20px}
+.help .flowline{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.help .flowline span{background:var(--pri2);color:var(--pri);border-radius:6px;padding:3px 8px;font-size:13px;font-weight:600}
+.foot{position:fixed;left:0;right:0;bottom:0;background:rgba(244,242,236,.96);border-top:1px solid var(--line);padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:15}
+.foot .wrap{display:flex;gap:8px}
+.foot .btn{flex:1}
+.zoom{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-bottom:6px;font-size:12px;color:var(--mute)}
+.zoom span{min-width:38px;text-align:center}
+details.card>summary{cursor:pointer}details.card[open]>summary{margin-bottom:8px}
+.sol[data-a]{cursor:pointer}
+.dm .tot small{display:block;font-size:10.5px;font-weight:400}
+textarea{overflow:hidden}
+@media(max-width:600px){
+body{font-size:14px}
+.wrap{padding:0 10px}
+.top .wrap{height:44px;gap:6px}.top button{padding:4px 8px;font-size:13px}.top .ttl{font-size:14px}
+.chip{font-size:11px;padding:1px 6px}
+.nav{top:44px}
+.nav .wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 10px;overflow:visible}
+.nav button{position:relative;flex-direction:column;justify-content:center;gap:0;padding:3px 0;border-radius:8px;font-size:12.5px;line-height:1.25}
+.nav .n{font-size:10px}
+.nav .badge{position:absolute;top:-5px;right:-3px}
+main{padding:10px 0 28px}
+.card{padding:10px;margin-bottom:10px}
+.card>h3{font-size:14px;margin-bottom:6px}
+.stagehead h2{font-size:17px}.stagehead .q{font-size:12px}
+details.guide{padding:7px 10px;margin:8px 0 10px}
+input[type=text],input[type=number],input[type=url],textarea,select{padding:6px 8px}
+textarea{min-height:38px}
+label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
+.btn{padding:6px 10px}
+.foot{display:none}
+.boardwrap{max-height:62vh}
+.dm th,.dm td{min-width:46px;padding:3px;font-size:12.5px}
+.dm th:first-child,.dm td:first-child{min-width:78px;max-width:92px}
+.dm input{width:40px;padding:4px 0}
+.dm .tot{font-size:15px}
+.spine{margin-left:6px}.bone{padding:0 0 10px 16px}.bone:before{width:12px;top:16px}
+.cat{padding:5px 8px}.sol{margin-left:8px;padding:6px 8px}
+.sugin input{min-width:120px}
+.sheet{padding:14px 12px calc(14px + env(safe-area-inset-bottom))}
+.rk{padding:5px 8px}
+}
+@media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" hidden></div>
+<script>
+/* ===== 設定：部署 Google Apps Script 後，把網頁應用程式網址貼在這裡（留空 = 離線模式，資料只存在本機） ===== */
+const CONFIG_GAS_URL = 'https://script.google.com/macros/s/AKfycbzNGvLV8fWqoB8U74BZzqkJWcGABo6YvS88Ui8ZdbGt7PpFv1MUfTDYw-YrKnW3nYk/exec';
+
+const LS='psboard.v1';
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let saved={};try{saved=JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){}
+let S=Object.assign({db:{_index:{}},dirty:{},rev:0,role:'',name:'',pid:'',gas:'',stage:0},saved);
+if(!S.db._index)S.db._index={};
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
+const gasUrl=()=>(CONFIG_GAS_URL||'').trim();
+if(S.gasKey!==gasUrl()){S.gasKey=gasUrl();S.rev=0}
+const OD=innerWidth>=600?{links:1,stat:1,edges:1}:{};let Z=null,lastW=700;
+const isEd=()=>S.role==='editor';
+const dis=()=>isEd()?'':'disabled';
+const P=()=>S.db[S.pid]||(S.db[S.pid]={});
+function put(e,pid){pid=pid||S.pid;e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1;save();render();kick()}
+function get(id,k,def){const e=P()[id];return e&&!e.d?e:Object.assign({id,k},def||{})}
+function all(k){return Object.values(P()).filter(e=>e.k===k&&!e.d).sort((a,b)=>(a.o||0)-(b.o||0)||(a.t-b.t))}
+function del(id){const e=P()[id];if(e)put({id:e.id,k:e.k,d:1})}
+function setF(id,k,f,v){const e={...get(id,k)};e[f]=v;put(e)}
+function move(id,k,dir,filter){const l=all(k).filter(filter||(()=>true));const i=l.findIndex(e=>e.id===id),j=i+dir;if(i<0||j<0||j>=l.length)return;
+  const a=l[i],b=l[j];let oa=a.o||a.t,ob=b.o||b.t;if(oa===ob)ob+=dir;put({...a,o:ob});put({...b,o:oa})}
+
+/* ===== 各階段說明 ===== */
+const ST=[
+ {n:'題目',q:'狀況評估｜發現・描述・分類',what:'把大家看到的狀況，收斂成一句全組都同意的題目。',
+  rules:['用一句話寫出「現象 ＋ 造成的影響」。','只描述事實，題目裡不寫原因、也不寫對策。','盡量具體：誰、哪裡、什麼事、影響到什麼。','全組讀過都點頭，才進下一階段。']},
+ {n:'關聯圖',q:'問題分析｜原因・關聯・鑑定',what:'把所有影響因素攤開，用箭頭找出真正的「主因」和「問題」。',
+  rules:['先發想：把所有跟題目有關的影響因素寫出來，一張便條只寫一件事。','兩兩檢查：「因為 A，所以 B」說得通，就畫一條 A → B 的箭頭。','主因：箭頭「只出不進」，而且出去至少 2 條（它造成很多事，自己卻不是別人造成的）。','問題：箭頭「只進不出」，而且進來至少 2 條（很多原因最後都直指它）。','有進也有出的是中間因素，不算主因也不算問題。系統會自動計數，依箭頭數由多到少排出主因 1、2、3… 與問題 1、2、3…。','覺得自動結果不合理時，可以在便條上手動指定。']},
+ {n:'魚骨圖',q:'決策分析｜對策',what:'針對上一階段找到的主因與問題，發想解決方式並分類、排序。',
+  rules:['魚頭先寫清楚：「方式」（我們打算怎麼做）與「期望結果」（做完要達到什麼）。','針對每一個主因／問題發想解決方式（綠色便條），越多越好，先不批評。','把性質相近的解決方式歸成一類，替每一類命名（藍色便條），就是一根大骨。','最後排出先後順序：類別由上到下就是執行的先後。']},
+ {n:'決策分析',q:'決策分析｜模擬・抉擇',what:'從魚骨圖挑出最可行的幾個方案，用同一把尺打分數，選出最優方案。',
+  rules:['從魚骨圖挑出最有可能的方案（課堂上是 4 個，可增減）。','訂出檢核點（課堂上是 4 個）。每個檢核點都要「分數越高越好」，所以要寫成「風險（低）」「效益（高）」「時間成本（短）」這種形式。','每個方案在每個檢核點打分數（預設 1–5 分）。','替檢核點訂權重：越重要數字越大。','加權總分 ＝ 各檢核點（分數 × 權重）相加，最高分就是最優方案。','最後全組再看一次結果合不合理，把結論寫下來。']},
+ {n:'流程圖',q:'機會分析｜確認・預防・應變',what:'把最優方案畫成可以照著做的流程，並估出時間。',
+  rules:['用「開始」「步驟」「判斷」「結束」四種圖形畫出最優方案的執行流程，再用箭頭接起來；拖曳可以排版。','判斷用菱形：一個判斷可以分出很多條路，每條線標上條件（例：是／否、達標／未達標）。','不同的路可以各自走向不同的處理方式，也可以再接回同一個步驟，或回到前面重做。','每個步驟寫上負責人與預計花費時間。','想一想哪裡可能出錯：事前怎麼預防？真的發生了怎麼應變？']}
+];
+const SUG=[[['idea','意見']],[['note','影響因素']],[['sol','解決方式']],[['opt','方案'],['crit','檢核點']],[['step','步驟'],['risk','潛在風險']]];
+
+/* ===== 同步 ===== */
+let syncing=false,syncSt='off';
+function setSync(s){syncSt=s;const d=$('#dot');if(d){d.className='dot '+s;d.title={off:'離線模式',ok:'已同步',err:'連線失敗，稍後重試'}[s]}}
+async function sync(){const url=gasUrl();if(!url){setSync('off');return}if(syncing)return;syncing=true;
+  const keys=Object.keys(S.dirty).slice(0,150),sent={};
+  const changes=keys.map(k=>{const i=k.indexOf('|'),pid=k.slice(0,i),id=k.slice(i+1),e=S.db[pid]&&S.db[pid][id];if(!e)return null;sent[k]=e.t;return{pid,id,json:JSON.stringify(e)}}).filter(Boolean);
+  try{const r=await fetch(url,{method:'POST',body:JSON.stringify({since:S.rev,changes})});const j=await r.json();if(!j.ok)throw new Error(j.error);
+    keys.forEach(k=>{const i=k.indexOf('|'),e=S.db[k.slice(0,i)]&&S.db[k.slice(0,i)][k.slice(i+1)];if(!e||e.t===sent[k])delete S.dirty[k]});
+    let ch=false;(j.ents||[]).forEach(row=>{const k=row.pid+'|'+row.id;if(S.dirty[k])return;const cur=S.db[row.pid]&&S.db[row.pid][row.id];
+      if(!cur||JSON.stringify(cur)!==row.json){(S.db[row.pid]||(S.db[row.pid]={}))[row.id]=JSON.parse(row.json);ch=true}});
+    S.rev=j.rev;save();setSync('ok');if(ch)render();
+  }catch(e){setSync('err')}
+  syncing=false}
+let kt;function kick(){clearTimeout(kt);kt=setTimeout(sync,400)}
+setInterval(()=>{if(!document.hidden)sync()},2500);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+
+/* ===== 分析 ===== */
+function analyze(){const ns=all('note'),st={};ns.forEach(n=>st[n.id]={n,out:0,in:0});
+  const ls=all('link').filter(l=>st[l.a]&&st[l.b]);ls.forEach(l=>{st[l.a].out++;st[l.b].in++});
+  const arr=Object.values(st);
+  const causes=arr.filter(s=>s.n.role==='c'||(!s.n.role&&s.in===0&&s.out>=2)).sort((a,b)=>b.out-a.out);
+  const probs=arr.filter(s=>s.n.role==='p'||(!s.n.role&&s.out===0&&s.in>=2)).sort((a,b)=>b.in-a.in);
+  const tag={};causes.forEach((s,i)=>tag[s.n.id]={c:'c',l:'主因'+(i+1)});probs.forEach((s,i)=>{if(!tag[s.n.id])tag[s.n.id]={c:'p',l:'問題'+(i+1)}});
+  return{ns,ls,st,causes,probs,tag}}
+function total(o,crits){return crits.reduce((s,c)=>s+(Number((o.sc||{})[c.id])||0)*(Number(c.w)||0),0)}
+
+/* ===== 畫面 ===== */
+let pend=false,drag=null,sel=null,linkFrom=null;
+function render(){const a=document.activeElement;if(drag||(a&&a.matches&&a.matches('#app input,#app textarea,#app select'))){pend=true;if(S.stage===3)patchTotals();return}
+  pend=false;const bw=$('.boardwrap'),sc=bw?[bw.scrollLeft,bw.scrollTop]:null;
+  const app=$('#app');
+  if(!S.role)app.innerHTML=vEntry();else if(!S.pid||!S.db._index[S.pid]||S.db._index[S.pid].d)app.innerHTML=vProjects();else app.innerHTML=vWork();
+  const nb=$('.boardwrap');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}
+  document.querySelectorAll('#app textarea').forEach(grow);drawLinks();setSync(gasUrl()?(syncSt==='off'?'ok':syncSt):'off')}
+document.addEventListener('toggle',e=>{const t=e.target;if(t.dataset&&t.dataset.d)OD[t.dataset.d]=t.open},true);
+function grow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'}
+document.addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA')grow(e.target)});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(pend)render()},60));
+
+function vEntry(){return `<div class="entry"><div class="wrap" style="width:100%"><h1>問題分析與解決<br>工作板</h1>
+<p class="mute">題目 → 關聯圖 → 魚骨圖 → 決策分析 → 流程圖</p>
+<div class="card"><label class="f"><span>你的名字（顯示在你提出的意見上）</span><input type="text" id="nm" value="${esc(S.name)}" placeholder="例：小明"></label>
+<div class="mute">選擇身分</div><div class="roles">
+<button data-a="role" data-r="editor"><b>編輯者</b><small>可新增、修改、採用意見</small></button>
+<button data-a="role" data-r="viewer"><b>觀看者</b><small>即時觀看，可提出意見</small></button></div></div>
+<button class="btn" data-a="help">這套流程怎麼做？看專案說明</button></div></div>`}
+
+function topbar(title,back){return `<div class="top"><div class="wrap">${back?`<button data-a="back" aria-label="回專案列表">‹ 專案</button>`:''}
+<div class="ttl">${esc(title)}</div><span id="dot" class="dot off"></span><span class="chip">${isEd()?'編輯者':'觀看者'}</span>
+<button data-a="help">說明</button><button data-a="settings" aria-label="設定">⚙</button></div></div>`}
+
+function vProjects(){const ps=Object.values(S.db._index).filter(p=>!p.d).sort((a,b)=>b.t-a.t);
+return topbar('專案列表')+`<main class="wrap plist">
+${isEd()?`<div class="row" style="margin-bottom:14px"><button class="btn pri" data-a="newProj">＋ 新增專案</button><button class="btn" data-a="demo">載入範例專案</button></div>`:''}
+${ps.length?ps.map(p=>`<div class="card"><div class="nm">${esc(p.name||'未命名專案')}</div>
+<button class="btn pri sm" data-a="openProj" data-id="${p.id}">開啟</button>
+${isEd()?`<button class="btn sm" data-a="renProj" data-id="${p.id}">改名</button><button class="btn sm" data-a="copyProj" data-id="${p.id}">複製分岔</button><button class="btn sm danger" data-a="delProj" data-id="${p.id}">刪除</button>`:''}</div>`).join('')
+:`<div class="empty">還沒有專案。${isEd()?'按「新增專案」開始。':'請等編輯者建立專案。'}</div>`}
+${gasUrl()?'':'<p class="mute">目前是離線模式：資料只存在這台裝置。</p>'}</main>`}
+
+function vWork(){const proj=S.db._index[S.pid],s=S.stage,cnt=i=>all('sug').filter(x=>x.stage===i&&x.st==='new').length;
+return topbar(proj.name||'未命名專案',true)+`<div class="nav"><div class="wrap">${ST.map((x,i)=>`<button class="${i===s?'on':''}" data-a="stage" data-i="${i}"><span class="n">${i}</span>${x.n}${cnt(i)?`<span class="badge">${cnt(i)}</span>`:''}</button>`).join('')}</div></div>
+<main class="wrap"><div class="stagehead row"><div class="sp"><h2>${s}　${ST[s].n}</h2><div class="q">${ST[s].q}</div></div>${isEd()?'<button class="btn sm" data-a="copyProj">⑂ 從這裡分岔</button>':''}</div>
+<details class="guide" data-d="guide" ${OD.guide?'open':''}><summary>這一階段要做什麼？</summary><p style="margin:8px 0 0">${ST[s].what}</p><ol>${ST[s].rules.map(r=>`<li>${r}</li>`).join('')}</ol></details>
+${[v0,v1,v2,v3,v4][s]()}${vSug(s)}</main>
+<div class="foot"><div class="wrap"><button class="btn" data-a="stage" data-i="${s-1}" ${s===0?'disabled':''}>‹ 上一階段</button><button class="btn pri" data-a="stage" data-i="${s+1}" ${s===4?'disabled':''}>下一階段 ›</button></div></div>`}
+
+/* 0 題目 */
+function v0(){const t=get('topic','topic');const f=(k,l,ph,area)=>`<label class="f"><span>${l}</span>${area?`<textarea data-f="topic:topic:${k}" placeholder="${ph}" ${dis()}>${esc(t[k])}</textarea>`:`<input type="text" data-f="topic:topic:${k}" value="${esc(t[k])}" placeholder="${ph}" ${dis()}>`}</label>`;
+return `<div class="card">${f('title','題目（一句話：現象 ＋ 影響）','例：○○ 分散各處，導致 ○○ 無法有效進行，影響 ○○',1)}
+${f('now','現況描述（看到了什麼事實？）','誰、在哪裡、發生什麼、多常發生',1)}
+${f('goal','期望達成的狀態','問題解決之後，應該變成什麼樣子？',1)}
+${f('scope','範圍與限制（選填）','例：只討論某部門、時間、預算、法規限制')}</div>`}
+
+/* 1 關聯圖 */
+function v1(){const A=analyze(),ed=isEd();const W=Math.max(340,...A.ns.map(n=>(n.x||0)+150)),H=Math.max(300,...A.ns.map(n=>(n.y||0)+110));
+const nm=id=>esc((A.st[id]||{n:{}}).n.text||'');const sn=sel&&A.st[sel]?A.st[sel].n:null;
+return `${linkFrom&&A.st[linkFrom]?`<div class="banner"><span class="sp">因為「${nm(linkFrom)}」，所以… 請點選結果的便條</span><button class="btn sm" data-a="linkCancel">取消</button></div>`:''}
+${ed?`<div class="row" style="margin-bottom:8px"><button class="btn pri" data-a="addNote">＋ 新增影響因素</button><span class="mute">拖曳可移動；點一下便條可編輯或畫箭頭</span></div>`:''}
+${zoomBar()}<div class="boardwrap"><div class="board" id="board" data-nk="note" data-lk="link" style="${bstyle(W,H)}"><svg id="svg"></svg>
+${A.ns.map(n=>{const g=A.tag[n.id];return `<div class="note ${g?g.c:''} ${sel===n.id?'sel':''}" data-id="${n.id}" style="left:${n.x||0}px;top:${n.y||0}px">${g?`<span class="tg">${g.l}</span>`:''}${esc(n.text)}</div>`}).join('')}
+${A.ns.length?'':'<div class="empty" style="padding-top:120px">還沒有便條。先把所有想得到的影響因素都寫出來。</div>'}</div></div>
+${sn&&ed?`<div class="card" style="margin-top:10px"><div class="row"><b class="sp">「${esc(sn.text)}」</b>
+<button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button></div></div>`:''}
+<div class="card" style="margin-top:14px"><h3>分析結果（自動計算）</h3><div class="rank">
+<div><h4 style="color:var(--red)">主因（只出不進，至少 2 條）</h4>${A.causes.map((s,i)=>`<div class="rk c"><b>主因${i+1}</b><span>${esc(s.n.text)}</span><small>出 ${s.out}・進 ${s.in}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}</div>
+<div><h4 style="color:var(--blue)">問題（只進不出，至少 2 條）</h4>${A.probs.map((s,i)=>`<div class="rk p"><b>問題${i+1}</b><span>${esc(s.n.text)}</span><small>進 ${s.in}・出 ${s.out}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}</div></div></div>
+<details class="card" data-d="links" ${OD.links?'open':''}><summary><b>因果清單（共 ${A.ls.length} 條箭頭）</b></summary>
+${A.ls.map(l=>`<div class="lk"><span>因為「${nm(l.a)}」→ 所以「${nm(l.b)}」</span>${ed?`<button class="ib" data-a="delLink" data-id="${l.id}" aria-label="刪除箭頭">✕</button>`:''}</div>`).join('')||'<div class="mute">尚無箭頭</div>'}
+${ed&&A.ns.length>1?`<div class="row" style="margin-top:10px"><select id="la" style="flex:1;min-width:120px"><option value="">因為…</option>${A.ns.map(n=>`<option value="${n.id}">${esc(n.text)}</option>`).join('')}</select>
+<select id="lb" style="flex:1;min-width:120px"><option value="">所以…</option>${A.ns.map(n=>`<option value="${n.id}">${esc(n.text)}</option>`).join('')}</select><button class="btn" data-a="addLink">加箭頭</button></div>`:''}</details>
+<details class="card" data-d="stat" ${OD.stat?'open':''}><summary><b>箭頭統計（每張便條的進出數）</b></summary><div class="tw"><table class="dm"><thead><tr><th>影響因素</th><th>出去</th><th>進來</th></tr></thead><tbody>
+${Object.values(A.st).map(s=>`<tr><td style="background:#fff">${esc(s.n.text)}</td><td>${s.out}</td><td>${s.in}</td></tr>`).join('')}</tbody></table></div></details>`}
+function zoomV(W){const fit=(Math.min(innerWidth,860)-36)/W;if(Z==='fit')return Math.min(1,fit);if(Z==null)return innerWidth<600?Math.min(1,Math.max(.7,fit)):1;return Z}
+function bstyle(W,H){lastW=W;const z=zoomV(W);return `width:${W}px;height:${H}px;transform:scale(${z});transform-origin:0 0;margin:0 ${-W*(1-z)}px ${-H*(1-z)}px 0`}
+function zoomBar(){return `<div class="zoom"><button class="ib" data-a="zoom" data-d="-1" aria-label="縮小">－</button><span>${Math.round(zoomV(lastW)*100)}%</span><button class="ib" data-a="zoom" data-d="1" aria-label="放大">＋</button><button class="ib" data-a="zoom" data-d="0">全覽</button></div>`}
+function drawLinks(){const b=$('#board'),svg=$('#svg');if(!b||!svg)return;const els={};b.querySelectorAll('.note').forEach(n=>els[n.dataset.id]=n);
+  const box=n=>({x:n.offsetLeft+n.offsetWidth/2,y:n.offsetTop+n.offsetHeight/2,w:n.offsetWidth/2+5,h:n.offsetHeight/2+5,dia:n.classList.contains('dia')});
+  const edge=(a,c)=>{const dx=c.x-a.x,dy=c.y-a.y;if(!dx&&!dy)return a;const s=a.dia?1/(Math.abs(dx)/a.w+Math.abs(dy)/a.h):Math.min(a.w/Math.abs(dx),a.h/Math.abs(dy));const k=Math.min(s,1);return{x:a.x+dx*k,y:a.y+dy*k}};
+  svg.innerHTML='<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#23262b"/></marker></defs>'+
+  all(b.dataset.lk).map(l=>{const A=els[l.a],B=els[l.b];if(!A||!B)return'';const a=box(A),c=box(B),p=edge(a,c),q=edge(c,a);
+    return `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="#23262b" stroke-width="1.8" marker-end="url(#ah)"/>`+
+    (l.label?`<text x="${p.x+(q.x-p.x)*.42}" y="${p.y+(q.y-p.y)*.42}" text-anchor="middle" dominant-baseline="middle" font-size="12.5" font-weight="700" fill="#b3261e" stroke="#fffdf7" stroke-width="6" paint-order="stroke">${esc(l.label)}</text>`:'')}).join('')}
+document.addEventListener('pointerdown',e=>{const n=e.target.closest&&e.target.closest('#board .note');if(!n||!isEd())return;
+  drag={id:n.dataset.id,n,z:zoomV(lastW),nk:$('#board').dataset.nk,sx:e.clientX,sy:e.clientY,ox:n.offsetLeft,oy:n.offsetTop,moved:false};try{n.setPointerCapture(e.pointerId)}catch(_){}} );
+document.addEventListener('pointermove',e=>{if(!drag)return;let dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;if(!drag.moved&&Math.hypot(dx,dy)<6)return;drag.moved=true;dx/=drag.z;dy/=drag.z;
+  drag.n.style.left=Math.max(0,drag.ox+dx)+'px';drag.n.style.top=Math.max(0,drag.oy+dy)+'px';drawLinks()});
+document.addEventListener('pointerup',()=>{if(!drag)return;const d=drag;drag=null;
+  if(d.moved)put({...get(d.id,d.nk),x:d.n.offsetLeft,y:d.n.offsetTop});else tapNote(d.id)});
+document.addEventListener('pointercancel',()=>{if(drag){drag=null;render()}});
+function toggleLink(a,b,lk){lk=lk||'link';if(!a||!b||a===b)return;const ex=all(lk).find(l=>l.a===a&&l.b===b);if(ex)return del(ex.id);
+  if(lk==='edge'&&get(a,'step').type==='d')return editEdge(null,{a,b});put({id:uid(lk[0]),k:lk,a,b,o:Date.now()})}
+function editEdge(id,preset){const e=id?get(id,'edge'):{id:uid('e'),k:'edge',o:Date.now(),a:'',b:'',label:'',...preset};
+sheet({title:'這條線的條件',note:'從判斷分出去的每條線，請標上走這條路的條件。一般步驟之間的線可以留空。',fields:[{key:'label',label:'條件標示（例：是、否、達標、未達標）',value:e.label}],
+onSave:v=>put({...e,...v}),onDelete:id?()=>del(id):null})}
+function tapNote(id){const lk=$('#board').dataset.lk;if(linkFrom){const f=linkFrom;linkFrom=null;sel=id;if(f!==id){render();return toggleLink(f,id,lk)}}else sel=sel===id?null:id;render()}
+
+/* 2 魚骨圖 */
+function v2(){const f=get('fish','fish'),cats=all('cat'),sols=all('sol'),A=analyze(),ed=isEd(),opts=all('opt');
+const orphan=sols.filter(s=>!cats.some(c=>c.id===s.cat));
+const solH=s=>{const tn=s.target&&A.st[s.target];const g=tn&&A.tag[s.target];return `<div class="sol" ${ed?`data-a="editSol" data-id="${s.id}" role="button" tabindex="0"`:''}><span class="tx">${esc(s.text)}</span>
+${tn?`<span class="tag">對應${g?g.l:''}：${esc(tn.n.text)}</span>`:''}${opts.some(o=>o.src===s.id)?'<span class="tag">已列入決策</span>':''}</div>`};
+return `<div class="card"><h3>魚頭</h3><div class="fhead">
+<label class="f"><span>方式（我們打算怎麼做）</span><input type="text" data-f="fish:fish:method" value="${esc(f.method)}" ${dis()}></label>
+<label class="f"><span>期望結果（做完要達到什麼）</span><input type="text" data-f="fish:fish:goal" value="${esc(f.goal)}" ${dis()}></label></div>
+${A.causes.length||A.probs.length?`<div class="mute">要解決的對象：${[...A.causes.map((s,i)=>`主因${i+1}「${esc(s.n.text)}」`),...A.probs.map((s,i)=>`問題${i+1}「${esc(s.n.text)}」`)].join('、')}</div>`:'<div class="mute">提醒：先在關聯圖找出主因與問題，對策才有對象。</div>'}</div>
+${ed?`<div class="row" style="margin-bottom:10px"><button class="btn pri" data-a="addSol">＋ 解決方式</button><button class="btn" data-a="addCat">＋ 類別</button></div>`:''}
+<div class="card"><h3>魚骨（由上到下 ＝ 執行先後順序）</h3>${ed?'<div class="mute" style="margin-bottom:6px">點一下綠色便條可以編輯、移動順序、列入決策。</div>':''}
+${cats.length||orphan.length?`<div class="spine">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
+${ed?`<button class="ib" data-a="editCat" data-id="${c.id}">編輯</button><button class="ib" data-a="addSol" data-cat="${c.id}" aria-label="在這一類新增解決方式">＋</button>`:''}</div>
+${sols.filter(s=>s.cat===c.id).map(s=>solH(s)).join('')||'<div class="mute" style="margin:6px 0 0 14px">這一類還沒有解決方式</div>'}</div>`).join('')}
+${orphan.length?`<div class="bone"><div class="cat" style="background:#e8e6df"><span class="nm">尚未分類</span></div>${orphan.map(s=>solH(s)).join('')}</div>`:''}</div><div class="tail">▼ 魚尾</div>`
+:'<div class="empty">先盡量發想解決方式，再把相近的歸成一類。</div>'}</div>`}
+
+/* 3 決策分析 */
+function v3(){const cr=all('crit'),op=all('opt'),d=get('dec','dec',{max:5}),ed=isEd(),mx=Number(d.max)||5;
+const tots=op.map(o=>total(o,cr)),best=Math.max(0,...tots);const rank=t=>t>0?[...new Set(tots)].sort((a,b)=>b-a).indexOf(t)+1:'';
+return `${ed?`<div class="row" style="margin-bottom:10px"><button class="btn pri" data-a="addOpt">＋ 方案</button><button class="btn" data-a="addCrit">＋ 檢核點</button><span class="sp"></span>
+<span class="mute">分數 1–</span><input type="number" style="width:64px" min="2" max="10" data-f="dec:dec:max" value="${mx}"></div>`:''}
+<div class="card"><h3>決策矩陣</h3>${cr.length||op.length?`<div class="tw"><table class="dm"><thead><tr><th>方案 ＼ 檢核點</th>
+${cr.map((c,i)=>`<th class="c${i%4}">${ed?`<button class="hb" data-a="editCrit" data-id="${c.id}">${esc(c.name)||'（未命名）'} ✎</button>`:esc(c.name)}</th>`).join('')}<th>加權總分</th></tr></thead><tbody>
+${op.map((o,r)=>`<tr class="${tots[r]>0&&tots[r]===best?'best':''}"><td>${ed?`<button class="hb" data-a="editOpt" data-id="${o.id}">${esc(o.name)||'（未命名）'} ✎</button>`:esc(o.name)}</td>
+${cr.map((c,i)=>`<td class="c${i%4}"><input type="number" inputmode="numeric" min="1" max="${mx}" data-sc="${o.id}:${c.id}" value="${(o.sc||{})[c.id]??''}" ${dis()} aria-label="${esc(o.name)} 的 ${esc(c.name)} 分數"></td>`).join('')}
+<td class="tot" id="tot-${o.id}">${tots[r]}${rank(tots[r])?` <small class="mute">第${rank(tots[r])}</small>`:''}</td></tr>`).join('')}</tbody>
+<tfoot><tr><td>權重</td>${cr.map(c=>`<td><input type="number" inputmode="numeric" min="0" data-f="${c.id}:crit:w" value="${c.w??1}" ${dis()} aria-label="${esc(c.name)} 權重"></td>`).join('')}<td class="mute">Σ 分數×權重</td></tr></tfoot></table></div>
+${op.length&&best>0?`<div style="margin-top:12px"><b>加權總分排名</b>${op.map((o,r)=>({o,t:tots[r]})).sort((x,y)=>y.t-x.t).map(x=>`<div class="rk ${x.t===best?'c':'p'}" style="margin:6px 0 0"><b>第${rank(x.t)||'–'}</b><span>${esc(x.o.name)}</span><b>${x.t} 分</b></div>`).join('')}</div>`:''}
+<p class="mute" style="margin:8px 0 0">每個檢核點都是「分數越高越好」。權重數字越大代表越重要。★ 為最高分。</p>`
+:'<div class="empty">從魚骨圖把方案「列入決策」，或直接新增方案與檢核點。</div>'}</div>
+<div class="card"><label class="f" style="margin:0"><span>結論：最優方案是什麼？為什麼？</span><textarea data-f="dec:dec:concl" ${dis()} placeholder="全組確認分數結果合理後，寫下決定與理由">${esc(d.concl)}</textarea></label></div>`}
+function patchTotals(){const cr=all('crit');all('opt').forEach(o=>{const el=$('#tot-'+o.id);if(el)el.textContent=total(o,cr)})}
+
+/* 4 流程圖 */
+const TY={s:'開始',p:'步驟',d:'判斷（菱形）',e:'結束'};
+function spos(x,i){return{x:x.x??110,y:x.y??16+i*110}}
+function v4(){const st=all('step'),fl=get('flow','flow',{unit:'天'}),rk=all('risk'),ed=isEd(),d=get('dec','dec'),u=esc(fl.unit||'天');
+const ids={};st.forEach(x=>ids[x.id]=x);const eg=all('edge').filter(l=>ids[l.a]&&ids[l.b]);
+const sum=st.reduce((s,x)=>s+(Number(x.dur)||0),0),nm=id=>esc(ids[id].text),sn=sel&&ids[sel];
+const W=Math.max(340,...st.map((x,i)=>spos(x,i).x+190)),H=Math.max(300,...st.map((x,i)=>spos(x,i).y+130));
+const opt=st.map(x=>`<option value="${x.id}">${esc(x.text)}</option>`).join('');
+return `${d.concl?`<div class="card"><span class="mute">最優方案結論</span><div>${esc(d.concl)}</div></div>`:''}
+${linkFrom&&ids[linkFrom]?`<div class="banner"><span class="sp">從「${nm(linkFrom)}」接到… 請點選下一個圖形</span><button class="btn sm" data-a="linkCancel">取消</button></div>`:''}
+${ed?`<div class="row" style="margin-bottom:8px"><button class="btn pri" data-a="addStep">＋ 新增圖形</button><span class="sp"></span><span class="mute">時間單位</span><input type="text" style="width:72px" data-f="flow:flow:unit" value="${u}"></div>
+<div class="mute" style="margin-bottom:8px">拖曳可移動；點一下圖形可以接線、編輯。</div>`:''}
+<div class="legend"><span class="lg s">開始／結束</span><span class="lg p">步驟</span><span class="lg d">◆ 判斷</span></div>
+${zoomBar()}<div class="boardwrap"><div class="board" id="board" data-nk="step" data-lk="edge" style="${bstyle(W,H)}"><svg id="svg"></svg>
+${st.map((x,i)=>{const p=spos(x,i),meta=[x.who?esc(x.who):'',Number(x.dur)?x.dur+' '+u:''].filter(Boolean).join('・');
+ return `<div class="note fn f-${x.type||'p'} ${x.type==='d'?'dia':''} ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${p.x}px;top:${p.y}px"><div>${esc(x.text)}</div>${meta?`<small>${meta}</small>`:''}</div>`}).join('')}
+${st.length?'':'<div class="empty" style="padding-top:120px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div>
+${sn&&ed?`<div class="card" style="margin-top:10px"><div class="row"><b class="sp">「${esc(sn.text)}」</b>
+<button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">接到下一個 →</button><button class="btn sm" data-a="editStep" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delStep" data-id="${sn.id}">刪除</button></div></div>`:''}
+<details class="card" style="margin-top:10px" data-d="edges" ${OD.edges?'open':''}><summary><b>連線清單（共 ${eg.length} 條）</b></summary>
+${eg.map(l=>`<div class="lk"><span>「${nm(l.a)}」${l.label?` ─ <b style="color:#b3261e">${esc(l.label)}</b> → `:' → '}「${nm(l.b)}」</span>${ed?`<button class="ib" data-a="editEdge" data-id="${l.id}">條件</button><button class="ib" data-a="delLink" data-id="${l.id}" aria-label="刪除連線">✕</button>`:''}</div>`).join('')||'<div class="mute">尚無連線</div>'}
+${ed&&st.length>1?`<div class="row" style="margin-top:10px"><select id="fa" style="flex:1;min-width:110px"><option value="">從…</option>${opt}</select><select id="fb" style="flex:1;min-width:110px"><option value="">接到…</option>${opt}</select>
+<input type="text" id="fl" placeholder="條件（選填）" style="flex:1;min-width:100px"><button class="btn" data-a="addEdge">加連線</button></div>`:''}
+</details><div class="card"><b>各步驟時間合計：${sum} ${u}</b> <span class="mute">（所有分支都算進去，實際時間依走的路徑而定）</span></div>
+<div class="card"><div class="row" style="margin-bottom:8px"><h3 class="sp" style="margin:0">預防與應變（選填）</h3>${ed?'<button class="btn sm" data-a="addRisk">＋ 潛在風險</button>':''}</div>
+${rk.map(r=>`<div class="riskc"><div class="row"><b class="sp">${esc(r.risk)}</b>${ed?`<button class="ib" data-a="editRisk" data-id="${r.id}">編輯</button>`:''}</div>
+${r.prev?`<div><span class="mute">預防：</span>${esc(r.prev)}</div>`:''}${r.react?`<div><span class="mute">應變：</span>${esc(r.react)}</div>`:''}</div>`).join('')||'<div class="mute">執行時哪裡可能出錯？事前怎麼預防、發生了怎麼應變？</div>'}</div>`}
+
+/* 意見箱 */
+function vSug(s){const l=all('sug').filter(x=>x.stage===s),nw=l.filter(x=>x.st==='new'),dn=l.filter(x=>x.st!=='new'),ty=SUG[s],lab=t=>(ty.find(x=>x[0]===t)||['',''])[1];
+return `<div class="card sugbox"><h3>意見箱 <span class="mute">任何人都能提出，由編輯者決定是否採用</span></h3>
+<div class="sugin">${ty.length>1?`<select id="sugType">${ty.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select>`:''}
+<input type="text" id="sugText" placeholder="提出一個${ty.map(t=>t[1]).join('或')}…" maxlength="200"><button class="btn pri" data-a="sugSend">送出</button></div>
+<div style="margin-top:10px">${nw.map(x=>`<div class="sug"><span class="tx">${esc(x.text)} <span class="tag">${lab(x.type)}</span> <span class="mute">${esc(x.by||'匿名')}</span></span>
+${isEd()?`<button class="btn sm pri" data-a="sugOk" data-id="${x.id}">採用</button><button class="btn sm" data-a="sugNo" data-id="${x.id}">略過</button>`:'<span class="tag">待決定</span>'}</div>`).join('')||'<div class="mute">目前沒有待處理的意見</div>'}</div>
+${dn.length?`<details style="margin-top:8px"><summary class="mute">已處理 ${dn.length} 則</summary>${dn.map(x=>`<div class="sug done"><span class="tx">${esc(x.text)} <span class="mute">${esc(x.by||'匿名')}</span></span><span class="tag">${x.st==='ok'?'已採用':'已略過'}</span></div>`).join('')}</details>`:''}</div>`}
+
+/* ===== 表單（底部彈出） ===== */
+let sheetCb=null;
+function closeSheet(){$('#modal').hidden=true;$('#modal').innerHTML='';sheetCb=null}
+function sheet({title,fields,onSave,onDelete,note,extra}){extra=(extra||[]).filter(Boolean);const m=$('#modal');
+m.innerHTML=`<div class="mask" data-a="closeSheet"></div><form class="sheet" id="sf"><h3>${esc(title)}</h3>${note?`<p class="mute">${note}</p>`:''}
+${fields.map(f=>`<label class="f"><span>${esc(f.label)}</span>${f.type==='area'?`<textarea name="${f.key}" placeholder="${esc(f.ph||'')}">${esc(f.value)}</textarea>`
+:f.type==='select'?`<select name="${f.key}">${f.options.map(o=>`<option value="${esc(o[0])}" ${String(o[0])===String(f.value??'')?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`
+:`<input type="${f.type==='num'?'number':'text'}" ${f.type==='num'?'inputmode="decimal" step="any"':''} name="${f.key}" value="${esc(f.value)}" placeholder="${esc(f.ph||'')}">`}</label>`).join('')}
+${extra.length?`<div class="row" style="margin-bottom:12px">${extra.map((x,i)=>`<button type="button" class="btn sm" data-a="sheetX" data-i="${i}">${x[0]}</button>`).join('')}</div>`:''}
+<div class="row">${onDelete?'<button type="button" class="btn danger" data-a="sheetDel">刪除</button>':''}<span class="sp"></span><button type="button" class="btn ghost" data-a="closeSheet">取消</button><button class="btn pri">儲存</button></div></form>`;
+m.hidden=false;sheetCb={onSave,onDelete,extra};
+$('#sf').onsubmit=e=>{e.preventDefault();const v={};fields.forEach(f=>{const el=e.target.elements[f.key];v[f.key]=f.type==='num'?(el.value===''?'':Number(el.value)):el.value.trim()});const cb=sheetCb;closeSheet();cb.onSave(v)};
+const first=m.querySelector('input,textarea');if(first&&!first.value)setTimeout(()=>first.focus(),50)}
+
+function editNote(id,preset,after){const n=all('note').length;const e=id?get(id,'note'):{id:uid('n'),k:'note',o:Date.now(),text:'',x:12+(n%3)*124,y:12+Math.floor(n/3)*84,...preset};
+sheet({title:id?'編輯影響因素':'新增影響因素',fields:[{key:'text',label:'內容（一張便條只寫一件事）',type:'area',value:e.text},
+{key:'role',label:'主因／問題的判定',type:'select',value:e.role||'',options:[['','自動（依箭頭數）'],['c','手動指定為主因'],['p','手動指定為問題'],['x','不列入排序']]}],
+onSave:v=>{if(!v.text)return;put({...e,...v});after&&after()},onDelete:id?()=>delNote(id):null})}
+function delNote(id){all('link').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));if(sel===id)sel=null;del(id)}
+function editCat(id,preset){const e=id?get(id,'cat'):{id:uid('c'),k:'cat',o:Date.now(),name:'',...preset};
+sheet({title:id?'編輯類別':'新增類別',fields:[{key:'name',label:'類別名稱（藍色便條）',value:e.name,ph:'把相近的解決方式歸成一類後命名'}],
+extra:id?[['↑ 往前移',()=>move(id,'cat',-1)],['↓ 往後移',()=>move(id,'cat',1)]]:[],
+onSave:v=>{if(v.name)put({...e,...v})},onDelete:id?()=>del(id):null,note:id?'刪除類別後，裡面的解決方式會移到「尚未分類」。':''})}
+function editSol(id,preset,after){const e=id?get(id,'sol'):{id:uid('s'),k:'sol',o:Date.now(),text:'',cat:'',target:'',...preset};const A=analyze();
+sheet({title:id?'編輯解決方式':'新增解決方式',fields:[{key:'text',label:'解決方式（綠色便條）',type:'area',value:e.text},
+{key:'target',label:'針對哪個主因／問題',type:'select',value:e.target,options:[['','（不指定）'],...A.ns.map(n=>[n.id,(A.tag[n.id]?A.tag[n.id].l+'｜':'')+n.text]).sort((a,b)=>(b[1].includes('｜')?1:0)-(a[1].includes('｜')?1:0))]},
+{key:'cat',label:'類別',type:'select',value:e.cat,options:[['','（尚未分類）'],...all('cat').map(c=>[c.id,c.name])]}],
+extra:id?[['↑ 往前移',()=>move(id,'sol',-1,x=>x.cat===e.cat)],['↓ 往後移',()=>move(id,'sol',1,x=>x.cat===e.cat)],all('opt').some(o=>o.src===id)?null:['列入決策分析',()=>ACT.solToOpt({id})]]:[],
+onSave:v=>{if(!v.text)return;put({...e,...v});after&&after()},onDelete:id?()=>del(id):null})}
+function editCrit(id,preset,after){const e=id?get(id,'crit'):{id:uid('k'),k:'crit',o:Date.now(),name:'',w:1,...preset};
+sheet({title:id?'編輯檢核點':'新增檢核點',note:'寫成「分數越高越好」的形式，例如：效益（高）、風險（低）、時間成本（短）、可行性（高）。',
+fields:[{key:'name',label:'檢核點名稱',value:e.name},{key:'w',label:'權重（越重要數字越大）',type:'num',value:e.w??1}],
+onSave:v=>{if(!v.name)return;put({...e,...v,w:v.w===''?1:v.w});after&&after()},onDelete:id?()=>del(id):null})}
+function editOpt(id,preset,after){const e=id?get(id,'opt'):{id:uid('o'),k:'opt',o:Date.now(),name:'',sc:{},...preset};
+sheet({title:id?'編輯方案':'新增方案',fields:[{key:'name',label:'方案名稱',value:e.name}],onSave:v=>{if(!v.name)return;put({...e,...v});after&&after()},onDelete:id?()=>del(id):null})}
+function editStep(id,preset,after){const st=all('step'),last=st[st.length-1],lp=last?spos(last,st.length-1):null;
+const e=id?get(id,'step'):{id:uid('t'),k:'step',o:Date.now(),text:'',type:st.length?'p':'s',who:'',dur:'',x:lp?lp.x:110,y:lp?lp.y+110:16,...preset};
+sheet({title:id?'編輯圖形':'新增圖形',fields:[{key:'type',label:'類型',type:'select',value:e.type,options:Object.entries(TY)},
+{key:'text',label:'內容',value:e.text,ph:'步驟寫要做什麼；判斷寫成一個問句'},{key:'who',label:'負責人／單位（選填）',value:e.who},{key:'dur',label:'預計花費時間（數字，選填）',type:'num',value:e.dur}],
+onSave:v=>{if(!v.text)return;put({...e,...v});after&&after()},onDelete:id?()=>delStep(id):null})}
+function delStep(id){all('edge').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));if(sel===id)sel=null;del(id)}
+function editRisk(id,preset,after){const e=id?get(id,'risk'):{id:uid('r'),k:'risk',o:Date.now(),risk:'',prev:'',react:'',...preset};
+sheet({title:id?'編輯潛在風險':'新增潛在風險',fields:[{key:'risk',label:'可能出什麼問題',value:e.risk},{key:'prev',label:'預防措施（事前）',type:'area',value:e.prev},{key:'react',label:'應變措施（發生時）',type:'area',value:e.react}],
+onSave:v=>{if(!v.risk)return;put({...e,...v});after&&after()},onDelete:id?()=>del(id):null})}
+
+function copyProject(src,name){const np=uid('p'),map={},keep=['topic','fish','dec','flow'];const es=Object.values(S.db[src]||{}).filter(e=>!e.d);
+es.forEach(e=>map[e.id]=keep.includes(e.id)?e.id:uid(e.id[0]));const m=x=>map[x]||'';
+es.forEach(e=>{const c=JSON.parse(JSON.stringify(e));c.id=map[e.id];if(c.k==='link'||c.k==='edge'){c.a=m(c.a);c.b=m(c.b)}if(c.k==='sol'){c.cat=m(c.cat);c.target=m(c.target)}
+  if(c.k==='opt'){c.src=m(c.src);const sc={};Object.keys(c.sc||{}).forEach(k=>{if(map[k])sc[map[k]]=c.sc[k]});c.sc=sc}if(c.k==='step')c.back=m(c.back);
+  c.t=Date.now();(S.db[np]||(S.db[np]={}))[c.id]=c;S.dirty[np+'|'+c.id]=1});
+S.pid=np;put({id:np,k:'proj',name:name||(S.db._index[src].name||'專案')+'－分岔'},'_index');window.scrollTo(0,0)}
+
+
+/* ===== 範例專案（示範用的虛構主題） ===== */
+function addDemo(){const pid=uid('p'),db=S.db[pid]={};let n=0;
+const add=(k,o,id)=>{id=id||uid(k[0]);db[id]={id,k,o:++n,t:Date.now(),...o};S.dirty[pid+'|'+id]=1;return id};
+add('topic',{title:'團隊會議經常超時，導致會後工作做不完、需要加班',now:'每週例會表定 1 小時，近兩個月平均開到 1 小時 40 分；會後常要再約一次才有結論。',goal:'九成以上的會議準時結束，每次會議都有明確決議與負責人。',scope:'只討論本團隊的內部例會，不含客戶會議。'},'topic');
+const N=(t,x,y)=>add('note',{text:t,x,y});
+const a=N('沒有事先提供議程',16,130),e=N('沒有人控管時間',16,300),f=N('決議沒有被記錄',16,430),b=N('會議目的不明確',175,30),c=N('與會者沒有事先準備',175,215),
+d=N('討論容易離題',340,100),g=N('同一議題反覆討論',340,330),h=N('會議經常超時',505,150),j=N('決議事項沒有落實',505,390);
+[[a,b],[a,c],[a,d],[b,d],[c,g],[c,h],[e,d],[e,h],[d,h],[g,h],[f,g],[f,j],[g,j]].forEach(l=>add('link',{a:l[0],b:l[1]}));
+add('fish',{method:'建立會議規範並落實執行',goal:'會議準時結束、決議可以追蹤'},'fish');
+const c1=add('cat',{name:'會前準備'}),c2=add('cat',{name:'會中控管'}),c3=add('cat',{name:'會後追蹤'});
+const s1=add('sol',{text:'會議前一天發出議程與資料',cat:c1,target:a}),s2=add('sol',{text:'邀請時註明會議目的與預期產出',cat:c1,target:a}),
+s3=add('sol',{text:'指定計時員，每個議題設定時限',cat:c2,target:e}),s4=add('sol',{text:'離題事項先放「停車場」，會後再處理',cat:c2,target:d}),
+s5=add('sol',{text:'散會前唸出決議與負責人',cat:c3,target:f}),s6=add('sol',{text:'使用共用的會議紀錄範本',cat:c3,target:f});
+const k1=add('crit',{name:'效益（高）',w:4}),k2=add('crit',{name:'可行性（高）',w:3}),k3=add('crit',{name:'風險（低）',w:2}),k4=add('crit',{name:'時間成本（短）',w:1});
+[[s1,'會議前一天發出議程與資料',5,4,4,3],[s3,'指定計時員，每個議題設定時限',4,5,3,5],[s6,'使用共用的會議紀錄範本',3,4,5,4],[s4,'離題事項先放「停車場」',3,3,4,5]]
+ .forEach(o=>add('opt',{name:o[1],src:o[0],sc:{[k1]:o[2],[k2]:o[3],[k3]:o[4],[k4]:o[5]}}));
+add('dec',{max:5,concl:'最優方案為「會議前一天發出議程與資料」（43 分）。它直接處理主因 1，效益最高；第二高分的計時員制度（42 分）成本很低，決定一併搭配推行。'},'dec');
+add('flow',{unit:'天'},'flow');
+const F=(type,text,x,y,o)=>add('step',{type,text,x,y,...o});
+const f1=F('s','開始',200,16),f2=F('p','擬定議程範本',200,100,{who:'組長',dur:2}),f3=F('p','向團隊說明新的會議規範',200,200,{who:'組長',dur:1}),
+f4=F('p','試行兩週並記錄每次會議時間',200,310,{who:'全體',dur:10}),f5=F('d','準時結束的比例？',190,440),
+f6=F('p','調整各議題的時限',10,330,{who:'組長',dur:1}),f7=F('p','改採備案：加上計時員制度',430,560,{who:'組長',dur:5}),
+f8=F('p','納入團隊正式規範',200,600,{who:'主管',dur:1}),f9=F('e','結束',200,700);
+[[f1,f2],[f2,f3],[f3,f4],[f4,f5],[f5,f8,'八成以上'],[f5,f6,'五到八成'],[f5,f7,'低於五成'],[f6,f4],[f7,f8],[f8,f9]].forEach(l=>add('edge',{a:l[0],b:l[1],label:l[2]||''}));
+add('risk',{risk:'主持人忘記提前發議程',prev:'在行事曆設定前一天自動提醒',react:'沒有議程的會議改為延期，或縮短成 15 分鐘站立會議'});
+add('sug',{stage:1,type:'note',text:'會議室常被上一場佔用，導致延後開始',by:'小華',st:'new'});
+S.pid=pid;S.stage=0;put({id:pid,k:'proj',name:'範例｜會議經常超時'},'_index');window.scrollTo(0,0)}
+
+function showHelp(){const m=$('#modal');m.innerHTML=`<div class="mask" data-a="closeSheet"></div><div class="sheet help"><div class="row"><h3 class="sp" style="margin:0">專案說明：問題分析與解決流程</h3><button class="btn sm" data-a="closeSheet">關閉</button></div>
+<div class="flowline">${ST.map((s,i)=>`${i?'→':''}<span>${i} ${s.n}</span>`).join('')}</div>
+<p>整套流程對應課程圓盤的四個象限：<b>狀況評估 → 問題分析 → 決策分析 → 機會分析</b>。每一階段的產出，都是下一階段的輸入，所以請依序進行。</p>
+${ST.map((s,i)=>`<h4>${i}　${s.n}<span class="mute">　${s.q}</span></h4><p>${s.what}</p><ol>${s.rules.map(r=>`<li>${r}</li>`).join('')}</ol>`).join('')}
+<h4>各階段怎麼串起來</h4><ul><li>關聯圖找到的<b>主因／問題</b> → 魚骨圖發想對策時的對象。</li><li>魚骨圖的解決方式按「列入決策」→ 變成決策分析的<b>方案</b>。</li><li>決策分析的<b>結論</b> → 顯示在流程圖最上方，據此展開步驟。</li></ul>
+<h4>怎麼使用這個網站</h4><ul><li><b>編輯者</b>：可新增、修改、刪除所有內容，並決定是否採用意見。多位編輯者可同時操作。</li>
+<li><b>觀看者</b>：畫面每幾秒自動更新；每一階段下方的「意見箱」可以提出想法，編輯者按「採用」就會加進主要作業區。</li>
+<li><b>分岔</b>：做到一個斷點想試另一條路時，按「從這裡分岔」（或專案列表的「複製分岔」），會複製出一個獨立的新專案，原專案不受影響。</li><li>便條數量、方案數、檢核點數、分數級距都可以自由增減。</li><li>右上角圓點：綠色＝已同步、灰色＝離線模式（資料只在本機）、紅色＝連線失敗。</li></ul></div>`;m.hidden=false}
+
+function showSettings(){sheet({title:'設定',
+fields:[{key:'name',label:'你的名字',value:S.name},{key:'role',label:'身分',type:'select',value:S.role,options:[['editor','編輯者'],['viewer','觀看者']]}],
+onSave:v=>{S.name=v.name;S.role=v.role;save();render();sync()}});
+$('#sf').insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><span class="mute sp">備份</span><button type="button" class="btn sm" data-a="exportAll">匯出 JSON</button><button type="button" class="btn sm" data-a="importAll">匯入 JSON</button></div>`)}
+
+/* ===== 事件 ===== */
+const ACT={
+ role:d=>{S.name=($('#nm')||{}).value||S.name;S.role=d.r;save();render();sync()},
+ help:showHelp,settings:showSettings,closeSheet,
+ sheetX:d=>{const f=sheetCb.extra[d.i][1];closeSheet();f()},
+ sheetDel:()=>{if(confirm('確定刪除？')){const cb=sheetCb;closeSheet();cb.onDelete()}},
+ back:()=>{S.pid='';save();render()},
+ stage:d=>{const i=Number(d.i);if(i<0||i>4)return;S.stage=i;sel=null;linkFrom=null;save();render();window.scrollTo(0,0)},
+ newProj:()=>sheet({title:'新增專案',fields:[{key:'name',label:'專案名稱',value:'',ph:'例：期末報告'}],onSave:v=>{const id=uid('p');S.pid=id;S.stage=0;put({id,k:'proj',name:v.name||'未命名專案'},'_index')}}),
+ openProj:d=>{S.pid=d.id;S.stage=0;save();render();window.scrollTo(0,0)},
+ renProj:d=>{const p=S.db._index[d.id];sheet({title:'專案改名',fields:[{key:'name',label:'專案名稱',value:p.name}],onSave:v=>put({...p,name:v.name||p.name},'_index')})},
+ demo:addDemo,
+ copyProj:d=>{const id=d.id||S.pid,p=S.db._index[id];sheet({title:'複製成分岔專案',note:'會把目前所有內容完整複製成一個新專案並直接開啟；原專案保持不變，兩邊之後各自發展、互不影響。',fields:[{key:'name',label:'新專案名稱',value:(p.name||'專案')+'－分岔'}],onSave:v=>copyProject(id,v.name)})},
+ delProj:d=>{if(confirm('確定刪除這個專案？所有人都會看不到它。'))put({id:d.id,k:'proj',d:1},'_index')},
+ addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
+ zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
+ linkStart:d=>{linkFrom=d.id;render()},linkCancel:()=>{linkFrom=null;render()},
+ addLink:()=>{const a=$('#la').value,b=$('#lb').value;if(a&&b&&a!==b&&!all('link').some(l=>l.a===a&&l.b===b))toggleLink(a,b)},
+ delLink:d=>del(d.id),
+ addCat:()=>editCat(),editCat:d=>editCat(d.id),mvCat:d=>move(d.id,'cat',Number(d.d)),
+ addSol:d=>editSol(null,{cat:d.cat||''}),editSol:d=>editSol(d.id),
+ mvSol:d=>{const s=get(d.id,'sol');move(d.id,'sol',Number(d.d),x=>x.cat===s.cat)},
+ solToOpt:d=>{const s=get(d.id,'sol');put({id:uid('o'),k:'opt',o:Date.now(),name:s.text,sc:{},src:s.id})},
+ addOpt:()=>editOpt(),editOpt:d=>editOpt(d.id),addCrit:()=>editCrit(),editCrit:d=>editCrit(d.id),
+ addStep:()=>editStep(),editStep:d=>editStep(d.id),delStep:d=>{if(confirm('刪除這個圖形和它的連線？'))delStep(d.id)},editEdge:d=>editEdge(d.id),
+ addEdge:()=>{const a=$('#fa').value,b=$('#fb').value,label=$('#fl').value.trim();if(a&&b&&a!==b&&!all('edge').some(l=>l.a===a&&l.b===b))put({id:uid('e'),k:'edge',a,b,label,o:Date.now()})},
+ addRisk:()=>editRisk(),editRisk:d=>editRisk(d.id),
+ sugSend:()=>{const t=$('#sugText'),v=t.value.trim();if(!v)return;const ty=($('#sugType')||{}).value||SUG[S.stage][0][0];t.value='';put({id:uid('g'),k:'sug',o:Date.now(),stage:S.stage,type:ty,text:v,by:S.name,st:'new'})},
+ sugNo:d=>setF(d.id,'sug','st','no'),
+ sugOk:d=>{const g=get(d.id,'sug'),ok=()=>setF(g.id,'sug','st','ok');
+  ({idea:ok,note:()=>editNote(null,{text:g.text},ok),sol:()=>editSol(null,{text:g.text},ok),opt:()=>editOpt(null,{name:g.text},ok),crit:()=>editCrit(null,{name:g.text},ok),step:()=>editStep(null,{text:g.text},ok),risk:()=>editRisk(null,{risk:g.text},ok)}[g.type]||ok)()},
+ exportAll:()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S.db)],{type:'application/json'}));a.download='psboard-backup.json';a.click()},
+ importAll:()=>{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const db=JSON.parse(r.result);
+   Object.keys(db).forEach(pid=>Object.values(db[pid]).forEach(e=>{e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1}));save();closeSheet();render();kick()}catch(e){alert('檔案格式不正確')}};r.readAsText(i.files[0])};i.click()}
+};
+const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','exportAll','importAll'];
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(!ACT[a])return;
+  if(!isEd()&&S.role&&!VIEWER_OK.includes(a))return;
+  const ae=document.activeElement;if(a!=='sugSend'&&a!=='role'&&a!=='addLink'&&a!=='addEdge'&&ae&&ae.matches&&ae.matches('#app input,#app textarea'))ae.blur();
+  ACT[a](el.dataset,el);if((a==='sugSend'||a==='addLink'||a==='addEdge')&&pend){document.activeElement&&document.activeElement.blur();render()}});
+document.addEventListener('change',e=>{const el=e.target;if(!isEd())return;
+  if(el.dataset.f){const[id,k,f]=el.dataset.f.split(':');setF(id,k,f,el.type==='number'?(el.value===''?'':Number(el.value)):el.value)}
+  else if(el.dataset.sc){const[oid,cid]=el.dataset.sc.split(':');const o={...get(oid,'opt')};o.sc={...(o.sc||{}),[cid]:el.value===''?'':Number(el.value)};put(o)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='sugText'){e.preventDefault();ACT.sugSend()}if(e.key==='Escape'&&!$('#modal').hidden)closeSheet()});
+render();sync();
+</script>
+</body>
+</html>
