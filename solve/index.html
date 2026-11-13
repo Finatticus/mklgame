@@ -232,6 +232,11 @@ label.f{margin-bottom:8px}label.f>span{font-size:12px;margin-bottom:2px}
 .fhead{align-items:start}
 @media(max-width:600px){.fhead{grid-template-columns:1fr!important;gap:6px}}
 html,body{touch-action:pan-x pan-y;overscroll-behavior-x:none}
+.zhost{position:relative}
+.zctl{position:absolute;top:6px;right:6px;z-index:5;display:flex;gap:4px}
+.zctl .ib{background:rgba(255,255,255,.94);border:1px solid var(--line);min-width:30px;height:28px}
+.zctl .pct{font-size:11px;min-width:44px}
+.zhost>h3{padding-right:116px;min-height:28px}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -252,7 +257,9 @@ if(!S.db._index)S.db._index={};
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
 const gasUrl=()=>(CONFIG_GAS_URL||'').trim();
 if(S.gasKey!==gasUrl()){S.gasKey=gasUrl();S.rev=0}
-const OD=innerWidth>=600?{links:1,stat:1,edges:1}:{};let Z=null,lastW=700;
+const OD=innerWidth>=600?{links:1,stat:1,edges:1}:{};let Z=null,lastW=700;const ZM={};
+function zctl(){const z=ZM[S.stage]||1;return `<div class="zctl"><button class="ib" data-a="zm" data-d="-1" aria-label="縮小">－</button><button class="ib pct" data-a="zm" data-d="0" title="回到預設大小">${Math.round(z*100)}%</button><button class="ib" data-a="zm" data-d="1" aria-label="放大">＋</button></div>`}
+function applyZoom(){const z=ZM[S.stage]||1,t=$('[data-zt]');if($('#board')){fitBoard();drawLinks()}else if(t)t.style.zoom=z;const q=$('.zctl .pct');if(q)q.textContent=Math.round(z*100)+'%'}
 const isEd=()=>S.role==='editor';
 const dis=()=>isEd()?'':'disabled';
 const P=()=>S.db[S.pid]||(S.db[S.pid]={});
@@ -364,10 +371,10 @@ const bar=L&&ed?`<span class="lf">因為「${nm(L.a)}」→ 所以「${nm(L.b)}�
 :linkFrom&&A.st[linkFrom]?`<span class="lf">因為「${nm(linkFrom)}」所以… 請點結果的便條</span><button class="btn sm" data-a="linkCancel">取消</button>`
 :sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm sb" data-a="addBSol" data-id="${sn.id}">＋ 解決方式</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button>`
 :ed?`<button class="btn pri sm" data-a="addNote">＋ 影響因素</button><button class="btn sm sb" data-a="addBSol">＋ 解決方式</button><span class="hint">拖曳移動・點便條畫箭頭・點箭頭可刪除</span>`:'';
-const main=`<div class="boardwrap"><div class="board" id="board" data-nk="note" data-lk="link"><svg id="svg"></svg>
+const main=`<div class="zhost">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="note" data-lk="link"><svg id="svg"></svg>
 ${A.ns.map(n=>{const g=A.tag[n.id];return `<div class="note ${g?g.c:''} ${sel===n.id?'sel':''}" data-id="${n.id}" style="left:${n.x||0}px;top:${n.y||0}px">${g?`<span class="tg">${g.l}</span>`:''}${esc(n.text)}</div>`}).join('')}
 ${bs.map(x=>`<div class="note bsol ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${x.x}px;top:${x.y||0}px"><span class="tg">解決方式</span>${esc(x.text)}</div>`).join('')}
-${A.ns.length?'':'<div class="empty" style="padding-top:70px">還沒有便條。先把所有想得到的影響因素都寫出來。</div>'}</div></div>`;
+${A.ns.length?'':'<div class="empty" style="padding-top:70px">還沒有便條。先把所有想得到的影響因素都寫出來。</div>'}</div></div></div>`;
 const o=A.ns.map(n=>`<option value="${n.id}">${esc(n.text)}</option>`).join('');
 const side=`<div class="card"><h3 style="color:var(--red)">主因 <span class="mute">只出不進・至少 2 條</span></h3>
 ${A.causes.map((s,i)=>`<div class="rk c"><b>${i+1}</b><span>${esc(s.n.text)}</span><small>出 ${s.out}</small></div>`).join('')||'<div class="mute">目前沒有符合條件的便條</div>'}
@@ -381,7 +388,8 @@ function fitBoard(){const b=$('#board');if(!b)return;const w=b.parentElement,ns=
   const W=Math.max(320,...ns.map(n=>n.offsetLeft+n.offsetWidth+14));let z=Math.min(1,w.clientWidth/W);fs(z);
   const H=Math.max(190,...ns.map(n=>n.offsetTop+n.offsetHeight+14));
   if(innerWidth>=900){const mh=innerHeight*.78;if(H*z>mh){z=mh/H;fs(z)}}
-  BZ=z;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${z})`;w.style.height=(H*z)+'px'}
+  const zm=ZM[S.stage]||1,zz=z*zm;BZ=zz;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${zz})`;
+  w.style.overflow=zm>1?'auto':'hidden';w.style.height=(zm>1?Math.min(H*zz,innerHeight*.72):H*zz)+'px'}
 addEventListener('resize',()=>{fitBoard();drawLinks()});
 function zoomV(W){const fit=(Math.min(innerWidth,860)-36)/W;if(Z==='fit')return Math.min(1,fit);if(Z==null)return innerWidth<600?Math.min(1,Math.max(.7,fit)):1;return Z}
 function bstyle(W,H){lastW=W;const z=zoomV(W);return `width:${W}px;height:${H}px;transform:scale(${z});transform-origin:0 0;margin:0 ${-W*(1-z)}px ${-H*(1-z)}px 0`}
@@ -421,11 +429,11 @@ const bar=ed?`<button class="btn pri sm" data-a="addSol">＋ 解決方式</butto
 const main=`<div class="card"><div class="fhead">
 <label class="f"><span>魚頭｜方式（打算怎麼做）</span><textarea rows="1" data-f="fish:fish:method" ${dis()}>${esc(f.method)}</textarea></label>
 <label class="f"><span>魚頭｜期望結果（要達到什麼）</span><textarea rows="1" data-f="fish:fish:goal" ${dis()}>${esc(f.goal)}</textarea></label></div></div>
-<div class="card"><h3>魚骨 <span class="mute">藍色＝類別，編號＝先後順序；綠色＝解決方式</span></h3>
-${cats.length||orphan.length?`<div class="fish">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
+<div class="card zhost">${zctl()}<h3>魚骨 <span class="mute">藍色＝類別，編號＝先後順序；綠色＝解決方式</span></h3>
+${cats.length||orphan.length?`<div data-zoom style="overflow:auto"><div class="fish" data-zt style="zoom:${ZM[2]||1}">${cats.map((c,i)=>`<div class="bone"><div class="cat"><span class="no">${i+1}</span><span class="nm">${esc(c.name)}</span>
 ${ed?`<button class="ib" data-a="editCat" data-id="${c.id}" aria-label="編輯類別">✎</button><button class="ib" data-a="addSol" data-cat="${c.id}" aria-label="在這一類新增解決方式">＋</button>`:''}</div>
 ${sols.filter(s=>s.cat===c.id).map(solH).join('')||'<div class="mute" style="margin-top:4px">尚無解決方式</div>'}</div>`).join('')}
-${orphan.length?`<div class="bone"><div class="cat" style="background:#e8e6df"><span class="nm">尚未分類</span></div>${orphan.map(solH).join('')}</div>`:''}</div>`
+${orphan.length?`<div class="bone"><div class="cat" style="background:#e8e6df"><span class="nm">尚未分類</span></div>${orphan.map(solH).join('')}</div>`:''}</div></div>`
 :'<div class="empty">先盡量發想解決方式，再把相近的歸成一類。</div>'}</div>`;
 const side=`<div class="card"><h3>要解決的對象 <span class="mute">來自關聯圖</span></h3>
 ${A.causes.map((s,i)=>`<div class="rk c"><b>主因${i+1}</b><span>${esc(s.n.text)}</span></div>`).join('')}${A.probs.map((s,i)=>`<div class="rk p"><b>問題${i+1}</b><span>${esc(s.n.text)}</span></div>`).join('')}
@@ -436,7 +444,7 @@ return{bar,main,side}}
 function v3(){const cr=all('crit'),op=all('opt'),d=get('dec','dec',{max:5}),ed=isEd(),mx=Number(d.max)||5;
 const tots=op.map(o=>total(o,cr)),best=Math.max(0,...tots);const rank=t=>t>0?[...new Set(tots)].sort((a,b)=>b-a).indexOf(t)+1:'';
 const bar=ed?`<button class="btn pri sm" data-a="addOpt">＋ 方案</button><button class="btn sm" data-a="addCrit">＋ 檢核點</button><span class="hint">分數 1–</span><input type="number" style="width:54px" min="2" max="10" data-f="dec:dec:max" value="${mx}" aria-label="分數上限">`:'';
-const main=`<div class="card"><h3>決策矩陣 <span class="mute">分數越高越好；權重越大越重要</span></h3>${cr.length||op.length?`<div class="tw"><table class="dm"><thead><tr><th>方案 ＼ 檢核點</th>
+const main=`<div class="card zhost">${zctl()}<h3>決策矩陣 <span class="mute">分數越高越好；權重越大越重要</span></h3>${cr.length||op.length?`<div class="tw" data-zoom><table class="dm" data-zt style="zoom:${ZM[3]||1}"><thead><tr><th>方案 ＼ 檢核點</th>
 ${cr.map((c,i)=>`<th class="c${i%4}">${ed?`<button class="hb" data-a="editCrit" data-id="${c.id}">${esc(c.name)||'（未命名）'} ✎</button>`:esc(c.name)}</th>`).join('')}<th>加權總分</th></tr></thead><tbody>
 ${op.map((o,r)=>`<tr class="${tots[r]>0&&tots[r]===best?'best':''}"><td>${ed?`<button class="hb" data-a="editOpt" data-id="${o.id}">${esc(o.name)||'（未命名）'} ✎</button>`:esc(o.name)}</td>
 ${cr.map((c,i)=>`<td class="c${i%4}"><input type="number" inputmode="numeric" min="1" max="${mx}" data-sc="${o.id}:${c.id}" value="${(o.sc||{})[c.id]??''}" ${dis()} aria-label="${esc(o.name)} 的 ${esc(c.name)} 分數"></td>`).join('')}
@@ -460,10 +468,10 @@ const bar=L&&ed?`<span class="lf">「${nm(L.a)}」→「${nm(L.b)}」</span><but
 :linkFrom&&ids[linkFrom]?`<span class="lf">從「${nm(linkFrom)}」接到… 請點下一個圖形</span><button class="btn sm" data-a="linkCancel">取消</button>`
 :sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">接到下一個 →</button><button class="btn sm" data-a="editStep" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delStep" data-id="${sn.id}">刪除</button>`
 :ed?`<button class="btn pri sm" data-a="addStep">＋ 圖形</button><span class="hint">拖曳移動・點圖形接線・點線可改條件或刪除</span>`:'';
-const main=`<div class="boardwrap"><div class="board" id="board" data-nk="step" data-lk="edge"><svg id="svg"></svg>
+const main=`<div class="zhost">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="step" data-lk="edge"><svg id="svg"></svg>
 ${st.map((x,i)=>{const p=spos(x,i),meta=x.who?esc(x.who):'';
  return `<div class="note fn f-${x.type||'p'} ${x.type==='d'?'dia':''} ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${p.x}px;top:${p.y}px"><div>${esc(x.text)}</div>${meta?`<small>${meta}</small>`:''}</div>`}).join('')}
-${st.length?'':'<div class="empty" style="padding-top:70px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div>`;
+${st.length?'':'<div class="empty" style="padding-top:70px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div></div>`;
 const side=`${d.concl?`<div class="card"><h3>最優方案結論</h3><div class="clamp">${esc(d.concl)}</div></div>`:''}
 `;
 return{bar,main,side}}
@@ -589,6 +597,7 @@ const ACT={
  addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
  zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
  guide:showGuide,
+ zm:d=>{const k=Number(d.d),z=ZM[S.stage]||1;ZM[S.stage]=k?Math.min(4,Math.max(.5,Math.round((z+k*.25)*100)/100)):1;render()},
  sugToggle:()=>{OD.sugall=!OD.sugall;render()},
  selLink:d=>{selL=selL===d.id?null:d.id;sel=null;linkFrom=null;render()},
  delSelLink:()=>{const id=selL;selL=null;if(id)del(id)},
@@ -614,7 +623,7 @@ const ACT={
  importAll:()=>{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=()=>{const r=new FileReader();r.onload=()=>{try{const db=JSON.parse(r.result);
    Object.keys(db).forEach(pid=>Object.values(db[pid]).forEach(e=>{e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1}));save();closeSheet();render();kick()}catch(e){alert('檔案格式不正確')}};r.readAsText(i.files[0])};i.click()}
 };
-const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','guide','sugToggle','exportAll','importAll'];
+const VIEWER_OK=['role','help','settings','closeSheet','back','stage','openProj','sugSend','zoom','guide','sugToggle','zm','exportAll','importAll'];
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const a=el.dataset.a;if(!ACT[a])return;
   if(!isEd()&&S.role&&!VIEWER_OK.includes(a))return;
   const ae=document.activeElement;if(a!=='sugSend'&&a!=='role'&&a!=='addLink'&&a!=='addEdge'&&ae&&ae.matches&&ae.matches('#app input,#app textarea'))ae.blur();
@@ -625,6 +634,10 @@ document.addEventListener('change',e=>{const el=e.target;if(!isEd())return;
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='sugText'){e.preventDefault();ACT.sugSend()}if(e.key==='Escape'&&!$('#modal').hidden)closeSheet()});
 ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
 document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+let pz=null;const tdist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+document.addEventListener('touchstart',e=>{if(e.touches.length===2&&S.stage>0&&e.target.closest&&e.target.closest('[data-zoom]')){drag=null;pz={d:tdist(e.touches)||1,z:ZM[S.stage]||1}}},{passive:true});
+document.addEventListener('touchmove',e=>{if(pz&&e.touches.length===2){ZM[S.stage]=Math.min(4,Math.max(.5,Math.round(pz.z*tdist(e.touches)/pz.d*20)/20));applyZoom()}},{passive:true});
+document.addEventListener('touchend',e=>{if(pz&&e.touches.length<2){pz=null;render()}});
 let lastTap=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lastTap<300&&!e.target.closest('input,textarea,select,button,[data-a],.note'))e.preventDefault();lastTap=n},{passive:false});
 render();sync();
 </script>
