@@ -217,7 +217,7 @@ label.f{margin-bottom:8px}label.f>span{font-size:calc(12px*var(--u,1));margin-bo
 .legend{position:absolute;right:6px;top:6px;z-index:2;margin:0;font-size:calc(11px*var(--u,1));opacity:.9}
 .sugin{flex-wrap:nowrap}.sugin input{min-width:0}.sugin select{flex:none}
 .sug{padding:5px 8px;font-size:calc(13px*var(--u,1));margin:6px 0 0}
-.fish{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(158px*var(--u,1)),1fr));gap:8px;align-items:start}
+.fish{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(132px*var(--u,1)),1fr));gap:8px;align-items:start}
 .fish .bone{padding:0}.fish .bone:before{display:none}
 .fish .sol{margin:4px 0 0;padding:6px 8px;font-size:calc(13px*var(--u,1))}
 .fish .cat{padding:4px 6px;font-size:calc(13px*var(--u,1))}
@@ -239,6 +239,13 @@ html,body{touch-action:pan-x pan-y;overscroll-behavior-x:none}
 .zctl .pct{font-size:calc(11px*var(--u,1));min-width:44px}
 .zhost>h3{padding-right:116px;min-height:28px}
 .fish .tag{white-space:normal}
+.zf{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--mute);margin-left:4px}
+.zf select{width:auto;font-size:12px;padding:2px 2px;height:28px;border-radius:6px;background:rgba(255,255,255,.94)}
+.zhost.zb>.zctl{position:static;justify-content:flex-end;margin-bottom:4px}
+.zhost>h3{padding-right:0}
+.zhost:not(.zb)>h3{padding-right:214px}
+@media(max-width:600px){.zhost:not(.zb)>h3 .mute{display:none}}
+@media(max-width:600px){.dm th,.dm td{min-width:42px;padding:2px}.dm th:first-child,.dm td:first-child{min-width:64px;max-width:80px}.dm input{width:36px}}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -259,10 +266,11 @@ if(!S.db._index)S.db._index={};
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
 const gasUrl=()=>(CONFIG_GAS_URL||'').trim();
 if(S.gasKey!==gasUrl()){S.gasKey=gasUrl();S.rev=0}
-const DU=()=>(S.fz||1)*(S.dfz||1);
+const DF=()=>S.dsz||1.2;
+const DU=()=>(S.fz||1)*DF();
 const applyU=()=>document.documentElement.style.setProperty('--u',S.fz||1);applyU();
 const OD=innerWidth>=600?{links:1,stat:1,edges:1}:{};let Z=null,lastW=700;const ZM={};
-function zctl(){const z=ZM[S.stage]||1;return `<div class="zctl"><button class="ib" data-a="zm" data-d="-1" aria-label="縮小">－</button><button class="ib pct" data-a="zm" data-d="0" title="回到預設大小">${Math.round(z*100)}%</button><button class="ib" data-a="zm" data-d="1" aria-label="放大">＋</button></div>`}
+function zctl(){const z=ZM[S.stage]||1;return `<div class="zctl"><button class="ib" data-a="zm" data-d="-1" aria-label="縮小">－</button><button class="ib pct" data-a="zm" data-d="0" title="回到預設大小">${Math.round(z*100)}%</button><button class="ib" data-a="zm" data-d="1" aria-label="放大">＋</button><label class="zf">字體<select data-zf aria-label="圖內文字大小">${[[1,'小'],[1.2,'標準'],[1.4,'大'],[1.7,'特大'],[2,'最大']].map(o=>`<option value="${o[0]}" ${DF()===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label></div>`}
 function applyZoom(){const z=ZM[S.stage]||1,t=$('[data-zt]');if($('#board')){fitBoard();drawLinks()}else if(t)t.style.zoom=z;const q=$('.zctl .pct');if(q)q.textContent=Math.round(z*100)+'%'}
 const isEd=()=>S.role==='editor';
 const dis=()=>isEd()?'':'disabled';
@@ -375,7 +383,7 @@ const bar=L&&ed?`<span class="lf">因為「${nm(L.a)}」→ 所以「${nm(L.b)}�
 :linkFrom&&A.st[linkFrom]?`<span class="lf">因為「${nm(linkFrom)}」所以… 請點結果的便條</span><button class="btn sm" data-a="linkCancel">取消</button>`
 :sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">因為它，所以… →</button><button class="btn sm sb" data-a="addBSol" data-id="${sn.id}">＋ 解決方式</button><button class="btn sm" data-a="editNote" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delNote" data-id="${sn.id}">刪除</button>`
 :ed?`<button class="btn pri sm" data-a="addNote">＋ 影響因素</button><button class="btn sm sb" data-a="addBSol">＋ 解決方式</button><span class="hint">拖曳移動・點便條畫箭頭・點箭頭可刪除</span>`:'';
-const main=`<div class="zhost">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="note" data-lk="link"><svg id="svg"></svg>
+const main=`<div class="zhost zb">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="note" data-lk="link"><svg id="svg"></svg>
 ${A.ns.map(n=>{const g=A.tag[n.id];return `<div class="note ${g?g.c:''} ${sel===n.id?'sel':''}" data-id="${n.id}" style="left:${n.x||0}px;top:${n.y||0}px">${g?`<span class="tg">${g.l}</span>`:''}${esc(n.text)}</div>`}).join('')}
 ${bs.map(x=>`<div class="note bsol ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${x.x}px;top:${x.y||0}px"><span class="tg">解決方式</span>${esc(x.text)}</div>`).join('')}
 ${A.ns.length?'':'<div class="empty" style="padding-top:70px">還沒有便條。先把所有想得到的影響因素都寫出來。</div>'}</div></div></div>`;
@@ -388,11 +396,11 @@ ${A.probs.map((s,i)=>`<div class="rk p"><b>${i+1}</b><span>${esc(s.n.text)}</spa
 return{bar,main,side}}
 let BZ=1,BSC=null,RS=-1;
 function fitBoard(){const b=$('#board');if(!b)return;const w=b.parentElement,keep=BSC||[w.scrollLeft,w.scrollTop],ns=[...b.querySelectorAll('.note')],cap=b.dataset.nk==='step'?16:19;
-  const fs=z=>b.style.setProperty('--fs',Math.min(cap,Math.max(13,10.5/z))*Math.min(S.dfz||1,1.2)+'px');
+  const fs=z=>b.style.setProperty('--fs',Math.min(cap,Math.max(13,10.5/z))*Math.min(DF(),1.2)+'px');
   const W=Math.max(320,...ns.map(n=>n.offsetLeft+n.offsetWidth+14));let z=Math.min(1,w.clientWidth/W);fs(z);
   const H=Math.max(190,...ns.map(n=>n.offsetTop+n.offsetHeight+14));
   if(innerWidth>=900){const mh=innerHeight*.78;if(H*z>mh){z=mh/H;fs(z)}}
-  const zm=(ZM[S.stage]||1)*Math.max(1,(S.dfz||1)/1.2),zz=z*zm;BZ=zz;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${zz})`;
+  const zm=(ZM[S.stage]||1)*Math.max(1,DF()/1.2),zz=z*zm;BZ=zz;b.style.width=W+'px';b.style.height=H+'px';b.style.transform=`scale(${zz})`;
   w.style.overflow=zm>1?'auto':'hidden';w.style.height=(zm>1?Math.min(H*zz,innerHeight*.72):H*zz)+'px';
   BSC=null;if(zm>1){w.scrollLeft=keep[0];w.scrollTop=keep[1]}else{w.scrollLeft=0;w.scrollTop=0}}
 addEventListener('resize',()=>{fitBoard();drawLinks()});
@@ -473,7 +481,7 @@ const bar=L&&ed?`<span class="lf">「${nm(L.a)}」→「${nm(L.b)}」</span><but
 :linkFrom&&ids[linkFrom]?`<span class="lf">從「${nm(linkFrom)}」接到… 請點下一個圖形</span><button class="btn sm" data-a="linkCancel">取消</button>`
 :sn&&ed?`<b class="selname">「${esc(sn.text)}」</b><button class="btn sm pri" data-a="linkStart" data-id="${sn.id}">接到下一個 →</button><button class="btn sm" data-a="editStep" data-id="${sn.id}">編輯</button><button class="btn sm danger" data-a="delStep" data-id="${sn.id}">刪除</button>`
 :ed?`<button class="btn pri sm" data-a="addStep">＋ 圖形</button><span class="hint">拖曳移動・點圖形接線・點線可改條件或刪除</span>`:'';
-const main=`<div class="zhost">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="step" data-lk="edge"><svg id="svg"></svg>
+const main=`<div class="zhost zb">${zctl()}<div class="boardwrap" data-zoom><div class="board" id="board" data-nk="step" data-lk="edge"><svg id="svg"></svg>
 ${st.map((x,i)=>{const p=spos(x,i),meta=x.who?esc(x.who):'';
  return `<div class="note fn f-${x.type||'p'} ${x.type==='d'?'dia':''} ${sel===x.id?'sel':''}" data-id="${x.id}" style="left:${p.x}px;top:${p.y}px"><div>${esc(x.text)}</div>${meta?`<small>${meta}</small>`:''}</div>`}).join('')}
 ${st.length?'':'<div class="empty" style="padding-top:70px">把最優方案拆成一步一步可以執行的動作，從「開始」畫到「結束」。</div>'}</div></div></div>`;
@@ -581,11 +589,10 @@ ${ST.map((s,i)=>`<h4>${i}　${s.n}<span class="mute">　${s.q}</span></h4><p>${s
 <li><b>分岔</b>：做到一個斷點想試另一條路時，按「從這裡分岔」（或專案列表的「複製分岔」），會複製出一個獨立的新專案，原專案不受影響。</li><li>便條數量、方案數、檢核點數、分數級距都可以自由增減。</li><li>右上角圓點：綠色＝已同步、灰色＝離線模式（資料只在本機）、紅色＝連線失敗。</li></ul></div>`;m.hidden=false}
 
 function showSettings(){sheet({title:'設定',
-note:'這兩個大小都只影響你自己這台裝置，不會改到其他組員的畫面。',
+note:'字體大小只影響你自己這台裝置，不會改到其他組員的畫面。圖裡的字請用每張圖右上角的「字體」選單。',
 fields:[{key:'name',label:'你的名字',value:S.name},{key:'role',label:'身分',type:'select',value:S.role,options:[['editor','編輯者'],['viewer','觀看者']]},
-{key:'fz',label:'介面字體大小（只影響自己）',type:'select',value:String(S.fz||1),options:[['0.9','小'],['1','標準'],['1.15','大'],['1.3','特大'],['1.5','最大']]},
-{key:'dfz',label:'圖內文字大小：關聯圖／魚骨圖／決策矩陣／流程圖（只影響自己）',type:'select',value:String(S.dfz||1),options:[['0.85','小'],['1','標準'],['1.2','大'],['1.4','特大'],['1.7','最大']]}],
-onSave:v=>{S.name=v.name;S.role=v.role;S.fz=Number(v.fz)||1;S.dfz=Number(v.dfz)||1;applyU();save();render();sync()}});
+{key:'fz',label:'介面字體大小（只影響自己）',type:'select',value:String(S.fz||1),options:[['0.9','小'],['1','標準'],['1.15','大'],['1.3','特大'],['1.5','最大']]}],
+onSave:v=>{S.name=v.name;S.role=v.role;S.fz=Number(v.fz)||1;applyU();save();render();sync()}});
 $('#sf').insertAdjacentHTML('beforeend',`<div class="row" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px"><span class="mute sp">備份</span><button type="button" class="btn sm" data-a="exportAll">匯出 JSON</button><button type="button" class="btn sm" data-a="importAll">匯入 JSON</button></div>`)}
 
 /* ===== 事件 ===== */
@@ -638,7 +645,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!
   if(!isEd()&&S.role&&!VIEWER_OK.includes(a))return;
   const ae=document.activeElement;if(a!=='sugSend'&&a!=='role'&&a!=='addLink'&&a!=='addEdge'&&ae&&ae.matches&&ae.matches('#app input,#app textarea'))ae.blur();
   ACT[a](el.dataset,el);if((a==='sugSend'||a==='addLink'||a==='addEdge')&&pend){document.activeElement&&document.activeElement.blur();render()}});
-document.addEventListener('change',e=>{const el=e.target;if(!isEd())return;
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.zf!==undefined){S.dsz=Number(el.value)||1.2;save();el.blur();pend=false;render();return}if(!isEd())return;
   if(el.dataset.f){const[id,k,f]=el.dataset.f.split(':');setF(id,k,f,el.type==='number'?(el.value===''?'':Number(el.value)):el.value)}
   else if(el.dataset.sc){const[oid,cid]=el.dataset.sc.split(':');const o={...get(oid,'opt')};o.sc={...(o.sc||{}),[cid]:el.value===''?'':Number(el.value)};put(o)}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='sugText'){e.preventDefault();ACT.sugSend()}if(e.key==='Escape'&&!$('#modal').hidden)closeSheet()});
