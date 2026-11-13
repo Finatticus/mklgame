@@ -246,6 +246,9 @@ html,body{touch-action:pan-x pan-y;overscroll-behavior-x:none}
 .zhost:not(.zb)>h3{padding-right:214px}
 @media(max-width:600px){.zhost:not(.zb)>h3 .mute{display:none}}
 @media(max-width:600px){.dm th,.dm td{min-width:42px;padding:2px}.dm th:first-child,.dm td:first-child{min-width:64px;max-width:80px}.dm input{width:36px}}
+.loglist{max-height:46vh;overflow:auto;-webkit-overflow-scrolling:touch}
+.lg1{padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.lg1 .mute{font-size:11px}
 @media print{.top,.nav,.foot,.sugbox,details.guide{display:none}}
 </style>
 </head>
@@ -275,13 +278,40 @@ function applyZoom(){const z=ZM[S.stage]||1,t=$('[data-zt]');if($('#board')){fit
 const isEd=()=>S.role==='editor';
 const dis=()=>isEd()?'':'disabled';
 const P=()=>S.db[S.pid]||(S.db[S.pid]={});
-function put(e,pid){pid=pid||S.pid;e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1;save();render();kick()}
+/* ===== 編輯歷史 ===== */
+let LOGOFF=0;
+const KL={note:'影響因素',sol:'解決方式',cat:'類別',crit:'檢核點',opt:'方案',step:'流程圖形'};
+const FL={title:'題目',now:'現況描述',goal:'期望結果',scope:'範圍與限制',method:'魚頭的方式',concl:'結論',max:'分數上限'};
+const cut=(v,n)=>{v=String(v??'');n=n||30;return v.length>n?v.slice(0,n)+'…':v};
+function addLog(stages,text){const id=uid('h'),t=Date.now();P()[id]={id,k:'log',o:t,t,stages,text,by:S.name||(isEd()?'編輯者':'觀看者')};S.dirty[S.pid+'|'+id]=1}
+function describe(p,e){const live=p&&!p.d?p:null,k=e.k||(p&&p.k),nm=x=>cut(x.text||x.name||''),tx=id=>{const x=P()[id];return x&&!x.d?cut(x.text||x.name||'',16):'？'};
+  const st={topic:[0],note:[1],link:[1],fish:[2],cat:[2],crit:[3],opt:[3],dec:[3],step:[4],edge:[4]}[k]||(k==='sol'?((e.x??(p&&p.x))!=null?[1,2]:[2]):k==='sug'?[e.stage??(p&&p.stage)]:null);
+  if(!st)return null;
+  if(k==='sug'){const t=cut(e.text||(p&&p.text));if(e.d)return live?[st,'刪除意見「'+t+'」']:null;if(!live)return[st,'提出意見「'+t+'」'];if(p.st!==e.st)return[st,(e.st==='ok'?'採用':'略過')+'意見「'+t+'」'];return null}
+  if(k==='link'||k==='edge'){const o=live||e,d='「'+tx(o.a)+'」→「'+tx(o.b)+'」',w=k==='link'?'箭頭':'連線';
+    if(e.d)return live?[st,'刪除'+w+' '+d]:null;if(!live)return[st,(k==='link'?'畫箭頭 ':'接線 ')+d+(e.label?'（'+cut(e.label,12)+'）':'')];
+    if((p.label||'')!==(e.label||''))return[st,'修改連線條件 '+d+'：'+(e.label||'（無）')];return null}
+  if(k==='topic'||k==='fish'||k==='dec'){const ch=Object.keys(FL).filter(f=>String(e[f]??'')!==String((p||{})[f]??''));return ch.length?[st,ch.map(f=>'修改'+FL[f]+'：'+cut(e[f])).join('；')]:null}
+  const K=KL[k];if(e.d)return live?[st,'刪除'+K+'「'+nm(live)+'」']:null;if(!live)return[st,'新增'+K+'「'+nm(e)+'」'];
+  const c=[],n='「'+nm(e)+'」';
+  if((p.text||p.name||'')!==(e.text||e.name||''))c.push('把'+K+'「'+nm(p)+'」改成「'+nm(e)+'」');
+  if((p.role||'')!==(e.role||''))c.push(n+'的判定改為'+({c:'主因',p:'問題',x:'不列入'}[e.role]||'自動'));
+  if((p.target||'')!==(e.target||''))c.push(e.target?n+'對應到「'+tx(e.target)+'」':n+'取消對應');
+  if(k==='sol'&&(p.cat||'')!==(e.cat||''))c.push(e.cat?n+'分類到「'+tx(e.cat)+'」':n+'移到尚未分類');
+  if(k==='step'&&(p.type||'')!==(e.type||''))c.push(n+'類型改為'+((TY[e.type]||'').replace(/（.*/,'')));
+  if((p.who||'')!==(e.who||''))c.push(n+'負責人：'+(e.who||'（無）'));
+  if(k==='crit'&&String(p.w??'')!==String(e.w??''))c.push('檢核點'+n+'權重 '+(p.w??'—')+' → '+(e.w??'—'));
+  if(k==='opt'){const a=p.sc||{},b=e.sc||{};Object.keys({...a,...b}).forEach(id=>{if(String(a[id]??'')!==String(b[id]??''))c.push(n+'的「'+tx(id)+'」分數 '+(a[id]===''||a[id]==null?'—':a[id])+' → '+(b[id]===''||b[id]==null?'—':b[id]))})}
+  return c.length?[st,c.join('；')]:null}
+function put(e,pid){pid=pid||S.pid;const prev=(S.db[pid]||{})[e.id];e.t=Date.now();(S.db[pid]||(S.db[pid]={}))[e.id]=e;S.dirty[pid+'|'+e.id]=1;
+  if(!LOGOFF&&pid===S.pid&&pid!=='_index'){try{const L=describe(prev,e);if(L)addLog(L[0],L[1])}catch(_){}}
+  save();render();kick()}
 function get(id,k,def){const e=P()[id];return e&&!e.d?e:Object.assign({id,k},def||{})}
 function all(k){return Object.values(P()).filter(e=>e.k===k&&!e.d).sort((a,b)=>(a.o||0)-(b.o||0)||(a.t-b.t))}
 function del(id){const e=P()[id];if(e)put({id:e.id,k:e.k,d:1})}
 function setF(id,k,f,v){const e={...get(id,k)};e[f]=v;put(e)}
 function move(id,k,dir,filter){const l=all(k).filter(filter||(()=>true));const i=l.findIndex(e=>e.id===id),j=i+dir;if(i<0||j<0||j>=l.length)return;
-  const a=l[i],b=l[j];let oa=a.o||a.t,ob=b.o||b.t;if(oa===ob)ob+=dir;put({...a,o:ob});put({...b,o:oa})}
+  const a=l[i],b=l[j];let oa=a.o||a.t,ob=b.o||b.t;if(oa===ob)ob+=dir;LOGOFF++;put({...a,o:ob});addLog(k==='step'?[4]:[2],'調整'+(KL[k]||'')+'「'+cut(a.text||a.name)+'」的順序');put({...b,o:oa});LOGOFF--}
 
 /* ===== 各階段說明 ===== */
 const ST=[
@@ -333,7 +363,7 @@ function render(){const a=document.activeElement;if(drag||(a&&a.matches&&a.match
   if(!S.role)app.innerHTML=vEntry();else if(!S.pid||!S.db._index[S.pid]||S.db._index[S.pid].d)app.innerHTML=vProjects();else app.innerHTML=vWork();
   BSC=(sc&&RS===S.stage)?sc:null;RS=S.stage;
   document.querySelectorAll('#app textarea').forEach(grow);fitBoard();drawLinks();setSync(gasUrl()?(syncSt==='off'?'ok':syncSt):'off')}
-document.addEventListener('toggle',e=>{const t=e.target;if(t.dataset&&t.dataset.d)OD[t.dataset.d]=t.open},true);
+document.addEventListener('toggle',e=>{const t=e.target;if(t.dataset&&t.dataset.d){const was=!!OD[t.dataset.d];OD[t.dataset.d]=t.open;if(t.dataset.d==='log'&&was!==t.open)render()}},true);
 function grow(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px'}
 document.addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA')grow(e.target)});
 document.addEventListener('focusout',()=>setTimeout(()=>{if(pend)render()},60));
@@ -363,7 +393,11 @@ function vWork(){const proj=S.db._index[S.pid],s=S.stage,cnt=i=>all('sug').filte
 const B=[v0,v1,v2,v3,v4][s]();
 return topbar(proj.name||'未命名專案',true)+`<div class="nav"><div class="wrap">${ST.map((x,i)=>`<button class="${i===s?'on':''}" data-a="stage" data-i="${i}"><span class="n">${i}</span>${x.n}${cnt(i)?`<span class="badge">${cnt(i)}</span>`:''}</button>`).join('')}</div></div>
 <main class="wrap ${isEd()?'ed':''}"><div class="tbar">${B.bar||''}<span class="sp"></span><button class="btn sm" data-a="guide">？做法</button>${isEd()?'<button class="btn sm" data-a="copyProj">⑂ 分岔</button>':''}</div>
-<div class="cols">${vSug(s)}<div class="pri">${B.main}</div>${B.side?`<aside class="side">${B.side}</aside>`:''}</div></main>`}
+<div class="cols">${vSug(s)}<div class="pri">${B.main}</div><aside class="side">${B.side||''}${vLog(s)}</aside></div></main>`}
+function vLog(s){const l=all('log').filter(x=>(x.stages||[]).includes(s)).reverse(),f=n=>String(n).padStart(2,'0');
+const tm=t=>{const d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()+' '+f(d.getHours())+':'+f(d.getMinutes())};
+return `<details class="card" data-d="log" ${OD.log?'open':''}><summary><b>編輯歷史</b> <span class="mute">${l.length} 筆</span></summary>
+${OD.log?(l.length?`<div class="loglist">${l.slice(0,200).map(x=>`<div class="lg1"><div class="mute">${tm(x.o)}・${esc(x.by||'')}</div><div>${esc(x.text)}</div></div>`).join('')}${l.length>200?'<div class="mute">只顯示最近 200 筆</div>':''}</div>`:'<div class="mute">這個階段還沒有編輯紀錄。只記錄內容的新增、修改、刪除和連線，單純拖曳位置不會記錄。</div>'):''}</details>`}
 function showGuide(){const i=S.stage,s=ST[i],m=$('#modal');m.innerHTML=`<div class="mask" data-a="closeSheet"></div><div class="sheet help"><div class="row"><h3 class="sp" style="margin:0">${i}　${s.n}<span class="mute">　${s.q}</span></h3><button class="btn sm" data-a="closeSheet">關閉</button></div>
 <p style="margin-top:10px">${s.what}</p><ol>${s.rules.map(r=>`<li>${r}</li>`).join('')}</ol><p class="mute">完整流程請看右上角「說明」。</p></div>`;m.hidden=false}
 
@@ -516,7 +550,7 @@ function editNote(id,preset,after){const n=all('note').length;const e=id?get(id,
 sheet({title:id?'編輯影響因素':'新增影響因素',fields:[{key:'text',label:'內容（一張便條只寫一件事）',type:'area',value:e.text},
 {key:'role',label:'主因／問題的判定',type:'select',value:e.role||'',options:[['','自動（依箭頭數）'],['c','手動指定為主因'],['p','手動指定為問題'],['x','不列入排序']]}],
 onSave:v=>{if(!v.text)return;put({...e,...v});after&&after()},onDelete:id?()=>delNote(id):null})}
-function delNote(id){all('link').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));if(sel===id)sel=null;del(id)}
+function delNote(id){LOGOFF++;all('link').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));LOGOFF--;if(sel===id)sel=null;del(id)}
 function editCat(id,preset){const e=id?get(id,'cat'):{id:uid('c'),k:'cat',o:Date.now(),name:'',...preset};
 sheet({title:id?'編輯類別':'新增類別',fields:[{key:'name',label:'類別名稱（藍色便條）',value:e.name,ph:'把相近的解決方式歸成一類後命名'}],
 extra:id?[['↑ 往前移',()=>move(id,'cat',-1)],['↓ 往後移',()=>move(id,'cat',1)]]:[],
@@ -538,7 +572,7 @@ const e=id?get(id,'step'):{id:uid('t'),k:'step',o:Date.now(),text:'',type:st.len
 sheet({title:id?'編輯圖形':'新增圖形',fields:[{key:'type',label:'類型',type:'select',value:e.type,options:Object.entries(TY)},
 {key:'text',label:'內容',value:e.text,ph:'步驟寫要做什麼；判斷寫成一個問句'},{key:'who',label:'負責人／單位（選填）',value:e.who}],
 onSave:v=>{if(!v.text)return;put({...e,...v});after&&after()},onDelete:id?()=>delStep(id):null})}
-function delStep(id){all('edge').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));if(sel===id)sel=null;del(id)}
+function delStep(id){LOGOFF++;all('edge').filter(l=>l.a===id||l.b===id).forEach(l=>del(l.id));LOGOFF--;if(sel===id)sel=null;del(id)}
 function editRisk(id,preset,after){const e=id?get(id,'risk'):{id:uid('r'),k:'risk',o:Date.now(),risk:'',prev:'',react:'',...preset};
 sheet({title:id?'編輯潛在風險':'新增潛在風險',fields:[{key:'risk',label:'可能出什麼問題',value:e.risk},{key:'prev',label:'預防措施（事前）',type:'area',value:e.prev},{key:'react',label:'應變措施（發生時）',type:'area',value:e.react}],
 onSave:v=>{if(!v.risk)return;put({...e,...v});after&&after()},onDelete:id?()=>del(id):null})}
@@ -612,9 +646,9 @@ const ACT={
  addNote:()=>editNote(),editNote:d=>editNote(d.id),delNote:d=>{if(confirm('刪除這張便條和它的箭頭？'))delNote(d.id)},
  zoom:d=>{const k=Number(d.d);Z=k?Math.min(1.5,Math.max(.3,Math.round((zoomV(lastW)+k*.15)*100)/100)):'fit';render()},
  guide:showGuide,
- noteBack:d=>{const n=get(d.id,'note');if(!n.text||!confirm('把「'+n.text+'」退回意見箱？它身上的箭頭會一起移除。'))return;put({id:uid('g'),k:'sug',o:Date.now(),stage:1,type:'note',text:n.text,by:n.by||S.name||'編輯者退回',st:'new'});delNote(d.id)},
+ noteBack:d=>{const n=get(d.id,'note');if(!n.text||!confirm('把「'+n.text+'」退回意見箱？它身上的箭頭會一起移除。'))return;LOGOFF++;addLog([1],'把影響因素「'+cut(n.text)+'」退回意見箱');put({id:uid('g'),k:'sug',o:Date.now(),stage:1,type:'note',text:n.text,by:n.by||S.name||'編輯者退回',st:'new'});delNote(d.id);LOGOFF--},
  sugDel:d=>del(d.id),
- sugClear:()=>{const l=all('sug').filter(x=>x.stage===S.stage&&x.st!=='new');if(l.length&&confirm('刪除這個階段全部 '+l.length+' 則已處理的意見？已採用進作業區的內容不會受影響。'))l.forEach(x=>del(x.id))},
+ sugClear:()=>{const l=all('sug').filter(x=>x.stage===S.stage&&x.st!=='new');if(l.length&&confirm('刪除這個階段全部 '+l.length+' 則已處理的意見？已採用進作業區的內容不會受影響。')){LOGOFF++;addLog([S.stage],'刪除 '+l.length+' 則已處理的意見');l.forEach(x=>del(x.id));LOGOFF--}},
  zm:d=>{const k=Number(d.d),z=ZM[S.stage]||1;ZM[S.stage]=k?Math.min(4,Math.max(.5,Math.round((z+k*.25)*100)/100)):1;render()},
  sugToggle:()=>{OD.sugall=!OD.sugall;render()},
  selLink:d=>{selL=selL===d.id?null:d.id;sel=null;linkFrom=null;render()},
