@@ -488,6 +488,21 @@
    * 表單：新增 / 編輯 / 核對
    * ========================================================= */
   function viewNew() {
+    // 匯入連結：#/inbody/new?import=<base64url JSON>，預先填好數值，核對後按匯入才會寫入
+    const q = W.query();
+    if (q.import) {
+      try {
+        const b64 = q.import.replace(/-/g, '+').replace(/_/g, '/');
+        const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
+        const im = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+        const keys = new Set(allKeys());
+        const record = {};
+        Object.keys(im.record || {}).forEach((k) => { if (keys.has(k)) record[k] = im.record[k]; });
+        if (!record.date) record.date = nowLocal();
+        S.draft = { record, photo: null, notes: String(im.notes || ''), source: 'import' };
+        return formView({ title: '核對數值', eyebrow: '已從照片轉錄', backTo: '#/inbody', review: true });
+      } catch (e) { toast('匯入連結格式不正確', 'err'); }
+    }
     S.draft = { record: { date: nowLocal() }, photo: null, notes: '', source: 'manual' };
     return formView({ title: '手動輸入', eyebrow: 'InBody', backTo: '#/inbody' });
   }
@@ -519,7 +534,7 @@
   function inputFor(k, rec, opts = {}) {
     const v = rec[k];
     const filled = has(v) ? 'filled' : 'empty';
-    const ai = S.draft && (S.draft.source === 'ai' || S.draft.source === 'seed') && has(v) ? ' ai' : '';
+    const ai = S.draft && (S.draft.source === 'ai' || S.draft.source === 'seed' || S.draft.source === 'import') && has(v) ? ' ai' : '';
     if (opts.type === 'select') {
       return `<select name="${k}" class="inp ${filled}${ai}"><option value="">–</option>${opts.options.map((o) => `<option ${String(v) === o ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
     }
