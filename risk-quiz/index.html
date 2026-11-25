@@ -81,6 +81,8 @@ table.t{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
 table.t th,table.t td{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
 table.t th{background:var(--bg);font-weight:600}
 .tblwrap{overflow-x:auto}
+table.t .nw{white-space:nowrap}
+@media (max-width:520px){table.t{font-size:13.5px}table.t th,table.t td{padding:6px 7px}}
 ul.kp{margin:4px 0 4px;padding-left:20px}
 ul.kp li{margin:3px 0}
 .note{background:#fff8e6;border:1px solid #f3dfa8;border-radius:8px;padding:8px 10px;font-size:14px;margin:6px 0}
@@ -91,10 +93,11 @@ details.ch>summary .n{background:var(--pri-soft);color:var(--pri);border-radius:
 details.ch>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub);transform:rotate(45deg);transition:.2s}
 details.ch[open]>summary::after{transform:rotate(-135deg)}
 details.ch .body{padding:0 16px 14px}
-.kv{display:grid;grid-template-columns:1fr auto;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.kv div{padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}
-.kv div:nth-child(even){text-align:right;font-weight:600;color:var(--pri)}
-.kv div:nth-last-child(-n+2){border-bottom:0}
+.kv{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.kv .r{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}
+.kv .r:last-child{border-bottom:0}
+.kv .k{flex:1 1 auto;min-width:0}
+.kv .v{flex:0 0 auto;max-width:100%;margin-left:auto;text-align:right;font-weight:600;color:var(--pri)}
 /* question */
 .q-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .tag{font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--sub)}
@@ -720,7 +723,9 @@ let notesSeg = 'ch', notesQ = '';
 function kpBlockHtml(bl){
   let h = bl.h ? `<h3>${fmt(bl.h)}</h3>` : '';
   if (bl.note) h += `<div class="note">${fmt(bl.note)}</div>`;
-  if (bl.table) h += `<div class="tblwrap"><table class="t"><tr>${bl.table.head.map(x => `<th>${fmt(x)}</th>`).join('')}</tr>${bl.table.rows.map(r => `<tr>${r.map(x => `<td>${fmt(x)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  // 短儲存格（≤7 字）不換行，避免手機上被擠成一行兩個字；長說明欄照常換行
+  const nw = x => String(x).replace(/==|\*\*/g, '').length <= 7 ? ' class="nw"' : '';
+  if (bl.table) h += `<div class="tblwrap"><table class="t"><tr>${bl.table.head.map(x => `<th${nw(x)}>${fmt(x)}</th>`).join('')}</tr>${bl.table.rows.map(r => `<tr>${r.map(x => `<td${nw(x)}>${fmt(x)}</td>`).join('')}</tr>`).join('')}</table></div>`;
   if (bl.b) h += `<ul class="kp">${bl.b.map(x => `<li>${fmt(x)}</li>`).join('')}</ul>`;
   return h;
 }
@@ -746,7 +751,7 @@ function renderNotes(){
     KP.numbers.forEach(g => {
       const items = g.items.filter(it => matchText(it.join(' ')));
       if (!items.length) return;
-      body += `<div class="card"><h2>${esc(g.cat)}</h2><div class="kv">${items.map(([k, v]) => `<div>${highlightIn('>' + esc(k) + '<', q).slice(1, -1)}</div><div>${esc(v)}</div>`).join('')}</div></div>`;
+      body += `<div class="card"><h2>${esc(g.cat)}</h2><div class="kv">${items.map(([k, v]) => `<div class="r"><span class="k">${highlightIn('>' + esc(k) + '<', q).slice(1, -1)}</span><span class="v">${esc(v)}</span></div>`).join('')}</div></div>`;
     });
   } else if (notesSeg === 'fx') {
     KP.formulas.forEach(g => {
