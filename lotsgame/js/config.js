@@ -3,7 +3,7 @@
 export const GAS_URL = '';
 
 export const APP_NAME = '萬象遊藝館';
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.0.1';
 export const START_COINS = 100000;
 
 // 每日簽到：基本 2,000，連續簽到每天多 500，最高 5,000

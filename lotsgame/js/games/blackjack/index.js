@@ -74,14 +74,15 @@ export async function mount(root) {
   const handsEl = h('div', { class: 'bj-hands' });
   const msg = h('div', { class: 'bj-msg bj-mid' });
   const dock = h('div', { class: 'bj-dock-in' });
-  root.replaceChildren(h('div', { class: 'bj' },
+  const table = h('div', { class: 'bj' },
     h('div', { class: 'bj-arc' }),
     h('div', { class: 'bj-legend' }, h('b', null, 'BLACKJACK 賠 3 : 2'), '莊家 17 點停牌 · 保險賠 2 : 1'),
     h('div', { class: 'bj-table' },
       h('div', { class: 'bj-zone dealer' }, h('div', { class: 'bj-label' }, '莊家'), dealerCards, dealerTotal),
       msg,
       h('div', { class: 'bj-zone player' }, handsEl)),
-    h('div', { class: 'bj-dock' }, dock)));
+    h('div', { class: 'bj-dock' }, dock));
+  root.replaceChildren(table);
 
   function cardEl(code, down, animate) {
     const el = h('div', { class: 'bj-card' + (down ? ' down' : '') },
@@ -145,6 +146,7 @@ export async function mount(root) {
     // 中央訊息
     if (S.message) msg.replaceChildren(h('div', null, S.message[0], S.message[1] ? h('small', null, S.message[1]) : null));
     else msg.replaceChildren();
+    table.classList.toggle('has-msg', !!S.message);
     renderDock();
   }
 

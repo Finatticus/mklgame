@@ -186,8 +186,8 @@ const LEVELS = {
   hard: { model: 'b18', visits: 64, timeMs: 4500, sample: false },
 };
 
-async function genmove({ size, komi, moves, level }) {
-  const cfg = LEVELS[level];
+async function genmove({ size, komi, moves, level, override }) {
+  const cfg = Object.assign({}, LEVELS[level], override || {});
   const session = await ensureModel(cfg.model);
   const pos = positionFromMoves(size, komi, moves);
   const n2 = size * size;
@@ -238,7 +238,9 @@ async function genmove({ size, komi, moves, level }) {
   }
 
   const resign = level !== 'easy' && moves.length > n2 * 0.35 && win < 0.02 && lead < -(size >= 13 ? 25 : 12);
-  return { move, win, lead, visits, resign, backend: backendName };
+  const out = { move, win, lead, visits, resign, backend: backendName, rawWin: ev.win, rawLead: ev.lead };
+  if (override && override.debug) out.children = root.moves.map((m, i) => ({ m, p: +root.priors[i].toFixed(3), n: root.children[i] ? root.children[i].N : 0, q: root.children[i] && root.children[i].N ? +(-root.children[i].W / root.children[i].N).toFixed(3) : null })).filter((c) => c.n > 0 || c.p > 0.05);
+  return out;
 }
 
 async function finalScore({ size, komi, moves, level }) {
