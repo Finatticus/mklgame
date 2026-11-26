@@ -692,23 +692,11 @@ function renderHome(){
     <h2>今日</h2>
     <div class="muted">今天練習了 <b style="color:var(--ink)">${todayN}</b> 題${last ? `；上次：${esc(last.mode)}・${esc(last.scope)} ${last.correct}/${last.total}${last.score != null ? `（${last.score} 分）` : ''}` : ''}</div>
     ${weak.length ? `<h3>最需要加強的章節</h3>${weak.map(([c, a]) => `<div class="row" style="margin:6px 0"><span class="grow small">第${c}章 ${esc(CH_NAMES[c])}</span><span class="small" style="color:var(--bad);font-weight:700">${a}%</span><button class="btn sm" data-ch="${c}">練這章</button></div>`).join('')}` : '<div class="muted small" style="margin-top:6px">作答一些題目後，這裡會列出正確率最低的章節。</div>'}
-  </div>
-  <div class="card" id="boardCard"><h2>朋友進度</h2><div class="muted small">讀取中…</div></div>`;
+  </div>`;
   const sd = $('#setDate'); if (sd) sd.onclick = e => { e.preventDefault(); go('me'); };
   $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
   $$('[data-q]').forEach(b => b.onclick = () => quickStart(b.dataset.q));
   $$('[data-ch]').forEach(b => b.onclick = () => startQuiz({ title: `第${b.dataset.ch}章 加強`, ids: shuffle(ALL_IDS.filter(id => Q[id].c == b.dataset.ch)).slice(0, 20), mode: 'instant', scope: `第${b.dataset.ch}章` }));
-  loadBoard();
-}
-async function loadBoard(){
-  const el = $('#boardCard'); if (!el) return;
-  if (!gasUrl()) { el.innerHTML = '<h2>朋友進度</h2><div class="muted small">尚未設定 GAS 網址，無法讀取朋友進度（統計 > 設定）。</div>'; return; }
-  try {
-    const j = await api({ action: 'board' });
-    const rows = (j.board || []).filter(b => b.account).sort((a, b) => (b.answered || 0) - (a.answered || 0));
-    if (!$('#boardCard')) return;
-    $('#boardCard').innerHTML = `<h2>朋友進度</h2><div class="tblwrap"><table class="t"><tr><th>帳號</th><th>已練習</th><th>正確率</th><th>模擬考最佳</th><th>最近</th></tr>${rows.map(b => `<tr${b.account === ACC ? ' style="background:var(--pri-soft)"' : ''}><td>${esc(b.account)}</td><td>${b.answered ?? 0}</td><td>${b.acc ?? 0}%</td><td>${b.mockBest ?? '—'}</td><td class="small">${b.lastActive ? dateStr(b.lastActive) : '—'}</td></tr>`).join('')}</table></div>`;
-  } catch (e) { if ($('#boardCard')) $('#boardCard').innerHTML = '<h2>朋友進度</h2><div class="muted small">目前無法連線，稍後再試。</div>'; }
 }
 function quickStart(k){
   if (k === 'random20') startQuiz({ title: '隨機 20 題', ids: shuffle(ALL_IDS).slice(0, 20), mode: 'instant', scope: '全部題庫' });

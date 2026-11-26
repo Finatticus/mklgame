@@ -38,7 +38,6 @@ function handle_(req) {
   try {
     var action = String(req.action || '');
     if (action === 'ping') return { ok: true, time: Date.now() };
-    if (action === 'board') return { ok: true, board: board_() };
 
     var acc = normAccount_(req.account);
     if (!acc) return { ok: false, error: '帳號格式不正確' };
@@ -157,21 +156,4 @@ function lastLogRow_(sh) {
   var col = sh.getRange(1, LOG_COL, last, 1).getValues();
   for (var i = col.length - 1; i >= 0; i--) if (col[i][0] !== '' && col[i][0] !== null) return i + 1;
   return 1;
-}
-
-/* 朋友排行榜：讀取每個帳號的 summary */
-function board_() {
-  var res = [];
-  var ss = getSS_();
-  var idx = ss.getSheetByName(INDEX_SHEET);
-  if (!idx || idx.getLastRow() < 2) return res;
-  var names = idx.getRange(2, 1, idx.getLastRow() - 1, 1).getValues().map(function (r) { return String(r[0]); });
-  names.forEach(function (name) {
-    var sh = ss.getSheetByName(name);
-    if (!sh) return;
-    var st = readState_(sh);
-    if (!st.summary) { res.push({ account: name }); return; }
-    try { var s = JSON.parse(st.summary.v); s.account = name; res.push(s); } catch (e) { res.push({ account: name }); }
-  });
-  return res;
 }
