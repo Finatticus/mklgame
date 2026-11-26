@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>dev test</title>
+<body style="font-family:monospace;white-space:pre-wrap">dev test page
+<script type="module">
+window.goWorker = new Worker('../js/games/go/engine-worker.js', { type: 'module' });
+let seq = 0; const pending = {};
+goWorker.onmessage = (e) => { const p = pending[e.data.id]; if (!p) return; if (e.data.progress != null) return; delete pending[e.data.id]; e.data.error ? p.reject(new Error(e.data.error)) : p.resolve(e.data.result); };
+goWorker.onerror = (e) => { window.workerError = e.message || 'worker error'; };
+window.goCall = (type, payload) => new Promise((resolve, reject) => { const id = ++seq; pending[id] = { resolve, reject }; goWorker.postMessage({ id, type, payload }); });
+window.ready = true;
+</script>
