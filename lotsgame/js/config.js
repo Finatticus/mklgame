@@ -1,9 +1,9 @@
 // 平台設定。部署 GAS 後，把網頁應用程式網址貼到 GAS_URL（步驟見 gas/README.md）。
 // 留空時為「單機模式」：帳號與紀錄只存在這台裝置，不會同步。
-export const GAS_URL = '';
+export const GAS_URL = 'https://script.google.com/macros/s/AKfycby__LSshh7hadtiqLNcae_c5aqqjr1sxKtF8GRqRSurglfsGxSvNWqECphwbGBN92kT/exec';
 
 export const APP_NAME = '萬象遊藝館';
-export const APP_VERSION = '1.0.1';
+export const APP_VERSION = '1.0.2';
 export const START_COINS = 100000;
 
 // 每日簽到：基本 2,000，連續簽到每天多 500，最高 5,000
