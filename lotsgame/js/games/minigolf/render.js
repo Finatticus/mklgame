@@ -4,11 +4,17 @@ import { loadImage, asset } from '../../ui.js';
 import { BALL_R, CUP_R, moverShapes, inPoly } from './physics.js';
 
 const THEMES = {
-  garden: { ground: 'golf/pebbles.jpg', groundScale: 0.75, wall: 'wood/walnut.jpg', wallScale: 0.6, post: 'golf/mossrock.jpg', rock: 'golf/mossrock.jpg', sand: 'golf/sand.jpg', turf: [46, 122, 58], turfAlt: [52, 132, 64], edge: 'golf/granite.jpg' },
-  canyon: { ground: 'golf/desert.jpg', groundScale: 0.6, wall: 'golf/sandstone.jpg', wallScale: 0.9, post: 'golf/canyonrock.jpg', rock: 'golf/canyonrock.jpg', sand: 'golf/sand.jpg', turf: [40, 116, 72], turfAlt: [46, 126, 80], edge: 'golf/sandstone.jpg' },
+  garden: { ground: 'golf/pebbles.jpg', groundScale: 0.75, wall: 'wood/walnut.jpg', wallScale: 0.6, post: 'golf/mossrock.jpg', rock: 'golf/mossrock.jpg', sand: 'golf/sand.jpg', turf: [46, 122, 58], turfAlt: [52, 132, 64], stone: 'golf/granite.jpg' },
+  bamboo: { ground: 'golf/gravel.jpg', groundScale: 0.45, dim: 0.06, wall: 'wood/bamboo.jpg', wallScale: 0.45, post: 'golf/mossrock.jpg', rock: 'golf/mossrock.jpg', sand: 'golf/gravel.jpg', turf: [38, 106, 58], turfAlt: [44, 116, 64], stone: 'golf/granite.jpg' },
+  snow: { ground: 'golf/snow.jpg', groundScale: 0.9, dim: 0, tint: 'rgba(248,251,255,0.32)', wall: 'golf/bark.jpg', wallScale: 0.45, post: 'golf/granite.jpg', rock: 'golf/granite.jpg', sand: 'golf/sand.jpg', turf: [40, 112, 76], turfAlt: [46, 122, 82], stone: 'golf/granite.jpg' },
+  harbor: { ground: 'golf/dock.jpg', groundScale: 1.1, dim: 0.12, wall: 'golf/cedar.jpg', wallScale: 0.6, post: 'golf/granite.jpg', rock: 'golf/granite.jpg', sand: 'golf/sand.jpg', turf: [38, 112, 82], turfAlt: [44, 122, 90], stone: 'golf/granite.jpg' },
+  ruins: { ground: 'golf/cobble.jpg', groundScale: 0.75, dim: 0.12, wall: 'golf/mosswall.jpg', wallScale: 0.55, post: 'golf/mossrock.jpg', rock: 'golf/mossrock.jpg', sand: 'golf/sand.jpg', turf: [44, 112, 54], turfAlt: [50, 122, 60], stone: 'golf/mosswall.jpg' },
+  canyon: { ground: 'golf/desert.jpg', groundScale: 0.6, wall: 'golf/sandstone.jpg', wallScale: 0.9, post: 'golf/canyonrock.jpg', rock: 'golf/canyonrock.jpg', sand: 'golf/sand.jpg', turf: [40, 116, 72], turfAlt: [46, 126, 80], stone: 'golf/sandstone.jpg' },
 };
 const LIGHT = (() => { const v = [-0.5, -0.75, 1.1], l = Math.hypot(...v); return v.map((c) => c / l); })();
 const IMG = {};
+let IMG_WOOD = null; // 石材主題裡的木欄改用胡桃木
+loadImage(asset('wood/walnut.jpg')).then((im) => { IMG_WOOD = im; }).catch(() => {});
 const img = (p) => (IMG[p] = IMG[p] || loadImage(asset(p)));
 
 // 草皮紋理：細微雜點與絨毛方向的明暗
@@ -39,7 +45,7 @@ export class CourseView {
     this.tex = null;
     this.ready = (async () => {
       const tex = {};
-      for (const [k, v] of Object.entries(this.theme)) if (typeof v === 'string') tex[k] = await img(v);
+      for (const [k, v] of Object.entries(this.theme)) if (typeof v === 'string' && /\.(jpg|png)$/.test(v)) tex[k] = await img(v);
       this.tex = tex;
     })();
     this.turf = turfTile(this.theme.turf, this.theme.turfAlt);
@@ -92,7 +98,8 @@ export class CourseView {
 
     // 地面
     g.fillStyle = this.pattern(g, tex.ground, th.groundScale); g.fillRect(0, 0, W, H);
-    g.fillStyle = 'rgba(20,14,8,0.18)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = `rgba(20,14,8,${th.dim != null ? th.dim : 0.18})`; g.fillRect(0, 0, W, H);
+    if (th.tint) { g.fillStyle = th.tint; g.fillRect(0, 0, W, H); }
 
     // 裝飾石
     for (const d of def.decor || []) {
@@ -129,6 +136,22 @@ export class CourseView {
       this.shade(g, sp, 0.8);
       g.lineWidth = 0.05 * s; g.strokeStyle = 'rgba(70,50,20,0.35)'; g.shadowColor = 'rgba(60,40,10,0.6)'; g.shadowBlur = 0.03 * s * dpr; polyPath(g, sp, T); g.stroke();
       g.restore();
+    }
+    // 冰面：淡藍的光滑表面，帶斜向反光
+    for (const ip of w.ice || []) {
+      g.save(); polyPath(g, ip, T); g.clip();
+      const xs = ip.map((p) => p[0]), ys = ip.map((p) => p[1]);
+      const [ax, ay] = T(Math.min(...xs), Math.min(...ys)), [bx, by] = T(Math.max(...xs), Math.max(...ys));
+      const gr = g.createLinearGradient(ax, ay, bx, by);
+      gr.addColorStop(0, 'rgba(232,246,252,0.93)'); gr.addColorStop(0.5, 'rgba(204,230,242,0.9)'); gr.addColorStop(1, 'rgba(178,212,230,0.92)');
+      g.fillStyle = gr; g.fillRect(ax, ay, bx - ax, by - ay);
+      g.strokeStyle = 'rgba(255,255,255,0.45)'; g.lineWidth = Math.max(1, 0.006 * s);
+      for (let k = -6; k < 12; k++) { const x0 = ax + k * 0.18 * s; g.beginPath(); g.moveTo(x0, ay); g.lineTo(x0 + (by - ay) * 0.6, by); g.stroke(); }
+      g.strokeStyle = 'rgba(120,160,185,0.25)'; g.lineWidth = Math.max(0.6, 0.002 * s);
+      for (let k = 0; k < 14; k++) { const px = ax + ((k * 0.37) % 1) * (bx - ax), py = ay + ((k * 0.61) % 1) * (by - ay); g.beginPath(); g.moveTo(px, py); g.lineTo(px + 0.08 * s, py + 0.03 * s); g.lineTo(px + 0.12 * s, py - 0.02 * s); g.stroke(); }
+      this.shade(g, ip, 0.7);
+      g.restore();
+      g.save(); polyPath(g, ip, T); g.strokeStyle = 'rgba(255,255,255,0.6)'; g.lineWidth = Math.max(1, 0.006 * s); g.stroke(); g.restore();
     }
     // 水池
     for (const wp of w.water) {
@@ -201,15 +224,19 @@ export class CourseView {
     const q = wc.getContext('2d');
     q.setTransform(dpr, 0, 0, dpr, 0, 0);
     q.lineCap = 'round'; q.lineJoin = 'round';
-    const lines = [{ pts: def.green, closed: true, w: def.wallW || 0.07 }].concat((def.walls || []).map((x) => ({ pts: x.pts, closed: !!x.closed, w: x.w || 0.06 })));
-    q.strokeStyle = this.pattern(q, tex.wall, th.wallScale, 90);
+    const baseMat = def.wallMat || 'wood';
+    const lines = [{ pts: def.green, closed: true, w: def.wallW || 0.07, mat: baseMat }].concat((def.walls || []).map((x) => ({ pts: x.pts, closed: !!x.closed, w: x.w || 0.06, mat: x.mat || baseMat })));
+    const wallStyle = (mat) => mat === 'rubber' ? '#7e2219' : mat === 'metal' ? '#8d8f92'
+      : mat === baseMat || (mat === 'wood' && !tex.stone) ? this.pattern(q, tex.wall, th.wallScale, 90)
+      : mat === 'stone' ? this.pattern(q, tex.stone || tex.post, 0.5, 90) : this.pattern(q, IMG_WOOD || tex.wall, 0.5, 90);
     for (const l of lines) {
+      q.strokeStyle = wallStyle(l.mat);
       q.lineWidth = l.w * s;
       q.beginPath(); l.pts.forEach(([x, y], i) => { const [px, py] = T(x, y); i ? q.lineTo(px, py) : q.moveTo(px, py); }); if (l.closed) q.closePath(); q.stroke();
     }
     for (const p of w.posts) {
       const [px, py] = T(p.x, p.y);
-      q.fillStyle = p.mat === 'metal' ? '#8d8f92' : this.pattern(q, tex.post, 0.4, p.x * 50);
+      q.fillStyle = p.mat === 'metal' ? '#8d8f92' : p.mat === 'rubber' ? '#9a2a1f' : this.pattern(q, tex.post, 0.4, p.x * 50);
       q.beginPath(); q.arc(px, py, p.r * s, 0, Math.PI * 2); q.fill();
     }
     // 斜面：只畫在既有像素上
@@ -225,7 +252,7 @@ export class CourseView {
     for (const p of w.posts) {
       const [px, py] = T(p.x, p.y), r = p.r * s;
       const gr = q.createRadialGradient(px - r * 0.4, py - r * 0.45, r * 0.05, px, py, r * 1.05);
-      gr.addColorStop(0, p.mat === 'metal' ? 'rgba(255,255,255,0.75)' : 'rgba(255,250,235,0.32)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.45)');
+      gr.addColorStop(0, p.mat === 'metal' ? 'rgba(255,255,255,0.75)' : p.mat === 'rubber' ? 'rgba(255,200,180,0.5)' : 'rgba(255,250,235,0.32)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.45)');
       q.fillStyle = gr; q.beginPath(); q.arc(px, py, r, 0, Math.PI * 2); q.fill();
     }
     q.globalCompositeOperation = 'source-over';
@@ -267,7 +294,7 @@ export class CourseView {
         a = Math.min(0.38, Math.abs(v) * 2.2 * strength);
         if (v > 0) { r = 255; gg = 250; bb = 220; a *= 0.55; }
       }
-      const edge = (i > 0 && band[k - 1] !== band[k]) || (j > 0 && band[k - cw] !== band[k]);
+      const edge = this.L.s > 150 && ((i > 0 && band[k - 1] !== band[k]) || (j > 0 && band[k - cw] !== band[k]));
       if (edge) { r = 235; gg = 245; bb = 225; a = Math.max(a, 0.13 * strength); }
       if (a < 0.01) continue;
       any = true;
@@ -345,7 +372,7 @@ export class CourseView {
       }
     }
     // 轉軸（石柱已畫在靜態層，這裡加一顆鉚釘）
-    for (const m of w.movers) if (m.t === 'spinner') { const [px, py] = T(m.x, m.y); g.fillStyle = '#d8d6d0'; g.beginPath(); g.arc(px, py, 0.012 * s, 0, Math.PI * 2); g.fill(); }
+    for (const m of w.movers) if (m.t === 'spinner' || m.t === 'pendulum') { const [px, py] = T(m.x, m.y); g.fillStyle = '#d8d6d0'; g.beginPath(); g.arc(px, py, 0.012 * s, 0, Math.PI * 2); g.fill(); }
 
     // 坡度提示
     if (state.showSlope && this.slopes) {

@@ -1,6 +1,6 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.3.0';
+const VERSION = 'v1.4.0';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 
@@ -19,7 +19,7 @@ const CORE = [
   'js/games/chess/sf/stockfish-19-lite-single.js', 'js/games/chess/sf/stockfish-19-lite-single.wasm',
   'js/games/minigolf/index.js', 'js/games/minigolf/physics.js', 'js/games/minigolf/holes.js', 'js/games/minigolf/render.js',
   'js/games/billiards/index.js', 'js/games/billiards/physics.js', 'js/games/billiards/rules.js', 'js/games/billiards/render.js', 'js/games/billiards/ai-worker.js',
-  ...['pebbles', 'sand', 'desert', 'sandstone', 'mossrock', 'canyonrock', 'granite'].map((n) => 'assets/golf/' + n + '.jpg'),
+  ...['pebbles', 'sand', 'desert', 'sandstone', 'mossrock', 'canyonrock', 'granite', 'gravel', 'snow', 'bark', 'dock', 'cedar', 'cobble', 'mosswall'].map((n) => 'assets/golf/' + n + '.jpg'),
   'vendor/ort/ort.webgpu.bundle.min.mjs', 'vendor/ort/ort-wasm-simd-threaded.asyncify.mjs', 'vendor/ort/ort-wasm-simd-threaded.asyncify.wasm',
   'assets/fonts/serif-tc.woff2', 'assets/fonts/latin.woff2',
   'assets/wood/bamboo.jpg', 'assets/wood/cherry.jpg', 'assets/wood/walnut.jpg',

@@ -7,6 +7,7 @@ export const MAX_SPEED = 2.6;
 const G = 9.81;
 const ROLL = 0.6; // 草皮滾動減速度（m/s²），約相當於果嶺速度 10 呎
 const SAND = 3.2;
+const ICE = 0.16; // 冰面滾動阻力很小
 const REST = 0.4; // 小於此坡度加速度時，靜止的球不會再滾
 const DT = 1 / 600;
 const TNEED = Math.sqrt((2 * BALL_R * 0.9) / G); // 球心下沉約一個半徑所需時間
@@ -44,6 +45,8 @@ export function heightFn(list = []) {
       }
       case 'hill': { const s2 = 2 * (p.r / 2.4) ** 2; return (x, y) => p.h * Math.exp(-((x - p.x) ** 2 + (y - p.y) ** 2) / s2); }
       case 'cone': return (x, y) => p.h * smooth(1 - Math.hypot(x - p.x, y - p.y) / p.r);
+      case 'ring': { const s2 = 2 * ((p.w || 0.12) / 2.4) ** 2; return (x, y) => { const d = Math.hypot(x - p.x, y - p.y) - p.r; return p.h * Math.exp(-(d * d) / s2); }; }
+      case 'mesa': return (x, y) => p.h * smooth((x - p.x0) / p.e + 0.5) * smooth((p.x1 - x) / p.e + 0.5) * smooth((y - p.y0) / p.e + 0.5) * smooth((p.y1 - y) / p.e + 0.5);
       case 'ridge': { const s2 = 2 * (p.r / 2.4) ** 2; return (x, y) => { const d = segDist(x, y, p.a[0], p.a[1], p.b[0], p.b[1]).d; return p.h * Math.exp(-(d * d) / s2); }; }
       default: return () => 0;
     }
@@ -74,17 +77,15 @@ function scaleDef(d, k) {
     green: d.green.map(P), tee: P(d.tee), cup: P(d.cup),
     walls: (d.walls || []).map((w) => Object.assign({}, w, { pts: w.pts.map(P) })),
     posts: (d.posts || []).map((p) => Object.assign({}, p, { x: p.x * k, y: p.y * k, r: p.r * k })),
-    sand: (d.sand || []).map((p) => p.map(P)), water: (d.water || []).map((p) => p.map(P)),
+    sand: (d.sand || []).map((p) => p.map(P)), water: (d.water || []).map((p) => p.map(P)), ice: (d.ice || []).map((p) => p.map(P)),
     decor: (d.decor || []).map((o) => Object.assign({}, o, { x: o.x * k, y: o.y * k, r: o.r * k })),
     tunnels: (d.tunnels || []).map((t) => Object.assign({}, t, { in: P(t.in), out: P(t.out) })),
-    movers: (d.movers || []).map((m) => Object.assign({}, m, m.t === 'spinner' ? { x: m.x * k, y: m.y * k, len: m.len * k } : { a: P(m.a), b: P(m.b), len: m.len * k })),
+    movers: (d.movers || []).map((m) => Object.assign({}, m, m.t === 'slider' ? { a: P(m.a), b: P(m.b), len: m.len * k } : { x: m.x * k, y: m.y * k, len: m.len * k })),
     height: (d.height || []).map((h) => {
       const o = Object.assign({}, h, { mask: sc(h.mask) });
       if (h.t === 'tilt') return o; // 坡度（無因次）不變
-      o.h = h.h * k;
+      for (const key of ['h', 'x', 'y', 'r', 'w', 'x0', 'y0', 'x1', 'y1', 'e']) if (h[key] != null) o[key] = h[key] * k;
       if (h.a) o.a = P(h.a); if (h.b) o.b = P(h.b);
-      if (h.x != null) { o.x = h.x * k; o.y = h.y * k; }
-      if (h.r != null) o.r = h.r * k;
       return o;
     }),
     wallW: d.wallW,
@@ -107,7 +108,7 @@ export function buildHole(def0) {
   const { h, grad } = heightFn(def.height);
   return {
     def, segs, posts, h, grad,
-    sand: def.sand || [], water: def.water || [],
+    sand: def.sand || [], water: def.water || [], ice: def.ice || [],
     movers: (def.movers || []).map((m) => Object.assign({ phase: 0 }, m)),
     tunnels: def.tunnels || [],
     cup: { x: def.cup[0], y: def.cup[1] },
@@ -125,6 +126,14 @@ export function moverShapes(m, t) {
       out.push({ ax: m.x, ay: m.y, bx: m.x + Math.cos(a) * m.len, by: m.y + Math.sin(a) * m.len, rr: m.w / 2, vel, m: MAT[m.mat || 'wood'], mat: m.mat || 'wood' });
     }
     return out;
+  }
+  if (m.t === 'pendulum') {
+    // 擺錘：以 x, y 為支點，在 base 方向左右擺動 amp 弧度
+    const w = (Math.PI * 2) / m.period, ph = w * t + (m.phase || 0);
+    const ang = m.base + m.amp * Math.sin(ph), om = m.amp * w * Math.cos(ph);
+    const vel = (x, y) => [-om * (y - m.y), om * (x - m.x)];
+    const r0 = m.from || 0;
+    return [{ ax: m.x + Math.cos(ang) * r0, ay: m.y + Math.sin(ang) * r0, bx: m.x + Math.cos(ang) * m.len, by: m.y + Math.sin(ang) * m.len, rr: m.w / 2, vel, m: MAT[m.mat || 'wood'], mat: m.mat || 'wood' }];
   }
   if (m.t === 'slider') {
     const w = (Math.PI * 2) / m.period, s = 0.5 - 0.5 * Math.cos(w * t + m.phase), sv = 0.5 * w * Math.sin(w * t + m.phase);
@@ -194,13 +203,15 @@ export function step(world, b, dt = DT) {
   const sax = -(5 / 7) * G * gx, say = -(5 / 7) * G * gy;
   const slopeA = Math.hypot(sax, say);
   const inSand = world.sand.some((p) => inPoly(p, b.x, b.y));
+  const onIce = !inSand && world.ice.length > 0 && world.ice.some((p) => inPoly(p, b.x, b.y));
   if (inSand && !b.inSand && b.moving) ev.push({ type: 'sand' });
   b.inSand = inSand;
-  const fr = inSand ? SAND : ROLL;
+  const fr = inSand ? SAND : onIce ? ICE : ROLL;
+  const rest = REST * (inSand ? 4 : onIce ? 0.35 : 1);
   let sp = Math.hypot(b.vx, b.vy);
 
   if (!b.moving) {
-    if (slopeA > REST * (inSand ? 4 : 1)) b.moving = true;
+    if (slopeA > rest) b.moving = true;
     else return ev;
   }
   if (sp > 1e-6) {
@@ -212,7 +223,7 @@ export function step(world, b, dt = DT) {
   }
   sp = Math.hypot(b.vx, b.vy);
   // 停止判定：速度極小且坡度不足以推動
-  if (sp < 0.012 && slopeA < REST * (inSand ? 4 : 1)) {
+  if (sp < 0.012 && slopeA < rest) {
     b.still += dt;
     if (b.still > 0.08) { b.vx = 0; b.vy = 0; b.moving = false; b.still = 0; ev.push({ type: 'stop' }); }
   } else b.still = 0;
