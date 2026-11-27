@@ -506,7 +506,7 @@
 
 /* ---------- 迷你高爾夫 ---------- */
 .gpage[data-game='minigolf'] { height: 100dvh; }
-.gpage[data-game='minigolf'] .gmain { overflow: hidden; max-width: none; }
+.gpage[data-game='minigolf'] .gmain { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; max-width: none; }
 .golf { flex: 1; display: flex; flex-direction: column; min-height: 0; width: 100%; max-width: 620px; margin: 0 auto; padding: 6px 8px calc(8px + var(--safe-b)); gap: 6px; }
 .golf-top { display: flex; align-items: center; gap: 6px; }
 .golf-hole { flex: 1; min-width: 0; line-height: 1.25; }
@@ -546,7 +546,7 @@
 
 /* ---------- 撞球 ---------- */
 .gpage[data-game='billiards'] { height: 100dvh; }
-.gpage[data-game='billiards'] .gmain { overflow: hidden; max-width: none; }
+.gpage[data-game='billiards'] .gmain { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; max-width: none; }
 .bb { flex: 1; display: flex; flex-direction: column; min-height: 0; width: 100%; max-width: 1100px; margin: 0 auto; padding: 6px 8px calc(8px + var(--safe-b)); gap: 6px; }
 .bb-top { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .bb-player { min-width: 0; padding: 5px 9px 6px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); transition: border-color 0.25s, background 0.25s; }
