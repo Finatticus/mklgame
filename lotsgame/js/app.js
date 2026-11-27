@@ -239,6 +239,8 @@ function pageStats(page) {
       ['簽到與補給累計', fmt(st.bonus)],
       ['擊敗高段圍棋 AI', (m.goHardWins || 0) + ' 次'],
       ['擊敗高級五子棋 AI', (m.gomokuHardWins || 0) + ' 次'],
+      ['擊敗象棋大師級 AI', (m.xqMasterWins || 0) + ' 次'],
+      ['擊敗全力 Stockfish', (m.chessMasterWins || 0) + ' 次'],
       ['拿到 Blackjack', (m.bjNaturals || 0) + ' 次'],
       ['加倍成功', (m.bjDoubleWins || 0) + ' 次'],
       ['百家樂押中和局', (m.bacTieWins || 0) + ' 次'],

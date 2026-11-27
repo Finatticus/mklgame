@@ -60,8 +60,125 @@ export function drawStone(ctx, color, x, y, r, dpr, alpha = 1) {
   if (alpha !== 1) ctx.globalAlpha = 1;
 }
 
-export const WOOD = { go: 'wood/bamboo.jpg', gomoku: 'wood/cherry.jpg' };
+export const WOOD = { go: 'wood/bamboo.jpg', gomoku: 'wood/cherry.jpg', xiangqi: 'wood/cherry.jpg', light: 'wood/bamboo.jpg', dark: 'wood/walnut.jpg' };
 export const woodImage = (name) => loadImage(asset(WOOD[name]));
+
+// ---------- 象棋棋子與棋盤 ----------
+export const XQ_FACE = [['帥', '仕', '相', '傌', '俥', '炮', '兵'], ['將', '士', '象', '馬', '車', '砲', '卒']];
+export const XQ_INK = ['#a8231a', '#1d1a16'];
+
+// 木製圓棋子：側邊厚度、黃楊木面、刻槽內圈與刻字
+export function xqSprite(side, type, r, dpr = 1) {
+  const key = 'xq' + side + type + ':' + Math.round(r * dpr * 10);
+  if (SPRITES[key]) return SPRITES[key];
+  const R = r * dpr, pad = Math.ceil(R * 0.3), size = Math.ceil(R * 2 + pad * 2);
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const cx = size / 2, cy = size / 2, th = R * 0.1;
+  g.save();
+  g.shadowColor = 'rgba(0,0,0,0.5)'; g.shadowBlur = R * 0.25; g.shadowOffsetY = R * 0.14;
+  g.beginPath(); g.arc(cx, cy + th / 2, R * 0.98, 0, Math.PI * 2); g.fillStyle = '#7b542c'; g.fill();
+  g.restore();
+  const top = cy - th / 2;
+  const grad = g.createRadialGradient(cx - R * 0.35, top - R * 0.4, R * 0.1, cx, top, R * 1.02);
+  grad.addColorStop(0, '#fbefd3'); grad.addColorStop(0.55, '#ecd3a0'); grad.addColorStop(1, '#c79a5c');
+  g.beginPath(); g.arc(cx, top, R * 0.96, 0, Math.PI * 2); g.fillStyle = grad; g.fill();
+  // 木紋
+  g.save(); g.clip();
+  g.strokeStyle = 'rgba(130,85,40,0.10)'; g.lineWidth = Math.max(0.6, R * 0.03);
+  for (let i = -5; i <= 5; i++) { g.beginPath(); g.ellipse(cx + R * 1.8, top + i * R * 0.2, R * 2.2, R * 0.9, 0.15, Math.PI * 0.82, Math.PI * 1.18); g.stroke(); }
+  g.restore();
+  g.beginPath(); g.arc(cx, top, R * 0.96, 0, Math.PI * 2); g.strokeStyle = 'rgba(90,55,20,0.45)'; g.lineWidth = Math.max(0.6, R * 0.04); g.stroke();
+  // 刻槽內圈
+  const ink = XQ_INK[side];
+  g.beginPath(); g.arc(cx, top + R * 0.02, R * 0.79, 0, Math.PI * 2); g.strokeStyle = 'rgba(255,248,230,0.7)'; g.lineWidth = Math.max(0.6, R * 0.04); g.stroke();
+  g.beginPath(); g.arc(cx, top, R * 0.79, 0, Math.PI * 2); g.strokeStyle = ink; g.globalAlpha = 0.85; g.lineWidth = Math.max(0.8, R * 0.055); g.stroke(); g.globalAlpha = 1;
+  // 刻字
+  g.font = `700 ${Math.round(R * 1.0)}px ${serifFamily()}`;
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  const ty = top + R * 0.05, ch = XQ_FACE[side][type];
+  g.fillStyle = 'rgba(255,250,238,0.75)'; g.fillText(ch, cx + R * 0.02, ty + R * 0.035);
+  g.fillStyle = ink; g.fillText(ch, cx, ty);
+  const out = { canvas: c, size: size / dpr, half: size / dpr / 2 };
+  SPRITES[key] = out;
+  return out;
+}
+
+export function drawXq(ctx, side, type, x, y, r, dpr, alpha = 1) {
+  const s = xqSprite(side, type, r, dpr);
+  if (alpha !== 1) ctx.globalAlpha = alpha;
+  ctx.drawImage(s.canvas, x - s.half, y - s.half, s.size, s.size);
+  if (alpha !== 1) ctx.globalAlpha = 1;
+}
+
+// 象棋盤面線條：P(x, y) 回傳交叉點座標（已處理翻轉）
+export function xqLines(ctx, P, cell, { line = 'rgba(48,24,8,0.88)', river = true, flip = false } = {}) {
+  const lw = Math.max(0.8, cell * 0.032);
+  ctx.strokeStyle = line; ctx.lineWidth = lw;
+  ctx.beginPath();
+  for (let y = 0; y < 10; y++) { const [x0, yy] = P(0, y), [x1] = P(8, y); ctx.moveTo(x0, yy); ctx.lineTo(x1, yy); }
+  for (let x = 0; x < 9; x++) {
+    if (x === 0 || x === 8) { const [xx, y0] = P(x, 0), [, y1] = P(x, 9); ctx.moveTo(xx, y0); ctx.lineTo(xx, y1); continue; }
+    const [xx, a] = P(x, 0), [, b] = P(x, 4), [, c] = P(x, 5), [, d] = P(x, 9);
+    ctx.moveTo(xx, a); ctx.lineTo(xx, b); ctx.moveTo(xx, c); ctx.lineTo(xx, d);
+  }
+  // 九宮斜線
+  for (const [y0, y1] of [[0, 2], [7, 9]]) {
+    let [ax, ay] = P(3, y0), [bx, by] = P(5, y1); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+    [ax, ay] = P(5, y0); [bx, by] = P(3, y1); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+  }
+  ctx.stroke();
+  // 外框（粗線）
+  const [l, t] = P(flip ? 8 : 0, flip ? 9 : 0), [r, b] = P(flip ? 0 : 8, flip ? 0 : 9);
+  const o = cell * 0.12;
+  ctx.lineWidth = lw * 2.4; ctx.strokeRect(l - o, t - o, r - l + 2 * o, b - t + 2 * o);
+  // 炮位、兵位的花記
+  const mark = (x, y) => {
+    const [cx, cy] = P(x, y), g = cell * 0.08, s = cell * 0.2;
+    ctx.beginPath();
+    for (const dx of [-1, 1]) for (const dy of [-1, 1]) {
+      const ex = flip ? -dx : dx;
+      if ((x === 0 && ex < 0) || (x === 8 && ex > 0)) continue;
+      ctx.moveTo(cx + dx * (g + s), cy + dy * g); ctx.lineTo(cx + dx * g, cy + dy * g); ctx.lineTo(cx + dx * g, cy + dy * (g + s));
+    }
+    ctx.lineWidth = lw; ctx.stroke();
+  };
+  for (const x of [1, 7]) { mark(x, 2); mark(x, 7); }
+  for (const x of [0, 2, 4, 6, 8]) { mark(x, 3); mark(x, 6); }
+  if (river) {
+    const [lx, ry0] = P(flip ? 8 : 0, flip ? 5 : 4), [rx, ry1] = P(flip ? 0 : 8, flip ? 4 : 5);
+    const my = (ry0 + ry1) / 2, span = rx - lx;
+    ctx.fillStyle = 'rgba(60,30,10,0.72)';
+    ctx.font = `600 ${Math.round(cell * 0.52)}px ${serifFamily()}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const words = ['楚', '河', '漢', '界'], xs = [0.16, 0.3, 0.7, 0.84];
+    words.forEach((w, i) => ctx.fillText(w, lx + span * xs[i], my + cell * 0.02));
+  }
+}
+
+// ---------- 西洋棋 ----------
+const CHESS_IMG = {};
+export function chessImages() {
+  const all = [];
+  for (const c of 'wb') for (const p of 'kqrbnp') {
+    const k = c + p;
+    if (!CHESS_IMG[k]) CHESS_IMG[k] = loadImage(asset('chess/' + k + '.svg'));
+    all.push(CHESS_IMG[k].then((img) => [k, img]));
+  }
+  return Promise.all(all).then((list) => Object.fromEntries(list));
+}
+
+// 木質棋盤格：淺色竹、深色胡桃木
+export function chessSquares(ctx, light, dark, ox, oy, cell, files = 8, ranks = 8, startDark = false) {
+  paintWood(ctx, light, ox, oy, cell * files, cell * ranks, 'rgba(255,240,210,0.08)');
+  ctx.save();
+  ctx.beginPath();
+  for (let r = 0; r < ranks; r++) for (let f = 0; f < files; f++) if (((r + f) % 2 === 1) !== startDark) ctx.rect(ox + f * cell, oy + r * cell, cell, cell);
+  ctx.clip();
+  paintWood(ctx, dark, ox, oy, cell * files, cell * ranks, 'rgba(60,30,10,0.12)');
+  ctx.restore();
+}
 
 // 以 cover 方式鋪滿木紋，並加上柔和的光影
 export function paintWood(ctx, img, x, y, w, h, tint) {
@@ -122,6 +239,36 @@ function boardCloseup(ctx, w, h, img, { cell, ox, oy, stones, lineColor, star })
 }
 
 const COVERS = {
+  // 中炮對屏風馬的盤面中段，含楚河漢界
+  async xiangqi(ctx, w, h) {
+    const img = await woodImage('xiangqi');
+    await document.fonts.load('700 20px ' + serifFamily(), '帥炮兵傌將砲卒馬楚河漢界').catch(() => {});
+    paintWood(ctx, img, 0, 0, w, h);
+    // 炮二平五 馬８進７ 傌二進三 車９平８ 俥一平二 卒７進１ 俥二進四 之後
+    const cell = Math.max(w / 7.4, h / 4), ox = w / 2 - 4.4 * cell, oy = cell * 0.2 - 2 * cell;
+    const P = (x, y) => [ox + x * cell, oy + y * cell];
+    xqLines(ctx, P, cell);
+    const pcs = [[1, 2, 1, 5], [7, 2, 1, 5], [6, 2, 1, 3], [0, 3, 1, 6], [2, 3, 1, 6], [4, 3, 1, 6], [6, 4, 1, 6], [8, 3, 1, 6],
+      [7, 5, 0, 4], [0, 6, 0, 6], [2, 6, 0, 6], [4, 6, 0, 6], [6, 6, 0, 6], [8, 6, 0, 6], [1, 7, 0, 5], [4, 7, 0, 5], [6, 7, 0, 3]];
+    for (const [x, y, s, t] of pcs) { const [px, py] = P(x, y); drawXq(ctx, s, t, px, py, cell * 0.45, 2); }
+    vignette(ctx, w, h);
+  },
+  // 義大利開局的中央四列
+  async chess(ctx, w, h) {
+    const [light, dark, imgs] = await Promise.all([woodImage('light'), woodImage('dark'), chessImages()]);
+    const cell = Math.max(w / 6, h / 3.6), ox = (w - 6 * cell) / 2, oy = (h - 4 * cell) / 2;
+    chessSquares(ctx, light, dark, ox, oy, cell, 6, 4, true);
+    // 欄 b–g、列 6–3（b6 為深色格）
+    const pcs = [['bn', 1, 0], ['bp', 3, 1], ['bb', 1, 1], ['bp', 2, 0], ['wp', 3, 2], ['wb', 1, 2], ['wn', 4, 3], ['wp', 2, 3], ['bn', 4, 0]];
+    for (const [k, c, r] of pcs) {
+      const s = cell * 0.94;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = cell * 0.08; ctx.shadowOffsetY = cell * 0.05;
+      ctx.drawImage(imgs[k], ox + c * cell + (cell - s) / 2, oy + r * cell + (cell - s) / 2, s, s);
+      ctx.restore();
+    }
+    vignette(ctx, w, h);
+  },
   async go(ctx, w, h) {
     const img = await woodImage('go');
     const cell = Math.max(w, h * 1.2) / 8.6;
@@ -247,7 +394,7 @@ const COVERS = {
   },
 };
 
-const serifFamily = () => getComputedStyle(document.body).getPropertyValue('--serif') || 'serif';
+export const serifFamily = () => getComputedStyle(document.body).getPropertyValue('--serif') || 'serif';
 function feltGradient(ctx, w, h, [a, b, c]) {
   const g = ctx.createRadialGradient(w / 2, h * 0.35, 0, w / 2, h * 0.5, Math.max(w, h) * 0.8);
   g.addColorStop(0, a); g.addColorStop(0.55, b); g.addColorStop(1, c);
