@@ -12,6 +12,12 @@ const VARIANTS = {
   chip: ['chip1', 'chip2'],
   chips: ['chips1', 'chips2'],
   payout: ['chipswin'],
+  putt: ['putt1', 'putt2', 'putt3'],
+  wood: ['wood1', 'wood2', 'wood3'],
+  cup: ['cup1', 'cup2'],
+  ball: ['ball1', 'ball2', 'ball3'],
+  cushion: ['cushion1', 'cushion2'],
+  pocket: ['pocket1', 'pocket2'],
 };
 
 const enabled = () => { const d = getData(); return !d || d.settings.sound !== false; };
@@ -55,6 +61,20 @@ export async function play(group, { volume = 1, rate = 1 } = {}) {
     src.connect(gain).connect(ctx.destination);
     src.start();
   } catch (e) { /* 音效失敗不影響遊戲 */ }
+}
+
+// 落水聲：濾波雜訊合成的短促水花
+export function splash(volume = 0.5) {
+  if (!enabled() || !ensure()) return;
+  const len = Math.floor(ctx.sampleRate * 0.7);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) { const t = i / len; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 3) * (t < 0.02 ? t / 0.02 : 1); }
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.9;
+  bp.frequency.setValueAtTime(1800, ctx.currentTime); bp.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.6);
+  const g = ctx.createGain(); g.gain.value = volume;
+  src.connect(bp).connect(g).connect(ctx.destination);
+  src.start();
 }
 
 // 柔和的鐘聲：win 上行、lose 下行

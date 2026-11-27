@@ -241,6 +241,8 @@ function pageStats(page) {
       ['擊敗高級五子棋 AI', (m.gomokuHardWins || 0) + ' 次'],
       ['擊敗象棋大師級 AI', (m.xqMasterWins || 0) + ' 次'],
       ['擊敗全力 Stockfish', (m.chessMasterWins || 0) + ' 次'],
+      ['擊敗大師級撞球 AI', (m.poolMasterWins || 0) + ' 次'],
+      ['迷你高爾夫一桿進洞', (m.golfAces || 0) + ' 次'],
       ['拿到 Blackjack', (m.bjNaturals || 0) + ' 次'],
       ['加倍成功', (m.bjDoubleWins || 0) + ' 次'],
       ['百家樂押中和局', (m.bacTieWins || 0) + ' 次'],
@@ -355,7 +357,7 @@ async function renderGame(game) {
   let guard = null; // 遊戲可設定離開前的確認
   const back = h('button', { class: 'gbar-link', onClick: async () => { if (guard && !(await guard())) return; navigate('#/'); } }, '‹ 大廳');
   app.replaceChildren(h('div', { class: 'gpage', dataset: { game: game.id } },
-    h('header', { class: 'gbar' }, h('div', { class: 'gbar-left' }, back), h('div', { class: 'gbar-title' }, game.name), h('div', { class: 'gbar-right' }, coins, rulesBtn)),
+    h('header', { class: 'gbar' }, h('div', { class: 'gbar-left' }, back), h('div', { class: 'gbar-title' + ([...game.name].length >= 5 ? ' long' : '') }, game.name), h('div', { class: 'gbar-right' }, coins, rulesBtn)),
     main));
   unsub = store.subscribe(() => { if (store.isLoggedIn()) coins.textContent = fmt(store.balance()); });
   try {

@@ -239,6 +239,31 @@ function boardCloseup(ctx, w, h, img, { cell, ox, oy, stones, lineColor, star })
 }
 
 const COVERS = {
+  // 開球前的特寫：擺好的球、母球與球桿
+  async billiards(ctx, w, h) {
+    const [{ TableView }, B] = await Promise.all([import('../billiards/render.js'), import('../billiards/physics.js')]);
+    const cv = document.createElement('canvas');
+    const span = Math.max(0.9, 0.62 * w / h);
+    const view = new TableView(cv, { size: { W: w, H: h }, dpr: 2, view: { cx: B.W / 2 + 0.06, cy: B.FOOT_Y - 0.12, span } });
+    await view.build();
+    const balls = B.rack8(() => 0.37);
+    balls[0].x = B.W / 2 + 0.05; balls[0].y = B.FOOT_Y - 0.42;
+    view.draw({ balls, cue: { show: true, ang: Math.atan2(B.FOOT_Y - balls[0].y, B.W / 2 - balls[0].x), pull: 0.25 } });
+    ctx.drawImage(cv, 0, 0, w, h);
+    vignette(ctx, w, h);
+  },
+  // 錦鯉池的洞口特寫：用遊戲本身的繪圖程式即時畫出
+  async minigolf(ctx, w, h) {
+    const [{ CourseView }, P, { COURSES }] = await Promise.all([import('../minigolf/render.js'), import('../minigolf/physics.js'), import('../minigolf/holes.js')]);
+    const world = P.buildHole(COURSES[0].holes[2]);
+    const cv = document.createElement('canvas');
+    const k = P.SCALE, span = Math.max(1.05, (0.95 * w) / h) * k;
+    const view = new CourseView(cv, 'garden', { size: { W: w, H: h }, dpr: 2, view: { cx: 0.66 * k, cy: 0.64 * k, span } });
+    await view.setHole(world);
+    view.draw({ time: 0.9, ball: P.newBall(world, 0.58 * k, 0.72 * k) });
+    ctx.drawImage(cv, 0, 0, w, h);
+    vignette(ctx, w, h);
+  },
   // 中炮對屏風馬的盤面中段，含楚河漢界
   async xiangqi(ctx, w, h) {
     const img = await woodImage('xiangqi');

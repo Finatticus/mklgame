@@ -87,10 +87,13 @@ class XqView {
   // 走子動畫
   animate(mv, pc) {
     const t0 = performance.now(), dur = 170;
-    this.anim = { mv, pc, p: 0 };
+    cancelAnimationFrame(this.raf);
+    const a = { mv, pc, p: 0 };
+    this.anim = a;
     const step = () => {
+      if (this.anim !== a) return;
       const p = Math.min(1, (performance.now() - t0) / dur);
-      this.anim.p = 1 - (1 - p) * (1 - p);
+      a.p = 1 - (1 - p) * (1 - p);
       this.draw();
       if (p < 1) this.raf = requestAnimationFrame(step); else { this.anim = null; this.draw(); }
     };
