@@ -6,7 +6,7 @@ const isLocal = typeof location !== 'undefined' && ['localhost', '127.0.0.1'].in
 export const GAS_URL = isLocal ? '' : PROD_GAS_URL;
 
 export const APP_NAME = '萬象遊藝館';
-export const APP_VERSION = '1.5.0';
+export const APP_VERSION = '1.5.1';
 export const START_COINS = 100000;
 
 // 每日簽到：基本 2,000，連續簽到每天多 500，最高 5,000

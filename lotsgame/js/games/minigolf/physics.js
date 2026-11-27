@@ -283,16 +283,17 @@ export function step(world, b, dt = DT) {
 export function simulate(world, x, y, angle, speed, t0 = 0, maxTime = 30) {
   const b = newBall(world, x, y, t0);
   strike(b, angle, speed);
-  let water = false, steps = 0;
+  let water = false, steps = 0, bounces = 0;
   const lim = maxTime / DT;
   while (steps++ < lim) {
     const ev = step(world, b);
+    for (const e of ev) if (e.type === 'wall') bounces++;
     if (b.holed) break;
     if (ev.some((e) => e.type === 'water')) { water = true; break; }
     if (!b.moving && b.hidden <= 0 && !world.movers.length) break;
     if (!b.moving && b.hidden <= 0 && steps > 60) break;
   }
-  return { holed: b.holed, water, x: b.x, y: b.y, time: b.t - t0 };
+  return { holed: b.holed, water, x: b.x, y: b.y, time: b.t - t0, bounces };
 }
 
 export const STEP_DT = DT;

@@ -44,34 +44,48 @@ export function distanceField(world, cell = 0.02) {
   return (x, y) => { const k = idx(x, y); return k >= 0 && dist[k] < 1e8 ? dist[k] : 9; };
 }
 
-// 找最好的一桿：先粗略掃描，再在最佳附近細搜。能進洞時挑「附近也大多進洞」的穩定解。
+// 找最好的一桿。能進洞時，在所有進洞的推法中挑：撞牆次數最少 → 小誤差下仍能進洞的比例最高 → 力道最輕。
+// 一定會把「直接瞄洞」的方向納入取樣，短推不會繞去打牆。
 export function bestShot(world, x, y, t0 = 0, { A = 120, N = 16, D = null } = {}) {
   D = D || distanceField(world);
   const spAt = (k, n) => MAX_SPEED * Math.pow(k / n, 1.3);
-  const score = (ang, sp) => { const r = simulate(world, x, y, ang, sp, t0, 20); return r.holed ? -1 : r.water ? 99 : D(r.x, r.y); };
-  const grid = [];
+  const run = (ang, sp) => simulate(world, x, y, ang, sp, t0, 20);
+  const holes = [];
   let best = null;
-  for (let a = 0; a < A; a++) {
-    const ang = (a / A) * Math.PI * 2, row = [];
-    for (let k = 1; k <= N; k++) { const s = score(ang, spAt(k, N)); row.push(s); if (!best || s < best.s) best = { s, ang, sp: spAt(k, N), a, k }; }
-    grid.push(row);
+  const consider = (ang, sp) => {
+    const r = run(ang, sp);
+    if (r.holed) { holes.push({ ang, sp, bounces: r.bounces }); return; }
+    const s = r.water ? 99 : D(r.x, r.y) + r.bounces * 0.004;
+    if (!best || s < best.s) best = { s, ang, sp };
+  };
+  for (let a = 0; a < A; a++) for (let k = 1; k <= N; k++) consider((a / A) * Math.PI * 2, spAt(k, N));
+  // 直接瞄洞的方向細掃
+  const direct = Math.atan2(world.cup.y - y, world.cup.x - x);
+  for (let da = -2; da <= 2; da += 0.5) for (let k = 1; k <= 28; k++) consider(direct + (da * Math.PI) / 180, spAt(k, 28));
+
+  if (holes.length) {
+    // 先依撞牆次數排序，只對前面的候選做容錯測試
+    holes.sort((p, q) => p.bounces - q.bounces || p.sp - q.sp);
+    const minB = holes[0].bounces;
+    const pool = holes.filter((hh) => hh.bounces <= minB + 1).slice(0, 30);
+    let pick = null;
+    for (const c of pool) {
+      let ok = 0;
+      for (const [da, ds] of [[-0.7, 0], [0.7, 0], [0, -0.06], [0, 0.06], [-0.5, 0.04], [0.5, -0.04]]) if (run(c.ang + (da * Math.PI) / 180, c.sp * (1 + ds)).holed) ok++;
+      const v = ok * 3 - c.bounces * 4 - c.sp * 0.6;
+      if (!pick || v > pick.v) pick = { v, ang: c.ang, sp: c.sp };
+    }
+    return { s: -1, ang: pick.ang, sp: pick.sp };
   }
-  // 細搜：在最佳點附近角度 ±1.5 格、力道 ±1 格
+  // 進不了洞：在最佳落點附近細搜
   const step = (Math.PI * 2) / A;
   let fine = best;
-  for (let da = -1.5; da <= 1.5; da += 0.25) for (let dk = -1; dk <= 1; dk += 0.25) {
-    const ang = best.ang + da * step, sp = MAX_SPEED * Math.pow(Math.max(0.02, (best.k + dk) / N), 1.3);
-    const s = score(ang, sp);
-    if (s < fine.s - 1e-6 || (s === -1 && fine.s === -1 && Math.abs(da) + Math.abs(dk) < 0.01)) fine = { s, ang, sp };
-  }
-  // 若能進洞，取進洞範圍的中心
-  if (fine.s === -1) {
-    const hits = [];
-    for (let da = -2; da <= 2; da += 0.25) for (let dk = -1.5; dk <= 1.5; dk += 0.25) {
-      const ang = fine.ang + da * step * 0.5, sp = fine.sp * (1 + dk * 0.04);
-      if (score(ang, sp) === -1) hits.push([ang, sp]);
-    }
-    if (hits.length) { const ma = hits.reduce((s, h) => s + h[0], 0) / hits.length, ms = hits.reduce((s, h) => s + h[1], 0) / hits.length; fine = { s: -1, ang: ma, sp: ms }; }
+  for (let da = -1.5; da <= 1.5; da += 0.25) for (let dk = -0.12; dk <= 0.12; dk += 0.03) {
+    const ang = best.ang + da * step, sp = best.sp * (1 + dk);
+    const r = run(ang, sp);
+    if (r.holed) return { s: -1, ang, sp };
+    const s = r.water ? 99 : D(r.x, r.y) + r.bounces * 0.004;
+    if (s < fine.s) fine = { s, ang, sp };
   }
   return fine;
 }
