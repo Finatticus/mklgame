@@ -9,6 +9,8 @@ const THEMES = {
   snow: { ground: 'golf/snow.jpg', groundScale: 0.9, dim: 0, tint: 'rgba(248,251,255,0.32)', wall: 'golf/bark.jpg', wallScale: 0.45, post: 'golf/granite.jpg', rock: 'golf/granite.jpg', sand: 'golf/sand.jpg', turf: [40, 112, 76], turfAlt: [46, 122, 82], stone: 'golf/granite.jpg' },
   harbor: { ground: 'golf/dock.jpg', groundScale: 1.1, dim: 0.12, wall: 'golf/cedar.jpg', wallScale: 0.6, post: 'golf/granite.jpg', rock: 'golf/granite.jpg', sand: 'golf/sand.jpg', turf: [38, 112, 82], turfAlt: [44, 122, 90], stone: 'golf/granite.jpg' },
   ruins: { ground: 'golf/cobble.jpg', groundScale: 0.75, dim: 0.12, wall: 'golf/mosswall.jpg', wallScale: 0.55, post: 'golf/mossrock.jpg', rock: 'golf/mossrock.jpg', sand: 'golf/sand.jpg', turf: [44, 112, 54], turfAlt: [50, 122, 60], stone: 'golf/mosswall.jpg' },
+  autumn: { ground: 'golf/leaves.jpg', groundScale: 0.55, dim: 0.1, wall: 'golf/oak.jpg', wallScale: 0.6, post: 'golf/bark.jpg', rock: 'golf/mossrock.jpg', sand: 'golf/sand.jpg', turf: [50, 112, 52], turfAlt: [56, 122, 58], stone: 'golf/granite.jpg' },
+  volcano: { ground: 'golf/ash.jpg', groundScale: 0.6, dim: 0.08, wall: 'golf/basalt.jpg', wallScale: 0.5, post: 'golf/basalt.jpg', rock: 'golf/basalt.jpg', sand: 'golf/sand.jpg', turf: [34, 104, 64], turfAlt: [40, 114, 70], stone: 'golf/basalt.jpg' },
   canyon: { ground: 'golf/desert.jpg', groundScale: 0.6, wall: 'golf/sandstone.jpg', wallScale: 0.9, post: 'golf/canyonrock.jpg', rock: 'golf/canyonrock.jpg', sand: 'golf/sand.jpg', turf: [40, 116, 72], turfAlt: [46, 126, 80], stone: 'golf/sandstone.jpg' },
 };
 const LIGHT = (() => { const v = [-0.5, -0.75, 1.1], l = Math.hypot(...v); return v.map((c) => c / l); })();
@@ -153,8 +155,20 @@ export class CourseView {
       g.restore();
       g.save(); polyPath(g, ip, T); g.strokeStyle = 'rgba(255,255,255,0.6)'; g.lineWidth = Math.max(1, 0.006 * s); g.stroke(); g.restore();
     }
+    // 熔岩：暗紅底色、玄武岩護岸（亮紋在每格動態繪製）
+    for (const lp of w.lava || []) {
+      g.save(); polyPath(g, lp, T); g.clip();
+      const xs = lp.map((p) => p[0]), ys = lp.map((p) => p[1]);
+      const [ax, ay] = T(Math.min(...xs), Math.min(...ys)), [bx, by] = T(Math.max(...xs), Math.max(...ys));
+      const gr = g.createRadialGradient((ax + bx) / 2, (ay + by) / 2, 0, (ax + bx) / 2, (ay + by) / 2, Math.max(bx - ax, by - ay) * 0.7);
+      gr.addColorStop(0, '#ff8a2a'); gr.addColorStop(0.45, '#d8401a'); gr.addColorStop(1, '#5a1208');
+      g.fillStyle = gr; g.fillRect(ax, ay, bx - ax, by - ay);
+      g.lineWidth = 0.06 * s; g.strokeStyle = 'rgba(20,4,0,0.7)'; g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = 0.04 * s * dpr; polyPath(g, lp, T); g.stroke();
+      g.restore();
+      g.save(); polyPath(g, lp, T); g.lineWidth = 0.032 * s; g.lineJoin = 'round'; g.strokeStyle = this.pattern(g, tex.post, 0.35); g.stroke(); g.restore();
+    }
     // 水池
-    for (const wp of w.water) {
+    for (const wp of w.pools || w.water) {
       g.save(); polyPath(g, wp, T); g.clip();
       const xs = wp.map((p) => p[0]), ys = wp.map((p) => p[1]);
       const [ax, ay] = T(Math.min(...xs), Math.min(...ys)), [bx, by] = T(Math.max(...xs), Math.max(...ys));
@@ -310,7 +324,7 @@ export class CourseView {
     const w = this.world, pts = [], gap = 0.075;
     const xs = w.def.green.map((p) => p[0]), ys = w.def.green.map((p) => p[1]);
     for (let y = Math.min(...ys) + gap / 2; y < Math.max(...ys); y += gap) for (let x = Math.min(...xs) + gap / 2; x < Math.max(...xs); x += gap) {
-      if (!inPoly(w.def.green, x, y) || w.water.some((p) => inPoly(p, x, y))) continue;
+      if (!inPoly(w.def.green, x, y) || w.water.some((p) => inPoly(p, x, y))) continue; // 含熔岩
       const [gx, gy] = w.grad(x, y), m = Math.hypot(gx, gy);
       if (m < 0.004) continue;
       pts.push({ x, y, dx: -gx / m, dy: -gy / m, m: Math.min(1, m / 0.12), ph: ((x * 7.13 + y * 3.7) % 1 + 1) % 1 });
@@ -326,8 +340,24 @@ export class CourseView {
     g.drawImage(this.static, 0, 0);
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    // 熔岩流動的亮紋
+    for (const lp of w.lava || []) {
+      g.save(); polyPath(g, lp, T); g.clip();
+      const xs = lp.map((p) => p[0]), ys = lp.map((p) => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      g.lineCap = 'round';
+      for (let k = 0; k < 9; k++) {
+        const yy = y0 + ((y1 - y0) * (k + 0.5)) / 9;
+        g.strokeStyle = `rgba(255,${200 + (k % 3) * 18},90,${0.22 + 0.12 * Math.sin(t * 1.3 + k)})`; g.lineWidth = Math.max(1, 0.01 * s);
+        g.beginPath();
+        for (let xx = x0; xx <= x1; xx += 0.025) { const [px, py] = T(xx, yy + Math.sin(xx * 9 + t * 0.8 + k * 1.7) * 0.02); xx === x0 ? g.moveTo(px, py) : g.lineTo(px, py); }
+        g.stroke();
+      }
+      g.fillStyle = 'rgba(30,8,2,0.35)';
+      for (let k = 0; k < 6; k++) { const [px, py] = T(x0 + ((k * 0.37 + t * 0.01) % 1) * (x1 - x0), y0 + ((k * 0.61) % 1) * (y1 - y0)); g.beginPath(); g.ellipse(px, py, 0.05 * s, 0.025 * s, k, 0, Math.PI * 2); g.fill(); }
+      g.restore();
+    }
     // 水面反光
-    for (const wp of w.water) {
+    for (const wp of w.pools || w.water) {
       g.save(); polyPath(g, wp, T); g.clip();
       g.strokeStyle = 'rgba(190,230,235,0.13)'; g.lineWidth = Math.max(1, 0.006 * s);
       const xs = wp.map((p) => p[0]), ys = wp.map((p) => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -456,9 +486,31 @@ export class CourseView {
       if (ball.holed) { const k = Math.min(1, (t - (state.holedAt || t)) / 0.35); const [cx, cy] = T(w.cup.x, w.cup.y); r *= 1 - k * 0.45; a = 1 - k * 0.85; g.globalAlpha = a; void cx; void cy; }
       g.fillStyle = 'rgba(0,0,0,0.32)';
       g.beginPath(); g.ellipse(bx + r * 0.45, by + r * 0.6, r * 1.05, r * 0.85, 0.5, 0, Math.PI * 2); g.fill();
+      // 球款：底色、條紋（隨滾動轉動）、金屬光澤
+      const st = state.ballStyle || { c: [255, 255, 255] }, [cr, cg, cb] = st.c;
+      const mix = (k) => `rgb(${Math.round(cr * k)},${Math.round(cg * k)},${Math.round(cb * k)})`;
       const gr = g.createRadialGradient(bx - r * 0.4, by - r * 0.45, r * 0.1, bx, by, r * 1.05);
-      gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.55, '#f1f0eb'); gr.addColorStop(1, '#a8a69e');
+      gr.addColorStop(0, st.gloss ? '#fff6d8' : mix(1)); gr.addColorStop(0.55, mix(0.94)); gr.addColorStop(1, mix(0.62));
       g.fillStyle = gr; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill();
+      if (st.stripe) {
+        // 依位移累積滾動角度，條紋垂直於行進方向
+        const last = this._ballLast;
+        if (last && !ball.holed) { const dx = ball.x - last.x, dy = ball.y - last.y, d = Math.hypot(dx, dy); if (d > 1e-5 && d < 0.5) { this._roll = (this._roll || 0) + d / BALL_R; this._dir = Math.atan2(dy, dx); } }
+        this._ballLast = { x: ball.x, y: ball.y };
+        const ph = this._roll || 0, dir = this._dir || -Math.PI / 2, off = Math.sin(ph) * r * 0.75, vis = Math.cos(ph);
+        if (vis > -0.2) {
+          g.save(); g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.clip();
+          g.translate(bx, by); g.rotate(dir);
+          const bw = r * (0.42 + 0.3 * Math.max(0, vis));
+          g.fillStyle = `rgba(${st.stripe[0]},${st.stripe[1]},${st.stripe[2]},${Math.min(1, 0.4 + vis)})`;
+          g.fillRect(off - bw / 2, -r, bw, r * 2);
+          g.restore();
+          const sh = g.createRadialGradient(bx - r * 0.4, by - r * 0.45, r * 0.1, bx, by, r * 1.05);
+          sh.addColorStop(0, 'rgba(255,255,255,0.35)'); sh.addColorStop(0.6, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.3)');
+          g.fillStyle = sh; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill();
+        }
+      }
+      if (st.gloss) { g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.arc(bx - r * 0.35, by - r * 0.4, r * 0.22, 0, Math.PI * 2); g.fill(); }
       g.globalAlpha = 1;
     }
   }

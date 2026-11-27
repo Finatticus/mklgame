@@ -375,6 +375,9 @@ async function renderGame(game) {
 // ---------------------------------------------------------------------------
 
 window.addEventListener('hashchange', render);
+// 長按不跳出系統選單（輸入框除外）；遊戲自己的右鍵功能（如踩地雷插旗）不受影響
+document.addEventListener('contextmenu', (e) => { if (!e.target.closest('input, textarea')) e.preventDefault(); });
+document.addEventListener('selectstart', (e) => { if (!e.target.closest || !e.target.closest('input, textarea')) e.preventDefault(); });
 store.restoreSession();
 render();
 if (store.isLoggedIn()) store.scheduleSync(1000);

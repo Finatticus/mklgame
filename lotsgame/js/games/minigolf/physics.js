@@ -77,7 +77,7 @@ function scaleDef(d, k) {
     green: d.green.map(P), tee: P(d.tee), cup: P(d.cup),
     walls: (d.walls || []).map((w) => Object.assign({}, w, { pts: w.pts.map(P) })),
     posts: (d.posts || []).map((p) => Object.assign({}, p, { x: p.x * k, y: p.y * k, r: p.r * k })),
-    sand: (d.sand || []).map((p) => p.map(P)), water: (d.water || []).map((p) => p.map(P)), ice: (d.ice || []).map((p) => p.map(P)),
+    sand: (d.sand || []).map((p) => p.map(P)), water: (d.water || []).map((p) => p.map(P)), ice: (d.ice || []).map((p) => p.map(P)), lava: (d.lava || []).map((p) => p.map(P)),
     decor: (d.decor || []).map((o) => Object.assign({}, o, { x: o.x * k, y: o.y * k, r: o.r * k })),
     tunnels: (d.tunnels || []).map((t) => Object.assign({}, t, { in: P(t.in), out: P(t.out) })),
     movers: (d.movers || []).map((m) => Object.assign({}, m, m.t === 'slider' ? { a: P(m.a), b: P(m.b), len: m.len * k } : { x: m.x * k, y: m.y * k, len: m.len * k })),
@@ -108,7 +108,7 @@ export function buildHole(def0) {
   const { h, grad } = heightFn(def.height);
   return {
     def, segs, posts, h, grad,
-    sand: def.sand || [], water: def.water || [], ice: def.ice || [],
+    sand: def.sand || [], water: (def.water || []).concat(def.lava || []), pools: def.water || [], lava: def.lava || [], ice: def.ice || [],
     movers: (def.movers || []).map((m) => Object.assign({ phase: 0 }, m)),
     tunnels: def.tunnels || [],
     cup: { x: def.cup[0], y: def.cup[1] },
@@ -130,7 +130,9 @@ export function moverShapes(m, t) {
   if (m.t === 'pendulum') {
     // 擺錘：以 x, y 為支點，在 base 方向左右擺動 amp 弧度
     const w = (Math.PI * 2) / m.period, ph = w * t + (m.phase || 0);
-    const ang = m.base + m.amp * Math.sin(ph), om = m.amp * w * Math.cos(ph);
+    const gate = m.mode === 'gate';
+    const ang = gate ? m.base + m.amp * (0.5 - 0.5 * Math.cos(ph)) : m.base + m.amp * Math.sin(ph);
+    const om = gate ? m.amp * 0.5 * w * Math.sin(ph) : m.amp * w * Math.cos(ph);
     const vel = (x, y) => [-om * (y - m.y), om * (x - m.x)];
     const r0 = m.from || 0;
     return [{ ax: m.x + Math.cos(ang) * r0, ay: m.y + Math.sin(ang) * r0, bx: m.x + Math.cos(ang) * m.len, by: m.y + Math.sin(ang) * m.len, rr: m.w / 2, vel, m: MAT[m.mat || 'wood'], mat: m.mat || 'wood' }];
@@ -265,7 +267,7 @@ export function step(world, b, dt = DT) {
   } else if (d > CUP_R + 0.002) b.over = false;
 
   // 水池
-  for (const p of world.water) if (inPoly(p, b.x, b.y)) { b.moving = false; b.vx = b.vy = 0; ev.push({ type: 'water' }); return ev; }
+  for (const p of world.water) if (inPoly(p, b.x, b.y)) { b.moving = false; b.vx = b.vy = 0; ev.push({ type: 'water', lava: world.lava.includes(p) }); return ev; }
   // 管道入口
   for (const tn of world.tunnels) {
     if (Math.hypot(b.x - tn.in[0], b.y - tn.in[1]) < (tn.r || 0.05)) {
