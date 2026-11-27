@@ -27,7 +27,8 @@
    - 帳號＝玩家名稱，輸入帳密即可，不存在就詢問後建立；登入後永久保持，除非自行登出。
    - 新帳號 100,000 遊戲幣，所有遊戲共用。下注用 `store.hold()` 先扣住，結束用 `store.settle()` 結算（會自動寫統計、紀錄、同步）。
    - GAS 試算表要讓管理員看得懂：`帳號總覽` 一人一列、`玩家-<帳號>` 一人一張逐筆紀錄，欄位用中文。
-6. **大廳要留擴充空間**：遊戲卡片用 grid，新增遊戲只需在 `js/games/registry.js` 登記；`COMING` 是預留位。
+6. **大廳要留擴充空間**：遊戲卡片用 grid，新增遊戲只需在 `js/games/registry.js` 登記並填 `cat`（分類：棋類 board、牌桌 cards、麻將 tiles、益智 puzzle，可在 `CATEGORIES` 增加）；`COMING` 是預留位。
+7. **帶入制牌桌**（德州撲克、麻將）：入座時 `store.hold()` 帶入籌碼，桌上輸贏只動籌碼，離桌時 `store.settle()` 以剩餘籌碼結算。
 
 ## 架構
 
@@ -57,5 +58,6 @@ models/            圍棋神經網路（ONNX）
 ## 開發
 
 - 本機伺服器：`python tools/serve.py 8765`（本機預設不啟用 Service Worker；加 `?sw=1` 測離線）。
+- 本機預設不連 GAS（避免測試資料寫進正式試算表），網址加 `?gas=1` 才會同步。
 - 這台電腦沒有 Node／gh，`python` 請用 Python 3.12。
 - 圍棋引擎：`tools/katago2onnx.py` 把官方 KataGo 網路轉成 ONNX；特徵編碼在 `js/games/go/features.js`，必須與官方 `NNInputs::fillRowV7` 一致。

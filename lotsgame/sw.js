@@ -1,6 +1,6 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.0.2';
+const VERSION = 'v1.1.0';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 
@@ -11,12 +11,15 @@ const CORE = [
   'js/games/registry.js', 'js/games/shared/draw.js', 'js/games/shared/boardview.js', 'js/games/shared/setup.js',
   'js/games/go/index.js', 'js/games/go/rules.js', 'js/games/go/features.js', 'js/games/go/engine-worker.js',
   'js/games/gomoku/index.js', 'js/games/gomoku/ai-worker.js',
-  'js/games/blackjack/index.js',
+  'js/games/blackjack/index.js', 'js/games/baccarat/index.js', 'js/games/minesweeper/index.js', 'js/games/g2048/index.js',
+  'js/games/holdem/index.js', 'js/games/holdem/engine.js', 'js/games/holdem/table.js',
+  'js/games/mahjong/index.js', 'js/games/mahjong/game.js', 'js/games/mahjong/rules.js',
   'vendor/ort/ort.webgpu.bundle.min.mjs', 'vendor/ort/ort-wasm-simd-threaded.asyncify.mjs', 'vendor/ort/ort-wasm-simd-threaded.asyncify.wasm',
   'assets/fonts/serif-tc.woff2', 'assets/fonts/latin.woff2',
   'assets/wood/bamboo.jpg', 'assets/wood/cherry.jpg', 'assets/wood/walnut.jpg',
   'assets/img/felt.png', 'assets/img/icon-192.png', 'assets/img/icon-512.png', 'assets/img/icon-180.png',
   ...['stone1', 'stone2', 'stone3', 'stone4', 'stone5', 'capture', 'card1', 'card2', 'card3', 'flip1', 'flip2', 'shuffle', 'chip1', 'chip2', 'chips1', 'chips2', 'chipswin'].map((n) => 'assets/sfx/' + n + '.wav'),
+  ...Array.from({ length: 42 }, (_, i) => 'assets/mahjong/t' + i + '.webp'),
   ...'A23456789TJQK'.split('').flatMap((r) => 'SHDC'.split('').map((s) => 'assets/cards/' + r + s + '.webp')),
 ];
 // 入門與進階的圍棋引擎隨平台一起快取；高段引擎（53 MB）在第一次選用時下載

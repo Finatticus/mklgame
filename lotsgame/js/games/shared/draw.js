@@ -159,7 +159,126 @@ const COVERS = {
     v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.5)');
     ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
   },
+  async baccarat(ctx, w, h) {
+    feltGradient(ctx, w, h, ['#24695f', '#163f3a', '#081d1b']);
+    const [nine, king, five] = await Promise.all(['9D', 'KC', '5S'].map((c) => loadImage(asset('cards/' + c + '.webp'))));
+    const ch = h * 0.66, cw = ch * 0.6886;
+    playingCard(ctx, five, w * 0.25, h * 0.52, cw * 0.9, ch * 0.9, -0.16);
+    playingCard(ctx, king, w * 0.55, h * 0.48, cw, ch, -0.08);
+    playingCard(ctx, nine, w * 0.7, h * 0.52, cw, ch, 0.14);
+    const r = h * 0.12;
+    drawChip(ctx, w * 0.12, h * 0.82, r, '#5a2c6e');
+    drawChip(ctx, w * 0.9, h * 0.2, r * 0.9, '#9a7631', '#2a2216');
+    vignette(ctx, w, h);
+  },
+  async holdem(ctx, w, h) {
+    feltGradient(ctx, w, h, ['#1f6b4c', '#134a35', '#061a12']);
+    const codes = ['AS', 'KS', 'QS', 'JS', 'TS', 'AH', 'AD'];
+    const im = await Promise.all(codes.map((c) => loadImage(asset('cards/' + c + '.webp'))));
+    const ch = Math.min(h * 0.4, (w * 0.92) / 5 / 0.6886 / 1.1), cw = ch * 0.6886;
+    const gap = cw * 0.1, x0 = w / 2 - (cw * 5 + gap * 4) / 2 + cw / 2;
+    for (let i = 0; i < 5; i++) playingCard(ctx, im[i], x0 + i * (cw + gap), h * 0.3, cw, ch, 0);
+    const big = h * 0.56, bw = big * 0.6886;
+    playingCard(ctx, im[5], w * 0.44, h * 0.78, bw, big, -0.12);
+    playingCard(ctx, im[6], w * 0.56, h * 0.8, bw, big, 0.1);
+    const r = h * 0.1;
+    for (let k = 0; k < 4; k++) drawChip(ctx, w * 0.14, h * 0.86 - k * r * 0.32, r, k % 2 ? '#1d1d20' : '#8c2f2a');
+    drawChip(ctx, w * 0.86, h * 0.82, r, '#2d4f86');
+    vignette(ctx, w, h);
+  },
+  async mahjong(ctx, w, h) {
+    feltGradient(ctx, w, h, ['#22694a', '#14432f', '#081e15']);
+    const front = [27, 27, 27, 31, 31, 0, 1, 2, 13, 13];
+    const back = [33, 33, 32, 9, 10, 11, 18, 18, 18];
+    const im = await Promise.all([...new Set(front.concat(back))].map(async (t) => [t, await loadImage(asset('mahjong/t' + t + '.webp'))]));
+    const map = new Map(im);
+    const tw = Math.min(w / 6.2, h * 0.36), th = tw * 1.36;
+    const row = (y, scale, offs, list) => {
+      const ww = tw * scale, hh = th * scale;
+      const x0 = w / 2 - (list.length * ww) / 2 + offs;
+      list.forEach((t, i) => mjTile(ctx, map.get(t), x0 + i * ww, y, ww, hh));
+    };
+    row(h * 0.12, 0.62, -tw * 0.4, back);
+    row(h * 0.5, 1, tw * 0.1, front.slice(0, Math.floor(w / tw) + 1));
+    vignette(ctx, w, h);
+  },
+  async minesweeper(ctx, w, h) {
+    ctx.fillStyle = '#1e150d'; ctx.fillRect(0, 0, w, h);
+    const s = Math.max(w, h) / 9;
+    const open = new Set(['2,3', '3,3', '4,3', '2,4', '3,4', '4,4', '5,4', '3,5', '4,5', '5,5', '4,2', '5,3']);
+    const nums = { '2,3': 1, '4,2': 2, '5,3': 1, '2,4': 1, '5,4': 2, '3,5': 1, '5,5': 3 };
+    for (let r = -1; r < 8; r++) for (let c = -1; c < 11; c++) {
+      const x = c * s + s * 0.3, y = r * s + s * 0.2, k = c + ',' + r;
+      if (open.has(k)) {
+        ctx.fillStyle = (c + r) % 2 ? '#e9e0cc' : '#efe7d4'; ctx.fillRect(x, y, s, s);
+        if (nums[k]) { ctx.fillStyle = ['', '#2f62b5', '#2f7d45', '#b8382e'][nums[k]]; ctx.font = '700 ' + Math.round(s * 0.6) + 'px ' + serifFamily(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(nums[k]), x + s / 2, y + s * 0.54); }
+      } else {
+        const g = ctx.createLinearGradient(x, y, x, y + s); g.addColorStop(0, '#5b4a37'); g.addColorStop(1, '#3d3124');
+        ctx.fillStyle = '#2a2118'; ctx.fillRect(x, y, s, s);
+        ctx.beginPath(); ctx.roundRect(x + 1.5, y + 1.5, s - 3, s - 3, s * 0.12); ctx.fillStyle = g; ctx.fill();
+        if (k === '6,4' || k === '3,2') {
+          const u = s / 20, cx = x + s / 2, cy = y + s / 2;
+          ctx.fillStyle = '#d9cdb3'; ctx.fillRect(cx - 5 * u, cy + 5 * u, 10 * u, 2 * u); ctx.fillRect(cx - 0.8 * u, cy - 6 * u, 1.6 * u, 12 * u);
+          ctx.beginPath(); ctx.moveTo(cx + 0.8 * u, cy - 6.5 * u); ctx.lineTo(cx - 6.5 * u, cy - 3 * u); ctx.lineTo(cx + 0.8 * u, cy + 0.5 * u); ctx.fillStyle = '#c9443a'; ctx.fill();
+        }
+      }
+    }
+    vignette(ctx, w, h);
+  },
+  async g2048(ctx, w, h) {
+    const img = await loadImage(asset('wood/walnut.jpg'));
+    paintWood(ctx, img, 0, 0, w, h, 'rgba(20,12,6,0.55)');
+    const s = Math.min(w, h * 1.3) / 3.4, gap = s * 0.1;
+    const tiles = [[2048, '#6a1c1c', '#f6e2ab'], [1024, '#8e2f2a', '#f3dca2'], [512, '#a8812f', '#fff4d8'], [256, '#c19d4c', '#2e200a'], [64, '#b9653b', '#fbf1dc'], [8, '#e6c78e', '#4a361d']];
+    const pos = [[1, 0.5], [0, 0.5], [2, 0.5], [1, 1.6], [0, 1.6], [2, 1.6]];
+    const x0 = w / 2 - (s * 3 + gap * 2) / 2, y0 = h / 2 - s * 1.05;
+    tiles.forEach(([v, bg, fg], i) => {
+      const [c, r] = pos[i];
+      const x = x0 + c * (s + gap), y = y0 + (r - 0.5) * (s + gap);
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = s * 0.12; ctx.shadowOffsetY = s * 0.05;
+      ctx.beginPath(); ctx.roundRect(x, y, s, s, s * 0.1); ctx.fillStyle = bg; ctx.fill(); ctx.restore();
+      const g = ctx.createLinearGradient(x, y, x, y + s); g.addColorStop(0, 'rgba(255,255,255,0.22)'); g.addColorStop(0.5, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,0.12)');
+      ctx.beginPath(); ctx.roundRect(x, y, s, s, s * 0.1); ctx.fillStyle = g; ctx.fill();
+      if (v === 2048) { ctx.strokeStyle = 'rgba(232,211,160,0.75)'; ctx.lineWidth = Math.max(1.5, s * 0.03); ctx.stroke(); }
+      ctx.fillStyle = fg; ctx.font = '700 ' + Math.round(s * (v >= 1000 ? 0.3 : 0.4)) + 'px ' + serifFamily(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(v), x + s / 2, y + s * 0.53);
+    });
+    vignette(ctx, w, h);
+  },
 };
+
+const serifFamily = () => getComputedStyle(document.body).getPropertyValue('--serif') || 'serif';
+function feltGradient(ctx, w, h, [a, b, c]) {
+  const g = ctx.createRadialGradient(w / 2, h * 0.35, 0, w / 2, h * 0.5, Math.max(w, h) * 0.8);
+  g.addColorStop(0, a); g.addColorStop(0.55, b); g.addColorStop(1, c);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+}
+function vignette(ctx, w, h) {
+  const v = ctx.createRadialGradient(w / 2, h / 2, h * 0.2, w / 2, h / 2, Math.max(w, h) * 0.75);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.5)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, w, h);
+}
+function playingCard(ctx, img, x, y, cw, ch, rot) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = ch * 0.08; ctx.shadowOffsetY = ch * 0.04;
+  ctx.fillStyle = '#fbf9f3';
+  ctx.beginPath(); ctx.roundRect(-cw / 2, -ch / 2, cw, ch, cw * 0.07); ctx.fill();
+  ctx.shadowColor = 'transparent';
+  const m = cw * 0.05;
+  ctx.drawImage(img, -cw / 2 + m, -ch / 2 + m, cw - 2 * m, ch - 2 * m);
+  ctx.restore();
+}
+function mjTile(ctx, img, x, y, tw, th) {
+  const d = tw * 0.12, r = tw * 0.13;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = tw * 0.2; ctx.shadowOffsetY = tw * 0.08;
+  ctx.beginPath(); ctx.roundRect(x + 1, y + d, tw - 2, th, r); ctx.fillStyle = '#1e6a44'; ctx.fill();
+  ctx.restore();
+  const g = ctx.createLinearGradient(x, y, x, y + th);
+  g.addColorStop(0, '#fffdf6'); g.addColorStop(0.7, '#f1e9d5'); g.addColorStop(1, '#e6dcc3');
+  ctx.beginPath(); ctx.roundRect(x + 1, y, tw - 2, th, r); ctx.fillStyle = g; ctx.fill();
+  if (img) ctx.drawImage(img, x + tw * 0.08, y + th * 0.05, tw * 0.84, th * 0.9);
+}
 
 export async function paintCover(canvas, id) {
   const r = canvas.getBoundingClientRect();

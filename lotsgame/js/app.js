@@ -3,7 +3,7 @@ import { APP_NAME, APP_VERSION, START_COINS } from './config.js';
 import * as store from './store.js';
 import { h, fmt, signed, signClass, pct, timeAgo, toast, modal, confirmBox } from './ui.js';
 import * as audio from './audio.js';
-import { GAMES, COMING, gameById } from './games/registry.js';
+import { GAMES, COMING, CATEGORIES, gameById } from './games/registry.js';
 import { paintCover } from './games/shared/draw.js';
 
 const app = document.getElementById('app');
@@ -122,30 +122,64 @@ function pageLobby(page) {
   const notices = h('div');
   const figures = h('div', { class: 'figures' });
 
-  const games = h('div', { class: 'games' }, GAMES.map((g, i) => {
+  // 遊戲卡片只建立一次（封面繪製較花時間），切換分類時只調整顯示
+  const cards = GAMES.map((g) => {
     const cv = h('canvas');
-    const card = h('button', { class: 'gcard' + (i === 0 ? ' feature' : ''), onClick: () => navigate('#/game/' + g.id) },
+    const card = h('button', { class: 'gcard', onClick: () => navigate('#/game/' + g.id) },
       h('div', { class: 'gcard-art' }, cv),
       h('div', { class: 'gcard-body' },
         h('div', { class: 'gcard-kicker' }, g.kicker),
         h('div', { class: 'gcard-name' }, g.name),
         h('div', { class: 'gcard-desc' }, g.desc)));
-    requestAnimationFrame(() => paintCover(cv, g.id));
+    card.game = g;
+    card.cover = cv;
     return card;
-  }));
-
-  const soon = h('div', { class: 'games' }, COMING.map((g) => h('div', { class: 'gcard soon' },
+  });
+  const games = h('div', { class: 'games' }, cards);
+  const soonCards = COMING.map((g) => Object.assign(h('div', { class: 'gcard soon' },
     h('div', { class: 'gcard-art' }, h('span', null, '籌備中')),
-    h('div', { class: 'gcard-body' }, h('div', { class: 'gcard-kicker' }, g.kicker), h('div', { class: 'gcard-name' }, g.name)))));
+    h('div', { class: 'gcard-body' }, h('div', { class: 'gcard-kicker' }, g.kicker), h('div', { class: 'gcard-name' }, g.name))), { game: g }));
+  const soon = h('div', { class: 'games' }, soonCards);
+  const soonHead = h('div', { class: 'section-head' }, h('h2', null, '即將推出'), h('span', null, '陸續上架'));
+  const countEl = h('span');
+  const catBar = h('div', { class: 'cats', role: 'tablist' });
+  let cat = sessionStorage.getItem('lots.cat') || 'all';
+  if (!CATEGORIES.some((c) => c.id === cat)) cat = 'all';
+  const painted = new Set();
+  const applyCat = () => {
+    sessionStorage.setItem('lots.cat', cat);
+    catBar.replaceChildren(...CATEGORIES.map((c) => {
+      const n = c.id === 'all' ? GAMES.length : GAMES.filter((g) => g.cat === c.id).length;
+      return h('button', { class: 'cat' + (c.id === cat ? ' on' : ''), role: 'tab', 'aria-selected': c.id === cat ? 'true' : 'false', onClick: () => { if (cat !== c.id) { cat = c.id; applyCat(); } } }, c.name, h('small', null, n));
+    }));
+    let first = true, shown = 0;
+    for (const card of cards) {
+      const on = cat === 'all' || card.game.cat === cat;
+      card.hidden = !on;
+      card.classList.toggle('feature', on && first);
+      if (on) {
+        first = false; shown++;
+        // 卡片尺寸改變（例如變成大卡）時重新繪製封面
+        const key = card.game.id + (card.classList.contains('feature') ? ':f' : '');
+        if (!painted.has(key)) { painted.add(key); requestAnimationFrame(() => paintCover(card.cover, card.game.id)); }
+      }
+    }
+    countEl.textContent = shown + ' 款遊戲';
+    let soonShown = 0;
+    for (const s of soonCards) { s.hidden = !(cat === 'all' || s.game.cat === cat); if (!s.hidden) soonShown++; }
+    soon.hidden = soonHead.hidden = !soonShown;
+  };
+  applyCat();
 
   page.append(
     h('div', { class: 'hello' }, h('div', null, h('h1', null, greeting() + '，' + d.user), h('p', null, '今天想玩點什麼？')), chip),
     notices,
-    h('div', { class: 'section-head' }, h('h2', null, '遊戲大廳'), h('span', null, GAMES.length + ' 款遊戲')),
+    h('div', { class: 'section-head' }, h('h2', null, '遊戲大廳'), countEl),
+    catBar,
     games,
     h('div', { class: 'section-head' }, h('h2', null, '我的戰績'), h('a', { href: '#/stats', style: 'color:var(--gold);text-decoration:none;font-size:13px;letter-spacing:.1em' }, '完整統計')),
     figures,
-    h('div', { class: 'section-head' }, h('h2', null, '即將推出'), h('span', null, '陸續上架')),
+    soonHead,
     soon);
 
   const refresh = () => {
@@ -207,6 +241,11 @@ function pageStats(page) {
       ['擊敗高級五子棋 AI', (m.gomokuHardWins || 0) + ' 次'],
       ['拿到 Blackjack', (m.bjNaturals || 0) + ' 次'],
       ['加倍成功', (m.bjDoubleWins || 0) + ' 次'],
+      ['百家樂押中和局', (m.bacTieWins || 0) + ' 次'],
+      ['德州撲克打過', fmt(m.pkHands || 0) + ' 手'],
+      ['麻將胡過 8 台以上', (m.mjBigHands || 0) + ' 次'],
+      ['踩地雷高級過關', (m.msHardWins || 0) + ' 次'],
+      ['2048 合出 2048', (m.tile2048 || 0) + ' 次'],
       ['圍棋總手數', fmt(m.goMoves || 0) + ' 手'],
     ];
     body.replaceChildren(

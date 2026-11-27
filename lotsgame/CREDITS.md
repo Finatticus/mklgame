@@ -8,6 +8,7 @@
 | 撲克牌牌面（`assets/cards/`） | [Vector Playing Cards](https://code.google.com/archive/p/vector-playing-cards/)（Byron Knoll），取自 hayeah/playing-cards-assets | 公有領域 |
 | 發牌與籌碼音效（`assets/sfx/card*、flip*、chip*、shuffle`） | [Kenney Casino Audio](https://kenney.nl/assets/casino-audio) | CC0 |
 | 落子與提子音效（`assets/sfx/stone*、capture`） | [KaTrain](https://github.com/sanderland/katrain) | MIT |
+| 麻將牌面（`assets/mahjong/t0–t32.webp`） | [FluffyStuff/riichi-mahjong-tiles](https://github.com/FluffyStuff/riichi-mahjong-tiles)（Regular 版 SVG 轉成 WebP） | CC0（公有領域） |
 | 標題字型（`assets/fonts/`） | Noto Serif TC、Cormorant Garamond（Google Fonts），裁成子集 | SIL OFL 1.1 |
 
-棋子、籌碼、牌背、牌桌與所有封面圖皆為程式即時繪製。
+棋子、籌碼、牌背、牌桌與所有封面圖皆為程式即時繪製。麻將的白板與八張花牌（`t33`、`t34–t41`）以 Noto Serif TC 字型自行繪製。
