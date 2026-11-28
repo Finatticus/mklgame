@@ -114,8 +114,9 @@ export async function createRace(canvas, opts) {
 
   // ---------------- 狀態 ----------------
   const S = { t: 0, state: 'count', count: 3.4, paused: false, laps: opts.laps || 0, trial: !opts.opponents.length, finished: false, wrongT: 0, msg: '', shake: 0, results: null, best: opts.bestLap || null };
-  const input = { steer: 0, throttle: 0, brake: 0 };
+  const input = { steer: 0, throttle: 0, brake: 0, handbrake: 0 };
   const sound = new CarSound();
+  player.onDrift = (score, t) => { if (!S.finished) opts.onEvent && opts.onEvent('drift', { score, t }); };
   player.onHit = (vn) => { S.shake = Math.min(1, vn / 12); audio.play('hitm', { volume: Math.min(0.7, vn / 20), rate: 0.55 }); };
   let ghostRec = [], ghostT = 0;
 
@@ -246,7 +247,8 @@ export async function createRace(canvas, opts) {
     if (S.shake > 0) S.shake = Math.max(0, S.shake - dt * 2.5);
     const shk = S.shake * S.shake * 0.05 + Math.min(1, v / 70) * 0.0025 * (player.offroad ? 6 : 1);
     if (view === 'cockpit') {
-      headYaw += (clamp(player.delta * 1.2 + player.r * 0.1, -0.35, 0.35) - headYaw) * Math.min(1, dt * 4); // 往彎心看
+      const hy = player.drift ? 0.65 : 0.35; // 飄移時視線轉向行進方向
+      headYaw += (clamp(player.delta * 1.2 + player.r * 0.1, -hy, hy) - headYaw) * Math.min(1, dt * 4); // 往彎心看
       // 鏡頭固定在車內：跟著車身的俯仰與側傾，視線隨方向盤略轉向彎心
       head.getWorldPosition(camPos);
       camera.position.copy(camPos).add(tmp.set((Math.random() - 0.5) * shk, (Math.random() - 0.5) * shk, 0));
@@ -297,7 +299,7 @@ export async function createRace(canvas, opts) {
       speed: player.speed * 3.6, gear: player.gear, rpm: player.rpm, redline: player.spec.redline, state: S.state, count: S.count,
       lap: Math.max(1, Math.min(player.lap, S.laps || player.lap)), laps: S.laps, pos: pos.indexOf(player) + 1, n: cars.length,
       t: S.t, lapT: player.finishT != null ? player.laps[player.laps.length - 1] : player.lap >= 1 ? S.t - player.lapStart : 0, best: S.best, last: player.laps[player.laps.length - 1] || null,
-      wrong: S.wrongT > 1.2, offroad: player.offroad, finished: S.finished,
+      wrong: S.wrongT > 1.2, offroad: player.offroad, finished: S.finished, drift: player.drift ? Math.round(player.driftScore) : 0, driftAngle: player.drift ? Math.round(Math.abs(Math.atan2(player.vx * Math.cos(player.h) - player.vz * Math.sin(player.h), Math.abs(player.forwardSpeed) + 0.1)) * 57.3) : 0,
       dots: cars.map((c) => [c.x, c.z, c.isPlayer]),
     };
   }

@@ -14,7 +14,8 @@ export const RULES = `
 <ul>
 <li><strong>傾斜操控</strong>（預設）：像拿方向盤一樣左右傾斜手機轉彎。右下角按住加油，左下角按住煞車。開賽時的手機角度就是正中，第一次會請你允許動作感測。</li>
 <li><strong>按鈕操控</strong>：左側 ◀ ▶ 轉向，右側油門與煞車。可在「設定」切換。</li>
-<li>電腦：方向鍵或 WASD 開車，C 切換車內／車外視角，R 回到賽道，Esc 暫停。</li>
+<li>電腦：方向鍵或 WASD 開車，空白鍵手煞車，C 切換車內／車外視角，R 回到賽道，Esc 暫停。</li>
+<li><strong>飄移</strong>：過彎時轉向並拉一下「手煞」，車尾就會甩出去進入飄移；接著踩住油門維持角度。方向往彎內打角度加大，往外反打並收油就回正出彎。後驅車在高速全油門大轉向時也能直接甩出。開啟駕駛輔助時會自動反打方向盤，比較好控制；飄移越久、角度越大、速度越快，分數越高（撞牆不計分）。</li>
 <li>預設開啟「駕駛輔助」：循跡控制、車身穩定與隨速轉向，讓手機也好開。關閉後車子更靈活，但後驅車容易甩尾。</li>
 <li>衝出賽道會在碎石與草地上大幅減速；撞到護欄或岩壁會反彈。卡住時可在暫停選單「回到賽道」。</li>
 </ul>
@@ -189,16 +190,17 @@ export async function mount(root, ctx) {
     const pauseBtn = h('button', { class: 'sh-pause rc-pause', 'aria-label': '暫停', onClick: (e) => { e.stopPropagation(); pause(true); } }, h('i'), h('i'));
     const viewBtn = h('button', { class: 'rc-view', onClick: (e) => { e.stopPropagation(); if (!race) return; const v = race.view === 'cockpit' ? 'chase' : 'cockpit'; race.setView(v); const q = P(); q.view = v; save(q); viewBtn.textContent = v === 'cockpit' ? '車外' : '車內'; } }, p.view === 'cockpit' ? '車外' : '車內');
     const pad = (cls, label) => h('div', { class: 'rc-pad ' + cls }, h('span', null, label));
-    const gas = pad('gas', '油門'), brake = pad('brake', '煞車'), left = pad('left', '◀'), right = pad('right', '▶');
-    const controls = h('div', { class: 'rc-ctl ' + p.control }, brake, gas, p.control === 'buttons' ? left : null, p.control === 'buttons' ? right : null);
+    const gas = pad('gas', '油門'), brake = pad('brake', '煞車'), hbp = pad('hb', '手煞'), left = pad('left', '◀'), right = pad('right', '▶');
+    const controls = h('div', { class: 'rc-ctl ' + p.control }, brake, gas, hbp, p.control === 'buttons' ? left : null, p.control === 'buttons' ? right : null);
+    const driftEl = h('div', { class: 'rc-drift' });
     const hud = h('div', { class: 'rc-hud' },
       h('div', { class: 'rc-tl' }, cfg.mode === 'career' ? h('div', null, h('small', null, '名次'), posEl) : null, h('div', null, h('small', null, '圈數'), lapEl)),
       h('div', { class: 'rc-tr' }, h('div', null, h('small', null, '本圈'), timeEl), h('div', null, h('small', null, '最佳'), bestEl)),
       mini,
       h('div', { class: 'rc-speed' }, speedEl, h('small', null, 'km/h'), h('div', { class: 'rc-rpm' }, rpmFill), h('div', { class: 'rc-gear' }, h('small', null, '檔'), gearEl)));
-    const stage = h('div', { class: 'rc-stage' }, cv, hud, count, msg, controls, pauseBtn, viewBtn, panel, loading);
+    const stage = h('div', { class: 'rc-stage' }, cv, hud, count, msg, driftEl, controls, pauseBtn, viewBtn, panel, loading);
     root.replaceChildren(h('div', { class: 'rc' }, stage));
-    V = { stage, cv, speedEl, gearEl, rpmFill, posEl, lapEl, timeEl, bestEl, mini, count, msg, panel, controls, cfg };
+    V = { stage, cv, speedEl, gearEl, rpmFill, posEl, lapEl, timeEl, bestEl, mini, count, msg, panel, controls, driftEl, cfg };
     const { createRace } = await import('./race.js');
     const tb = p.trial[cfg.trackId];
     try {
@@ -258,6 +260,8 @@ export async function mount(root, ctx) {
       for (const [x, z, me] of d.dots) { g.fillStyle = me ? '#f3d488' : 'rgba(210,90,70,0.95)'; g.beginPath(); g.arc(miniBase.tx(x), miniBase.tz(z), (me ? 4 : 3) * miniBase.dpr, 0, Math.PI * 2); g.fill(); }
     }
     if (d.wrong) say('方向錯誤', 900);
+    V.driftEl.classList.toggle('on', d.drift > 0);
+    if (d.drift > 0) V.driftEl.textContent = '飄移 ' + d.driftAngle + '°　' + fmt(d.drift);
   }
   let sayT = 0;
   function say(t, ms = 1600) { if (!V) return; V.msg.textContent = t; V.msg.classList.add('on'); clearTimeout(sayT); sayT = setTimeout(() => V && V.msg.classList.remove('on'), ms); }
@@ -277,6 +281,7 @@ export async function mount(root, ctx) {
         }
       }
     }
+    if (type === 'drift') say('飄移 +' + fmt(d.score), 1400);
     if (type === 'finish') finishCareer(d);
   }
 
@@ -329,15 +334,16 @@ export async function mount(root, ctx) {
 
   // ---------------- 操控 ----------------
   function bindControls(mode) {
-    const st = { gas: false, brake: false, left: false, right: false, steer: 0, tilt: 0, zero: null, keys: new Set() };
+    const st = { gas: false, brake: false, hb: false, left: false, right: false, steer: 0, tilt: 0, zero: null, keys: new Set() };
     V.ctl = st;
     const press = (el, k) => {
       const on = (e) => { e.preventDefault(); st[k] = true; el.classList.add('on'); };
       const off = (e) => { e.preventDefault(); st[k] = false; el.classList.remove('on'); };
       el.addEventListener('pointerdown', on); el.addEventListener('pointerup', off); el.addEventListener('pointercancel', off); el.addEventListener('pointerleave', off);
     };
-    const [brakeEl, gasEl, leftEl, rightEl] = V.controls.children;
-    press(gasEl, 'gas'); press(brakeEl, 'brake');
+    const q = (c) => V.controls.querySelector('.rc-pad.' + c);
+    const brakeEl = q('brake'), gasEl = q('gas'), hbEl = q('hb'), leftEl = q('left'), rightEl = q('right');
+    press(gasEl, 'gas'); press(brakeEl, 'brake'); press(hbEl, 'hb');
     if (leftEl) press(leftEl, 'left'); if (rightEl) press(rightEl, 'right');
     V.onOri = (e) => {
       const ang = (screen.orientation && screen.orientation.angle) ?? window.orientation ?? 0;
@@ -347,7 +353,7 @@ export async function mount(root, ctx) {
       st.tilt = raw - st.zero;
     };
     if (mode === 'tilt') addEventListener('deviceorientation', V.onOri);
-    const kmap = { ArrowUp: 'gas', KeyW: 'gas', ArrowDown: 'brake', KeyS: 'brake', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+    const kmap = { ArrowUp: 'gas', KeyW: 'gas', ArrowDown: 'brake', KeyS: 'brake', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'hb' };
     V.kd = (e) => {
       if (kmap[e.code]) { st.keys.add(kmap[e.code]); e.preventDefault(); }
       else if (e.code === 'KeyC') V.stage.querySelector('.rc-view').click();
@@ -365,7 +371,7 @@ export async function mount(root, ctx) {
       let steer;
       if (mode === 'tilt' && !L && !R && st.zero != null) { const t = st.tilt, dz = 1.5; steer = Math.abs(t) < dz ? 0 : Math.max(-1, Math.min(1, (t - Math.sign(t) * dz) / 24)); }
       else { const target = (R ? 1 : 0) - (L ? 1 : 0); st.steer += Math.max(-dt * 3.2, Math.min(dt * 3.2, target - st.steer)); if (!target) st.steer *= Math.max(0, 1 - dt * 6); steer = st.steer; }
-      race.setInput({ steer, throttle: st.gas || st.keys.has('gas') ? 1 : 0, brake: st.brake || st.keys.has('brake') ? 1 : 0 });
+      race.setInput({ steer, throttle: st.gas || st.keys.has('gas') ? 1 : 0, brake: st.brake || st.keys.has('brake') ? 1 : 0, handbrake: st.hb || st.keys.has('hb') ? 1 : 0 });
     };
     V.ctlRaf = requestAnimationFrame(loop);
   }

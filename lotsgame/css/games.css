@@ -961,6 +961,10 @@
 .rc-pad.gas { right: 14px; width: 84px; height: 112px; }
 .rc-pad.brake { right: 108px; width: 76px; height: 76px; }
 .rc-ctl.tilt .rc-pad.brake { right: auto; left: 14px; width: 92px; height: 92px; }
+.rc-pad.hb { right: 108px; bottom: calc(100px + var(--safe-b)); width: 76px; height: 52px; font-size: 14px; }
+.rc-ctl.tilt .rc-pad.hb { right: auto; left: 14px; bottom: calc(116px + var(--safe-b)); width: 92px; height: 56px; }
+.rc-drift { position: absolute; left: 0; right: 0; top: 17%; z-index: 3; text-align: center; pointer-events: none; font-family: var(--serif); font-size: 18px; letter-spacing: 0.06em; color: #f3d488; text-shadow: 0 2px 8px #000; opacity: 0; transition: opacity 0.15s; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rc-drift.on { opacity: 1; }
 .rc-pad.left { left: 14px; width: 76px; height: 76px; }
 .rc-pad.right { left: 100px; width: 76px; height: 76px; }
 @media (orientation: portrait) {
@@ -969,5 +973,6 @@
   .rc-ctl.buttons .rc-pad.right { left: 88px; }
   .rc-ctl.buttons .rc-pad.brake { right: 96px; width: 66px; height: 66px; }
   .rc-ctl.buttons .rc-pad.gas { width: 74px; height: 100px; }
-  .rc-speed { bottom: calc(130px + var(--safe-b)); }
+  .rc-ctl.buttons .rc-pad.hb { right: 96px; bottom: calc(88px + var(--safe-b)); width: 66px; height: 48px; }
+  .rc-speed { bottom: calc(150px + var(--safe-b)); }
 }

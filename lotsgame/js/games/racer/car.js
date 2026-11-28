@@ -94,7 +94,7 @@ export class Car {
     if (erase) eraseBadges(this.body, erase);
     if (!this.steerObj && steerFix && !ghost) this.steerObj = splitSteer(this.body, steerFix);
     if (this.steerObj) { const a = this.steerObj.userData.axis || [0, 0.35, -0.94]; this.steerAxis = new THREE.Vector3(...a).normalize(); this.steerQ0 = this.steerObj.quaternion.clone(); }
-    Object.assign(this, { x: 0, y: 0, z: 0, h: 0, vx: 0, vz: 0, r: 0, delta: 0, gear: 1, rpm: spec.idle, shiftT: 0, spin: 0, pitch: 0, roll: 0, ax: 0, ay: 0, slip: 0, wheelspin: 0, offroad: false, loc: null, s: 0, hitT: 0 });
+    Object.assign(this, { x: 0, y: 0, z: 0, h: 0, vx: 0, vz: 0, r: 0, delta: 0, gear: 1, rpm: spec.idle, shiftT: 0, spin: 0, pitch: 0, roll: 0, ax: 0, ay: 0, slip: 0, wheelspin: 0, offroad: false, loc: null, s: 0, hitT: 0, drift: false, driftDir: 0, driftScore: 0, driftT: 0, hbT: 0 });
     this.L = this.wheelbase;
     this.a = this.L * (1 - spec.lead); // 重心到前軸
     this.b = this.L * spec.lead; // 重心到後軸
@@ -107,7 +107,7 @@ export class Car {
   get speed() { return Math.hypot(this.vx, this.vz); }
   get forwardSpeed() { return this.vx * Math.sin(this.h) + this.vz * Math.cos(this.h); }
   place(x, z, h, track) {
-    Object.assign(this, { x, z, h, vx: 0, vz: 0, r: 0, delta: 0, gear: 1, ax: 0, ay: 0 });
+    Object.assign(this, { x, z, h, vx: 0, vz: 0, r: 0, delta: 0, gear: 1, ax: 0, ay: 0, drift: false, hbT: 0 });
     this.loc = track.locate(x, z, null);
     this.y = track.heightAt(x, z, this.loc);
     this.s = this.loc.s;
@@ -122,8 +122,11 @@ export class Car {
     const v = Math.hypot(vf, vl);
     // 轉向（高速時自動縮小舵角）
     const maxSteer = THREE.MathUtils.degToRad(sp.steer) / (1 + Math.max(0, v - 6) / (assist ? 20 : 36));
-    const target = -clamp(input.steer, -1, 1) * maxSteer;
-    const rate = 3.4 * maxSteer + 0.5;
+    const hb = input.handbrake ? 1 : 0;
+    const beta0 = v > 2 ? Math.atan2(vl, Math.abs(vf)) : 0; // 車身與行進方向的夾角（向左為正）
+    // 甩尾中：前輪自動回正到行進方向（反打），玩家的方向只做微調
+    const target = this.drift ? clamp(beta0 * 0.9 - clamp(input.steer, -1, 1) * 0.12, -0.6, 0.6) : -clamp(input.steer, -1, 1) * maxSteer;
+    const rate = this.drift ? 4 : 3.4 * maxSteer + 0.5;
     this.delta += clamp(target - this.delta, -rate * dt, rate * dt);
     const L = (this.loc = track.locate(this.x, this.z, this.loc ? this.loc.i : null));
     this.offroad = Math.abs(L.off) > EDGE + 0.15;
@@ -156,18 +159,21 @@ export class Car {
       ar = Math.atan2(vl - this.r * this.b, Math.abs(vf));
       Fyf = -mu * Fzf * tireCurve(af);
       Fyr = -mu * Fzr * tireCurve(ar);
+      if (hb) Fyr *= 0.32; // 手煞車鎖死後輪，後輪抓地力大減
     }
     // 驅動力分配與摩擦圓（循跡控制）
     const fr = sp.drive === 'F' ? 1 : sp.drive === 'A' ? 0.42 : 0;
-    let FxF = Fdrive * fr, FxR = Fdrive * (1 - fr);
+    let FxF = Fdrive * fr, FxR = Fdrive * (1 - fr) * (1 - hb);
+    // 後驅車全油門大轉向：讓後輪打滑甩尾（循跡控制放手）
+    const power = this.isPlayer && assist && fr < 1 && thr > 0.8 && Math.abs(input.steer) > 0.85 && v > 14 && !low;
     const capF = Math.sqrt(Math.max(0, (mu * Fzf) ** 2 - Fyf * Fyf)), capR = Math.sqrt(Math.max(0, (mu * Fzr) ** 2 - Fyr * Fyr));
     this.wheelspin = 0;
-    if (FxR > capR) { this.wheelspin = Math.min(1, (FxR - capR) / (capR + 500)); if (assist) FxR = capR; else { FxR = capR * 0.92; Fyr *= 0.6; } }
+    if (FxR > capR) { this.wheelspin = Math.min(1, (FxR - capR) / (capR + 500)); if (assist && !power) FxR = capR; else { FxR = capR * 0.92; Fyr *= 0.6; } }
     if (FxF > capF) { this.wheelspin = Math.max(this.wheelspin, Math.min(1, (FxF - capF) / (capF + 500))); FxF = capF; Fyf *= assist ? 1 : 0.8; }
     // 煞車（ABS）
     const Fb = input.brake * m * G * 1.08 * sp.brake;
     const sgn = Math.sign(vf);
-    const Bf = Math.min(Fb * 0.62, mu * Fzf), Br = Math.min(Fb * 0.38, mu * Fzr);
+    const Bf = Math.min(Fb * 0.62, mu * Fzf), Br = Math.min(Fb * 0.38 + hb * mu * Fzr * 0.7, mu * Fzr);
     // 阻力
     const drag = 0.5 * 1.2 * sp.cd * sp.area * v * v, roll = (this.offroad ? 0.08 : 0.013) * m * G;
     const cd = Math.cos(this.delta), sd = Math.sin(this.delta);
@@ -179,6 +185,7 @@ export class Car {
     this.vx += (sh * axL + ch * ayL) * dt;
     this.vz += (ch * axL - sh * ayL) * dt;
     if (low) {
+      if (this.drift) this.endDrift();
       // 低速：運動學轉向，側向速度收斂
       const rT = vf * Math.tan(this.delta) / this.L;
       this.r += (rT - this.r) * Math.min(1, dt * 10);
@@ -186,17 +193,18 @@ export class Car {
       this.vx = sh * vf2 + ch * vl2; this.vz = ch * vf2 - sh * vl2;
       if (Math.abs(vf2) < 0.4 && input.brake > 0.05 && thr < 0.05) { this.vx = this.vz = 0; }
     } else {
-      this.r += (Mz / this.Iz) * dt;
-      if (assist) { // 穩定輔助：側滑角太大時拉回
+      if (!this.drift) this.r += (Mz / this.Iz) * dt; // 飄移中由輔助接手車身轉動
+      if (assist && !this.drift && !hb && !power && this.hbT <= 0) { // 穩定輔助：側滑角太大時拉回
         const beta = Math.atan2(vl, Math.abs(vf));
         if (Math.abs(beta) > 0.12) { const k = Math.min(1, (Math.abs(beta) - 0.12) * 3) * dt * 5; this.r -= Math.sign(this.r) * Math.min(Math.abs(this.r), Math.abs(this.r) * k); }
       }
+      if (assist && this.isPlayer) this.driftAssist(dt, input, thr, hb, power, v, Fdrive, drag + roll, mu);
     }
     if (input.brake > 0.05 && thr < 0.05 && vf < 0.3) { const vf2 = this.vx * sh + this.vz * ch; if (vf2 < 0) { this.vx -= sh * vf2; this.vz -= ch * vf2; } } // 不倒車
     this.h += this.r * dt;
     this.ax += (axL - this.ax) * Math.min(1, dt * 8);
     this.ay += (ayL - this.ay) * Math.min(1, dt * 8);
-    this.slip = (v > 6 ? Math.max(Math.abs(af), Math.abs(ar)) : 0) + this.wheelspin * 0.2;
+    this.slip = (v > 6 ? Math.max(Math.abs(af), Math.abs(ar)) : 0) + this.wheelspin * 0.2 + (this.drift ? 0.25 : 0) + hb * (v > 6 ? 0.2 : 0);
     this.x += this.vx * dt; this.z += this.vz * dt;
     // 邊界：護欄、岩壁、出界
     const L2 = (this.loc = track.locate(this.x, this.z, L.i));
@@ -209,6 +217,7 @@ export class Car {
         this.vx -= rx * sg * vn * 1.25; this.vz -= rz * sg * vn * 1.25;
         this.vx *= 0.95; this.vz *= 0.95; this.r *= 0.5;
         if (vn > 2.5 && this.hitT <= 0) { this.hitT = 0.4; this.onHit && this.onHit(vn); }
+        if (vn > 4) { this.driftScore = 0; this.endDrift(); } // 撞牆：這次甩尾不算分
       }
       this.loc = track.locate(this.x, this.z, L2.i);
     }
@@ -216,6 +225,44 @@ export class Car {
     const gy = track.heightAt(this.x, this.z, this.loc);
     this.y += (gy - this.y) * Math.min(1, dt * 30);
     this.s = this.loc.s;
+  }
+
+  // 甩尾輔助（只在駕駛輔助開啟時）：進入甩尾後由這裡接手車身角度與行進路線
+  // 油門加大角度、方向往彎內加大、反打或收油就回正；速度損失有上限，才甩得出一整個彎
+  driftAssist(dt, input, thr, hb, power, v0, Fdrive, resist, mu) {
+    const sh = Math.sin(this.h), ch = Math.cos(this.h);
+    const vf = this.vx * sh + this.vz * ch, vl = this.vx * ch - this.vz * sh, v = Math.hypot(vf, vl);
+    const beta = Math.atan2(vl, Math.max(0.1, Math.abs(vf)));
+    if (hb) this.hbT = 0.7; else if (this.hbT > 0) this.hbT -= dt;
+    if (!this.drift) {
+      if (v > 9 && Math.abs(beta) > 0.14 && (hb || this.hbT > 0 || power)) { this.drift = true; this.driftDir = Math.sign(beta); this.driftScore = 0; this.driftT = 0; }
+      else return;
+    }
+    const d = this.driftDir, into = clamp(input.steer * d, -1, 1);
+    const fwd = this.spec.drive === 'F';
+    let bt = (fwd ? 0.3 : 0.36) + (fwd ? 0.06 : 0.2) * thr + 0.08 * into + 0.12 * hb;
+    if (into < -0.5 && thr < 0.3) bt = 0; // 反打又收油：回正出彎
+    bt = d * clamp(bt, 0, 0.62);
+    // 速度：油門維持、收油與煞車掉速
+    const brake = input.brake || 0;
+    const acc = thr * (Fdrive / this.spec.mass) * 0.45 - resist / this.spec.mass - (1 - thr) * 1.6 - brake * 7 - 0.6 - hb * 2;
+    const vn = Math.max(0, v0 + acc * dt);
+    // 行進路線：往彎內持續轉向（方向越往內轉越急）
+    const lat = mu * 9.81 * (0.2 + 0.82 * clamp((into + 1) / 2, 0, 1)) * (fwd ? 0.92 : 1); // 反打：路線變直；往內打：路線變急
+    const psi = Math.atan2(this.vx, this.vz) - d * (lat / Math.max(vn, 8)) * dt;
+    this.vx = Math.sin(psi) * vn; this.vz = Math.cos(psi) * vn;
+    // 車身角度：追蹤目標甩尾角
+    const pathRate = -d * lat / Math.max(vn, 8);
+    const rDes = pathRate + 3.2 * (beta - bt);
+    this.r += (rDes - this.r) * Math.min(1, dt * 14);
+    this.driftT += dt;
+    this.driftScore += vn * Math.abs(beta) * dt * 14;
+    if (vn < 8 || (Math.abs(bt) < 0.02 && Math.abs(beta) < 0.08) || Math.abs(beta) > 1.2) this.endDrift();
+  }
+  endDrift() {
+    if (!this.drift) return;
+    this.drift = false;
+    if (this.driftT > 0.8 && this.driftScore > 50 && this.onDrift) this.onDrift(Math.round(this.driftScore), this.driftT);
   }
 
   updateVisual(dt, track) {
