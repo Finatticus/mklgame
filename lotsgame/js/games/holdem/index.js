@@ -4,7 +4,7 @@ import * as audio from '../../audio.js';
 import { h, fmt, toast, modal, confirmBox, asset } from '../../ui.js';
 import { segmented, hero } from '../shared/setup.js';
 import { code, evaluate, handName } from './engine.js';
-import { createTable, startHand, act, decide, legal, pot } from './table.js';
+import { createTable, startHand, act, decide, legal, pot, LIVELY } from './table.js';
 
 const ID = 'holdem', NAME = '德州撲克';
 const TIERS = {
@@ -97,7 +97,7 @@ export async function mount(root, ctx) {
       if (!store.hold(ID, a)) return toast('遊戲幣不足');
       store.setSetting('holdem', { tier: prefs.tier, bb: prefs.bb });
       audio.play('chips');
-      T = createTable({ sb: t.sb, bb: t.bb, buyIn: a, human: store.getData().user, styles: t.styles });
+      T = createTable({ sb: t.sb, bb: t.bb, buyIn: a, human: store.getData().user, styles: t.styles, lively: LIVELY[prefs.tier] ?? 1 });
       M = { tier: prefs.tier, bought: a, hands: 0, best: 0 };
       buildTable();
       nextHand();

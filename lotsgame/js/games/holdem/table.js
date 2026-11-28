@@ -39,8 +39,8 @@ export function reads(s) {
 const topOf = (o, adapt) => { const a = o.rangePos ?? o.range ?? 1, b = o.rangeRead ?? a; return clamp(a + (b - a) * adapt, 0.015, 1); };
 const bluffOf = (o, adapt) => 0.18 + ((o.bluffy ?? 0.18) - 0.18) * adapt;
 
-export function createTable({ sb, bb, buyIn, human, styles }) {
-  const T = { sb, bb, buyIn, button: Math.floor(Math.random() * SEATS), hand: 0, seats: [], board: [], deck: [], street: 'idle', toAct: -1, currentBet: 0, minRaise: bb, raises: 0, opener: -1, result: null, styles, usedNames: [] };
+export function createTable({ sb, bb, buyIn, human, styles, lively = 1 }) {
+  const T = { sb, bb, buyIn, lively, button: Math.floor(Math.random() * SEATS), hand: 0, seats: [], board: [], deck: [], street: 'idle', toAct: -1, currentBet: 0, minRaise: bb, raises: 0, opener: -1, result: null, styles, usedNames: [] };
   for (let i = 0; i < SEATS; i++) T.seats.push(i === 0 ? { name: human, human: true, stack: buyIn, st: newStats() } : newBot(T, buyIn));
   return T;
 }
@@ -341,10 +341,18 @@ function bluff3Hand(a, b) {
   return (hi === 12 && lo <= 4) || (hi - lo <= 2 && lo >= 3 && hi <= 10) || (lo >= 8);
 }
 
+// 牌桌熱鬧程度：新手桌、進階桌的電腦比真實牌桌更愛入池與跟注（高手桌維持真實強度）
+export const LIVELY = { low: 1.3, mid: 1.15, high: 1 };
+function livelier(st, T) {
+  const f = T.lively ?? (T.bb <= 100 ? LIVELY.low : T.bb <= 400 ? LIVELY.mid : LIVELY.high);
+  if (f === 1) return st;
+  return { ...st, open: st.open * f, loose: st.loose * f * f, limp: Math.min(0.9, st.limp + (f - 1) * 0.6), sticky: st.sticky + (f - 1) * 0.12, bluff: st.bluff * f };
+}
+
 export function decide(T, i) {
   const s = T.seats[i];
   ensure(s);
-  const st = STYLES[s.style] || STYLES.tag;
+  const st = livelier(STYLES[s.style] || STYLES.tag, T);
   const L = legal(T, i);
   const potNow = pot(T);
   const rnd = Math.random();
