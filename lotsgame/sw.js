@@ -1,6 +1,6 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.5.3';
+const VERSION = 'v1.6.0';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 
@@ -13,6 +13,7 @@ const CORE = [
   'js/games/gomoku/index.js', 'js/games/gomoku/ai-worker.js',
   'js/games/blackjack/index.js', 'js/games/baccarat/index.js', 'js/games/minesweeper/index.js', 'js/games/g2048/index.js',
   'js/games/holdem/index.js', 'js/games/holdem/engine.js', 'js/games/holdem/table.js',
+  'js/games/bigtwo/index.js', 'js/games/bigtwo/engine.js', 'js/games/bigtwo/table.js',
   'js/games/mahjong/index.js', 'js/games/mahjong/game.js', 'js/games/mahjong/rules.js',
   'js/games/xiangqi/index.js', 'js/games/xiangqi/engine.js', 'js/games/xiangqi/ai-worker.js',
   'js/games/chess/index.js', 'js/games/chess/rules.js', 'js/games/chess/engine.js',

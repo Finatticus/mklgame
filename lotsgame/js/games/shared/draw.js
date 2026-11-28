@@ -358,6 +358,22 @@ const COVERS = {
     drawChip(ctx, w * 0.86, h * 0.82, r, '#2d4f86');
     vignette(ctx, w, h);
   },
+  async bigtwo(ctx, w, h) {
+    feltGradient(ctx, w, h, ['#1d6248', '#124532', '#061a12']);
+    const codes = ['3C', '2C', '2D', '2H', '2S'];
+    const im = await Promise.all(codes.map((c) => loadImage(asset('cards/' + c + '.webp'))));
+    const ch = Math.min(h * 0.58, w * 0.32), cw = ch * 0.6886;
+    const cx = w * 0.62, cy = h * 0.95 + ch * 0.25;
+    im.forEach((img, k) => {
+      const a = (k - 2) * 0.2;
+      const x = cx + Math.sin(a) * ch * 0.95, y = cy - Math.cos(a) * ch * 0.95;
+      playingCard(ctx, img, x, y, cw, ch, a);
+    });
+    const r = h * 0.1;
+    for (let k = 0; k < 3; k++) drawChip(ctx, w * 0.12, h * 0.3 - k * r * 0.32, r, k % 2 ? '#1d1d20' : '#8c2f2a');
+    drawChip(ctx, w * 0.88, h * 0.26, r * 0.9, '#9a7631', '#2a2216');
+    vignette(ctx, w, h);
+  },
   async mahjong(ctx, w, h) {
     feltGradient(ctx, w, h, ['#22694a', '#14432f', '#081e15']);
     const front = [27, 27, 27, 31, 31, 0, 1, 2, 13, 13];

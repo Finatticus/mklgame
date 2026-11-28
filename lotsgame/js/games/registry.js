@@ -18,6 +18,7 @@ export const GAMES = [
   { id: 'xiangqi', cat: 'board', name: '象棋', kicker: '棋類 · 五級強度', desc: '亞洲規則，長將判負', load: () => import('./xiangqi/index.js') },
   { id: 'chess', cat: 'board', name: '西洋棋', kicker: '棋類 · Stockfish', desc: '等級分 1350 起', load: () => import('./chess/index.js') },
   { id: 'gomoku', cat: 'board', name: '五子棋', kicker: '棋類 · 搜尋引擎對手', desc: '15 路，連成五子者勝', load: () => import('./gomoku/index.js') },
+  { id: 'bigtwo', cat: 'cards', name: '大老二', kicker: '牌桌 · 台灣規則', desc: '四人桌，對手會記牌', load: () => import('./bigtwo/index.js') },
   { id: 'blackjack', cat: 'cards', name: '21 點', kicker: '牌桌 · 六副牌', desc: '加倍、分牌、保險', load: () => import('./blackjack/index.js') },
   { id: 'baccarat', cat: 'cards', name: '百家樂', kicker: '牌桌 · 八副牌', desc: '莊閒和、對子，附路單', load: () => import('./baccarat/index.js') },
   { id: 'minesweeper', cat: 'puzzle', name: '踩地雷', kicker: '益智 · 計時挑戰', desc: '三種標準盤面', load: () => import('./minesweeper/index.js') },
@@ -28,7 +29,6 @@ export const GAMES = [
 export const COMING = [
   { name: '黑白棋', kicker: '棋類', cat: 'board' },
   { name: '暗棋', kicker: '棋類', cat: 'board' },
-  { name: '大老二', kicker: '牌桌', cat: 'cards' },
 ];
 
 export const gameById = (id) => GAMES.find((g) => g.id === id);

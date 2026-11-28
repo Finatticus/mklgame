@@ -180,7 +180,7 @@ export async function mount(root, ctx) {
     renderDock();
   }
 
-  function say(a, b) { V.msg.replaceChildren(...(a ? [h('b', null, a), b ? h('small', null, b) : null] : [])); }
+  function say(a, b) { V.msg.replaceChildren(...(a ? [h('b', null, a)].concat(b ? [h('small', null, b)] : []) : [])); }
 
   const button = (label, sub, fn, cls = '', disabled = false) => h('button', { class: 'btn ' + cls, disabled, onClick: () => { if (!busy || cls.includes('free')) fn(); } }, h('span', null, label), sub ? h('small', null, sub) : null);
 
