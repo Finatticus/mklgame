@@ -1,10 +1,10 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.10.0';
+const VERSION = 'v1.10.1';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 const WOLF_CACHE = 'lots-wolf-v1'; // 月下白狼的 3D 模型與貼圖（大檔），跨版本保留
-const RACER_CACHE = 'lots-racer-v1'; // 極速山道的車輛、賽道貼圖與天空（約 47 MB）：第一次遊玩時下載，之後離線可玩
+const RACER_CACHE = 'lots-racer-v2'; // 極速山道的車輛、賽道貼圖與天空（約 47 MB）：第一次遊玩時下載，之後離線可玩
 
 const CORE = [
   './', 'index.html', 'manifest.webmanifest',
@@ -100,7 +100,7 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith('lots-app-') && k !== CACHE) await caches.delete(k);
+    for (const k of await caches.keys()) if ((k.startsWith('lots-app-') && k !== CACHE) || (k.startsWith('lots-racer-') && k !== RACER_CACHE)) await caches.delete(k);
     await self.clients.claim();
   })());
 });

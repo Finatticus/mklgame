@@ -76,19 +76,19 @@ export function tunedSpec(id, up) {
 export const TRACKS = {
   ridge: {
     name: '山嵐公路', sub: '午後的高原山路，連續髮夾彎', theme: 'mountain', laps: 2,
-    sky: 'kloofendal_48d_partly_cloudy_puresky', sunAz: 0.6, sunEl: 48, sun: 0xfff6ea, sunI: 2.6, envI: 0.7, exposure: 0.72, fog: 0xbfcad6, fogD: 0.0011,
-    ground: ['sparse_grass', 'leafy_grass', 'rock_face_03'], hill: 55,
+    sky: 'kloofendal_48d_partly_cloudy_puresky', sunAz: 0.6, sunEl: 30, sun: 0xfff1de, sunI: 3.6, envI: 0.5, exposure: 0.8, fog: 0xbfcad6, fogD: 0.0007,
+    ground: ['leafy_grass', 'sparse_grass', 'rock_face_03'], hill: 55,
     ctrl: [[0, 0, 8], [130, 6, 10], [250, 40, 14], [330, 120, 20], [312, 222, 26], [228, 282, 31], [122, 296, 36], [52, 352, 41], [-48, 410, 44], [-160, 392, 41], [-236, 318, 35], [-226, 214, 29], [-148, 168, 24], [-176, 84, 18], [-280, 44, 14], [-306, -56, 10], [-232, -142, 7], [-110, -124, 6]],
   },
   coast: {
     name: '海岸懸崖', sub: '傍晚的濱海公路，一側是斷崖與大海', theme: 'coast', laps: 2,
-    sky: 'qwantani_late_afternoon_puresky', sunAz: 0.63, sunEl: 19, sun: 0xffe2b8, sunI: 2.8, envI: 0.65, exposure: 0.78, fog: 0xd8c9b6, fogD: 0.0009,
+    sky: 'qwantani_late_afternoon_puresky', sunAz: 0.63, sunEl: 19, sun: 0xffe2b8, sunI: 3.6, envI: 0.5, exposure: 0.82, fog: 0xd8c9b6, fogD: 0.0009,
     ground: ['withered_grass', 'coast_sand_01', 'marble_cliff_02'], hill: 40,
     ctrl: [[0, 0, 22], [150, -22, 24], [300, -62, 20], [424, -40, 18], [506, 42, 22], [474, 152, 30], [362, 202, 35], [222, 192, 38], [118, 244, 40], [0, 232, 36], [-122, 182, 31], [-222, 204, 28], [-334, 142, 24], [-366, 32, 20], [-306, -58, 18], [-182, -62, 20], [-90, -22, 21]],
   },
   canyon: {
     name: '赤岩峽谷', sub: '夕陽下的紅岩峽谷，長距離高速彎', theme: 'canyon', laps: 2,
-    sky: 'qwantani_sunset_puresky', sunAz: 0.63, sunEl: 7, sun: 0xffa060, sunI: 2.6, envI: 0.7, exposure: 0.85, fog: 0xc89a78, fogD: 0.001,
+    sky: 'qwantani_sunset_puresky', sunAz: 0.63, sunEl: 9, sun: 0xffa868, sunI: 3.4, envI: 0.55, exposure: 0.9, fog: 0xc89a78, fogD: 0.001,
     ground: ['red_sand', 'rocky_gravel', 'rock_face_03'], hill: 60,
     ctrl: [[0, 0, 5], [200, 30, 6], [384, 2, 8], [520, -82, 10], [600, -222, 12], [560, -362, 14], [420, -424, 15], [262, -382, 13], [142, -302, 11], [40, -342, 10], [-100, -422, 9], [-242, -382, 8], [-322, -242, 7], [-302, -100, 6], [-200, -22, 5]],
   },

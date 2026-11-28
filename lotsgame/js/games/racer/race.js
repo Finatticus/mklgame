@@ -1,6 +1,6 @@
 // 一場比賽：場景、車輛、電腦駕駛、圈數與名次、鏡頭、幽靈車
 import * as THREE from '../../../vendor/three/three.module.js';
-import { buildTrack, glb, HW, EDGE } from './track.js';
+import { buildTrack, glb, HW, EDGE, addMask, SHM } from './track.js';
 import { Car } from './car.js';
 import { CarSound } from './sound.js';
 import * as audio from '../../audio.js';
@@ -67,7 +67,7 @@ export async function createRace(canvas, opts) {
   const progress = (f) => opts.onProgress && opts.onProgress(f);
 
   const T = await buildTrack(def, renderer, scene, { mobile, onProgress: (f) => progress(f * 0.7) });
-  const hemi = new THREE.HemisphereLight(0xcfe0ff, 0x3a3226, 0.25); scene.add(hemi);
+  const hemi = new THREE.HemisphereLight(0xcfe0ff, 0x3a3226, 0.06); scene.add(hemi);
   const sun = new THREE.DirectionalLight(def.sun, def.sunI);
   sun.castShadow = true;
   const SH = mobile ? 1024 : 2048;
@@ -94,6 +94,8 @@ export async function createRace(canvas, opts) {
   // 起跑格：玩家排在最後（計時賽單獨在最前）
   const order = cars.slice(1).concat([player]);
   order.forEach((c, k) => { const g = T.gridSlot(k); c.place(g.x, g.z, g.h, T); scene.add(c.root); c.updateVisual(0.1, T); });
+  // 車也吃烘焙的地形陰影（開進山影裡會變暗）
+  for (const c of cars) c.root.traverse((o) => { if (o.isMesh) addMask(o.material, SHM, { trees: false }); });
   for (const c of cars) Object.assign(c, { lap: 0, half: true, lapStart: 0, laps: [], finishT: null, best: null });
   // 幽靈車（計時賽的個人最佳圈）
   let ghost = null;
@@ -272,6 +274,8 @@ export async function createRace(canvas, opts) {
     sun.target.position.set(cx, player.y, cz);
     sun.position.set(cx + T.sunDir.x * 120, player.y + T.sunDir.y * 120, cz + T.sunDir.z * 120);
     if (T.water) { const nm = T.water.material.normalMap; nm.offset.x = (S.t * 0.004) % 1; nm.offset.y = (S.t * 0.0025) % 1; }
+    camera.updateMatrixWorld();
+    T.update(camera, performance.now() / 1000, sun.target.position, 36);
     renderer.render(scene, camera);
     // 音效
     let near = null; for (const c of cars) { if (c === player) continue; const d = Math.hypot(c.x - player.x, c.z - player.z); if (!near || d < near.dist) near = { rpm: c.rpm, dist: d }; }

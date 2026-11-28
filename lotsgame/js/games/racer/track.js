@@ -14,6 +14,8 @@ export function tex(path, srgb = false) {
 }
 
 const STEP = 2; // 取樣間距（公尺）
+export const SHM = { shMask: { value: null }, maskXf: { value: new THREE.Vector4() }, maskNear: { value: new THREE.Vector3(0, 0, 1e5) } };
+const WHITE = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); WHITE.needsUpdate = true;
 export const HW = 5.5; // 半路寬
 export const EDGE = 6.6; // 含路肩
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -202,7 +204,12 @@ export async function buildTrack(def, renderer, scene, { mobile, onProgress }) {
     tex('tex/asphalt_02_diff.jpg', true), tex('tex/asphalt_02_nor_gl.jpg'), tex('tex/asphalt_02_arm.jpg'),
   ]);
   onProgress && onProgress(0.4);
-  const terrain = new THREE.Mesh(tg, terrainMaterial({ gA, gB, gR, nA, nB, nR, aA, aB, aR }, theme));
+  // 預先烘焙的陰影圖（地形自遮蔽＋樹影＋樹下環境遮蔽），涵蓋整個地形；建完植被後才填入
+  // 材質（含快取的模型材質）在不同賽道之間共用同一組 uniform，所以用模組層級的 SHM 只更新數值
+  SHM.maskXf.value.set(gx0, gz0, 1 / gw, 1 / gd); SHM.maskNear.value.set(0, 0, 1e5);
+  if (SHM.shMask.value && SHM.shMask.value !== WHITE) SHM.shMask.value.dispose();
+  SHM.shMask.value = WHITE;
+  const terrain = new THREE.Mesh(tg, terrainMaterial({ gA, gB, gR, nA, nB, nR, aA, aB, aR }, theme, SHM));
   terrain.receiveShadow = true;
   scene.add(terrain);
 
@@ -224,7 +231,7 @@ export async function buildTrack(def, renderer, scene, { mobile, onProgress }) {
   rg.setAttribute('uv', new THREE.BufferAttribute(ruv, 2));
   rg.setIndex(ridx);
   rg.computeVertexNormals();
-  const road = new THREE.Mesh(rg, roadMaterial(asphD, asphN, asphA, total));
+  const road = new THREE.Mesh(rg, roadMaterial(asphD, asphN, asphA, total, SHM));
   road.receiveShadow = true;
   scene.add(road);
   onProgress && onProgress(0.5);
@@ -277,6 +284,7 @@ export async function buildTrack(def, renderer, scene, { mobile, onProgress }) {
   scene.fog = new THREE.FogExp2(def.fog, def.fogD);
   const sunAz = (def.sunAz - 0.5) * Math.PI * 2, el = THREE.MathUtils.degToRad(def.sunEl);
   const sunDir = new THREE.Vector3(Math.cos(sunAz) * Math.cos(el), Math.sin(el), Math.sin(sunAz) * Math.cos(el)).normalize();
+  FOL.uSunW.value.copy(sunDir); FOL.uSunC.value.set(def.sun).multiplyScalar(def.sunI);
   onProgress && onProgress(0.6);
 
   // ---------------- 海 ----------------
@@ -308,30 +316,49 @@ export async function buildTrack(def, renderer, scene, { mobile, onProgress }) {
       ? [['rock_face_02', 50, 8, 70, [0.8, 1.5], true], ['rock_face_01', 25, 15, 90, [1, 2.2], true], ['wild_rooibos_bush', 90, 2, 30, [0.8, 1.3], false], ['shrub_02', 50, 3, 35, [0.6, 1], false]]
       : [['namaqualand_boulder_03', 70, 6, 60, [0.8, 2.2], true], ['namaqualand_boulder_04', 70, 6, 60, [0.8, 2.2], true], ['quiver_tree_02', 70, 4, 40, [2.4, 3.6], true], ['rock_face_01', 30, 25, 80, [1.5, 3], true], ['wild_rooibos_bush', 50, 2, 20, [0.7, 1.1], false]];
   const scale = mobile ? 0.65 : 1;
+  // 只畫鏡頭附近的物件（灌木很細，遠處看不出來卻很耗效能）
+  const lodGroups = [];
   for (const [file, count, dmin, dmax, [s0, s1], shadow] of kinds) {
     const g = await glb(`props/${file}.glb`);
     const list = [];
-    for (let k = 0; k < count * scale; k++) { const p = tryPos(dmin, dmax, 4); if (p) list.push([p[0], p[1] - 0.1, p[2], R() * Math.PI * 2, s0 + R() * (s1 - s0)]); }
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+    for (let k = 0; k < count * scale; k++) {
+      const p = tryPos(dmin, dmax, 4); if (!p) continue;
+      const sc = s0 + R() * (s1 - s0);
+      q.setFromAxisAngle(up, R() * Math.PI * 2);
+      list.push({ x: p[0], z: p[2], m: m4.compose(new THREE.Vector3(p[0], p[1] - 0.1, p[2]), q, new THREE.Vector3(sc, sc, sc)).clone() });
+      if (shadow) place.push([p[0], p[1], p[2], sc * (file.startsWith('quiver') ? 2.2 : 1.4), file.startsWith('quiver') ? 3.5 * sc : 1.2 * sc]);
+    }
+    const parts = [];
     g.scene.traverse((o) => {
       if (!o.isMesh) return;
       fixWinding(o.geometry);
       if (o.material.alphaTest === 0 && !o.material.transparent) o.material.side = THREE.FrontSide;
-      const im = new THREE.InstancedMesh(o.geometry, o.material, list.length);
-      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
-      list.forEach((p, k) => { q.setFromAxisAngle(up, p[3]); m4.compose(new THREE.Vector3(p[0], p[1], p[2]), q, new THREE.Vector3(p[4], p[4], p[4])); im.setMatrixAt(k, m4); });
-      im.castShadow = shadow; im.receiveShadow = true; scene.add(im);
+      const im = new THREE.InstancedMesh(o.geometry, o.material, Math.max(1, list.length));
+      im.count = 0; im.castShadow = shadow; im.receiveShadow = true; im.frustumCulled = false; scene.add(im); parts.push(im);
+      addMask(o.material, SHM, { trees: false });
     });
+    const shrub = !shadow;
+    lodGroups.push({ list, parts, bb: null, near: shrub ? (mobile ? 55 : 85) : (mobile ? 240 : 380), back: shrub ? 12 : 45 });
   }
   onProgress && onProgress(0.75);
-  // 樹木看板（從高精度樹模型渲染的圖片）
+  // 樹木：近處用真實 3D 樹（樹幹、枝條、葉片卡），遠處用同一棵樹渲染的看板
+  const trees = [];
+  let forest = null;
   if (theme !== 'canyon') {
-    const [ta, tb] = await Promise.all([tex('props/tree_a.png', true), tex('props/tree_b.png', true)]);
-    for (const [t, cnt] of [[ta, theme === 'mountain' ? 260 : 90], [tb, theme === 'mountain' ? 220 : 70]]) {
-      const list = [];
-      for (let k = 0; k < cnt * scale; k++) { const p = tryPos(14, 260, 4); if (p) list.push([p[0], p[1] - 0.5, p[2], 0, 0.45 + R() * 0.45]); }
-      scene.add(billboards(t, list, 25));
-    }
+    const species = theme === 'mountain'
+      ? [{ file: 'tree_jacaranda', img: 'tree_a.png', count: 650, s: [0.34, 0.66], size: 26.55, d: [10, 320] }, { file: 'tree_island', img: 'tree_b.png', count: 320, s: [1.9, 3.0], size: 4.36, d: [8, 220] }]
+      : [{ file: 'tree_island', img: 'tree_b.png', count: 300, s: [1.7, 2.9], size: 4.36, d: [8, 260] }, { file: 'tree_jacaranda', img: 'tree_a.png', count: 60, s: [0.32, 0.5], size: 26.55, d: [14, 260] }];
+    forest = await buildForest(species, { tryPos, R, scale, mobile, scene, SHM });
+    trees.push(...forest.trees); lodGroups.push(...forest.groups);
   }
+
+  const lodState = { x: 1e9, z: 1e9, t: -1 };
+  // 烘焙陰影圖
+  onProgress && onProgress(0.85);
+  SHM.shMask.value = bakeShadowMask({ gx0, gz0, gw, gd, terrainH, sunDir, trees, rocks: place, mobile });
+  // 護欄、立柱等其他材質也套用地形陰影
+  for (const m of [metal]) addMask(m, SHM, { trees: true });
 
   // 起跑線位置與起跑格
   const gridSlot = (k) => { // k = 0 為第一排內側
@@ -351,7 +378,12 @@ export async function buildTrack(def, renderer, scene, { mobile, onProgress }) {
 
   return {
     n, STEP, total, X, Y, Z, TX, TZ, K, BANK, RAIL, LIM, WALL, LINE, VMAX, right, roadH, locate, nearestAny, heightAt, terrainH, gridSlot,
-    sunDir, water, theme, bounds: { minX, maxX, minZ, maxZ },
+    sunDir, water, theme, bounds: { minX, maxX, minZ, maxZ }, SHM,
+    // 每格呼叫：樹木遠近切換與風、陰影圖在即時陰影範圍內淡出樹影
+    update(cam, t, shadowCenter, shadowR) {
+      lodUpdate(lodGroups, cam, t, lodState);
+      SHM.maskNear.value.set(shadowCenter.x, shadowCenter.z, shadowR);
+    },
   };
 }
 
@@ -361,7 +393,7 @@ float wh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float wn(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f); return mix(mix(wh(i), wh(i + vec2(1, 0)), u.x), mix(wh(i + vec2(0, 1)), wh(i + vec2(1, 1)), u.x), u.y); }
 float wf(vec2 p){ return wn(p) * 0.55 + wn(p * 2.03 + 7.1) * 0.28 + wn(p * 4.1 + 3.3) * 0.17; }
 `;
-function terrainMaterial(t, theme) {
+function terrainMaterial(t, theme, SHM) {
   const mat = new THREE.MeshStandardMaterial({ map: t.gA, roughness: 1, metalness: 0 });
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, { mapB: { value: t.gB }, mapR: { value: t.gR }, norA: { value: t.nA }, norB: { value: t.nB }, norR: { value: t.nR }, armA: { value: t.aA }, armR: { value: t.aR } });
@@ -391,9 +423,10 @@ function terrainMaterial(t, theme) {
         vec3 up = normalize(vWN), tx = normalize(cross(vec3(0.0, 0.0, 1.0), up)), tz = cross(up, tx);
         normal = normalize((viewMatrix * vec4(normalize(tx * tn.x + tz * -tn.y + up * tn.z * 1.6), 0.0)).xyz);`);
   };
+  addMask(mat, SHM);
   return mat;
 }
-function roadMaterial(d, nrm, arm, total) {
+function roadMaterial(d, nrm, arm, total, SHM) {
   const mat = new THREE.MeshStandardMaterial({ map: d, roughness: 1, metalness: 0, polygonOffset: true, polygonOffsetFactor: -1 });
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, { norT: { value: nrm }, armT: { value: arm }, total: { value: total } });
@@ -428,27 +461,201 @@ function roadMaterial(d, nrm, arm, total) {
         vec3 tn = texture2D(norT, ruv).xyz * 2.0 - 1.0; tn.xy *= 0.8 * (1.0 - paintMask * 0.7);
         normal = normalize(normal + (viewMatrix * vec4(tn.x, 0.0, -tn.y, 0.0)).xyz * 0.6);`);
   };
+  addMask(mat, SHM);
   return mat;
 }
-// 看板樹：繞 Y 軸轉向鏡頭
-function billboards(t, list, size) {
+// ---------------- 烘焙陰影圖 ----------------
+// 把整個地形的「太陽是否被山擋住」「樹影」「樹下環境遮蔽」烘成一張貼圖（R：地形、G：樹影、B：遮蔽）
+// 即時陰影只涵蓋車子周圍幾十公尺，遠處的山影與樹影靠這張圖
+function bakeShadowMask({ gx0, gz0, gw, gd, terrainH, sunDir, trees, rocks, mobile }) {
+  const N = mobile ? 512 : 1024, cx = gw / N, cz = gd / N;
+  const hl = Math.hypot(sunDir.x, sunDir.z) || 1e-3, dx = sunDir.x / hl, dz = sunDir.z / hl, tanE = sunDir.y / hl;
+  let maxH = -Infinity; for (let j = 0; j < N; j += 4) for (let i = 0; i < N; i += 4) maxH = Math.max(maxH, terrainH(gx0 + i * cx, gz0 + j * cz));
+  const data = new Uint8Array(N * N * 4);
+  const step0 = Math.min(cx, cz);
+  for (let j = 0; j < N; j++) {
+    const z = gz0 + (j + 0.5) * cz;
+    for (let i = 0; i < N; i++) {
+      const x = gx0 + (i + 0.5) * cx, h0 = terrainH(x, z) + 0.4;
+      let lit = 1, d = step0;
+      while (d < 1400) {
+        const y = h0 + d * tanE;
+        if (y > maxH) break;
+        const gap = y - terrainH(x + dx * d, z + dz * d);
+        // 柔和的半影：越遠越寬
+        lit = Math.min(lit, clamp(gap / (0.6 + d * 0.025) + 0.5, 0, 1));
+        if (lit <= 0) break;
+        d += Math.max(step0, d * 0.07);
+      }
+      const k = (j * N + i) * 4; data[k] = lit * 255; data[k + 1] = 255; data[k + 2] = 255; data[k + 3] = 255;
+    }
+  }
+  // 樹影與遮蔽：在畫布上畫柔邊橢圓
+  const cS = document.createElement('canvas'), cA = document.createElement('canvas');
+  cS.width = cS.height = cA.width = cA.height = N;
+  const gS = cS.getContext('2d'), gA = cA.getContext('2d');
+  const blob = (g, x, z, r, stretch, ang, a) => {
+    const px = (x - gx0) / cx, pz = (z - gz0) / cz, pr = r / cx;
+    if (pr < 0.4) return;
+    g.save(); g.translate(px, pz); g.rotate(ang); g.scale(stretch, 1);
+    const gr = g.createRadialGradient(0, 0, 0, 0, 0, pr);
+    gr.addColorStop(0, `rgba(0,0,0,${a})`); gr.addColorStop(0.55, `rgba(0,0,0,${a * 0.8})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, pr, 0, Math.PI * 2); g.fill(); g.restore();
+  };
+  const ang = Math.atan2(dz / cz, dx / cx), stretch = Math.min(3, 1 / Math.max(0.33, Math.sin(Math.atan(tanE))));
+  for (const t of trees) {
+    const off = Math.min(70, t.hc / tanE);
+    blob(gS, t.x - dx * off, t.z - dz * off, t.rc, stretch, ang, 0.72);
+    blob(gA, t.x, t.z, t.rc * 0.95, 1, 0, 0.42);
+  }
+  for (const [x, , z, r, h] of rocks) { const off = Math.min(30, h * 0.5 / tanE); blob(gS, x - dx * off, z - dz * off, r, stretch, ang, 0.5); blob(gA, x, z, r * 1.3, 1, 0, 0.3); }
+  const ps = gS.getImageData(0, 0, N, N).data, pa = gA.getImageData(0, 0, N, N).data;
+  for (let k = 0; k < N * N; k++) { data[k * 4 + 1] = 255 - ps[k * 4 + 3]; data[k * 4 + 2] = 255 - pa[k * 4 + 3]; }
+  const t = new THREE.DataTexture(data, N, N, THREE.RGBAFormat);
+  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
+  return t;
+}
+
+// 讓材質使用烘焙陰影圖：只擋直射陽光（環境光另外乘遮蔽）。trees：是否套用樹影與樹下遮蔽
+export function addMask(mat, SHM, { trees = true, custom = false } = {}) {
+  if (!mat || mat.userData.masked) return;
+  mat.userData.masked = true;
+  const prev = mat.onBeforeCompile, prevKey = mat.customProgramCacheKey.call(mat);
+  mat.onBeforeCompile = (sh, r) => {
+    if (prev) prev.call(mat, sh, r);
+    Object.assign(sh.uniforms, SHM);
+    sh.vertexShader = 'varying vec3 vMWP;\n' + (custom ? sh.vertexShader : sh.vertexShader.replace('#include <worldpos_vertex>', `#include <worldpos_vertex>
+      #ifdef USE_INSTANCING
+        vMWP = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+      #else
+        vMWP = (modelMatrix * vec4(transformed, 1.0)).xyz;
+      #endif`));
+    sh.fragmentShader = 'varying vec3 vMWP; uniform sampler2D shMask; uniform vec4 maskXf; uniform vec3 maskNear;\n' + sh.fragmentShader.replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+      {
+        vec4 mk = texture2D(shMask, (vMWP.xz - maskXf.xy) * maskXf.zw);
+        float nf = smoothstep(maskNear.z * 0.7, maskNear.z, max(abs(vMWP.x - maskNear.x), abs(vMWP.z - maskNear.y)));
+        float vis = mk.r * mix(1.0, mk.g, nf * ${trees ? '1.0' : '0.0'});
+        reflectedLight.directDiffuse *= vis; reflectedLight.directSpecular *= vis;
+        float ao = mix(1.0, mk.b, ${trees ? '1.0' : '0.0'}) * mix(0.9, 1.0, mk.r);
+        reflectedLight.indirectDiffuse *= ao; reflectedLight.indirectSpecular *= mix(1.0, ao, 0.6);
+      }`);
+  };
+  mat.customProgramCacheKey = () => prevKey + '|mask' + trees + custom;
+  mat.needsUpdate = true;
+}
+
+// ---------------- 樹林 ----------------
+const WIND = { value: 0 };
+// 葉子的透光：逆光時亮起來（太陽方向與顏色由各賽道設定）
+const FOL = { uSunW: { value: new THREE.Vector3(0, 1, 0) }, uSunC: { value: new THREE.Color(1, 1, 1) } };
+const FOL_DECL = 'uniform vec3 uSunW; uniform vec3 uSunC;\n';
+const TRANSLUCENT = `#include <lights_fragment_end>
+  {
+    vec3 Vw = normalize(cameraPosition - vMWP);
+    float bl = pow(max(0.0, dot(-Vw, uSunW)), 2.5);
+    reflectedLight.indirectDiffuse += diffuseColor.rgb * uSunC * (0.04 + 0.26 * bl);
+  }`;
+async function buildForest(species, { tryPos, R, scale, mobile, scene, SHM }) {
+  const NEAR = mobile ? 85 : 150;
+  const trees = [], groups = [];
+  for (const sp of species) {
+    const [g, img] = await Promise.all([glb(`props/${sp.file}.glb`), tex(`props/${sp.img}`, true)]);
+    const list = [];
+    for (let k = 0; k < sp.count * scale; k++) {
+      const p = tryPos(sp.d[0], sp.d[1], 4); if (!p) continue;
+      const s = sp.s[0] + R() * (sp.s[1] - sp.s[0]), rot = R() * Math.PI * 2;
+      const m = new THREE.Matrix4().compose(new THREE.Vector3(p[0], p[1] - 0.15, p[2]), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rot), new THREE.Vector3(s, s, s));
+      const b = new THREE.Matrix4().makeScale(sp.size * s, sp.size * s, sp.size * s).setPosition(p[0], p[1] - 0.15, p[2]);
+      const t = { x: p[0], y: p[1], z: p[2], m, b, hc: sp.size * s * 0.55, rc: sp.size * s * 0.3 };
+      list.push(t); trees.push(t);
+    }
+    const parts = [];
+    g.scene.traverse((o) => {
+      if (!o.isMesh) return;
+      const mat = o.material, leaf = o.name === 'foliage' || /foliage/.test(mat.name);
+      if (leaf) {
+        o.geometry.computeBoundingBox();
+        const H = o.geometry.boundingBox.max.y, amp = (H * 0.011).toFixed(4);
+        mat.onBeforeCompile = (sh) => {
+          sh.uniforms.uWind = WIND;
+          sh.vertexShader = 'uniform float uWind;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+            {
+              float ph = instanceMatrix[3][0] * 0.071 + instanceMatrix[3][2] * 0.053;
+              float w = pow(max(0.0, position.y) / ${H.toFixed(3)}, 1.6);
+              transformed.x += (sin(uWind * 1.3 + ph) * 0.6 + sin(uWind * 3.3 + ph * 2.0 + position.x * 0.7) * 0.3) * w * ${amp};
+              transformed.z += (cos(uWind * 1.1 + ph) * 0.45 + sin(uWind * 2.9 + position.z * 0.7) * 0.25) * w * ${amp};
+            }`);
+          // 葉片卡雙面都用朝外的法線，背面才不會變黑
+          Object.assign(sh.uniforms, FOL);
+          sh.fragmentShader = FOL_DECL + sh.fragmentShader.replace('#include <normal_fragment_begin>', 'float faceDirection = 1.0; vec3 normal = normalize(vNormal); vec3 nonPerturbedNormal = normal;').replace('#include <lights_fragment_end>', TRANSLUCENT);
+        };
+        mat.customProgramCacheKey = () => 'foliage' + H;
+        mat.side = THREE.DoubleSide;
+        if (!mat.userData.tinted) { mat.userData.tinted = true; mat.color.multiplyScalar(1.25); }
+      } else mat.side = THREE.FrontSide;
+      addMask(mat, SHM, { trees: false });
+      const im = new THREE.InstancedMesh(o.geometry, mat, Math.max(1, list.length));
+      im.count = 0; im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false;
+      scene.add(im); parts.push(im);
+    });
+    const bb = billboards(img, list.length, SHM);
+    scene.add(bb);
+    groups.push({ list, parts, bb, near: NEAR, back: 45 });
+  }
+  return { trees, groups };
+}
+
+// 依鏡頭距離決定每組物件要畫哪些（每移動 3 公尺或 0.4 秒更新一次）；有看板的組，遠處改畫看板
+const _fw = new THREE.Vector3();
+function lodUpdate(groups, cam, t, st) {
+  WIND.value = t;
+  const cp = cam.position;
+  if (Math.hypot(cp.x - st.x, cp.z - st.z) < 3 && t - st.t < 0.4 && t >= st.t) return;
+  st.x = cp.x; st.z = cp.z; st.t = t;
+  cam.getWorldDirection(_fw);
+  for (const G of groups) {
+    let n = 0, f = 0;
+    const N2 = G.near * G.near, bA = G.bb && G.bb.instanceMatrix.array;
+    for (const tr of G.list) {
+      const ex = tr.x - cp.x, ez = tr.z - cp.z, d2 = ex * ex + ez * ez;
+      if (d2 < N2) {
+        // 鏡頭後方較遠的不畫（近處保留，影子需要）
+        if (d2 > G.back * G.back && ex * _fw.x + ez * _fw.z < -0.2 * Math.sqrt(d2)) continue;
+        for (const im of G.parts) im.instanceMatrix.array.set(tr.m.elements, n * 16);
+        n++;
+      } else if (bA) { bA.set(tr.b.elements, f * 16); f++; }
+    }
+    for (const im of G.parts) { im.count = n; im.instanceMatrix.needsUpdate = true; }
+    if (G.bb) { G.bb.count = f; G.bb.instanceMatrix.needsUpdate = true; }
+  }
+}
+
+// 看板樹：繞 Y 軸轉向鏡頭；法線依看板上的位置彎成球面，光影才有體積感
+function billboards(t, max, SHM) {
   const g = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
   const mat = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.9 });
-  mat.color.setRGB(1.35, 1.35, 1.3); // 看板是事先打光渲染的，補回亮度
+  mat.color.setScalar(1.2);
   mat.onBeforeCompile = (sh) => {
-    sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `
+    sh.vertexShader = 'varying vec3 vBR; varying vec3 vBC; varying vec2 vBP;\n' + sh.vertexShader.replace('#include <project_vertex>', `
       vec4 ip = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
       float sc = length(instanceMatrix[0].xyz);
       vec3 toCam = cameraPosition - ip.xyz; toCam.y = 0.0; toCam = normalize(toCam);
       vec3 rgt = vec3(toCam.z, 0.0, -toCam.x);
       vec3 wp = ip.xyz + rgt * position.x * sc + vec3(0.0, position.y * sc, 0.0);
+      vMWP = wp; vBR = rgt; vBC = toCam; vBP = position.xy;
       vec4 mvPosition = viewMatrix * vec4(wp, 1.0);
       gl_Position = projectionMatrix * mvPosition;`);
-    sh.vertexShader = sh.vertexShader.replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3(0.0, 1.0, 0.25);');
+    sh.fragmentShader = 'varying vec3 vBR; varying vec3 vBC; varying vec2 vBP;\n' + sh.fragmentShader.replace('#include <normal_fragment_begin>', `
+      float faceDirection = 1.0;
+      vec3 nW = normalize(vBR * vBP.x * 1.5 + vec3(0.0, 1.0, 0.0) * (vBP.y - 0.45) * 1.1 + vBC * 0.75);
+      vec3 normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz); vec3 nonPerturbedNormal = normal;`).replace('#include <lights_fragment_end>', TRANSLUCENT);
+    sh.fragmentShader = FOL_DECL + sh.fragmentShader;
+    Object.assign(sh.uniforms, FOL);
   };
-  const im = new THREE.InstancedMesh(g, mat, list.length);
-  const m4 = new THREE.Matrix4();
-  list.forEach((p, k) => { m4.makeScale(size * p[4], size * p[4], size * p[4]).setPosition(p[0], p[1], p[2]); im.setMatrixAt(k, m4); });
+  mat.customProgramCacheKey = () => 'billboard';
+  addMask(mat, SHM, { trees: false, custom: true });
+  const im = new THREE.InstancedMesh(g, mat, Math.max(1, max));
+  im.count = 0;
   im.frustumCulled = false;
   return im;
 }
