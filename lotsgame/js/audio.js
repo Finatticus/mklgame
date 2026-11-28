@@ -18,6 +18,12 @@ const VARIANTS = {
   ball: ['ball1', 'ball2', 'ball3'],
   cushion: ['cushion1', 'cushion2'],
   pocket: ['pocket1', 'pocket2'],
+  boom: ['boom1', 'boom2', 'boom3', 'boom4', 'boom5'],
+  bigboom: ['bigboom1', 'bigboom2'],
+  hitm: ['hitm1', 'hitm2', 'hitm3'],
+  power: ['power'],
+  laser: ['laser'],
+  missile: ['missile1', 'missile2'],
 };
 
 const enabled = () => { const d = getData(); return !d || d.settings.sound !== false; };
@@ -72,6 +78,23 @@ export function splash(volume = 0.5) {
   const src = ctx.createBufferSource(); src.buffer = buf;
   const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.9;
   bp.frequency.setValueAtTime(1800, ctx.currentTime); bp.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.6);
+  const g = ctx.createGain(); g.gain.value = volume;
+  src.connect(bp).connect(g).connect(ctx.destination);
+  src.start();
+}
+
+// 機砲連射聲：極短的帶通雜訊，緩衝區共用以免連射時配置過多
+let gunBuf = null;
+export function gun(volume = 0.12) {
+  if (!enabled() || !ensure()) return;
+  if (!gunBuf) {
+    const len = Math.floor(ctx.sampleRate * 0.06);
+    gunBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = gunBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) { const t = i / len; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.2); }
+  }
+  const src = ctx.createBufferSource(); src.buffer = gunBuf; src.playbackRate.value = 0.9 + Math.random() * 0.2;
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 0.8;
   const g = ctx.createGain(); g.gain.value = volume;
   src.connect(bp).connect(g).connect(ctx.destination);
   src.start();

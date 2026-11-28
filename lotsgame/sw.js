@@ -1,6 +1,6 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.6.0';
+const VERSION = 'v1.7.0';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 
@@ -14,6 +14,7 @@ const CORE = [
   'js/games/blackjack/index.js', 'js/games/baccarat/index.js', 'js/games/minesweeper/index.js', 'js/games/g2048/index.js',
   'js/games/holdem/index.js', 'js/games/holdem/engine.js', 'js/games/holdem/table.js',
   'js/games/bigtwo/index.js', 'js/games/bigtwo/engine.js', 'js/games/bigtwo/table.js',
+  'js/games/shooter/index.js', 'js/games/shooter/game.js', 'js/games/shooter/sprites.js', 'js/games/shooter/terrain.js', 'js/games/shooter/stages.js',
   'js/games/mahjong/index.js', 'js/games/mahjong/game.js', 'js/games/mahjong/rules.js',
   'js/games/xiangqi/index.js', 'js/games/xiangqi/engine.js', 'js/games/xiangqi/ai-worker.js',
   'js/games/chess/index.js', 'js/games/chess/rules.js', 'js/games/chess/engine.js',
@@ -25,7 +26,8 @@ const CORE = [
   'assets/fonts/serif-tc.woff2', 'assets/fonts/latin.woff2',
   'assets/wood/bamboo.jpg', 'assets/wood/cherry.jpg', 'assets/wood/walnut.jpg',
   'assets/img/felt.png', 'assets/img/icon-192.png', 'assets/img/icon-512.png', 'assets/img/icon-180.png',
-  ...['stone1', 'stone2', 'stone3', 'stone4', 'stone5', 'capture', 'card1', 'card2', 'card3', 'flip1', 'flip2', 'shuffle', 'chip1', 'chip2', 'chips1', 'chips2', 'chipswin', 'putt1', 'putt2', 'putt3', 'wood1', 'wood2', 'wood3', 'cup1', 'cup2', 'ball1', 'ball2', 'ball3', 'cushion1', 'cushion2', 'pocket1', 'pocket2'].map((n) => 'assets/sfx/' + n + '.wav'),
+  ...['stone1', 'stone2', 'stone3', 'stone4', 'stone5', 'capture', 'card1', 'card2', 'card3', 'flip1', 'flip2', 'shuffle', 'chip1', 'chip2', 'chips1', 'chips2', 'chipswin', 'putt1', 'putt2', 'putt3', 'wood1', 'wood2', 'wood3', 'cup1', 'cup2', 'ball1', 'ball2', 'ball3', 'cushion1', 'cushion2', 'pocket1', 'pocket2', 'boom1', 'boom2', 'boom3', 'boom4', 'boom5', 'bigboom1', 'bigboom2', 'hitm1', 'hitm2', 'hitm3', 'power', 'laser', 'missile1', 'missile2'].map((n) => 'assets/sfx/' + n + '.wav'),
+  ...['aerial_beach_01', 'aerial_grass_rock', 'aerial_sand', 'aerial_rocks_02', 'aerial_asphalt_01', 'snow_field_aerial', 'dirt_aerial_02', 'aerial_ground_rock', 'coast_sand_rocks_02', 'aerial_mud_1'].map((n) => 'assets/shooter/' + n + '.jpg'),
   ...['k', 'q', 'r', 'b', 'n', 'p'].flatMap((p) => ['assets/chess/w' + p + '.svg', 'assets/chess/b' + p + '.svg']),
   ...Array.from({ length: 42 }, (_, i) => 'assets/mahjong/t' + i + '.webp'),
   ...'A23456789TJQK'.split('').flatMap((r) => 'SHDC'.split('').map((s) => 'assets/cards/' + r + s + '.webp')),

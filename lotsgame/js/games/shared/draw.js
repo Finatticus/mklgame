@@ -358,6 +358,34 @@ const COVERS = {
     drawChip(ctx, w * 0.86, h * 0.82, r, '#2d4f86');
     vignette(ctx, w, h);
   },
+  async shooter(ctx, w, h) {
+    const [img, m] = await Promise.all([loadImage(asset('shooter/aerial_grass_rock.jpg')), import('../shooter/sprites.js')]);
+    const s = Math.max(w, h) / 300;
+    const pat = ctx.createPattern(img, 'repeat');
+    pat.setTransform(new DOMMatrix([s * 0.6, 0, 0, s * 0.6, 0, 0]));
+    ctx.fillStyle = pat; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(20,30,10,0.25)'; ctx.fillRect(0, 0, w, h);
+    // 一條道路斜穿畫面
+    ctx.save(); ctx.translate(w * 0.72, h * 0.5); ctx.rotate(0.35);
+    ctx.fillStyle = 'rgba(40,36,30,0.55)'; ctx.fillRect(-14 * s, -h, 28 * s, h * 2);
+    ctx.setLineDash([7 * s, 9 * s]); ctx.strokeStyle = 'rgba(235,225,190,0.6)'; ctx.lineWidth = 1.2 * s; ctx.beginPath(); ctx.moveTo(0, -h); ctx.lineTo(0, h); ctx.stroke();
+    ctx.restore();
+    const S = m.coverSprites();
+    const put = (sp, x, y, sc, rot = 0) => { m.blit(ctx, sp.shadow, x + 16 * sc, y + 26 * sc, rot, sc * 0.82, 0.3); m.blit(ctx, sp, x, y, rot, sc); };
+    ctx.save(); ctx.scale(1, 1);
+    put(S.fighter, w * 0.2, h * 0.22, s * 1.2, Math.PI + 0.25);
+    put(S.fighter, w * 0.82, h * 0.16, s * 1.1, Math.PI - 0.2);
+    put(S.player, w * 0.7, h * 0.6, s * 2.1);
+    // 機砲曳光彈
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 5; i++) for (const dx of [-0.03, 0.03]) {
+      const x = w * (0.7 + dx), y = h * (0.34 - i * 0.07);
+      const gr = ctx.createLinearGradient(x, y - 8 * s, x, y + 8 * s); gr.addColorStop(0, 'rgba(255,200,90,0)'); gr.addColorStop(0.5, 'rgba(255,240,190,0.95)'); gr.addColorStop(1, 'rgba(255,200,90,0)');
+      ctx.fillStyle = gr; ctx.fillRect(x - 1.2 * s, y - 8 * s, 2.4 * s, 16 * s);
+    }
+    ctx.restore();
+    vignette(ctx, w, h);
+  },
   async bigtwo(ctx, w, h) {
     feltGradient(ctx, w, h, ['#1d6248', '#124532', '#061a12']);
     const codes = ['3C', '2C', '2D', '2H', '2S'];

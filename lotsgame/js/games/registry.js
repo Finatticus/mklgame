@@ -7,6 +7,7 @@ export const CATEGORIES = [
   { id: 'tiles', name: '麻將' },
   { id: 'sport', name: '運動' },
   { id: 'puzzle', name: '益智' },
+  { id: 'action', name: '動作' },
 ];
 
 export const GAMES = [
@@ -21,6 +22,7 @@ export const GAMES = [
   { id: 'bigtwo', cat: 'cards', name: '大老二', kicker: '牌桌 · 台灣規則', desc: '四人桌，對手會記牌', load: () => import('./bigtwo/index.js') },
   { id: 'blackjack', cat: 'cards', name: '21 點', kicker: '牌桌 · 六副牌', desc: '加倍、分牌、保險', load: () => import('./blackjack/index.js') },
   { id: 'baccarat', cat: 'cards', name: '百家樂', kicker: '牌桌 · 八副牌', desc: '莊閒和、對子，附路單', load: () => import('./baccarat/index.js') },
+  { id: 'shooter', cat: 'action', name: '蒼穹戰機', kicker: '動作 · 縱向射擊', desc: '五個關卡，手指拖曳操控', load: () => import('./shooter/index.js') },
   { id: 'minesweeper', cat: 'puzzle', name: '踩地雷', kicker: '益智 · 計時挑戰', desc: '三種標準盤面', load: () => import('./minesweeper/index.js') },
   { id: 'g2048', cat: 'puzzle', name: '2048', kicker: '益智 · 數字合併', desc: '方塊越大，賠率越高', load: () => import('./g2048/index.js') },
 ];
