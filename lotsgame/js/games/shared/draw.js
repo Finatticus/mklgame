@@ -239,6 +239,16 @@ function boardCloseup(ctx, w, h, img, { cell, ox, oy, stones, lineColor, star })
 }
 
 const COVERS = {
+  // 月下白狼：遊戲本身 3D 場景的渲染畫面（白狼對峙狼王與狼群）
+  async wolf(ctx, w, h) {
+    const img = await loadImage(asset('wolf/cover.jpg'));
+    const s = Math.max(w / img.width, h / img.height), iw = img.width * s, ih = img.height * s;
+    const x = Math.min(0, Math.max(w - iw, w / 2 - iw * 0.46)); // 讓白狼與狼王都在畫面內
+    ctx.drawImage(img, x, (h - ih) / 2, iw, ih);
+    const g = ctx.createLinearGradient(0, h * 0.45, 0, h);
+    g.addColorStop(0, 'rgba(8,8,10,0)'); g.addColorStop(1, 'rgba(8,8,10,0.55)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  },
   // 開球前的特寫：擺好的球、母球與球桿
   async billiards(ctx, w, h) {
     const [{ TableView }, B] = await Promise.all([import('../billiards/render.js'), import('../billiards/physics.js')]);

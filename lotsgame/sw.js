@@ -1,8 +1,9 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.7.0';
+const VERSION = 'v1.8.0';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
+const WOLF_CACHE = 'lots-wolf-v1'; // 月下白狼的 3D 模型與貼圖（大檔），跨版本保留
 
 const CORE = [
   './', 'index.html', 'manifest.webmanifest',
@@ -15,6 +16,9 @@ const CORE = [
   'js/games/holdem/index.js', 'js/games/holdem/engine.js', 'js/games/holdem/table.js',
   'js/games/bigtwo/index.js', 'js/games/bigtwo/engine.js', 'js/games/bigtwo/table.js',
   'js/games/shooter/index.js', 'js/games/shooter/game.js', 'js/games/shooter/sprites.js', 'js/games/shooter/terrain.js', 'js/games/shooter/stages.js',
+  'js/games/wolf/index.js', 'js/games/wolf/game.js', 'js/games/wolf/world.js', 'js/games/wolf/assets.js', 'js/games/wolf/data.js',
+  'vendor/three/three.core.js', 'vendor/three/three.module.js', 'vendor/three/GLTFLoader.js', 'vendor/three/SkeletonUtils.js', 'vendor/three/BufferGeometryUtils.js', 'vendor/three/HDRLoader.js', 'vendor/three/meshopt_simplifier.js',
+  'assets/wolf/cover.jpg',
   'js/games/mahjong/index.js', 'js/games/mahjong/game.js', 'js/games/mahjong/rules.js',
   'js/games/xiangqi/index.js', 'js/games/xiangqi/engine.js', 'js/games/xiangqi/ai-worker.js',
   'js/games/chess/index.js', 'js/games/chess/rules.js', 'js/games/chess/engine.js',
@@ -34,6 +38,44 @@ const CORE = [
 ];
 // 入門與進階的圍棋引擎隨平台一起快取；高段引擎（53 MB）在第一次選用時下載
 const MODELS = ['models/go-b6.onnx', 'models/go-b10.onnx'];
+// 月下白狼的模型、地形物件、地面貼圖與夜空環境光（約 14 MB），換版本時不重新下載
+const WOLF = [
+  'assets/wolf/models/drake.glb',
+  'assets/wolf/models/horse.glb',
+  'assets/wolf/models/spider.glb',
+  'assets/wolf/models/wolf.glb',
+  'assets/wolf/props/dead_quiver_trunk.glb',
+  'assets/wolf/props/dead_tree_trunk.glb',
+  'assets/wolf/props/dry_branches_medium_01.glb',
+  'assets/wolf/props/fern_02.glb',
+  'assets/wolf/props/gothic_statue.glb',
+  'assets/wolf/props/rock_07.glb',
+  'assets/wolf/props/rock_09.glb',
+  'assets/wolf/props/rock_moss_set_01_0.glb',
+  'assets/wolf/props/rock_moss_set_01_1.glb',
+  'assets/wolf/props/rock_moss_set_01_2.glb',
+  'assets/wolf/props/rock_moss_set_01_3.glb',
+  'assets/wolf/props/rock_moss_set_01_4.glb',
+  'assets/wolf/props/rock_moss_set_01_5.glb',
+  'assets/wolf/props/shrub_03.glb',
+  'assets/wolf/props/stone_fire_pit.glb',
+  'assets/wolf/props/treasure_chest.glb',
+  'assets/wolf/props/tree_stump_01.glb',
+  'assets/wolf/ground/burned_ground_01_arm.jpg',
+  'assets/wolf/ground/burned_ground_01_diff.jpg',
+  'assets/wolf/ground/burned_ground_01_nor_gl.jpg',
+  'assets/wolf/ground/forest_leaves_03_arm.jpg',
+  'assets/wolf/ground/forest_leaves_03_diff.jpg',
+  'assets/wolf/ground/forest_leaves_03_nor_gl.jpg',
+  'assets/wolf/ground/forest_leaves_04_arm.jpg',
+  'assets/wolf/ground/forest_leaves_04_diff.jpg',
+  'assets/wolf/ground/forest_leaves_04_nor_gl.jpg',
+  'assets/wolf/ground/snow_02_arm.jpg',
+  'assets/wolf/ground/snow_02_diff.jpg',
+  'assets/wolf/ground/snow_02_nor_gl.jpg',
+  'assets/wolf/env/qwantani_night_256.hdr',
+  'assets/wolf/env/rogland_moonlit_night_256.hdr',
+];
 
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
@@ -43,6 +85,11 @@ self.addEventListener('install', (e) => {
     await Promise.all(MODELS.map(async (u) => {
       const url = new URL(u, self.location).href;
       if (!(await models.match(url))) await models.add(url).catch(() => {});
+    }));
+    const wolf = await caches.open(WOLF_CACHE);
+    await Promise.all(WOLF.map(async (u) => {
+      const url = new URL(u, self.location).href;
+      if (!(await wolf.match(url))) await wolf.add(url).catch(() => {});
     }));
     self.skipWaiting();
   })());
@@ -66,6 +113,14 @@ self.addEventListener('fetch', (e) => {
       const hit = await models.match(url.href);
       if (hit) return hit;
       return fetch(req);
+    }
+    if (url.pathname.includes('/assets/wolf/') && !url.pathname.endsWith('cover.jpg')) {
+      const wolf = await caches.open(WOLF_CACHE);
+      const hit = await wolf.match(url.href);
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res.ok) wolf.put(url.href, res.clone()).catch(() => {});
+      return res;
     }
     const cache = await caches.open(CACHE);
     const hit = await cache.match(req, { ignoreSearch: true });

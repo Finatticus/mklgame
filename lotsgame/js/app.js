@@ -197,7 +197,7 @@ function pageLobby(page) {
       h('button', { class: 'btn btn-gold btn-sm', onClick: () => { if (store.claimRelief()) { audio.play('payout'); toast('已領取補給金'); } } }, '領取')));
     const pending = Object.keys(d.saves).map(gameById).filter(Boolean);
     for (const g of pending) notices.append(h('div', { class: 'notice' },
-      h('div', { class: 'notice-text' }, h('b', null, g.name + ' · 有未完成的對局'), h('span', null, '已下注 ' + fmt(store.heldAmount(g.id)) + '，可接著玩')),
+      h('div', { class: 'notice-text' }, h('b', null, g.name + ' · 有未完成的對局'), h('span', null, store.heldAmount(g.id) ? '已下注 ' + fmt(store.heldAmount(g.id)) + '，可接著玩' : '進度已保存，可接著玩')),
       h('button', { class: 'btn btn-sm', onClick: () => navigate('#/game/' + g.id) }, '繼續')));
     const t = d.stats.total;
     figures.replaceChildren(
