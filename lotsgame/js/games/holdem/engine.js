@@ -204,8 +204,10 @@ function fits(a, b, board, o) {
   const lvl = madeLevel([a, b], board);
   const d = draws([a, b], board);
   const drawing = board.length < 5 && (d.flushDraw || d.oesd);
-  if (o.aggr >= 2) return lvl >= 3 || (drawing && lvl >= 1) || Math.random() < 0.1;
-  return lvl >= 2 || drawing || Math.random() < 0.22;
+  // bluff：這位對手下注時是空氣的比例（由讀人得來，預設 0.18）
+  const bl = o.bluff ?? 0.18;
+  if (o.aggr >= 2) return lvl >= 3 || (drawing && lvl >= 1) || Math.random() < bl * 0.55;
+  return lvl >= 2 || drawing || Math.random() < bl * 1.2;
 }
 
 // 產生 ORDER 用（開發時在主控台執行 equityTable() 可重新計算）

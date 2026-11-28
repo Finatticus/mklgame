@@ -8,9 +8,9 @@ import { createTable, startHand, act, decide, legal, pot } from './table.js';
 
 const ID = 'holdem', NAME = '德州撲克';
 const TIERS = {
-  low: { label: '新手桌', sb: 50, bb: 100, styles: ['station', 'nit', 'lag', 'tag', 'station'], desc: '對手較常跟注，適合練習' },
-  mid: { label: '進階桌', sb: 200, bb: 400, styles: ['tag', 'reg', 'lag', 'nit', 'station'], desc: '各種打法都有' },
-  high: { label: '高手桌', sb: 500, bb: 1000, styles: ['tag', 'reg', 'lag', 'reg'], desc: '緊兇為主，會詐唬也會抓詐唬' },
+  low: { label: '新手桌', sb: 50, bb: 100, styles: ['station', 'station', 'maniac', 'lag', 'tag', 'nit'], desc: '愛跟注、愛亂打的人多，牌局熱鬧' },
+  mid: { label: '進階桌', sb: 200, bb: 400, styles: ['tag', 'reg', 'lag', 'nit', 'station', 'maniac'], desc: '各種打法都有，會記住你的習慣' },
+  high: { label: '高手桌', sb: 500, bb: 1000, styles: ['tag', 'reg', 'lag', 'reg', 'lag'], desc: '會讀人、會詐唬，也會抓你的詐唬' },
 };
 const MIN_BB = 40, MAX_BB = 100;
 
@@ -48,7 +48,13 @@ export const RULES = `
 ${Object.values(TIERS).map((t) => `<tr><td>${t.label}</td><td>${fmt(t.sb)} / ${fmt(t.bb)}</td><td>${fmt(t.bb * MIN_BB)}–${fmt(t.bb * MAX_BB)}</td></tr>`).join('')}
 </table>
 <p>入座時從餘額帶入籌碼，桌上的輸贏都是籌碼；<strong>離桌時剩下的籌碼全部換回遊戲幣</strong>，比帶入多就算贏。籌碼輸光可以補碼。牌局進行中離桌，等於放棄這一手，已經下的注拿不回來。</p>
-<p>每張牌桌另外五位都是電腦玩家，會依位置挑選起手牌，翻牌後模擬計算勝率、看底池賠率決定跟注或加注，也會適度詐唬。</p>`;
+<h4>電腦玩家</h4>
+<p>另外五位都是電腦玩家，各有個性：保守、緊兇、穩健、鬆兇、愛跟注、瘋狂。翻牌後會模擬計算勝率、看底池賠率決定跟注或加注。</p>
+<ul>
+<li><strong>會讀人</strong>：記住全桌每個人（包括你）多常入池、多常加注、多常下注、攤牌時被抓過幾次詐唬。你越愛加注，他們越會跟你、反加注你，也越敢用中等牌抓你的詐唬。</li>
+<li><strong>會詐唬</strong>：翻牌前加注後持續下注、轉牌出現嚇人的牌再開一槍、聽牌落空在河牌下重注、聽牌時過牌加注，拿到大牌也可能先慢打引你下注。</li>
+<li>攤牌時若有人是詐唬，結果會寫出來；有些對手詐唬得手後還會故意亮牌給你看。</li>
+</ul>`;
 
 const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
 const short = (n) => (n >= 100000 ? Math.round(n / 1000) + 'K' : n >= 10000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : fmt(n));
@@ -362,8 +368,9 @@ export async function mount(root, ctx) {
     lastSummary = names.join('、') + (R.winners.length > 1 ? ' 平分 ' : ' 贏得 ') + fmt(R.showdown ? total : R.pot);
     if (R.showdown) {
       const w = R.winners[0];
-      say(names.join('、') + (R.winners.length > 1 ? ' 平分' : ' 贏得') + ' ' + fmt(R.winners.reduce((a, x) => a + x.amount, 0)), w.hand ? '以' + w.hand + '勝出' : '');
-    } else say(names[0] + ' 贏得 ' + fmt(R.pot), '其他人都棄牌');
+      say(names.join('、') + (R.winners.length > 1 ? ' 平分' : ' 贏得') + ' ' + fmt(R.winners.reduce((a, x) => a + x.amount, 0)), R.note || (w.hand ? '以' + w.hand + '勝出' : ''));
+    } else say(names[0] + ' 贏得 ' + fmt(R.pot), R.note || '其他人都棄牌');
+    if (R.note) lastSummary += ' · ' + R.note;
     if (won) { audio.play('payout', { volume: 0.8 }); if (R.pot >= T.bb * 20) audio.chime('win'); }
     render();
     save();
@@ -373,7 +380,7 @@ export async function mount(root, ctx) {
       if (!alive || !T || T.street !== 'done') return;
       await clearTable();
       if (me.stack > 0 && idle()) nextTimer = setTimeout(() => { if (idle()) nextHand(); }, 900);
-    }, R.showdown ? 3600 : 2200);
+    }, R.showdown || R.note ? 3600 : 2200);
   }
 
   function rebuy(amount) {
