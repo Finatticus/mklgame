@@ -5,6 +5,7 @@ import * as audio from '../../audio.js';
 import { loadGLB, bakeVAT, Horde, findSkinned, whitenTexture, firstMaterial } from './assets.js';
 import { createWorld } from './world.js';
 import { WEAPONS, EVOS, PASSIVES, ENEMIES, BOSSES, WAVES, SWARMS, MAPS, RUN_SECONDS, MAX_WEAPONS, MAX_PASSIVES, WEAPON_MAX, PASSIVE_MAX, xpNeed } from './data.js';
+import { BREEDS } from './pack.js';
 
 const TAU = Math.PI * 2;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -14,17 +15,18 @@ function lerpAng(a, b, t) { let d = ((b - a + Math.PI) % TAU + TAU) % TAU - Math
 
 // 各模型烘焙哪些動作
 const CLIPS = {
-  wolf: [{ key: 'run', name: 'run_loop', fps: 30 }, { key: 'walk', name: 'walk_loop', fps: 24 }, { key: 'bite', name: 'bite', fps: 30, loop: false }],
+  wolf: [{ key: 'run', name: 'run_loop', fps: 30 }, { key: 'walk', name: 'walk_loop', fps: 24 }, { key: 'bite', name: 'bite', fps: 30, loop: false }, { key: 'idle', name: 'idle_loop', fps: 10 }],
   spider: [{ key: 'run', name: 'run_loop', fps: 30 }, { key: 'walk', name: 'walk_loop', fps: 24 }, { key: 'bite', name: 'bite', fps: 30, loop: false }],
   horse: [{ key: 'walk', name: 'walk_loop', fps: 24 }, { key: 'run', name: 'canter_loop', fps: 30 }, { key: 'bite', name: 'rear', fps: 20, loop: false }],
   drake: [{ key: 'fly', name: 'fly_loop', fps: 30 }, { key: 'bite', name: 'bite', fps: 24, loop: false }],
 };
 const TRIS = { wolf: 2600, spider: 2600, horse: 2600, drake: 3200 };
 // 動作播放速度：配合移動速度，避免滑步
-const ANIM_RATE = { wolf: { run: 0.9, walk: 1, bite: 1 }, spider: { run: 0.8, walk: 1.1, bite: 1 }, horse: { walk: 1.1, run: 1, bite: 1.6 }, drake: { fly: 0.85, bite: 1 } };
+const ANIM_RATE = { wolf: { run: 0.9, walk: 1, bite: 1, idle: 1 }, spider: { run: 0.8, walk: 1.1, bite: 1 }, horse: { walk: 1.1, run: 1, bite: 1.6 }, drake: { fly: 0.85, bite: 1 } };
 
-export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, onProgress }) {
+export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, onProgress, pack = null }) {
   const map = MAPS[mapId];
+  const hpMul = pack ? 1 : map.hp; // 狼群模式的難度由領地等級決定
   const W = await createWorld(canvas, mapId, { mobile });
   const { scene, particles: P } = W;
   onProgress && onProgress(0.35);
@@ -45,6 +47,14 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
   }
   const ghosts = new Horde(vats.wolf, null, 10, { ghost: true });
   scene.add(ghosts.mesh);
+  // 狼群模式：同行的狼與腳下的月光圈
+  const allyHorde = new Horde(vats.wolf, firstMaterial(models.wolf.scene), 6, { shadow: true });
+  scene.add(allyHorde.mesh);
+  const ringCv = document.createElement('canvas'); ringCv.width = ringCv.height = 128;
+  { const g = ringCv.getContext('2d'), gr = g.createRadialGradient(64, 64, 38, 64, 64, 62); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.72, 'rgba(255,255,255,0.35)'); gr.addColorStop(0.88, 'rgba(255,255,255,0.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }
+  const allyRings = new THREE.InstancedMesh(new THREE.PlaneGeometry(1.5, 1.5).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(ringCv), color: 0x8fa8e8, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending }), 6);
+  allyRings.frustumCulled = false; allyRings.count = 0; allyRings.renderOrder = 3;
+  scene.add(allyRings);
 
   // ---------------- 玩家：白狼 ----------------
   const pg = cloneSkinned(models.wolf.scene);
@@ -147,6 +157,18 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     Object.assign(S, { t: saved.t, kills: saved.kills, lv: saved.lv, xp: saved.xp, weapons: saved.weapons.map((w) => ({ ...w, cd: 1 })), passives: { ...saved.passives }, ult: saved.ult || 0, bossesDone: saved.bossesDone || [], revives: saved.revives ?? S.revives, elitesKilled: saved.elitesKilled || 0 });
     recalc(); S.hp = Math.min(S.maxhp, saved.hp || S.maxhp);
   } else { recalc(); S.hp = S.maxhp; }
+  // 狼群模式：同行的狼
+  S.allies = [];
+  S.cmd = 'attack';
+  S.goal = pack ? { kind: pack.spec.kind, need: pack.spec.kills, time: pack.spec.time, boss: false, name: pack.spec.name } : null;
+  S.elitesWolf = 0;
+  if (pack) {
+    const hungry = pack.hungry ? 0.8 : 1;
+    pack.allies.forEach((w, k) => {
+      const a = Math.PI + (k - (pack.allies.length - 1) / 2) * 0.75;
+      S.allies.push({ id: w.id, name: w.name, breed: w.breed, lv: w.lv, x: Math.sin(a) * 2.6, z: Math.cos(a) * 2.6, face: 0, vx: 0, vz: 0, hp: w.hp * hungry, maxhp: w.hp * hungry, atk: w.atk * hungry, cd: rand(0, 0.8), skill: rand(1.5, 4), t: Math.random() * 3, anim: 'idle', animT: 0, biteT: 0, down: false, dis: 0, kills: 0, flash: 0, guardT: 0, buffT: 0, bossHitT: 0, leap: null, tgt: null });
+    });
+  }
 
   const enemies = [];
   const gems = [];
@@ -214,13 +236,13 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
   }
 
   // ---------------- 敵人 ----------------
-  const scaleT = () => (1 + (S.t / 60) * 0.1) * map.hp;
+  const scaleT = () => pack ? (1 + (pack.spec.lv - 1) * 0.32) * (1 + (S.t / 60) * 0.08) : (1 + (S.t / 60) * 0.1) * map.hp;
   function spawn(kind, x, z, { elite = false } = {}) {
     const D = ENEMIES[kind];
     if (enemies.length >= 240) return null;
     const e = {
       kind, D, x, z, vx: 0, vz: 0, r: D.r * (elite ? 1.5 : 1), face: 0,
-      hp: D.hp * scaleT() * (elite ? 14 : 1), dmg: D.dmg * (1 + S.t / 60 * 0.05) * (elite ? 1.5 : 1),
+      hp: D.hp * scaleT() * (elite ? 14 : 1), dmg: D.dmg * (pack ? 1 + (pack.spec.lv - 1) * 0.15 : 1 + S.t / 60 * 0.05) * (elite ? 1.5 : 1),
       speed: D.speed * rand(0.92, 1.08) * (elite ? 1.05 : 1), scale: D.scale * (elite ? 1.55 : 1) * rand(0.94, 1.06),
       t: Math.random() * 5, anim: D.anim, atk: 0, flash: 0, slowT: 0, slowF: 0, freezeT: 0, fearT: 0,
       dying: 0, born: 0.001, elite, tint: elite ? [Math.min(1.6, D.tint[0] * 1.5 + 0.3), D.tint[1] * 1.15 + 0.15, D.tint[2] * 0.8] : D.tint,
@@ -246,9 +268,10 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
   }
   const waveAt = (t) => { let w = WAVES[0]; for (const x of WAVES) if (x.t <= t) w = x; return w; };
 
-  function damageEnemy(e, dmg, kx = 0, kz = 0, knock = 0, src = '') {
+  function damageEnemy(e, dmg, kx = 0, kz = 0, knock = 0, src = '', by = null) {
     if (e.dying || e.hp <= 0) return;
-    const d = dmg * ST.might;
+    const d = by ? dmg : dmg * ST.might; // 同伴的傷害不吃白狼的加成
+    e.lastAlly = by;
     e.hp -= d; e.flash = 1;
     if (knock && !e.isBoss) { const l = Math.hypot(kx, kz) || 1; const k = knock / (e.elite ? 3 : 1); e.vx += (kx / l) * k; e.vz += (kz / l) * k; }
     const ey = (e.y || 0) + 0.6 * (e.isBoss ? e.scale * 0.8 : 1);
@@ -260,6 +283,8 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     if (e.isBoss) return bossDie(e);
     e.dying = 0.001;
     S.kills++;
+    if (e.lastAlly) e.lastAlly.kills++;
+    if (e.elite && e.kind === 'wolf') S.elitesWolf++;
     S.ult = Math.min(1, S.ult + (e.elite ? 0.08 : 0.011));
     if (src === 'wisp' && S.wispHeal) S.hp = Math.min(S.maxhp, S.hp + S.wispHeal);
     const y = (e.y || 0) + 0.5;
@@ -299,7 +324,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
   function spawnBoss(def) {
     const a = Math.random() * TAU, R = viewRadius() * 0.85;
     const m = makeBossModel(def.model, def.scale, def.tint);
-    const b = { isBoss: true, def, model: m, x: S.x + Math.sin(a) * R, z: S.z + Math.cos(a) * R, r: def.r, scale: def.scale, hp: def.hp * map.hp, maxhp: def.hp * map.hp, dmg: def.dmg * map.hp, speed: def.speed, face: 0, flash: 0, slowT: 0, slowF: 0, freezeT: 0, fearT: 0, vx: 0, vz: 0, atk: 0, st: 0, phase: 'walk', pt: 0, y: 0, dying: 0, hitBy: null };
+    const b = { isBoss: true, def, model: m, x: S.x + Math.sin(a) * R, z: S.z + Math.cos(a) * R, r: def.r, scale: def.scale, hp: def.hp * hpMul, maxhp: def.hp * hpMul, dmg: def.dmg * hpMul, speed: def.speed, face: 0, flash: 0, slowT: 0, slowF: 0, freezeT: 0, fearT: 0, vx: 0, vz: 0, atk: 0, st: 0, phase: 'walk', pt: 0, y: 0, dying: 0, hitBy: null };
     if (def.id === 'dragon') { b.phase = 'fly'; b.y = 3.4; bossAnim(b, 'fly'); }
     else bossAnim(b, def.id === 'queen' ? 'walk' : 'run');
     S.boss = b;
@@ -307,6 +332,20 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     onEvent('boss', { name: def.name });
     audio.play('bigboom', { volume: 0.35, rate: 0.7 });
   }
+  // 狼群模式的領地頭目（依領地等級加強）
+  const PACK_BOSS = {
+    alpha: { id: 'alpha', name: '暗狼頭目', model: 'wolf', scale: 2.0, tint: [0.55, 0.5, 0.55], hp: 900, speed: 4.5, dmg: 14, r: 1.4 },
+    queen: { id: 'queen', name: '蛛母', model: 'spider', scale: 2.4, tint: [0.75, 0.62, 0.62], hp: 1200, speed: 2.8, dmg: 16, r: 2.1 },
+    stallion: { id: 'stallion', name: '夢魘之王', model: 'horse', scale: 1.6, tint: [0.32, 0.26, 0.32], hp: 1100, speed: 3.4, dmg: 18, r: 1.6 },
+    dragon: { id: 'dragon', name: '灰翼飛龍', model: 'drake', scale: 0.45, tint: [1, 0.9, 0.85], hp: 1700, speed: 3.8, dmg: 18, r: 2.4 },
+  };
+  function packBoss() {
+    const sp = pack.spec, d = { ...PACK_BOSS[sp.boss] }, k = 1 + (sp.lv - 1) * 0.6;
+    d.hp = Math.round(d.hp * k); d.dmg *= 1 + (sp.lv - 1) * 0.15;
+    if (sp.final) Object.assign(d, { name: '焚翼', scale: 0.58, hp: 9500, dmg: 24 });
+    return d;
+  }
+  const packResult = (win) => ({ win, allies: S.allies.map((a) => ({ id: a.id, kills: a.kills, down: a.down })), elitesWolf: S.elitesWolf, kills: S.kills, t: S.t, lv: S.lv });
   function bossDie(b) {
     if (b.dying) return;
     b.dying = 0.001;
@@ -318,6 +357,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     for (let i = 0; i < 14; i++) dropGem(b.x + rand(-2, 2), b.z + rand(-2, 2), 25);
     items.push(makeItem('chest', b.x, b.z, { big: true }));
     onEvent('bossdown', { name: b.def.name, final: b.def.id === 'dragon' });
+    if (pack) { S.won = true; later(2.4, () => onEvent('packend', packResult(true))); return; }
     if (b.def.id === 'dragon') { S.won = true; later(2.6, () => onEvent('victory', {})); }
   }
   function bossShot(b, ang, speed, kind = 'fire', dmg = b.dmg * 0.7) {
@@ -357,6 +397,20 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
       mvx = dx / dist * sp; mvz = dz / dist * sp; bossAnim(b, dist > 3 ? 'walk' : 'bite');
       if (b.pt > 3.8 / enrage) { b.pt = 0; const a0 = angTo(dx, dz); for (let i = -1; i <= 1; i++) bossShot(b, a0 + i * 0.35, 9, 'web', b.dmg * 0.4); }
       if (b.st > 8.5) { b.st = 0; for (let i = 0; i < 10; i++) { const a = Math.random() * TAU; spawn('hatch', b.x + Math.sin(a) * 2.5, b.z + Math.cos(a) * 2.5); } }
+    } else if (b.def.id === 'stallion') {
+      // 夢魘之王：揚蹄蓄力後直線衝鋒，定時召來戰馬
+      if (b.phase === 'walk') {
+        mvx = dx / dist * sp; mvz = dz / dist * sp; bossAnim(b, 'walk');
+        if (b.pt > 4.5 / enrage && dist < 14) { b.phase = 'rear'; b.pt = 0; b.lx = dx / dist; b.lz = dz / dist; bossAnim(b, 'rear', 0.15, true); W.flat('ring', b.x, b.z, { r: 1.5, life: 0.9, color: 0xff6040, grow: 1.6, opacity: 0.6 }); }
+        if (b.st > 10) { b.st = 0; for (let i = 0; i < 2 + Math.floor(pack ? pack.spec.lv / 2 : 2); i++) spawn('horse', b.x + rand(-4, 4), b.z + rand(-4, 4)); }
+      } else if (b.phase === 'rear') {
+        b.face = lerpAng(b.face, angTo(b.lx, b.lz), dt * 8);
+        if (b.pt > 0.9) { b.phase = 'charge'; b.pt = 0; bossAnim(b, 'canter', 0.1); audio.play('hitm', { volume: 0.4, rate: 0.5 }); }
+      } else if (b.phase === 'charge') {
+        mvx = b.lx * 15; mvz = b.lz * 15;
+        if (Math.random() < 0.6) P.emit(b.x, 0.2, b.z, rand(-1, 1), rand(0.5, 1.5), rand(-1, 1), 0.6, 0.5, 0.9, 0.35, 0.3, 0.28, 1, 0);
+        if (b.pt > 1.2) { b.phase = 'walk'; b.pt = 0; }
+      }
     } else if (b.def.id === 'dragon') {
       if (b.phase === 'fly') {
         b.y += (3.4 - b.y) * dt * 2;
@@ -395,6 +449,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     // 接觸傷害（地面上）
     b.atk -= dt;
     if (b.y < 1.5 && dist < b.r + 0.6 && b.atk <= 0) { hurtPlayer(b.dmg); b.atk = 1.0; }
+    if (b.y < 1.5) for (const a of S.allies) if (!a.down && a.bossHitT <= 0 && Math.hypot(a.x - b.x, a.z - b.z) < b.r + 0.6) { hurtAlly(a, b.dmg); a.bossHitT = 1.1; }
   }
 
   // ---------------- 玩家受傷 ----------------
@@ -406,8 +461,134 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
       if (S.revives > 0) {
         S.revives--; S.hp = S.maxhp * 0.5; S.ult = 1; howl(true);
         onEvent('revive', {});
-      } else { S.hp = 0; S.dead = true; onEvent('dead', {}); }
+      } else { S.hp = 0; S.dead = true; onEvent(pack ? 'packend' : 'dead', pack ? packResult(false) : {}); }
     }
+  }
+
+  // ---------------- 同伴 ----------------
+  function hurtAlly(a, d) {
+    if (a.down || S.won || S.dead || a.ifr > 0) return;
+    a.hp -= Math.max(1, d * 0.55 * (a.guardT > 0 ? 0.55 : 1)); // 狼皮粗厚，受傷較輕
+    a.flash = 1; a.ifr = 0.35; a.calm = 0;
+    if (a.hp <= 0) {
+      a.hp = 0; a.down = true; a.dis = 0.001; a.tgt = null;
+      for (let i = 0; i < 24; i++) P.emit(a.x + rand(-0.5, 0.5), rand(0.2, 1), a.z + rand(-0.5, 0.5), rand(-0.5, 0.5), rand(1, 2.5), rand(-0.5, 0.5), rand(0.7, 1.2), 0.2, 0.03, 0.7, 0.8, 1, 1, -0.5);
+      onEvent('allydown', { name: a.name });
+    }
+  }
+  function allyHit(a, e, dmg, knock) {
+    let d = dmg * (a.buffT > 0 ? 1.25 : 1);
+    if (a.breed === 'shadow' && Math.random() < 0.35) { d *= 2.2; for (let i = 0; i < 6; i++) P.emit(e.x, 0.7, e.z, rand(-2, 2), rand(0.5, 2), rand(-2, 2), 0.3, 0.2, 0.04, 0.5, 0.35, 0.8, 3, 2); }
+    damageEnemy(e, d, e.x - a.x, e.z - a.z, knock, 'ally', a);
+    if (a.breed === 'red' && !e.isBoss) { e.bleedT = 4; e.bleedD = a.atk * 0.45; e.bleedBy = a; }
+    if (a.breed === 'frost') { e.slowT = 2; e.slowF = Math.max(e.slowF || 0, 0.45); }
+  }
+  function allySkill(a, tgt, d) {
+    switch (a.breed) {
+      case 'grey': // 撲擊：飛撲到遠處的敵人
+        if (d > 2.2 && d < 7.5) { a.skill = 6; a.leap = { t: 0, dur: Math.max(0.2, d / 16), x0: a.x, z0: a.z, x1: tgt.x - ((tgt.x - a.x) / d) * 0.9, z1: tgt.z - ((tgt.z - a.z) / d) * 0.9, e: tgt }; }
+        break;
+      case 'frost': // 冰牙：冰霜震波
+        if (d < 3) {
+          a.skill = 8;
+          W.flat('ring', a.x, a.z, { r: 0.8, life: 0.5, grow: 4, color: 0xbfe0ff, opacity: 0.8 });
+          for (let i = 0; i < 26; i++) { const t = Math.random() * TAU; P.emit(a.x, 0.4, a.z, Math.sin(t) * 6, rand(0, 0.6), Math.cos(t) * 6, 0.5, 0.35, 0.6, 0.2, 0.3, 0.45, 2.5, 0); }
+          near(a.x, a.z, 3.2, (e, ex, ez) => { damageEnemy(e, a.atk * 1.5, ex, ez, 2, 'ally', a); e.slowT = 3; e.slowF = 0.5; });
+        }
+        break;
+      case 'shadow': // 暗襲：閃到敵人背後重擊
+        if (d < 6 && !tgt.isBoss) {
+          a.skill = 7;
+          for (let i = 0; i < 10; i++) P.emit(a.x, 0.6, a.z, rand(-1, 1), rand(0.5, 1.5), rand(-1, 1), 0.5, 0.45, 0.1, 0.25, 0.2, 0.35, 1, 0);
+          a.x = tgt.x - Math.sin(tgt.face || 0) * 1.1; a.z = tgt.z - Math.cos(tgt.face || 0) * 1.1;
+          a.face = tgt.face || 0;
+          allyHit(a, tgt, a.atk * 3.2, 3);
+        }
+        break;
+      case 'dark': // 守護：吸引周圍敵人並減傷
+        if (d < 4) {
+          a.skill = 10; a.guardT = 4;
+          W.flat('ring', a.x, a.z, { r: 1, life: 0.7, grow: 5, color: 0xff7a5a, opacity: 0.55 });
+          near(a.x, a.z, 6, (e) => { e.tauntT = 4; e.tauntBy = a; });
+        }
+        break;
+      default: a.skill = 99; // 赤狼：撕咬是被動
+    }
+  }
+  function updateAllies(dt) {
+    const live = S.allies.filter((a) => !a.down);
+    const spd = ST.speed * 1.12;
+    live.forEach((a, k) => {
+      a.cd -= dt; a.skill -= dt; a.flash = Math.max(0, a.flash - dt * 6);
+      if (a.guardT > 0) a.guardT -= dt;
+      if (a.buffT > 0) a.buffT -= dt;
+      if (a.bossHitT > 0) a.bossHitT -= dt;
+      if (a.ifr > 0) a.ifr -= dt;
+      a.calm = (a.calm || 0) + dt;
+      if (a.calm > 2 && a.hp < a.maxhp) a.hp = Math.min(a.maxhp, a.hp + a.maxhp * (a.retreat ? 0.07 : 0.03) * dt); // 脫離戰鬥後慢慢回血
+      // 重傷就退回白狼身邊，回到七成再上
+      if (a.hp < a.maxhp * 0.3) a.retreat = true; else if (a.hp > a.maxhp * 0.7) a.retreat = false;
+      if (a.leap) { // 飛撲途中
+        const L = a.leap; L.t += dt;
+        const f = Math.min(1, L.t / L.dur);
+        a.x = L.x0 + (L.x1 - L.x0) * f; a.z = L.z0 + (L.z1 - L.z0) * f;
+        a.anim = 'run'; a.t += dt * 2;
+        if (f >= 1) { a.leap = null; if (L.e && !L.e.dying && L.e.hp > 0) allyHit(a, L.e, a.atk * 3, 6); W.flat('ring', a.x, a.z, { r: 0.6, life: 0.35, grow: 2.2, color: 0xd8e4ff, opacity: 0.6 }); }
+        return;
+      }
+      const lead = Math.hypot(a.x - S.x, a.z - S.z);
+      const range = S.cmd === 'follow' ? 3.2 : 9;
+      let tgt = a.tgt;
+      if (tgt && (tgt.dying || tgt.hp <= 0 || (tgt.y || 0) > 2 || Math.hypot(tgt.x - a.x, tgt.z - a.z) > range + 2)) tgt = null;
+      if (!tgt && lead < 12) { // 找目標：離自己近、也不離白狼太遠
+        let bd = range * range;
+        near(a.x, a.z, range, (e, ex, ez) => { if (e.D.flyer) return; const d2 = ex * ex + ez * ez; if (d2 < bd && Math.hypot(e.x - S.x, e.z - S.z) < 12) { bd = d2; tgt = e; } });
+        const b = S.boss; if (!tgt && b && !b.dying && b.y < 1.5 && Math.hypot(b.x - a.x, b.z - a.z) < range + b.r) tgt = b;
+      }
+      if (lead > 14 || a.retreat) tgt = null; // 離白狼太遠或重傷就先回來
+      a.tgt = tgt;
+      let mx = 0, mz = 0;
+      if (tgt) {
+        const dx = tgt.x - a.x, dz = tgt.z - a.z, d = Math.hypot(dx, dz) || 0.01, reach = (tgt.r || 0.6) + 0.55;
+        if (d > reach) { mx = (dx / d) * spd; mz = (dz / d) * spd; }
+        a.face = lerpAng(a.face, Math.atan2(dx, dz), Math.min(1, dt * 10));
+        if (a.skill <= 0) allySkill(a, tgt, d);
+        if (d <= reach + 0.15 && a.cd <= 0) { a.cd = 0.85; a.biteT = 0.001; allyHit(a, tgt, a.atk, 2); }
+      } else {
+        // 跟隨：在白狼身後排成弧形
+        const n = live.length, ang = S.face + Math.PI + (k - (n - 1) / 2) * 0.75, rad = 2.3 + (k % 2) * 0.7;
+        const dx = S.x + Math.sin(ang) * rad - a.x, dz = S.z + Math.cos(ang) * rad - a.z, d = Math.hypot(dx, dz);
+        if (d > 0.4) { const v = Math.min(spd * 1.15, d * 3.2); mx = (dx / d) * v; mz = (dz / d) * v; }
+      }
+      for (const o of live) { if (o === a) continue; const ox = a.x - o.x, oz = a.z - o.z, d = Math.hypot(ox, oz); if (d < 1.1 && d > 0.001) { mx += (ox / d) * (1.1 - d) * 4; mz += (oz / d) * (1.1 - d) * 4; } }
+      { const ox = a.x - S.x, oz = a.z - S.z, d = Math.hypot(ox, oz); if (d < 1.2 && d > 0.001) { mx += (ox / d) * (1.2 - d) * 4; mz += (oz / d) * (1.2 - d) * 4; } }
+      a.vx += (mx - a.vx) * Math.min(1, dt * 10); a.vz += (mz - a.vz) * Math.min(1, dt * 10);
+      a.x += a.vx * dt; a.z += a.vz * dt;
+      [a.x, a.z] = W.collide(a.x, a.z, 0.5);
+      const v = Math.hypot(a.vx, a.vz);
+      if (v > 0.3 && !tgt) a.face = lerpAng(a.face, Math.atan2(a.vx, a.vz), Math.min(1, dt * 10));
+      if (a.biteT > 0) { a.biteT += dt; a.anim = 'bite'; a.animT = a.biteT; if (a.biteT > 0.5) a.biteT = 0; }
+      else { a.anim = v > 0.6 ? 'run' : 'idle'; a.t += dt * (v > 0.6 ? 0.75 + (v / spd) * 0.4 : 1); }
+      if (lead > 22) { a.x = S.x - Math.sin(S.face) * 2; a.z = S.z - Math.cos(S.face) * 2; a.vx = a.vz = 0; } // 卡住就回到身邊
+    });
+    for (const a of S.allies) if (a.down && a.dis < 1) a.dis = Math.min(1, a.dis + dt * 1.2);
+  }
+
+  // ---------------- 狼群模式的出怪與目標 ----------------
+  let packEliteT = 45, leaderSpawned = false;
+  function makeElite(e) { if (!e) return; e.elite = true; e.hp = e.maxhp = e.hp * 14; e.r *= 1.5; e.scale *= 1.55; e.dmg *= 1.5; e.tint = [e.D.tint[0] * 1.3 + 0.25, e.D.tint[1] * 1.05 + 0.12, e.D.tint[2] * 0.6]; }
+  function packSpawn(dt) {
+    const sp = pack.spec, n = S.allies.filter((a) => !a.down).length;
+    const rate = (1.3 + sp.lv * 0.35 + n * 0.25) * (1 + S.t / 240) * (mobile ? 0.85 : 1);
+    const cap = Math.round((32 + sp.lv * 12 + n * 5) * (mobile ? 0.85 : 1));
+    spawnAcc += dt * rate;
+    while (spawnAcc >= 1) { spawnAcc--; if (enemies.length < cap) spawnRing(pickKind(sp.mix)); }
+    packEliteT -= dt;
+    if (packEliteT <= 0) { packEliteT = 55; const ks = Object.keys(sp.mix).filter((k) => k !== 'hatch'); makeElite(spawnRing(ks[Math.floor(Math.random() * ks.length)] || 'wolf')); }
+    if (sp.kind === 'defend') {
+      if (!leaderSpawned && S.t > sp.time * 0.5) { leaderSpawned = true; const ks = Object.keys(sp.mix).filter((k) => k !== 'hatch'); makeElite(spawnRing(ks[0] || 'wolf')); onEvent('banner', { text: '敵方首領現身' }); }
+      if (S.t >= sp.time) { S.won = true; onEvent('banner', { text: '守住了' }); later(1.8, () => onEvent('packend', packResult(true))); }
+    } else if (!S.goal.boss && S.kills >= sp.kills) { S.goal.boss = true; spawnBoss(packBoss()); }
   }
 
   // ---------------- 武器 ----------------
@@ -569,6 +750,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     near(S.x, S.z, R, (e, dx, dz) => { damageEnemy(e, 60 + S.lv * 4, dx, dz, 14, 'howl'); e.fearT = 2.5; });
     const b = S.boss; if (b && !b.dying && Math.hypot(b.x - S.x, b.z - S.z) < R + b.r) { damageEnemy(b, 120 + S.lv * 6); b.fearT = 1.2; }
     for (const s of shots) s.life = 0; // 吼聲震散投射物
+    for (const a of S.allies) if (!a.down) { a.hp = Math.min(a.maxhp, a.hp + a.maxhp * 0.3); a.buffT = 8; } // 狼群士氣大振
     audio.play('bigboom', { volume: 0.4, rate: 1.3 });
     return true;
   }
@@ -616,7 +798,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     if (S.pendingLv && S.state === 'play') nextLevelUp();
   }
   function nextLevelUp() {
-    if (!S.pendingLv) { S.state = 'play'; return; }
+    if (!S.pendingLv || S.won) { S.pendingLv = 0; S.state = 'play'; return; } // 已經獲勝就不再跳升級
     S.pendingLv--;
     S.state = 'choose';
     audio.play('power', { volume: 0.4 });
@@ -667,7 +849,8 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     S.hp = Math.min(S.maxhp, S.hp + ST.regen * dt);
 
     // 出怪
-    if (!S.won) {
+    if (pack) { if (!S.won) packSpawn(dt); }
+    else if (!S.won) {
       const wv = waveAt(S.t);
       const alive = enemies.length;
       spawnAcc += dt * wv.rate * (mobile ? 0.85 : 1);
@@ -700,9 +883,18 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
       }
       if (e.born > 0) { e.born += dt; if (e.born > 0.45) e.born = 0; }
       e.flash = Math.max(0, e.flash - dt * 7);
-      const dx = S.x - e.x, dz = S.z - e.z, dist = Math.hypot(dx, dz) || 0.001;
+      // 流血（赤狼）
+      if (e.bleedT > 0) { e.bleedT -= dt; e.bleedAcc = (e.bleedAcc || 0) + dt; if (e.bleedAcc >= 0.5) { e.bleedAcc = 0; damageEnemy(e, e.bleedD * 0.5, 0, 0, 0, 'ally', e.bleedBy); if (e.dying) continue; } }
+      // 目標：白狼或最近的同伴（被黑狼嘲諷時只追牠）
+      let tx = S.x, tz = S.z, tgt = null;
+      if (S.allies.length) {
+        if (e.tauntT > 0 && e.tauntBy && !e.tauntBy.down) { e.tauntT -= dt; tgt = e.tauntBy; }
+        else { let bd = ((S.x - e.x) ** 2 + (S.z - e.z) ** 2) * 0.6; for (const a of S.allies) { if (a.down) continue; const d2 = (a.x - e.x) ** 2 + (a.z - e.z) ** 2; if (d2 < bd) { bd = d2; tgt = a; } } }
+        if (tgt) { tx = tgt.x; tz = tgt.z; }
+      }
+      const dx = tx - e.x, dz = tz - e.z, dist = Math.hypot(dx, dz) || 0.001;
       // 太遠就移到前方
-      if (dist > R * 1.7 && !e.elite) {
+      if (Math.hypot(S.x - e.x, S.z - e.z) > R * 1.7 && !e.elite) {
         const a = Math.atan2(S.vx, S.vz) + rand(-1, 1) + (S.moving > 0.2 ? 0 : Math.random() * TAU);
         e.x = S.x + Math.sin(a) * (R + 2); e.z = S.z + Math.cos(a) * (R + 2); e.born = 0.001;
         continue;
@@ -748,12 +940,14 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
       // 攻擊
       e.atk -= dt;
       if (!e.D.flyer && dist < e.r + 0.55 && e.atk <= 0) {
-        hurtPlayer(e.dmg); e.atk = 0.9; e.biteT = 0.001;
+        if (tgt) hurtAlly(tgt, e.dmg); else hurtPlayer(e.dmg);
+        e.atk = 0.9; e.biteT = 0.001;
       }
       if (e.biteT > 0) { e.biteT += dt; e.anim = 'bite'; e.animT = e.biteT; if (e.biteT > 0.5) e.biteT = 0; }
       e.t += dt * (ANIM_RATE[e.D.model][e.anim] || 1) * (e.freezeT > 0 ? 0 : sp / e.speed || 0.3);
     }
 
+    if (S.allies.length) updateAllies(dt);
     // 頭目
     if (S.boss) updateBoss(S.boss, dt);
 
@@ -772,6 +966,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
         s.y = Math.max(0.6, s.y - dt * 0.4);
       }
       if (s.kind !== 'web' && Math.hypot(s.x - S.x, s.z - S.z) < s.r + 0.5) { hurtPlayer(s.dmg); shots.splice(i, 1); continue; }
+      if (s.kind !== 'web' && S.allies.length) { const a = S.allies.find((o) => !o.down && Math.hypot(s.x - o.x, s.z - o.z) < s.r + 0.5); if (a) { hurtAlly(a, s.dmg); shots.splice(i, 1); continue; } }
       if (s.life <= 0) shots.splice(i, 1);
     }
     for (let i = webs.length - 1; i >= 0; i--) { webs[i].life -= dt; if (webs[i].life <= 0) webs.splice(i, 1); }
@@ -867,6 +1062,21 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
       if (e.biteT === 0) e.animT = undefined;
     }
     for (const n in hordes) hordes[n].end();
+    // 同伴
+    if (S.allies.length) {
+      allyHorde.begin();
+      let ri = 0;
+      for (const a of S.allies) {
+        if (a.down && a.dis >= 1) continue;
+        _q.setFromAxisAngle(_up, a.face); _s.setScalar(0.9); _p.set(a.x, 0, a.z);
+        _m.compose(_p, _q, _s);
+        const anim = a.anim || 'idle';
+        allyHorde.push(_m, anim, anim === 'bite' ? a.animT : a.t, BREEDS[a.breed].tint, a.flash * 0.6, a.down ? a.dis : 0);
+        if (!a.down) { _q.identity(); _s.setScalar(a.guardT > 0 ? 1.4 : 1); _p.set(a.x, 0.04, a.z); _m.compose(_p, _q, _s); allyRings.setMatrixAt(ri++, _m); }
+      }
+      allyHorde.end();
+      allyRings.count = ri; allyRings.instanceMatrix.needsUpdate = true;
+    }
     // 幽狼
     ghosts.begin();
     for (const g of ghostList) {
@@ -917,6 +1127,7 @@ export async function createGame(canvas, { mapId, meta, mobile, saved, onEvent, 
     start() { last = performance.now(); raf = requestAnimationFrame(frame); },
     setInput(x, z) { input.x = x; input.z = z; },
     howl: () => howl(false),
+    setCommand(c) { S.cmd = c; },
     choose(c) { apply(c); S.state = 'play'; if (S.pendingLv) nextLevelUp(); },
     resume() { S.state = 'play'; if (S.pendingLv) nextLevelUp(); },
     pause(v) { S.paused = v; },

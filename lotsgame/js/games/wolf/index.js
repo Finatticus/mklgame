@@ -2,7 +2,8 @@
 import * as store from '../../store.js';
 import * as audio from '../../audio.js';
 import { h, fmt, toast, modal, confirmBox } from '../../ui.js';
-import { hero } from '../shared/setup.js';
+import { hero, segmented } from '../shared/setup.js';
+import { BREEDS, REGIONS, FACTIONS, regionById, ownedCount, healthyWolves } from './pack.js';
 import { WEAPONS, EVOS, PASSIVES, MAPS, META, BOSSES, RUN_SECONDS, metaCost, xpNeed, WEAPON_MAX, PASSIVE_MAX } from './data.js';
 
 const ID = 'wolf', NAME = '月下白狼';
@@ -32,6 +33,16 @@ export const RULES = `
 <tr><td>夢魘戰馬</td><td>靠近後揚蹄，接著直線高速衝鋒，看到揚蹄就橫向閃開。</td></tr>
 <tr><td>灰翼飛龍</td><td>在空中保持距離，朝你吐火球。</td></tr>
 </table>
+<h4>狼群模式</h4>
+<ul>
+<li>從月光谷出發，一塊塊攻下夜林與霜原的十二塊領地，最後打倒焚翼之巢的焚翼。</li>
+<li>只能出征和我方領地相鄰的地方。出征時最多帶五匹健康的狼同行，牠們會自動跟隨、攻擊，各有品種技能：灰狼撲擊、赤狼撕咬流血、霜狼冰牙緩速、影狼暗襲爆擊、黑狼守護吸引敵人。</li>
+<li>出征目標是擊倒足夠的敵人，再打倒現身的頭目；防守則要撐過時間。左下角可切換「集合」（緊跟白狼）與「進攻」（自由追擊）。嚎月會同時替狼群回血並提升攻擊。</li>
+<li>在戰鬥中倒下的狼不會死，但要休養兩天。每次出征或狩獵都會過一天：領地產出食物，每匹狼每天吃掉 1 份；食物不夠會挨餓，下一場生命與攻擊 −20%。</li>
+<li>攻下領地後有機會收服新的狼（暗狼部族最容易）。狼會隨出征升級（最高 Lv 10）。營地可用食物擴建巢穴（狼群上限）、獵場（食物產量）、月石（狼群生命與攻擊）。</li>
+<li>從第三天起，敵人可能反攻你的邊境領地，當天不去防守就會失守。</li>
+<li>每場出征結束都會依結果發放遊戲幣與魂石。</li>
+</ul>
 <h4>魂石與局外成長</h4>
 <p>每局結束依擊倒數、存活時間與頭目獲得<strong>魂石</strong>，可在「魂石商店」永久強化白狼。在月影森林存活 10 分鐘可解鎖「霜原遺跡」（敵人更強，獎勵 1.3 倍）。</p>
 <h4>遊戲幣</h4>
@@ -77,6 +88,7 @@ export async function mount(root, ctx) {
   function showSetup() {
     teardown();
     const p = prog();
+    if (p.mode === 'pack') return showPackSetup(p);
     const saved = store.loadGame(ID);
     let mapId = p.unlocked[p.map] ? p.map : 'forest';
     const cards = h('div', { class: 'wf-maps' });
@@ -90,6 +102,7 @@ export async function mount(root, ctx) {
     const resume = saved && saved.snap ? h('button', { class: 'btn btn-block', style: 'margin-top:10px', onClick: () => begin(saved.snap.mapId, saved.snap) }, '繼續上一局（' + MAPS[saved.snap.mapId].name + ' ' + mmss(saved.snap.t) + '）') : null;
     root.replaceChildren(h('div', { class: 'setup' },
       hero(ID, NAME, '寫實 3D 倖存者 · 撐過十五分鐘'),
+      modeSwitch(p),
       cards,
       h('div', { class: 'stake-summary' },
         h('div', null, h('small', null, '魂石'), h('b', { class: 'num' }, fmt(p.souls))),
@@ -98,6 +111,42 @@ export async function mount(root, ctx) {
       resume,
       h('button', { class: 'btn btn-block', style: 'margin-top:10px', onClick: showShop }, '魂石商店'),
       h('p', { class: 'login-note', style: 'text-align:center' }, '不需下注。依存活時間、擊倒數與頭目發放遊戲幣。')));
+  }
+
+  function modeSwitch(p) {
+    return segmented({ label: '模式', hint: p.mode === 'pack' ? '攻佔領地、收服新狼，帶狼群一起作戰' : '單獨求生十五分鐘', value: p.mode || 'solo', options: [{ value: 'solo', label: '生存模式' }, { value: 'pack', label: '狼群模式' }], onChange: (v) => { p.mode = v; saveProg(p); showSetup(); } });
+  }
+  function showPackSetup(p) {
+    const c = p.pack;
+    const body = c
+      ? [h('div', { class: 'stake-summary', style: 'grid-template-columns: repeat(3, 1fr)' },
+          h('div', null, h('small', null, '已過'), h('b', { class: 'num' }, c.day + ' 天')),
+          h('div', null, h('small', null, '領地'), h('b', { class: 'num' }, ownedCount(c) + ' / ' + REGIONS.length)),
+          h('div', null, h('small', null, '狼群'), h('b', { class: 'num' }, c.wolves.length + ' 匹'))),
+        h('button', { class: 'btn btn-gold btn-block', onClick: () => openCampaign() }, c.won ? '檢視征途' : '繼續征途'),
+        h('button', { class: 'btn btn-block', style: 'margin-top:10px', onClick: async () => { if (await confirmBox('重新開始', '目前的領地與狼群會全部重來，確定嗎？', '重新開始', '取消', 'danger')) { const { newCampaign } = await import('./pack.js'); p.pack = newCampaign(); saveProg(p); openCampaign(); } } }, '重新開始征途')]
+      : [h('p', { class: 'login-note', style: 'margin:4px 0 14px' }, '白狼帶著兩匹同伴從月光谷出發。攻下鄰近的領地、收服新的狼、擴建營地，直到夜林與霜原都屬於你的狼群。'),
+        h('button', { class: 'btn btn-gold btn-block', onClick: async () => { const { newCampaign } = await import('./pack.js'); p.pack = newCampaign(); saveProg(p); openCampaign(); } }, '開始征途')];
+    root.replaceChildren(h('div', { class: 'setup' },
+      hero(ID, NAME, '狼群模式 · 攻佔十二塊領地'),
+      modeSwitch(p),
+      ...body,
+      h('button', { class: 'btn btn-block', style: 'margin-top:10px', onClick: showShop }, '魂石商店'),
+      h('p', { class: 'login-note', style: 'text-align:center' }, '不需下注。每場出征依結果發放遊戲幣與魂石。')));
+  }
+  let campaignOff = null;
+  async function openCampaign() {
+    teardown();
+    const p = prog();
+    const c = p.pack;
+    const { showCampaign } = await import('./packui.js');
+    const page = h('div', { class: 'setup wp-page' });
+    root.replaceChildren(page);
+    campaignOff = showCampaign(page, c, {
+      save: () => { const q = prog(); q.pack = c; saveProg(q); },
+      startBattle: (spec, allies, hungry) => { campaignOff && campaignOff(); campaignOff = null; begin(spec.biome, null, { spec, allies, hungry }); },
+    });
+    page.prepend(h('div', { class: 'wp-top' }, h('button', { class: 'btn btn-sm', onClick: () => { campaignOff && campaignOff(); campaignOff = null; showSetup(); } }, '‹ 返回'), h('b', null, '狼群征途'), h('span')));
   }
 
   function showShop() {
@@ -118,13 +167,15 @@ export async function mount(root, ctx) {
   }
 
   // ---------------- 遊戲 ----------------
-  async function begin(mapId, snap) {
+  let packCfg = null;
+  async function begin(mapId, snap, pack = null) {
     teardown();
     finished = false;
+    packCfg = pack;
     const p = prog();
     const cv = h('canvas', { class: 'wf-cv' });
     const loadBar = h('i');
-    const loading = h('div', { class: 'wf-loading' }, h('b', null, MAPS[mapId].name), h('div', { class: 'wf-loadbar' }, loadBar), h('small', null, '正在載入模型與地形'));
+    const loading = h('div', { class: 'wf-loading' }, h('b', null, pack ? pack.spec.name : MAPS[mapId].name), h('div', { class: 'wf-loadbar' }, loadBar), h('small', null, '正在載入模型與地形'));
     const xpFill = h('i');
     const lvEl = h('b', { class: 'num' }, 'Lv 1'), timeEl = h('b', { class: 'num wf-time' }, '00:00'), killEl = h('span', { class: 'num' }, '0');
     const bossName = h('span'), bossFill = h('i');
@@ -136,17 +187,23 @@ export async function mount(root, ctx) {
     const joy = h('div', { class: 'wf-joy' }, h('i'));
     const banner = h('div', { class: 'wf-banner' });
     const panel = h('div', { class: 'wf-panel' });
+    // 狼群模式：任務進度、同伴血條、指令
+    const goalFill = h('i'), goalText = h('span');
+    const goal = pack ? h('div', { class: 'wf-goal' }, goalText, h('div', { class: 'wf-goalbar' }, goalFill)) : null;
+    const party = pack ? h('div', { class: 'wf-party' }, ...pack.allies.map((a) => h('div', { class: 'wf-pm', dataset: { id: a.id } }, h('b', null, a.name), h('div', { class: 'wf-pmbar' }, h('i'))))) : null;
+    const cmdBtn = pack && pack.allies.length ? h('button', { class: 'wf-cmd', onClick: (e) => { e.stopPropagation(); const f = game && game.S.cmd === 'attack'; game && game.setCommand(f ? 'follow' : 'attack'); cmdBtn.classList.toggle('follow', f); cmdBtn.firstChild.textContent = f ? '集合' : '進攻'; } }, h('span', null, '進攻'), h('small', null, '切換')) : null;
+    const allyBars = pack ? pack.allies.map(() => { const b = h('div', { class: 'wf-hp ally' }, h('i')); return b; }) : [];
     const hud = h('div', { class: 'wf-hud' },
       h('div', { class: 'wf-xp' }, xpFill),
       h('div', { class: 'wf-top' }, lvEl, timeEl, h('span', { class: 'wf-kills' }, killEl, h('small', null, ' 擊倒'))),
-      bossBar);
-    const stage = h('div', { class: 'wf-stage' }, cv, h('div', { class: 'wf-vignette' }), hpBar, hud, pauseBtn, ultBtn, joy, banner, panel, loading);
+      goal, bossBar, party);
+    const stage = h('div', { class: 'wf-stage' }, cv, h('div', { class: 'wf-vignette' }), ...allyBars, hpBar, hud, pauseBtn, ultBtn, cmdBtn, joy, banner, panel, loading);
     root.replaceChildren(h('div', { class: 'wf' }, stage));
-    V = { stage, cv, xpFill, lvEl, timeEl, killEl, bossBar, bossName, bossFill, hpBar, hpFill, ultBtn, ultRing, joy, banner, panel, loading };
+    V = { stage, cv, xpFill, lvEl, timeEl, killEl, bossBar, bossName, bossFill, hpBar, hpFill, ultBtn, ultRing, joy, banner, panel, loading, goalFill, goalText, party, allyBars };
     audio.preload('boom', 'bigboom', 'hitm', 'power', 'missile');
     const { createGame } = await import('./game.js');
     try {
-      game = await createGame(cv, { mapId, meta: p.meta, mobile, saved: snap, onEvent, onProgress: (f) => { loadBar.style.width = Math.round(f * 100) + '%'; } });
+      game = await createGame(cv, { mapId, meta: p.meta, mobile, saved: snap, pack, onEvent, onProgress: (f) => { loadBar.style.width = Math.round(f * 100) + '%'; } });
     } catch (e) {
       console.error(e);
       toast('載入失敗，請確認網路後再試');
@@ -163,8 +220,11 @@ export async function mount(root, ctx) {
     setTimeout(() => loading.remove(), 600);
     game.start();
     hudLoop();
-    store.saveGame(ID, { snap: game.snapshot() });
-    if (!snap) setTimeout(() => showBanner(MAPS[mapId].name, '撐過十五分鐘'), 400);
+    if (pack) setTimeout(() => showBanner(pack.spec.name, pack.spec.kind === 'defend' ? '守住領地' : '擊倒' + pack.spec.kills + '隻敵人'), 400);
+    else {
+      store.saveGame(ID, { snap: game.snapshot() });
+      if (!snap) setTimeout(() => showBanner(MAPS[mapId].name, '撐過十五分鐘'), 400);
+    }
   }
 
   // ---------------- 介面更新 ----------------
@@ -194,6 +254,24 @@ export async function mount(root, ctx) {
       V.bossName.textContent = S.boss.def.name;
       V.bossFill.style.transform = `scaleX(${Math.max(0, S.boss.hp / S.boss.maxhp)})`;
     } else V.bossBar.classList.remove('show');
+    if (packCfg) {
+      const G = S.goal;
+      if (G.kind === 'defend') { V.goalText.textContent = '守住' + G.name + ' · 剩 ' + mmss(Math.max(0, G.time - S.t)); V.goalFill.style.transform = `scaleX(${Math.min(1, S.t / G.time)})`; }
+      else { V.goalText.textContent = G.boss ? '打倒頭目' : '壓制' + G.name + ' ' + Math.min(S.kills, G.need) + ' / ' + G.need; V.goalFill.style.transform = `scaleX(${Math.min(1, S.kills / G.need)})`; }
+      S.allies.forEach((a, k) => {
+        const row = V.party.children[k];
+        if (row) { row.classList.toggle('down', a.down); row.lastChild.firstChild.style.transform = `scaleX(${Math.max(0, a.hp / a.maxhp)})`; }
+        const bar = V.allyBars[k];
+        if (bar) {
+          if (a.down) { bar.style.display = 'none'; return; }
+          bar.style.display = '';
+          vec.set(a.x, 0, a.z + 0.9).project(cam);
+          bar.style.left = ((vec.x + 1) / 2) * r.width + 'px'; bar.style.top = ((1 - vec.y) / 2) * r.height + 6 + 'px';
+          bar.firstChild.style.transform = `scaleX(${Math.max(0, a.hp / a.maxhp)})`;
+        }
+      });
+      return;
+    }
     saveTimer += 1 / 60;
     if (saveTimer > 12 && S.state === 'play' && !S.dead && !S.won) { saveTimer = 0; store.saveGame(ID, { snap: game.snapshot() }); }
   }
@@ -224,6 +302,8 @@ export async function mount(root, ctx) {
     if (type === 'banner') showBanner(d.text);
     if (type === 'revive') showBanner('不屈', '白狼重新站起');
     if (type === 'dead') setTimeout(() => finish(false), 1400);
+    if (type === 'allydown') showBanner(d.name + ' 倒下', '休養兩天後歸隊');
+    if (type === 'packend') { if (d.win) audio.chime('win'); setTimeout(() => finishPack(d), d.win ? 200 : 1400); }
     if (type === 'victory') { audio.chime('win'); finish(true); }
   }
 
@@ -233,13 +313,33 @@ export async function mount(root, ctx) {
     if (v && (S.state !== 'play' || S.dead)) return;
     game.pause(v);
     if (!v) return panelHide();
-    store.saveGame(ID, { snap: game.snapshot() });
+    if (!packCfg) store.saveGame(ID, { snap: game.snapshot() });
     const build = h('div', { class: 'wf-build' },
       ...S.weapons.map((w) => h('div', null, h('b', null, WEAPONS[w.id] ? WEAPONS[w.id].name : EVOS[w.id].name), h('span', { class: 'num' }, EVOS[w.id] ? '進化' : 'Lv ' + w.lv))),
       ...Object.entries(S.passives).map(([k, lv]) => h('div', { class: 'pas' }, h('b', null, PASSIVES[k].name), h('span', { class: 'num' }, 'Lv ' + lv))));
     panelShow(h('div', null, h('div', { class: 'wf-ptitle' }, '暫停', h('small', { class: 'num' }, ' ' + mmss(S.t))), build,
       h('button', { class: 'btn btn-gold btn-block', onClick: () => pause(false) }, '繼續'),
-      h('button', { class: 'btn btn-block', style: 'margin-top:8px', onClick: () => finish(false) }, '結束並結算')));
+      packCfg ? h('button', { class: 'btn btn-block', style: 'margin-top:8px', onClick: () => finishPack({ win: false, allies: game.S.allies.map((a) => ({ id: a.id, kills: a.kills, down: a.down })), kills: game.S.kills, t: game.S.t, elitesWolf: 0 }) }, '撤退')
+        : h('button', { class: 'btn btn-block', style: 'margin-top:8px', onClick: () => finish(false) }, '結束並結算')));
+  }
+
+  // 狼群模式：一場出征結束
+  async function finishPack(res) {
+    if (!game || finished || !packCfg) return;
+    finished = true;
+    const spec = packCfg.spec, win = res.win;
+    const p = prog();
+    const payout = Math.round(win ? 150 + spec.lv * 120 + (spec.final ? 1500 : 0) : 40 + Math.floor(res.t / 60) * 30);
+    const souls = Math.round((Math.floor(res.kills / 20) + (win ? 5 + spec.lv * 3 : 1)) * (1 + 0.1 * (p.meta.greed || 0)));
+    p.souls += souls;
+    saveProg(p);
+    const ev = store.settle(ID, { gameName: NAME, mode: '狼群 · ' + spec.name, result: win ? 'win' : 'lose', payout, note: (spec.kind === 'defend' ? '防守' : '出征') + spec.name + ' · 擊倒 ' + fmt(res.kills) });
+    teardown();
+    packCfg = null;
+    root.replaceChildren(h('div', { class: 'setup' }));
+    const { battleReport } = await import('./packui.js');
+    await battleReport(p.pack, spec, res, { delta: ev.delta, souls, balance: ev.balance }, () => saveProg(p));
+    if (alive) openCampaign();
   }
 
   function finish(won) {
@@ -317,7 +417,8 @@ export async function mount(root, ctx) {
   }
 
   function teardown() {
-    if (game && !finished && !game.S.dead) store.saveGame(ID, { snap: game.snapshot() });
+    if (game && !finished && !game.S.dead && !packCfg) store.saveGame(ID, { snap: game.snapshot() });
+    if (campaignOff) { campaignOff(); campaignOff = null; }
     if (V) {
       cancelAnimationFrame(V.raf);
       V.ro && V.ro.disconnect();

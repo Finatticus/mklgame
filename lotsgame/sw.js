@@ -1,6 +1,6 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.8.1';
+const VERSION = 'v1.9.0';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 const WOLF_CACHE = 'lots-wolf-v1'; // 月下白狼的 3D 模型與貼圖（大檔），跨版本保留
@@ -16,7 +16,7 @@ const CORE = [
   'js/games/holdem/index.js', 'js/games/holdem/engine.js', 'js/games/holdem/table.js',
   'js/games/bigtwo/index.js', 'js/games/bigtwo/engine.js', 'js/games/bigtwo/table.js',
   'js/games/shooter/index.js', 'js/games/shooter/game.js', 'js/games/shooter/sprites.js', 'js/games/shooter/terrain.js', 'js/games/shooter/stages.js',
-  'js/games/wolf/index.js', 'js/games/wolf/game.js', 'js/games/wolf/world.js', 'js/games/wolf/assets.js', 'js/games/wolf/data.js',
+  'js/games/wolf/index.js', 'js/games/wolf/game.js', 'js/games/wolf/world.js', 'js/games/wolf/assets.js', 'js/games/wolf/data.js', 'js/games/wolf/pack.js', 'js/games/wolf/packui.js',
   'vendor/three/three.core.js', 'vendor/three/three.module.js', 'vendor/three/GLTFLoader.js', 'vendor/three/SkeletonUtils.js', 'vendor/three/BufferGeometryUtils.js', 'vendor/three/HDRLoader.js', 'vendor/three/meshopt_simplifier.js',
   'assets/wolf/cover.jpg',
   'js/games/mahjong/index.js', 'js/games/mahjong/game.js', 'js/games/mahjong/rules.js',
