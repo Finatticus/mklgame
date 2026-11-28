@@ -1,0 +1,81 @@
+極速山道使用的車輛模型（assets/racer/cars/）皆以 CC-BY 4.0 授權取自 Sketchfab。
+遊戲中已改名，並去除廠徽、車名字樣、贊助商標誌與車牌；模型經減面與貼圖壓縮。
+Car models in assets/racer/cars/ are used under CC-BY 4.0. Names, badges, logos and plates were removed; meshes were simplified and textures re-encoded.
+
+==== polo ====
+Model Information:
+* title:	2016 Volkswagen Polo
+* source:	https://sketchfab.com/3d-models/2016-volkswagen-polo-bab77902c638427bb85e68b6762a481f
+* author:	BHP3D (https://sketchfab.com/BHP3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+
+==== rwb ====
+Model Information:
+* title:	[FREE] Porsche 911 RWB (993)
+* source:	https://sketchfab.com/3d-models/free-porsche-911-rwb-993-523206619f5f4234aea72dc9305bb11a
+* author:	GORDEYKOMARK (https://sketchfab.com/gordeykomark)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+
+==== c8 ====
+Model Information:
+* title:	2019 Chevrolet Corvette C8 Stingray
+* source:	https://sketchfab.com/3d-models/2019-chevrolet-corvette-c8-stingray-790c40ccff6843eab0b7b4bd18421ff8
+* author:	Hari (https://sketchfab.com/Hari31)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+
+==== nsx ====
+Model Information:
+* title:	Acura Nsx Twin Turbo '91
+* source:	https://sketchfab.com/3d-models/acura-nsx-twin-turbo-91-77ce87d5be824af89dae4a1ffa0d58a1
+* author:	geevisual55 (https://sketchfab.com/geevisual55)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+
+==== s13 ====
+Model Information:
+* title:	1992 Nissan Silvia S13
+* source:	https://sketchfab.com/3d-models/1992-nissan-silvia-s13-6fa8f1948f954e3b980b5e96f203815a
+* author:	bagged_ls (https://sketchfab.com/lstance)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+
+==== r32 ====
+Model Information:
+* title:	Nissan Skyline R32 GTR
+* source:	https://sketchfab.com/3d-models/nissan-skyline-r32-gtr-e2a16f567a7e4d0ab99c0bd6460ba396
+* author:	Blue3D (https://sketchfab.com/Blueberry12)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+
+==== e46 ====
+Model Information:
+* title:	BMW E46 M3 'NightRyder' Sports Car
+* source:	https://sketchfab.com/3d-models/bmw-e46-m3-nightryder-sports-car-b28c766ffa714a1f9fc96392662e18a0
+* author:	BaseOptimal (https://sketchfab.com/BaseOptimal)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+

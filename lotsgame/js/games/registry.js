@@ -24,6 +24,7 @@ export const GAMES = [
   { id: 'baccarat', cat: 'cards', name: '百家樂', kicker: '牌桌 · 八副牌', desc: '莊閒和、對子，附路單', load: () => import('./baccarat/index.js') },
   { id: 'shooter', cat: 'action', name: '蒼穹戰機', kicker: '動作 · 縱向射擊', desc: '五個關卡，手指拖曳操控', load: () => import('./shooter/index.js') },
   { id: 'wolf', cat: 'action', name: '月下白狼', kicker: '動作 · 寫實 3D 倖存者', desc: '撐過十五分鐘的夜', load: () => import('./wolf/index.js') },
+  { id: 'racer', cat: 'action', name: '極速山道', kicker: '動作 · 第一人稱賽車', desc: '寫實車內視角，三條山路賽道', load: () => import('./racer/index.js') },
   { id: 'minesweeper', cat: 'puzzle', name: '踩地雷', kicker: '益智 · 計時挑戰', desc: '三種標準盤面', load: () => import('./minesweeper/index.js') },
   { id: 'g2048', cat: 'puzzle', name: '2048', kicker: '益智 · 數字合併', desc: '方塊越大，賠率越高', load: () => import('./g2048/index.js') },
 ];

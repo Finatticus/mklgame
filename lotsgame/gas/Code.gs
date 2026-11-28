@@ -34,6 +34,7 @@ function doPost(e) {
     if (req.action === 'login') out = login(req);
     else if (req.action === 'sync') out = sync(req);
     else if (req.action === 'leaderboard') out = leaderboard();
+    else if (req.action === 'raceboard') out = raceboard(req);
     else out = { ok: false, message: '未知的動作' };
     return json(out);
   } catch (err) {
@@ -227,6 +228,7 @@ function sync(req) {
         if (ev.result === '勝') wins++; else if (ev.result === '負') losses++; else draws++;
         gameCounts[ev.game] = (gameCounts[ev.game] || 0) + 1;
       }
+      if (ev.type === 'lap') { recordLap(user, ev); }
       rows.push([fmtTime(ev.t), ev.game || '', ev.mode || '', ev.result || '', bet, delta, balance, ev.note || '', ev.device || '', ev.id]);
     }
     if (rows.length) ps.getRange(ps.getLastRow() + 1, 1, rows.length, LOG_HEADER.length).setValues(rows);
@@ -267,5 +269,44 @@ function leaderboard() {
     rows.push({ user: String(vals[i][0]), balance: Number(vals[i][C['遊戲幣餘額'] - 1]), plays: Number(vals[i][C['總局數'] - 1] || 0), wins: Number(vals[i][C['勝'] - 1] || 0) });
   }
   rows.sort(function (a, b) { return b.balance - a.balance; });
+  return { ok: true, rows: rows.slice(0, 30) };
+}
+
+// ---------------------------------------------------------------------------
+// 極速山道：計時賽圈速排行（「賽車排行」工作表，每個帳號在每條賽道只保留最佳一圈）
+var RACE_SHEET = '賽車排行';
+var RACE_HEADER = ['賽道代號', '賽道', '帳號', '最佳圈速（秒）', '車款', '紀錄時間', '毫秒（系統用）'];
+function raceSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(RACE_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(RACE_SHEET);
+    sh.getRange(1, 1, 1, RACE_HEADER.length).setValues([RACE_HEADER]).setFontWeight('bold').setBackground('#2b2520').setFontColor('#f1e6cf');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function recordLap(user, ev) {
+  var ms = Math.round(Number(ev.ms) || 0);
+  if (!ev.track || ms < 20000 || ms > 1800000) return; // 過濾不合理的圈速
+  var sh = raceSheet();
+  var last = sh.getLastRow();
+  var vals = last > 1 ? sh.getRange(2, 1, last - 1, 7).getValues() : [];
+  for (var i = 0; i < vals.length; i++) {
+    if (String(vals[i][0]) === String(ev.track) && String(vals[i][2]) === user) {
+      if (ms < Number(vals[i][6])) sh.getRange(i + 2, 1, 1, 7).setValues([[ev.track, ev.mode || '', user, (ms / 1000).toFixed(3), ev.car || '', fmtTime(ev.t), ms]]);
+      return;
+    }
+  }
+  sh.appendRow([ev.track, ev.mode || '', user, (ms / 1000).toFixed(3), ev.car || '', fmtTime(ev.t), ms]);
+}
+function raceboard(req) {
+  var sh = raceSheet();
+  var last = sh.getLastRow();
+  if (last < 2) return { ok: true, rows: [] };
+  var vals = sh.getRange(2, 1, last - 1, 7).getValues();
+  var rows = [];
+  for (var i = 0; i < vals.length; i++) if (String(vals[i][0]) === String(req.track)) rows.push({ user: String(vals[i][2]), ms: Number(vals[i][6]), car: String(vals[i][4]), at: String(vals[i][5]) });
+  rows.sort(function (a, b) { return a.ms - b.ms; });
   return { ok: true, rows: rows.slice(0, 30) };
 }

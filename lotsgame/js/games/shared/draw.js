@@ -249,6 +249,16 @@ const COVERS = {
     g.addColorStop(0, 'rgba(8,8,10,0)'); g.addColorStop(1, 'rgba(8,8,10,0.55)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
   },
+  // 極速山道：遊戲本身的渲染畫面（海岸懸崖路段上的兩台車）
+  async racer(ctx, w, h) {
+    const img = await loadImage(asset('racer/cover.jpg'));
+    const s = Math.max(w / img.width, h / img.height), iw = img.width * s, ih = img.height * s;
+    // 兩台車在畫面中段偏下：寬版裁掉上方天空
+    ctx.drawImage(img, (w - iw) / 2, Math.min(0, Math.max(h - ih, h * 0.5 - ih * 0.56)), iw, ih);
+    const g = ctx.createLinearGradient(0, h * 0.45, 0, h);
+    g.addColorStop(0, 'rgba(8,8,10,0)'); g.addColorStop(1, 'rgba(8,8,10,0.55)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  },
   // 開球前的特寫：擺好的球、母球與球桿
   async billiards(ctx, w, h) {
     const [{ TableView }, B] = await Promise.all([import('../billiards/render.js'), import('../billiards/physics.js')]);

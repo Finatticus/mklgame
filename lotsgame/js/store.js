@@ -321,6 +321,18 @@ export async function sync() {
   } finally { syncing = false; }
 }
 
+// 賽車圈速：只排入同步佇列（不列入對局紀錄），由後端維護「賽車排行」
+export function queueLap({ track, trackName, car, ms }) {
+  if (!data) return;
+  data.pending.push({ id: uid(), t: new Date().toISOString(), device: deviceName(), type: 'lap', game: '極速山道', mode: trackName, result: '圈速', bet: 0, delta: 0, track, car, ms: Math.round(ms), note: car + ' · ' + (ms / 1000).toFixed(3) + ' 秒' });
+  save();
+  scheduleSync(1500);
+}
+export async function fetchRaceBoard(track) {
+  if (!hasBackend() || !navigator.onLine) return null;
+  try { const r = await call({ action: 'raceboard', track }); return r.ok ? r.rows : null; } catch (e) { return null; }
+}
+
 export async function fetchLeaderboard() {
   if (!hasBackend() || !navigator.onLine) return null;
   try { const r = await call({ action: 'leaderboard' }); return r.ok ? r.rows : null; } catch (e) { return null; }
