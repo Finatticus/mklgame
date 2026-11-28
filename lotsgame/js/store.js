@@ -54,7 +54,34 @@ function normalize(d) {
   out.stats = Object.assign(emptyStats(), d.stats || {});
   out.stats.total = Object.assign(emptyBucket(), out.stats.total || {});
   out.settings = Object.assign({ sound: true, confirmMove: true }, d.settings || {});
+  // 舊資料沒有進度時間：用這台裝置最後一筆紀錄的時間（最近玩過的裝置較新）
+  if (!out.settingsAt) out.settingsAt = Date.parse((out.history[0] && out.history[0].t) || out.lastSync || out.createdAt) || 1;
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// 遊戲進度（各遊戲的 settings）跨裝置同步
+// 上傳時去掉很大的資料（計時賽幽靈車）；下載時保留只屬於這台裝置的設定
+const DEVICE_ONLY = { racer: ['control'] };
+function slimSettings(st) {
+  const out = JSON.parse(JSON.stringify(st || {}));
+  if (out.racer && out.racer.trial) for (const k in out.racer.trial) if (out.racer.trial[k]) delete out.racer.trial[k].ghost;
+  return out;
+}
+function mergeRemoteSettings(remote, local) {
+  const out = JSON.parse(JSON.stringify(remote || {}));
+  local = local || {};
+  for (const g in DEVICE_ONLY) for (const k of DEVICE_ONLY[g]) if (local[g] && local[g][k] !== undefined) (out[g] || (out[g] = {}))[k] = local[g][k];
+  // 幽靈車：同一個最佳圈速就沿用本機的錄影
+  const rt = out.racer && out.racer.trial, lt = local.racer && local.racer.trial;
+  if (rt && lt) for (const k in rt) if (rt[k] && lt[k] && lt[k].ghost && Math.abs((lt[k].best || 0) - (rt[k].best || 0)) < 1e-6) rt[k].ghost = lt[k].ghost;
+  return out;
+}
+function adoptSettings(d, st) {
+  if (!st || !st.settings || !st.settingsAt) return false;
+  d.settings = Object.assign({ sound: true, confirmMove: true }, mergeRemoteSettings(st.settings, d.settings));
+  d.settingsAt = st.settingsAt;
+  return true;
 }
 
 export async function hashPassword(user, pass) {
@@ -110,11 +137,13 @@ function adoptServerProfile(local, user, hash, p) {
   d.createdAt = p.createdAt || d.createdAt;
   d.localCreated = false;
   d.conflict = false;
+  // 雲端的遊戲進度比較新（或這台裝置沒有資料）就採用
+  if (p.state && p.state.settings && (!local || (p.state.settingsAt || 0) > (d.settingsAt || 0))) adoptSettings(d, p.state);
   if (!local) {
     if (p.state && p.state.stats) d.stats = Object.assign(emptyStats(), p.state.stats);
     if (p.state && p.state.daily) d.daily = p.state.daily;
     if (p.state && p.state.relief) d.relief = p.state.relief;
-    d.history = (p.recent || []).slice(0, 300);
+    d.history = (p.recent || []).filter((e) => e.type !== 'lap').slice(0, 300);
   }
   applyServerBalance(d, p.balance);
   return d;
@@ -234,7 +263,7 @@ export function saveGame(gameId, state) { data.saves[gameId] = state; persist();
 export const loadGame = (gameId) => (data && data.saves[gameId]) || null;
 export function clearGame(gameId) { delete data.saves[gameId]; persist(); }
 
-export function setSetting(key, value) { data.settings[key] = value; save(); }
+export function setSetting(key, value) { data.settings[key] = value; data.settingsAt = Date.now(); save(); scheduleSync(4000); }
 
 // 每日簽到
 export function dailyInfo() {
@@ -294,7 +323,7 @@ export async function sync() {
     const r = await call({
       action: 'sync', user: me.user, hash: me.hash, create: me.localCreated, createdAt: me.createdAt,
       device: deviceName(), events: sent,
-      state: { stats: me.stats, daily: me.daily, relief: me.relief },
+      state: { stats: me.stats, daily: me.daily, relief: me.relief, settings: slimSettings(me.settings), settingsAt: me.settingsAt || 1 },
     }, 30000);
     if (data !== me) return;
     if (r.ok) {
@@ -303,6 +332,8 @@ export async function sync() {
       me.localCreated = false;
       me.conflict = false;
       applyServerBalance(me, r.balance);
+      // 別的裝置有更新的進度：採用
+      if (r.state && (r.state.settingsAt || 0) > (me.settingsAt || 0)) adoptSettings(me, r.state);
       me.lastSync = new Date().toISOString();
       syncState.status = 'ok';
       syncState.lastError = '';

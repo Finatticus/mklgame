@@ -181,7 +181,7 @@ function recentEvents(user) {
   for (var i = rows.length - 1; i >= 0; i--) {
     var r = rows[i];
     if (!r[9]) continue;
-    out.push({ id: String(r[9]), t: new Date(r[0]).toISOString(), game: r[1], mode: r[2], result: r[3], bet: Number(r[4]), delta: Number(r[5]), balance: Number(r[6]), note: r[7], device: r[8], type: r[3] === '領取' ? 'bonus' : 'game' });
+    out.push({ id: String(r[9]), t: new Date(r[0]).toISOString(), game: r[1], mode: r[2], result: r[3], bet: Number(r[4]), delta: Number(r[5]), balance: Number(r[6]), note: r[7], device: r[8], type: r[3] === '領取' ? 'bonus' : r[3] === '圈速' ? 'lap' : 'game' });
   }
   return out;
 }
@@ -239,9 +239,23 @@ function sync(req) {
   sh.getRange(row, C['遊戲幣餘額'], 1, 8).setValues([[balance, plays, wins, losses, draws, plays ? wins / plays : 0, wagered, net]]);
   sh.getRange(row, C['最後同步']).setValue(t);
   sh.getRange(row, C['最後使用裝置']).setValue(req.device || '');
-  if (req.state) sh.getRange(row, C['狀態資料（系統用）']).setValue(JSON.stringify(req.state));
+  // 遊戲進度（各遊戲的設定與存檔）：以時間較新的為準；伺服器較新時回傳給裝置
+  var newer = null;
+  if (req.state) {
+    var stored = {};
+    try { stored = JSON.parse(v[C['狀態資料（系統用）'] - 1] || '{}'); } catch (x) {}
+    var st = req.state;
+    if (stored.settings && Number(stored.settingsAt || 0) > Number(st.settingsAt || 0)) {
+      st.settings = stored.settings; st.settingsAt = stored.settingsAt;
+      newer = { settings: stored.settings, settingsAt: stored.settingsAt };
+    }
+    var text = JSON.stringify(st);
+    // 試算表一格上限 50,000 字：太大時保留原本雲端的進度
+    if (text.length > 49000) { st.settings = stored.settings; st.settingsAt = stored.settingsAt; text = JSON.stringify(st); }
+    if (text.length <= 49000) sh.getRange(row, C['狀態資料（系統用）']).setValue(text);
+  }
   ps.getRange('B4:B7').setValues([[balance], [plays + '（' + wins + '／' + losses + '／' + draws + '）'], [net], [t]]);
-  return { ok: true, balance: balance, serverTime: new Date().toISOString() };
+  return { ok: true, balance: balance, state: newer, serverTime: new Date().toISOString() };
 }
 
 // 每款遊戲各有一欄「<遊戲名>局數」，新遊戲出現時自動加欄，不需要改程式
