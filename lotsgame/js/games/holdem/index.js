@@ -55,6 +55,8 @@ const short = (n) => (n >= 100000 ? Math.round(n / 1000) + 'K' : n >= 10000 ? (n
 
 export async function mount(root, ctx) {
   let alive = true, T = null, M = null, busy = false, nextTimer = null, raiseOpen = false, raiseTo = 0;
+  // cleared：上一手結束、牌已收走，桌面清空等下一手；mucking：收牌動畫進行中
+  let cleared = false, mucking = null, lastSummary = '';
   const prefs = Object.assign({ tier: 'low', bb: MAX_BB }, store.getData().settings.holdem || {});
 
   // ---------------- 入座 ----------------
@@ -115,11 +117,12 @@ export async function mount(root, ctx) {
     const dock = h('div', { class: 'pk-dock-in' });
     const leaveBtn = h('button', { class: 'pk-leave', onClick: leave }, '離桌');
     const info = h('div', { class: 'pk-info' });
-    root.replaceChildren(h('div', { class: 'pk' },
+    const pkEl = h('div', { class: 'pk' },
       h('div', { class: 'pk-bar' }, info, leaveBtn),
       h('div', { class: 'pk-table' }, h('div', { class: 'pk-felt' }), h('div', { class: 'pk-center' }, potEl, board, msg), ...seats.map((s) => s.el), handEl),
-      h('div', { class: 'pk-dock' }, dock)));
-    V = { seats, board, potEl, msg, dock, info, handEl };
+      h('div', { class: 'pk-dock' }, dock));
+    root.replaceChildren(pkEl);
+    V = { el: pkEl, seats, board, potEl, msg, dock, info, handEl };
     ctx && ctx.setGuard && ctx.setGuard(null);
   }
 
@@ -135,35 +138,43 @@ export async function mount(root, ctx) {
       v.stack.textContent = s.allIn && T.street !== 'done' ? '全下' : fmt(s.stack);
       // 底牌
       const showFace = i === 0 || s.shown;
-      const want = !s.hole || !s.hole.length || (s.folded && i !== 0) ? [] : s.hole.map((c) => (showFace ? c : null));
+      const want = cleared || !s.hole || !s.hole.length || (s.folded && i !== 0) ? [] : s.hole.map((c) => (showFace ? c : null));
       const key = want.map((c) => (c == null ? 'x' : c)).join(',') + (s.folded ? 'f' : '');
       if (v.hole.dataset.key !== key) {
+        const fresh = !v.hole.dataset.key || v.hole.dataset.key === 'f';
         v.hole.dataset.key = key;
-        v.hole.replaceChildren(...want.map((c) => cardEl(c, c == null ? 'back' : '')));
+        // 新發的牌：從按鈕位左手邊開始，一人一張繞兩圈
+        const order = (i - T.button + 5) % 6;
+        v.hole.replaceChildren(...want.map((c, k) => {
+          const el = cardEl(c, (c == null ? 'back' : '') + (fresh && T.street === 'preflop' ? ' dealt' : ''));
+          if (fresh) el.style.animationDelay = (k * 6 + order) * 70 + 'ms';
+          return el;
+        }));
       }
       v.hole.classList.toggle('folded', !!s.folded && i === 0);
-      v.el.classList.toggle('out', !!s.folded);
+      v.el.classList.toggle('out', !!s.folded && !cleared);
       v.el.classList.toggle('turn', T.toAct === i && T.street !== 'done');
-      const winner = T.result && T.result.winners.find((w) => w.seat === i);
+      const winner = !cleared && T.result && T.result.winners.find((w) => w.seat === i);
       v.el.classList.toggle('win', !!winner);
-      v.act.textContent = winner ? '+' + fmt(winner.amount) : s.action || '';
+      v.act.textContent = winner ? '+' + fmt(winner.amount) : cleared ? '' : s.action || '';
       v.act.className = 'pk-act' + (winner ? ' won' : s.action === '棄牌' ? ' fold' : '') + (v.act.textContent ? ' on' : '');
       v.bet.replaceChildren(...(s.bet ? [h('i'), short(s.bet)] : []));
       v.btn.hidden = T.button !== i;
     });
     // 公牌
-    const bkey = T.board.join(',');
+    const bkey = cleared ? '' : T.board.join(',');
     if (V.board.dataset.key !== bkey) {
       const prev = V.board.dataset.key ? V.board.dataset.key.split(',').length : 0;
       V.board.dataset.key = bkey;
-      V.board.replaceChildren(...[0, 1, 2, 3, 4].map((k) => (k < T.board.length ? cardEl(T.board[k], k >= prev ? 'deal' : '') : h('div', { class: 'pk-c slot' }))));
+      const shown = cleared ? 0 : T.board.length;
+      V.board.replaceChildren(...[0, 1, 2, 3, 4].map((k) => (k < shown ? cardEl(T.board[k], k >= prev ? 'deal' : '') : h('div', { class: 'pk-c slot' }))));
     }
     const p = pot(T);
     const live = T.seats.reduce((a, s) => a + s.bet, 0);
     V.potEl.textContent = T.street === 'idle' ? '' : T.street === 'done' ? '' : '底池 ' + fmt(p - live > 0 ? p - live : p) + (live && p - live > 0 ? ' · 本輪 ' + fmt(live) : '');
     // 我的牌型
     const me = T.seats[0];
-    if (me.hole && me.hole.length === 2 && !me.folded && T.board.length >= 3) {
+    if (!cleared && me.hole && me.hole.length === 2 && !me.folded && T.board.length >= 3) {
       V.handEl.textContent = handName(evaluate(me.hole.concat(T.board)));
     } else V.handEl.textContent = '';
     renderDock();
@@ -234,17 +245,41 @@ export async function mount(root, ctx) {
     if (!alive || !T) return;
     clearTimeout(nextTimer);
     if (T.seats[0].stack <= 0) { render(); return; }
+    if (busy) return;
+    busy = true;
+    try { if (T.street === 'done') await clearTable(); } finally { busy = false; }
+    if (!alive || !T || T.street !== 'done' && T.street !== 'idle') return;
     const notes = startHand(T);
+    cleared = false;
     M.hands++;
     raiseOpen = false;
     say(null);
     V.board.dataset.key = '';
+    for (const v of V.seats) v.hole.dataset.key = '';
     audio.play('shuffle', { volume: 0.4 });
     render();
+    setTimeout(() => alive && audio.play('card', { volume: 0.5 }), 150);
     if (notes.length) toast(notes.join('；'), 2600);
     save();
-    await sleep(500);
+    await sleep(900);
     loop();
+  }
+
+  // 一手結束後把所有牌收走，桌面只留「上一手」的結果，避免和下一手混淆
+  function clearTable() {
+    if (cleared || !V) return Promise.resolve();
+    if (mucking) return mucking;
+    mucking = (async () => {
+      V.el.classList.add('mucking');
+      audio.play('flip', { volume: 0.3 });
+      await sleep(380);
+      if (!V) return;
+      V.el.classList.remove('mucking');
+      cleared = true;
+      render();
+      V.msg.replaceChildren(...(lastSummary ? [h('small', null, '上一手 · ' + lastSummary)] : []));
+    })().finally(() => { mucking = null; });
+    return mucking;
   }
 
   async function loop() {
@@ -322,6 +357,9 @@ export async function mount(root, ctx) {
     const won = R.winners.find((w) => w.seat === 0);
     if (R.pot > M.best && won) M.best = R.pot;
     const names = R.winners.map((w) => (w.seat === 0 ? '你' : T.seats[w.seat].name));
+    cleared = false;
+    const total = R.winners.reduce((a, x) => a + x.amount, 0);
+    lastSummary = names.join('、') + (R.winners.length > 1 ? ' 平分 ' : ' 贏得 ') + fmt(R.showdown ? total : R.pot);
     if (R.showdown) {
       const w = R.winners[0];
       say(names.join('、') + (R.winners.length > 1 ? ' 平分' : ' 贏得') + ' ' + fmt(R.winners.reduce((a, x) => a + x.amount, 0)), w.hand ? '以' + w.hand + '勝出' : '');
@@ -329,7 +367,13 @@ export async function mount(root, ctx) {
     if (won) { audio.play('payout', { volume: 0.8 }); if (R.pot >= T.bb * 20) audio.chime('win'); }
     render();
     save();
-    if (me.stack > 0) nextTimer = setTimeout(() => { if (alive && T && T.street === 'done' && !document.querySelector('.modal-wrap')) nextHand(); }, R.showdown ? 4200 : 2600);
+    const idle = () => alive && T && T.street === 'done' && !document.querySelector('.modal-wrap');
+    clearTimeout(nextTimer);
+    nextTimer = setTimeout(async () => {
+      if (!alive || !T || T.street !== 'done') return;
+      await clearTable();
+      if (me.stack > 0 && idle()) nextTimer = setTimeout(() => { if (idle()) nextHand(); }, 900);
+    }, R.showdown ? 3600 : 2200);
   }
 
   function rebuy(amount) {
@@ -376,7 +420,8 @@ export async function mount(root, ctx) {
     T = saved.T; M = saved.M;
     buildTable();
     render();
-    if (T.street === 'done' || T.street === 'idle') { if (T.result) { T.result.handled = false; endHand(); } else nextHand(); }
+    if (T.street === 'done') { cleared = true; render(); }
+    else if (T.street === 'idle') nextHand();
     else loop();
   } else { store.release(ID); showSetup(); }
 

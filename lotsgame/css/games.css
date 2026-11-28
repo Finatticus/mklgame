@@ -338,6 +338,13 @@
   background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 1.5px, transparent 1.5px 6px), repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.12) 0 1.5px, transparent 1.5px 6px), radial-gradient(circle, #8e2c2a, #561515);
 }
 .pk-c.deal { animation: pk-deal 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+/* 發底牌：從桌心飛到座位；收牌：縮小淡出 */
+.pk-c.dealt { animation: pk-dealt 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+@keyframes pk-dealt { from { translate: var(--dx, 0) var(--dy, 0); scale: 0.6; opacity: 0; } }
+.pk-seat.s0 { --dx: 0; --dy: calc(-1 * min(32vh, 240px)); } .pk-seat.s1 { --dx: min(32vw, 260px); --dy: -8vh; } .pk-seat.s2 { --dx: min(32vw, 260px); --dy: 10vh; } .pk-seat.s3 { --dx: 0; --dy: min(22vh, 180px); } .pk-seat.s4 { --dx: calc(-1 * min(32vw, 260px)); --dy: 10vh; } .pk-seat.s5 { --dx: calc(-1 * min(32vw, 260px)); --dy: -8vh; }
+.pk.mucking .pk-hole .pk-c, .pk.mucking .pk-board .pk-c:not(.slot) { animation: pk-muck 0.36s ease-in forwards; }
+@keyframes pk-muck { to { scale: 0.7; opacity: 0; } }
+.pk.mucking .pk-act, .pk.mucking .pk-myhand { opacity: 0; transition: opacity 0.3s; }
 @keyframes pk-deal { from { transform: translateY(-30px) rotateY(90deg); opacity: 0; } }
 .pk-msg { min-height: 40px; text-align: center; white-space: nowrap; }
 .pk-msg b { display: block; font-family: var(--serif); font-size: clamp(15px, 4.3vw, 19px); letter-spacing: 0.08em; color: #f6efdf; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); }

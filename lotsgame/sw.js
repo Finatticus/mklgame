@@ -1,6 +1,6 @@
 // Service Worker：把整個平台快取起來，沒有網路也能開啟與遊玩。
 // 更新程式後請調整 VERSION，使用者下次開啟時會自動換成新版。
-const VERSION = 'v1.5.2';
+const VERSION = 'v1.5.3';
 const CACHE = 'lots-app-' + VERSION;
 const MODEL_CACHE = 'lots-models-v1'; // 圍棋引擎（大檔），跨版本保留
 
